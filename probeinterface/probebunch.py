@@ -8,4 +8,13 @@ class ProbeBunch:
     Optionaly handle the geometry in between probes.
     
     """
-    pass
+    def __init__(self):
+        self.probes = []
+    
+    def add_probe(self, probe):
+        """
+        
+        """
+        self.probes.append(probe)
+    
+    
