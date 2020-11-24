@@ -17,4 +17,11 @@ class ProbeBunch:
         """
         self.probes.append(probe)
     
+    def get_channel_count(self):
+        """
+        Total number of channel.
+        """
+        n = sum(probe.get_electrode_count() for probe in self.probes)
+        return n
+    
     

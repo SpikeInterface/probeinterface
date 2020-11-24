@@ -120,7 +120,6 @@ class Probe:
                     shapes=self.electrode_shapes.copy(),
                     shape_params=self.electrode_shape_params.copy())
         if self.probe_shape_vertices is not None:
-            print('yep')
             other.set_shape_vertices(self.probe_shape_vertices.copy())
         return other
 

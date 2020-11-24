@@ -22,10 +22,21 @@ positions[8:16, 1] -= 10
 probe = Probe(ndim=2, si_units='um')
 probe.set_electrodes(positions=positions, shapes='circle', shape_params={'radius': 5})
 
-probe.create_auto_shape(type='tip')
-
+# shape of the probe
+vertices = [(-20, -30), (20, -110), (60, -30), (60, 190), (-20, 190)]
+probe.set_shape_vertices(vertices)
 
 # and plot
 plot_probe(probe)
+
+
+
+#~ probe_3d = probe.to_3d()
+#~ print(probe_3d.ndim)
+#~ plot_probe(probe)
+
+
+
+
 plt.show()
 
