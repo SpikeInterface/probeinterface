@@ -33,21 +33,38 @@ probebunch = ProbeBunch()
 probebunch.add_probe(probe0)
 probebunch.add_probe(probe1)
 
-#~ # and plot
-#~ plot_probe_bunch(probebunch, separate_axes=False)
-#~ plot_probe_bunch(probebunch, separate_axes=True)
-#~ plt.show()
+# set wiring to device
+chans0 = np.arange(0, 24, dtype='int')
+np.random.shuffle(chans0)
+print(chans0)
+probe0.set_device_channel_indices(chans0)
+probe0.set_device_channel_indices(chans0)
+chans1 = np.arange(24, 48, dtype='int')
+np.random.shuffle(chans0)
+probe1.set_device_channel_indices(chans1)
+
+
+
+
+indices = probebunch.get_global_device_channel_indices()
+print(indices)
+
+# and plot
+plot_probe_bunch(probebunch, separate_axes=False, with_channel_index=True)
+plot_probe_bunch(probebunch, separate_axes=True)
+plt.show()
+
 
 
 # 3D
-probe0_3d = probe0.to_3d()
-probe1_3d = probe1.to_3d()
-probebunch = ProbeBunch()
-probebunch.add_probe(probe0_3d)
-probebunch.add_probe(probe1_3d)
+#~ probe0_3d = probe0.to_3d()
+#~ probe1_3d = probe1.to_3d()
+#~ probebunch = ProbeBunch()
+#~ probebunch.add_probe(probe0_3d)
+#~ probebunch.add_probe(probe1_3d)
 
-plot_probe_bunch(probebunch, separate_axes=False)
-plt.show()
+#~ plot_probe_bunch(probebunch, separate_axes=False)
+#~ plt.show()
 
 
 

@@ -9,7 +9,7 @@ Depending Probe.ndim the plotting is done in 2d or 3d
 import numpy as np
 
 
-def plot_probe_2d(probe, ax=None, electrode_colors=None):
+def plot_probe_2d(probe, ax=None, electrode_colors=None, with_channel_index=False):
     import matplotlib.pyplot as plt
     from matplotlib.patches import Polygon, Circle, Rectangle
     
@@ -56,6 +56,18 @@ def plot_probe_2d(probe, ax=None, electrode_colors=None):
     if vertices is not None:
         poly = Polygon(vertices, facecolor='green', edgecolor='k', lw=0.5, alpha=0.3)
         ax.add_patch(poly)
+    
+    if with_channel_index:
+        for i in range(n):
+            x, y = probe.electrode_positions[i]
+            
+            if probe.device_channel_indices is None:
+                txt = f'{i}'
+            else:
+                chan_ind = probe.device_channel_indices[i]
+                txt = f'prb{i}\ndev{chan_ind}'
+            ax.text(x, y, txt, ha='center', va='center')
+
 
 
 def plot_probe_3d(probe, ax=None, electrode_colors=None):
@@ -129,20 +141,22 @@ def plot_probe_3d(probe, ax=None, electrode_colors=None):
     ax.set_zlim(min_, max_)
 
 
-def plot_probe(probe, ax=None):
+def plot_probe(probe, ax=None, **kargs):
     if probe.ndim == 2:
-        plot_probe_2d(probe, ax=ax)
+        plot_probe_2d(probe, ax=ax, **kargs)
     elif probe.ndim == 3:
-        plot_probe_3d(probe, ax=ax)
+        plot_probe_3d(probe, ax=ax, **kargs)
 
 
-def plot_probe_bunch(probebunch, separate_axes=False):
+def plot_probe_bunch(probebunch, separate_axes=False, **kargs):
     import matplotlib.pyplot as plt
     n = len(probebunch.probes)
     
     if separate_axes:
         if probebunch.ndim == 2:
             fig, axs = plt.subplots(ncols=n, nrows=1)
+            if n==1:
+                axs = [axs]
         else:
             raise NotImplementedError
     else:
@@ -154,5 +168,5 @@ def plot_probe_bunch(probebunch, separate_axes=False):
         axs = [ax] * n
     
     for i, probe in enumerate(probebunch.probes):
-        plot_probe(probe, ax=axs[i])
+        plot_probe(probe, ax=axs[i], **kargs)
 

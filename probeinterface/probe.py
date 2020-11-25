@@ -38,6 +38,13 @@ class Probe:
         
         # vertices for the shape of the probe
         self.probe_shape_vertices = None
+        
+        # this handle the wiring to device : channel index on device side.
+        # this is due to complex routing
+        self.device_channel_indices = None
+        
+        # the Probe can belong to a ProbeBunch
+        self._probe_bunch = None
     
     def get_electrode_count(self):
         """
@@ -84,8 +91,6 @@ class Probe:
         plane_axes = np.array(plane_axes)
         self.electrode_plane_axes = plane_axes
 
-            
-        
         # shape
         if isinstance(shapes, str):
             shapes = [shapes] * n
@@ -129,25 +134,42 @@ class Probe:
         else:
             raise ValueError()
         self.set_shape_vertices(vertices)
+    
+    def set_device_channel_indices(self, channel_indices):
+        """
+        Set the channel indices on device side.
         
+        If some channel are not connected or not recorded then channel can be "-1"
+        """
+        if channel_indices.size != self.get_electrode_count():
+            valueError('channel_indices have not the same size as electrode')
+        self.device_channel_indices = channel_indices
+        if self._probe_bunch is not None:
+            self._probe_bunch.check_global_device_wiring()
     
     def copy(self):
         """
         Copy to another Probe instance.
+        
+        Note: device_channel_indices is not copied.
         """
         other = Probe()
         other.set_electrodes(
                     positions=self.electrode_positions.copy(),
+                    plane_axes=self.electrode_plane_axes.copy(),
                     shapes=self.electrode_shapes.copy(),
                     shape_params=self.electrode_shape_params.copy())
         if self.probe_shape_vertices is not None:
             other.set_shape_vertices(self.probe_shape_vertices.copy())
+        # channel_indices are not copied
         return other
 
     def to_3d(self, plane='xz'):
         """
         Transform 2d probe to 3d probe.
-
+        
+        Note: device_channel_indices is not copied.
+        
         Parameters
         ----------
         plane: 'xy', 'yz' ', xz'
@@ -171,6 +193,9 @@ class Probe:
         if self.probe_shape_vertices is not None:
             vertices3d = _2d_to_3d(self.probe_shape_vertices, plane)
             probe3d.set_shape_vertices(vertices3d)
+        
+        if self.device_channel_indices is not None:
+            probe3d.device_channel_indices = self.device_channel_indices
         
         return probe3d
     
