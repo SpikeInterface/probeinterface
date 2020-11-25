@@ -15,7 +15,18 @@ class ProbeBunch:
         """
         
         """
+        if len(self.probes) > 0:
+            self._check_compatible(probe)
+            
         self.probes.append(probe)
+    
+    def _check_compatible(self, probe):
+        if probe.ndim != self.probes[-1].ndim:
+            raise ValueError("ndim are not compatible")
+    
+    @property
+    def ndim(self):
+        return self.probes[0].ndim
     
     def get_channel_count(self):
         """

@@ -26,11 +26,13 @@ class Probe:
         si_units: 'um', 'mm', 'm'
         
         """
+        assert ndim in (2, 3)
         self.ndim = ndim
         self.si_units = si_units
         
         # electrode position and shape : handle with arrays
         self.electrode_positions = None
+        self.electrode_plane_axes = None
         self.electrode_shapes = None
         self.electrode_shape_params = None
         
@@ -44,12 +46,17 @@ class Probe:
         assert self.electrode_positions is not None
         return len(self.electrode_positions)
     
-    def set_electrodes(self, positions=None, shapes='circle', shape_params={'radius': 10}):
+    def set_electrodes(self, positions=None, plane_axes=None, shapes='circle',
+                shape_params={'radius': 10}):
         """
         Parameters
         ----------
-        positions : array of posisitions
+        positions :array (num_electrodes, ndim)
+            Posisitions of electrodes.
         
+        plane_axes:  (num_electrodes, 2, ndim)
+            This defines the electrod plane (2d or 3d)
+            
         shapes: scalar or array in 'circle'/'square'/'rect'
             Shape for each electrodes.
         
@@ -64,6 +71,20 @@ class Probe:
         
         self.electrode_positions = positions
         n = positions.shape[0]
+        
+        # This defines the electrod plane (2d or 3d) where the electrode lies.
+        # For 2D we make auto
+        if plane_axes is None:
+            if self.ndim ==3:
+                raise ValueError('you need to give plane_axes')
+            else:
+                plane_axes = np.zeros((n, 2, self.ndim))
+                plane_axes[:, 0, 0] = 1
+                plane_axes[:, 1, 1] = 1
+        plane_axes = np.array(plane_axes)
+        self.electrode_plane_axes = plane_axes
+
+            
         
         # shape
         if isinstance(shapes, str):
@@ -86,7 +107,7 @@ class Probe:
             raise ValueErrorr('shape_vertices.shape[1] and ndim do not match!')
         self.probe_shape_vertices = shape_vertices
     
-    def create_auto_shape(self, type='rect', margin=20):
+    def create_auto_shape(self, probe_type='rect', margin=20):
         if self.ndim !=2:
             raise NotImplementedError
         
@@ -100,9 +121,9 @@ class Probe:
         y0 -= margin
         y1 += margin
         
-        if type == 'rect':
+        if probe_type == 'rect':
             vertices = [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
-        elif type == 'tip':
+        elif probe_type == 'tip':
             tip = ((x0+x1)*0.5, y0 - margin*4)
             vertices = [(x0, y0), tip, (x1, y0), (x1, y1), (x0, y1)]
         else:
@@ -123,7 +144,7 @@ class Probe:
             other.set_shape_vertices(self.probe_shape_vertices.copy())
         return other
 
-    def to_3d(self, plane='xy'):
+    def to_3d(self, plane='xz'):
         """
         Transform 2d probe to 3d probe.
 
@@ -133,27 +154,25 @@ class Probe:
         """
         assert self.ndim ==2
         
-        pos = self.electrode_positions
-        positions = np.zeros((pos.shape[0], 3))
+        probe3d = Probe(ndim=3, si_units=self.si_units)
         
-        if plane == 'xy':
-            positions[:, 0] = pos[:, 0]
-            positions[:, 1] = pos[:, 1]
-        elif plane == 'yz':
-            positions[:, 1] = pos[:, 0]
-            positions[:, 2] = pos[:, 1]
-        elif plane == 'xz':
-            positions[:, 0] = pos[:, 0]
-            positions[:, 2] = pos[:, 1]
-        else:
-            raise ValueError('Bad plane')
-        
-        # probe3d = Probe(ndim=3, si_units=self.si_units)
+        # electrodes
+        positions = _2d_to_3d(self.electrode_positions, plane)
+        plane0 = _2d_to_3d(self.electrode_plane_axes[:, 0, :], plane)
+        plane1 = _2d_to_3d(self.electrode_plane_axes[:, 1, :], plane)
+        plane_axes = np.concatenate([plane0[:, np.newaxis, :], plane1[:, np.newaxis, :]], axis=1)
         probe3d.set_electrodes(
                     positions=positions,
+                    plane_axes=plane_axes,
                     shapes=self.electrode_shapes.copy(),
                     shape_params=self.electrode_shape_params.copy())
-        # return probe3d
+
+        # shape
+        if self.probe_shape_vertices is not None:
+            vertices3d = _2d_to_3d(self.probe_shape_vertices, plane)
+            probe3d.set_shape_vertices(vertices3d)
+        
+        return probe3d
     
     def rotate(self, axis, theta, origin):
         """
@@ -167,7 +186,12 @@ class Probe:
         
         origin
         """
-        raise NotImplementedError
+        if self.ndim == 2:
+            raise NotImplementedError
+        elif self.ndim == 3:
+            raise NotImplementedError
+        
+        
     
     def move(self, direction):
         """
@@ -185,6 +209,25 @@ class Probe:
         if self.probe_shape_vertices is not None:
             self.probe_shape_vertices += direction
         
+
+
+def _2d_to_3d(data2d, plane):
+    data3d = np.zeros((data2d.shape[0], 3), dtype=data2d.dtype)
+    if plane == 'xy':
+        data3d[:, 0] = data2d[:, 0]
+        data3d[:, 1] = data2d[:, 1]
+    elif plane == 'yz':
+        data3d[:, 1] = data2d[:, 0]
+        data3d[:, 2] = data2d[:, 1]
+    elif plane == 'xz':
+        data3d[:, 0] = data2d[:, 0]
+        data3d[:, 2] = data2d[:, 1]
+    else:
+        raise ValueError('Bad plane')
+    return data3d
+    
+    
+    
     
     
 
