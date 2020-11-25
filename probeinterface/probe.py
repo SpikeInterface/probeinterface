@@ -62,7 +62,7 @@ class Probe:
             Posisitions of electrodes.
         
         plane_axes:  (num_electrodes, 2, ndim)
-            This defines the electrod plane (2d or 3d)
+            This defines the axes of the electrode plane (2d or 3d)
             
         shapes: scalar or array in 'circle'/'square'/'rect'
             Shape for each electrodes.
@@ -112,7 +112,7 @@ class Probe:
             raise ValueErrorr('shape_vertices.shape[1] and ndim do not match!')
         self.probe_shape_vertices = shape_vertices
     
-    def create_auto_shape(self, probe_type='rect', margin=20):
+    def create_auto_shape(self, probe_type='tip', margin=20):
         if self.ndim !=2:
             raise NotImplementedError
         
@@ -199,17 +199,17 @@ class Probe:
         
         return probe3d
     
-    def rotate(self, axis, theta, origin):
+    def rotate(self, theta, origin, axis=None):
         """
         Rorate the probe the specified axis
 
         Parameters
         ----------
-        axis
-        
         theta
         
         origin
+        
+        axis: None for 2d vector for 3d
         """
         if self.ndim == 2:
             raise NotImplementedError

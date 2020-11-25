@@ -88,5 +88,36 @@ def write_prb(file, probebunch):
     raise NotImplementedError
     
 
+
+def generate_fake_probe():
+    """
+    Generate a 3 columns 32 channels electrode
+    """
+    n = 32
+    positions = np.zeros((n, 2))
+    for i in range(n-2):
+        x = i // 10
+        y = i % 10
+        positions[i] = x, y
+    positions *= 25
+    positions[10:20, 1] -= 12.5
+    positions[30] = [25, 237.5]
+    positions[31] = [25, 262.5]
+
+    probe = Probe(ndim=2, si_units='um')
+    probe.set_electrodes(positions=positions, shapes='circle', shape_params={'radius': 6})
+    probe.create_auto_shape(probe_type='tip', margin=25)
+
+    return probe
     
+def generate_fake_probe_bunch():
+    probe0 = generate_fake_probe()
+    probe1 = probe0.copy()
+    probe1.move([150, -50])
+
+    # probe bunch
+    probebunch = ProbeBunch()
+    probebunch.add_probe(probe0)
+    probebunch.add_probe(probe1)
     
+    return probebunch
