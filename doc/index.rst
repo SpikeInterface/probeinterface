@@ -19,18 +19,24 @@ The probeinterface package also provide:
   
 
 
-  
 
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+.. include:: examples/index.rst
 
 
+..
+   
+    .. toctree::
+       :caption: Contents:
+       :maxdepth: 2
+   
+       examples/index.rst
 
-Indices and tables
-==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+..
+    Indices and tables
+    ==================
+
+    * :ref:`genindex`
+    * :ref:`modindex`
+    * :ref:`search`

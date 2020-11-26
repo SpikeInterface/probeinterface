@@ -5,3 +5,4 @@ tests/*.h5
 *.pyc
 dist/*
 doc/_*
+doc/examples/*

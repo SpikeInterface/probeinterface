@@ -31,6 +31,8 @@ exec(open("../probeinterface/version.py").read())
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx_gallery.gen_gallery',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -53,3 +55,26 @@ html_theme = 'alabaster'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+
+
+
+
+from sphinx_gallery.sorting import ExplicitOrder
+from sphinx_gallery.sorting import FileNameSortKey
+
+# for sphinx gallery plugin
+sphinx_gallery_conf = {
+    'examples_dirs': ['../examples', ],   # path to your example scripts
+    'gallery_dirs': ['examples'],  # path where to save gallery generated examples
+    'subsection_order': ExplicitOrder([
+                                        '../examples/modules/extractors/',
+                                       '../examples/modules/toolkit',
+                                       '../examples/modules/sorters',
+                                       '../examples/modules/comparison',
+                                       '../examples/modules/widgets',
+                                       ]),
+    'within_subsection_order': FileNameSortKey,
+    'ignore_pattern': '/generate_',
+    'filename_pattern' : 'ex_',
+}

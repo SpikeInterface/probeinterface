@@ -139,6 +139,10 @@ def plot_probe_3d(probe, ax=None, electrode_colors=None):
     ax.set_xlim(min_, max_)
     ax.set_ylim(min_, max_)
     ax.set_zlim(min_, max_)
+    
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
 
 
 def plot_probe(probe, ax=None, **kargs):
