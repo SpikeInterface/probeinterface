@@ -24,13 +24,12 @@ The probeinterface package also provide:
 .. include:: examples/index.rst
 
 
-..
    
-    .. toctree::
-       :caption: Contents:
-       :maxdepth: 2
-   
-       examples/index.rst
+.. toctree::
+   :caption: Contents:
+   :maxdepth: 2
+
+   api
 
 
 ..
