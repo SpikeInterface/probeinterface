@@ -1,4 +1,7 @@
-*.pyc
 probeinterface.egg-info/*
+tests/*.prb
+tests/*.h5
+
+*.pyc
 dist/*
 doc/_*
