@@ -33,12 +33,12 @@ def test_plot_probe_bunch():
     probebunch_3d = ProbeBunch()
     for probe in probebunch.probes:
         probebunch_3d.add_probe(probe.to_3d())
-    print(probebunch_3d.ndim)
+    probebunch_3d.probes[-1].move([0,150, -50])
     plot_probe_bunch(probebunch_3d, separate_axes=False)
     
 
 
 if __name__ == '__main__':
-    test_plot_probe()
+    #~ test_plot_probe()
     test_plot_probe_bunch()
     plt.show()

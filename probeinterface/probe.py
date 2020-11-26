@@ -27,8 +27,8 @@ class Probe:
         
         """
         assert ndim in (2, 3)
-        self.ndim = ndim
-        self.si_units = si_units
+        self.ndim = int(ndim)
+        self.si_units = str(si_units)
         
         # electrode position and shape : handle with arrays
         self.electrode_positions = None
@@ -233,7 +233,42 @@ class Probe:
         
         if self.probe_shape_vertices is not None:
             self.probe_shape_vertices += direction
+
+    _dump_attr_names = ['ndim', 'si_units', 'electrode_positions', 'electrode_plane_axes', 
+                    'electrode_shapes', 'electrode_shape_params',
+                    'probe_shape_vertices', 'device_channel_indices']
+    
+    def to_dict(self):
+        """
+        Create a dict of all necessary attributes.
+        Usefull for dumping or saving to hdf5.
+        """
+        d = {}
+        for k in self._dump_attr_names:
+            v = getattr(self, k, None)
+            if v is not None:
+                d[k] = v
+        return d
+    
+    @staticmethod
+    def from_dict(d):
+        probe = Probe(ndim=d['ndim'], si_units=d['si_units'])
         
+        probe.set_electrodes(
+                    positions=d['electrode_positions'],
+                    plane_axes=d['electrode_plane_axes'],
+                    shapes=d['electrode_shapes'],
+                    shape_params=d['electrode_shape_params'])
+        
+        v = d.get('probe_shape_vertices', None)
+        if v is not None:
+            probe.set_shape_vertices(v)
+
+        v = d.get('device_channel_indices', None)
+        if v is not None:
+            probe.set_device_channel_indices(v)
+        
+        return probe
 
 
 def _2d_to_3d(data2d, plane):

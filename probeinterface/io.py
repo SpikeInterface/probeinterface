@@ -1,11 +1,23 @@
 """
 Read/write some formats:
-  * PRB
-  * 
+  * probeinterface h5
+  * PRB (.prb)
+  * CVS (.csv)
+  * mearec (.h5)
+  * spikeglx (.meta)
+  * ironclust/jrclust (.mat)
+
+Also include some generator:
+  * fake probe for testing.
+  * generate tetrode, linear probe, multi columns probe, ...
+
+
 
 """
 import csv
 from pathlib import Path
+import re
+from pprint import pformat, pprint
 
 import numpy as np
 
@@ -13,31 +25,83 @@ from .probe import Probe
 from .probebunch import ProbeBunch
 
 
-def read_python(path):
-    '''Parses python scripts in a dictionary
+def read_probeinterface(file):
+    """
+    Read probeinterface own format hdf5 based.
+    
+    Implementation is naive but ot works.
+    """
+    import h5py
+    
+    probebunch = ProbeBunch()
+    
+    file = Path(file)
+    with h5py.File(file, 'r') as f:
+        for key in f.keys():
+            if key.startswith('probe_'):
+                probe_ind = int(key.split('_')[1])
+                probe_dict = {}
+                for k in Probe._dump_attr_names:
+                    path = f'/{key}/{k}'
+                    if not path in f:
+                        continue
+                    v = f[path]
+                    if k == 'electrode_shapes':
+                        v2 = np.array(v).astype('U')
+                    elif k == 'electrode_shape_params':
+                        l = []
+                        for e in v:
+                            d = {}
+                            exec(e.decode(), None, d)
+                            l.append(d['value'])
+                        v2 = np.array(l, dtype='O')
+                    elif k == 'si_units':
+                        v2 = str(v[0])
+                    elif k == 'ndim':
+                        v2= int(v[0])
+                    else:
+                        v2 = np.array(v)
+                    probe_dict[k] = v2
+                
+                #~ pprint(probe_dict)
+                probe = Probe.from_dict(probe_dict)
+                probebunch.add_probe(probe)
+    return probebunch
 
-    Parameters
-    ----------
-    path: str or Path
-        Path to file to parse
 
-    Returns
-    -------
-    metadata:
-        dictionary containing parsed file
-
-    '''
-    from six import exec_
-    import re
-    path = Path(path).absolute()
-    assert path.is_file()
-    with path.open('r') as f:
-        contents = f.read()
-    contents = re.sub(r'range\(([\d,]*)\)',r'list(range(\1))',contents)
-    metadata = {}
-    exec_(contents, {}, metadata)
-    metadata = {k.lower(): v for (k, v) in metadata.items()}
-    return metadata
+def write_probeinterface(file, probe_or_probebunch):
+    """
+    Write to probeinterface own format hdf5 based.
+    
+    Implementation is naive but ot works.
+    """
+    import h5py
+    if isinstance(probe_or_probebunch, Probe):
+        probebunch = ProbeBunch()
+        probebunch.add_probe(probe)
+    elif isinstance(probe_or_probebunch, ProbeBunch):
+        probebunch = probe_or_probebunch
+    else:
+        raise valueError('Bad boy')
+    
+    file = Path(file)
+    
+    with h5py.File(file, 'w') as f:
+        for probe_ind, probe in enumerate(probebunch.probes):
+            d = probe.to_dict()
+            for k, v in d.items():
+                if k == 'electrode_shapes':
+                    v2 =v.astype('S')
+                elif k == 'electrode_shape_params':
+                    v2 = np.array(['value='+pformat(e) for e in v], dtype='S')
+                elif k == 'si_units':
+                    v2 = np.array([v.encode('utf8')])
+                elif k == 'ndim':
+                    v2 = np.array([v])
+                else:
+                    v2 = v
+                path = f'/probe_{probe_ind}/{k}'
+                f.create_dataset(path, data=v2)
 
 
 def read_prb(file):
@@ -51,7 +115,16 @@ def read_prb(file):
     Only the channel index on device is given.
     
     """
-    prb = read_python(file)
+
+    file = Path(file).absolute()
+    assert file.is_file()
+    with file.open('r') as f:
+        contents = f.read()
+    contents = re.sub(r'range\(([\d,]*)\)',r'list(range(\1))',contents)
+    prb = {}
+    exec(contents, None, prb)
+    prb = {k.lower(): v for (k, v) in prb.items()}
+    
     if 'channel_groups' not in prb:
         raise ValueError('This file is not a standard PRB file')
     
@@ -89,7 +162,7 @@ def write_prb(file, probebunch):
     
 
 
-def generate_fake_probe():
+def generate_fake_probe(elec_shapes='circle'):
     """
     Generate a 3 columns 32 channels electrode
     """
@@ -105,14 +178,24 @@ def generate_fake_probe():
     positions[31] = [25, 262.5]
 
     probe = Probe(ndim=2, si_units='um')
-    probe.set_electrodes(positions=positions, shapes='circle', shape_params={'radius': 6})
+    
+    if elec_shapes == 'circle':
+        probe.set_electrodes(positions=positions, shapes='circle', shape_params={'radius': 6})
+    elif elec_shapes == 'square':
+        probe.set_electrodes(positions=positions, shapes='square', shape_params={'width': 7})
+    elif elec_shapes == 'rect':
+        probe.set_electrodes(positions=positions, shapes='rect', shape_params={'width': 6, 'height': 4.5})
+    
     probe.create_auto_shape(probe_type='tip', margin=25)
 
     return probe
     
 def generate_fake_probe_bunch():
+    """
+    Generate a ProbeBunch with 2 probe.
+    """
     probe0 = generate_fake_probe()
-    probe1 = probe0.copy()
+    probe1 = generate_fake_probe(elec_shapes='rect')
     probe1.move([150, -50])
 
     # probe bunch
@@ -121,3 +204,17 @@ def generate_fake_probe_bunch():
     probebunch.add_probe(probe1)
     
     return probebunch
+
+
+def generate_tetrode():
+    raise NotImplementedError
+
+def generate_linear_probe():
+    raise NotImplementedError
+
+def generate_multi_columns_probe():
+    raise NotImplementedError
+
+
+
+
