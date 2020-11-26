@@ -3,6 +3,9 @@
 Python package to handle probe layout, geometry and wiring to device.
 
 
+Documentation : https://probeinterface.readthedocs.io/
+
+
 ## Goal
 
 Make a ligthweigted package usefull that handle:
