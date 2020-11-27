@@ -19,9 +19,6 @@ The probeinterface package also provide:
   
 
 
-
-
-
 .. include:: examples/index.rst
 
    
@@ -33,13 +30,3 @@ The probeinterface package also provide:
    api
    examples/index.rst
 
-
-
-
-..
-    Indices and tables
-    ==================
-
-    * :ref:`genindex`
-    * :ref:`modindex`
-    * :ref:`search`

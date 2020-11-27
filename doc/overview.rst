@@ -10,3 +10,15 @@ Probe
 
 ProbeBunch
 
+
+
+Aknowledgement
+---------------------------
+
+This work is based on the package MEAutility made by Alessio buccino.
+https://github.com/alejoe91/MEAutility
+
+The MEAutility is focusing on generating current over electrodes for MEArec.
+
+Here, in probeinterface the focus is to combinate several Probe to handle complex wiring
+for experimental description.

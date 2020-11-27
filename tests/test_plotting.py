@@ -39,6 +39,6 @@ def test_plot_probe_bunch():
 
 
 if __name__ == '__main__':
-    #~ test_plot_probe()
-    test_plot_probe_bunch()
+    test_plot_probe()
+    #~ test_plot_probe_bunch()
     plt.show()
