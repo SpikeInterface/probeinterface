@@ -1,6 +1,8 @@
-from probeinterface import read_prb, write_prb
-from probeinterface import generate_fake_probe, generate_fake_probe_bunch
 from probeinterface import write_probeinterface, read_probeinterface
+from probeinterface import read_prb, write_prb
+from probeinterface import (generate_fake_probe, generate_fake_probe_bunch,
+        generate_tetrode, generate_linear_probe, generate_multi_columns_probe)
+
 
 from pathlib import Path
 import numpy as np
@@ -72,22 +74,17 @@ def test_prb():
     assert len(two_tetrode.probes) == 2
     assert two_tetrode.probes[0].get_electrode_count() == 4
     
-    write_prb('two_tetrodes.prb', two_tetrode)
+    #~ write_prb('two_tetrodes.prb', two_tetrode)
     
     
     
-    from probeinterface.plotting import plot_probe_bunch
-    import matplotlib.pyplot as plt
-    plot_probe_bunch(probebunch, with_channel_index=True, separate_axes=True)
-    plt.show()
+    #~ from probeinterface.plotting import plot_probe_bunch
+    #~ import matplotlib.pyplot as plt
+    #~ plot_probe_bunch(probebunch, with_channel_index=True, same_axe=False)
+    #~ plt.show()
     
-def test_generate():
-    probe = generate_fake_probe()
-    probebunch = generate_fake_probe_bunch()
-
 
 
 if __name__ == '__main__':
     test_probeinterface_format()
-    #~ test_prb()
-    #~ test_generate()
+    test_prb()

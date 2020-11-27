@@ -26,15 +26,15 @@ def test_plot_probe():
 def test_plot_probe_bunch():
     probebunch  = generate_fake_probe_bunch()
 
-    plot_probe_bunch(probebunch, separate_axes=False, with_channel_index=True)
-    plot_probe_bunch(probebunch, separate_axes=True)
+    plot_probe_bunch(probebunch, same_axe=True, with_channel_index=True)
+    plot_probe_bunch(probebunch, same_axe=False)
     
     # 3d
     probebunch_3d = ProbeBunch()
     for probe in probebunch.probes:
         probebunch_3d.add_probe(probe.to_3d())
     probebunch_3d.probes[-1].move([0,150, -50])
-    plot_probe_bunch(probebunch_3d, separate_axes=False)
+    plot_probe_bunch(probebunch_3d, same_axe=True)
     
 
 

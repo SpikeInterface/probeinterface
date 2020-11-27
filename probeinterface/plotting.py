@@ -9,7 +9,9 @@ Depending Probe.ndim the plotting is done in 2d or 3d
 import numpy as np
 
 
-def plot_probe_2d(probe, ax=None, electrode_colors=None, with_channel_index=False):
+def plot_probe_2d(probe, ax=None, electrode_colors=None, with_channel_index=False,
+                    probe_shape_kwargs={ 'facecolor':'green', 'edgecolor':'k', 'lw':0.5, 'alpha':0.3}
+                    ):
     import matplotlib.pyplot as plt
     from matplotlib.patches import Polygon, Circle, Rectangle
     
@@ -54,7 +56,7 @@ def plot_probe_2d(probe, ax=None, electrode_colors=None, with_channel_index=Fals
     # probe shape
     vertices = probe.probe_shape_vertices
     if vertices is not None:
-        poly = Polygon(vertices, facecolor='green', edgecolor='k', lw=0.5, alpha=0.3)
+        poly = Polygon(vertices,**probe_shape_kwargs)
         ax.add_patch(poly)
     
     if with_channel_index:
@@ -152,25 +154,25 @@ def plot_probe(probe, ax=None, **kargs):
         plot_probe_3d(probe, ax=ax, **kargs)
 
 
-def plot_probe_bunch(probebunch, separate_axes=False, **kargs):
+def plot_probe_bunch(probebunch, same_axe=True, **kargs):
     import matplotlib.pyplot as plt
     n = len(probebunch.probes)
     
-    if separate_axes:
-        if probebunch.ndim == 2:
-            fig, axs = plt.subplots(ncols=n, nrows=1)
-            if n==1:
-                axs = [axs]
-        else:
-            raise NotImplementedError
-    else:
+    if same_axe:
         if probebunch.ndim == 2:
             fig, ax = plt.subplots()
         else:
             fig = plt.figure()
             ax = fig.add_subplot(1, 1, 1, projection='3d')
         axs = [ax] * n
-    
+    else:
+        if probebunch.ndim == 2:
+            fig, axs = plt.subplots(ncols=n, nrows=1)
+            if n==1:
+                axs = [axs]
+        else:
+            raise NotImplementedError
+
     for i, probe in enumerate(probebunch.probes):
         plot_probe(probe, ax=axs[i], **kargs)
 

@@ -7,6 +7,11 @@ class ProbeBunch:
     
     Optionaly handle the geometry in between probes.
     
+    ProbeBunch can have purpose:
+    
+       * deal with several probe for the same recording
+       * deal with several shank of the same physical probe but we want to split the sorting by shank
+    
     """
     def __init__(self):
         self.probes = []
@@ -66,6 +71,27 @@ class ProbeBunch:
             ind += n
         
         return channels
+
+    def set_global_device_channel_indices(self, channels):
+        """
+        Set global indices for all probes
+        """
+        channels = np.asarray(channels)
+        if channels.size != self.get_channel_count():
+            raise ValurError('Wrong channels size')
+        
+        # first reset previsous indices
+        for i, probe in enumerate(self.probes):
+            n = probe.get_electrode_count()
+            probe.set_device_channel_indices([-1] * n)
+        
+        # then set new indices
+        ind = 0
+        for i, probe in enumerate(self.probes):
+            n = probe.get_electrode_count()
+            probe.set_device_channel_indices(channels[ind:ind+n])
+            ind += n 
+        
     
     def check_global_device_wiring(self):
         chans = self.get_global_device_channel_indices()
