@@ -60,7 +60,7 @@ plot_probe(other_3d)
 # Probe can be moved and rotated
 
 probe_3d.move([0, 30, -50])
-#~ probe_3d.rotate()
+probe_3d.rotate(theta=35, center=[0,0, 0], axis=[0,1,1])
 
 plot_probe(probe_3d)
 

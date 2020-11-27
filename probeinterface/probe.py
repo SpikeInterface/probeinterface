@@ -114,7 +114,7 @@ class Probe:
     
     def create_auto_shape(self, probe_type='tip', margin=20):
         if self.ndim !=2:
-            raise NotImplementedError
+            raise ValueErrror('Auto shape is supported only for 2d')
         
         x0 = np.min(self.electrode_positions[:, 0])
         x1 = np.max(self.electrode_positions[:, 0])
@@ -199,41 +199,107 @@ class Probe:
             probe3d.device_channel_indices = self.device_channel_indices
         
         return probe3d
+
+    def get_electrodes_vertices(self):
+        """
+        return a list of electrodes vertices.
+        """
+        vertices = []
+        for i in range(self.get_electrode_count()):
+            shape = self.electrode_shapes[i]
+            shape_param = self.electrode_shape_params[i]
+            plane_axe = self.electrode_plane_axes[i]
+            pos = self.electrode_positions[i]
+            
+            if shape == 'circle':
+                r = shape_param['radius']
+                theta = np.linspace(0, 2 * np.pi, 360)
+                theta = np.tile(theta[:, np.newaxis], [1, self.ndim])
+                one_vertice = pos + r * np.cos(theta) * plane_axe[0] + \
+                                    r * np.sin(theta) * plane_axe[1]
+            elif shape == 'square':
+                w = shape_param['width']
+                one_vertice = [
+                    pos - w / 2 * plane_axe[0] - w / 2 * plane_axe[1],
+                    pos - w / 2 * plane_axe[0] + w / 2 * plane_axe[1],
+                    pos + w / 2 * plane_axe[0] + w / 2 * plane_axe[1],
+                    pos + w / 2 * plane_axe[0] - w / 2 * plane_axe[1],
+                ]
+            elif shape == 'rect':
+                w = shape_param['width']
+                h = shape_param['height']
+                one_vertice = [
+                    pos - w / 2 * plane_axe[0] - h / 2 * plane_axe[1],
+                    pos - w / 2 * plane_axe[0] + h / 2 * plane_axe[1],
+                    pos + w / 2 * plane_axe[0] + h / 2 * plane_axe[1],
+                    pos + w / 2 * plane_axe[0] - h / 2 * plane_axe[1],
+                ]
+            else:
+                raise ValueError            
+            vertices.append(one_vertice)
+        return vertices
+
     
-    def rotate(self, theta, origin, axis=None):
+    def rotate(self, theta, center=None, axis=None):
         """
         Rorate the probe the specified axis
 
         Parameters
         ----------
-        theta
+        theta: float
+            In degree, anticlockwise.
         
-        origin
+        center: center of rotation
+            If None the center of probe is take
         
         axis: None for 2d vector for 3d
         """
+        if center is None:
+            center = np.mean(self.electrode_positions, axis=0)
+        
+        center = np.asarray(center)
+        assert center.size == self.ndim
+        center = center[None, :]
+        
+        theta = np.deg2rad(theta)
+        
         if self.ndim == 2:
-            raise NotImplementedError
+            if axis is not None:
+                raise valueError('axis must be None for 2d')
+            R = _rotation_matrix_2d(theta)
         elif self.ndim == 3:
-            raise NotImplementedError
+            R = _rotation_matrix_3d(axis, theta).T
+        
+        new_positions = (self.electrode_positions - center) @ R + center
         
         
+        new_plane_axes = np.zeros_like(self.electrode_plane_axes)
+        for i in range(2):
+            new_plane_axes[:, i, :] = (self.electrode_plane_axes[:, i, :] - center + self.electrode_positions) @ R +center - new_positions
+            
+        
+        self.electrode_positions = new_positions
+        self.electrode_plane_axes = new_plane_axes
+
+        if self.probe_shape_vertices is not None:
+            new_vertices = (self.probe_shape_vertices - center) @ R + center
+            self.probe_shape_vertices = new_vertices
     
-    def move(self, direction):
+    def move(self, translation_vetor):
         """
         Move the probe toward a direction.
         
         Parameters
         ----------
-        direction: array shape (2, ) or (3, )
+        translation_vetor: array shape (2, ) or (3, )
         """
-        direction = np.asarray(direction)
-        assert direction.shape[0] == self.ndim
+        translation_vetor = np.asarray(translation_vetor)
+        assert translation_vetor.shape[0] == self.ndim
         
-        self.electrode_positions += direction
+        self.electrode_positions += translation_vetor
         
         if self.probe_shape_vertices is not None:
-            self.probe_shape_vertices += direction
+            self.probe_shape_vertices += translation_vetor
 
     _dump_attr_names = ['ndim', 'si_units', 'electrode_positions', 'electrode_plane_axes', 
                     'electrode_shapes', 'electrode_shape_params',
@@ -287,9 +353,54 @@ def _2d_to_3d(data2d, plane):
         raise ValueError('Bad plane')
     return data3d
     
+
+
+def _rotation_matrix_2d(theta):
+    """
+    Returns 2D rotation matrix
+
+    Parameters
+    ----------
+    theta: float
+        Angle in radians for rotation anti-clockwise
+
+    Returns
+    -------
+    R: np.array
+        2D rotation matrix
+    """
+    R = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+    return R
+
+def _rotation_matrix_3d(axis, theta):
+    '''
+    Returns 3D rotation matrix
     
-    
-    
-    
+    Copy/paste from MEAutility
+
+    Parameters
+    ----------
+    axis: np.array or list
+        3D axis of rotation
+    theta: float
+        Angle in radians for rotation anti-clockwise
+
+    Returns
+    -------
+    R: np.array
+        3D rotation matrix
+    '''
+    axis = np.asarray(axis)
+    theta = np.asarray(theta)
+    axis = axis / np.linalg.norm(axis)
+    a = np.cos(theta / 2.0)
+    b, c, d = -axis * np.sin(theta / 2.0)
+    aa, bb, cc, dd = a * a, b * b, c * c, d * d
+    bc, ad, ac, ab, bd, cd = b * c, a * d, a * c, a * b, b * d, c * d
+    R = np.array([[aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)],
+                     [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
+                     [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]])
+    return R
+
 
 
