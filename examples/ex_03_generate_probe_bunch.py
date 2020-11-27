@@ -40,12 +40,12 @@ print('probebunch.get_channel_count()', probebunch.get_channel_count())
 ##############################################################################
 # Plot all probe in the same axes
 
-plot_probe_bunch(probebunch, separate_axes=False)
+plot_probe_bunch(probebunch, same_axe=True)
 
 ##############################################################################
 # Plot all probe in seperated axes
 
-plot_probe_bunch(probebunch, separate_axes=True,  with_channel_index=True)
+plot_probe_bunch(probebunch, same_axe=False,  with_channel_index=True)
 
 plt.show()
 

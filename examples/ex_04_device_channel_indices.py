@@ -80,7 +80,7 @@ print(probebunch.get_global_device_channel_indices())
 ##############################################################################
 # Can be also ploted
 
-plot_probe_bunch(probebunch, with_channel_index=True, separate_axes=False)
+plot_probe_bunch(probebunch, with_channel_index=True, same_axe=True)
 
 
 plt.show()

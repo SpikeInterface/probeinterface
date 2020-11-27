@@ -1,5 +1,5 @@
-Welcome to probeinterface's documentation!
-==========================================
+Doc probeinterface
+===============
 
 Python package to handle probe layout, geometry and wiring to device. 
 
@@ -21,15 +21,19 @@ The probeinterface package also provide:
 
 
 
-.. include:: examples/index.rst
 
+.. include:: examples/index.rst
 
    
 .. toctree::
    :caption: Contents:
    :maxdepth: 2
-
+   
+   overview
    api
+   examples/index.rst
+
+
 
 
 ..

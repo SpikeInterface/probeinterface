@@ -141,6 +141,7 @@ class Probe:
         
         If some channel are not connected or not recorded then channel can be "-1"
         """
+        channel_indices = np.asarray(channel_indices)
         if channel_indices.size != self.get_electrode_count():
             valueError('channel_indices have not the same size as electrode')
         self.device_channel_indices = channel_indices

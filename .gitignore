@@ -1,6 +1,9 @@
 probeinterface.egg-info/*
 tests/*.prb
 tests/*.h5
+examples/*.prb
+examples/*.h5
+
 
 *.pyc
 dist/*
