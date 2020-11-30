@@ -239,6 +239,21 @@ class Probe:
             vertices.append(one_vertice)
         return vertices
 
+    def move(self, translation_vetor):
+        """
+        Move the probe toward a direction.
+        
+        Parameters
+        ----------
+        translation_vetor: array shape (2, ) or (3, )
+        """
+        translation_vetor = np.asarray(translation_vetor)
+        assert translation_vetor.shape[0] == self.ndim
+        
+        self.electrode_positions += translation_vetor
+        
+        if self.probe_shape_vertices is not None:
+            self.probe_shape_vertices += translation_vetor
     
     def rotate(self, theta, center=None, axis=None):
         """
@@ -265,7 +280,7 @@ class Probe:
         
         if self.ndim == 2:
             if axis is not None:
-                raise valueError('axis must be None for 2d')
+                raise ValueError('axis must be None for 2d')
             R = _rotation_matrix_2d(theta)
         elif self.ndim == 3:
             R = _rotation_matrix_3d(axis, theta).T
@@ -284,22 +299,32 @@ class Probe:
         if self.probe_shape_vertices is not None:
             new_vertices = (self.probe_shape_vertices - center) @ R + center
             self.probe_shape_vertices = new_vertices
-    
-    def move(self, translation_vetor):
+        
+    def rotate_electrodes(self, thetas, center=None, axis=None):
         """
-        Move the probe toward a direction.
+        Rotate each electrodes.
+        Internaly modify the electrode_plane_axes.
         
         Parameters
         ----------
-        translation_vetor: array shape (2, ) or (3, )
+        thetas: array of float
+            rotation angle in degree.
+            If scalar then it is applied to all electrodes.
         """
-        translation_vetor = np.asarray(translation_vetor)
-        assert translation_vetor.shape[0] == self.ndim
+        if self.ndim == 3:
+            raise ValueError('By electrode rotation is implemented only for 2d')
         
-        self.electrode_positions += translation_vetor
+        n = self.get_electrode_count()
         
-        if self.probe_shape_vertices is not None:
-            self.probe_shape_vertices += translation_vetor
+        if isinstance(thetas, (int, float)):
+            thetas = np.array([thetas] * n, dtype='float64')
+        
+        thetas = np.deg2rad(thetas)
+        
+        for e in range(n):
+            R = _rotation_matrix_2d(thetas[e])
+            for i in range(2):
+                self.electrode_plane_axes[e, i, :] = self.electrode_plane_axes[e, i, :] @ R
 
     _dump_attr_names = ['ndim', 'si_units', 'electrode_positions', 'electrode_plane_axes', 
                     'electrode_shapes', 'electrode_shape_params',
