@@ -20,9 +20,11 @@ So there is a need to handle correctly probe geometry and the underlying wiring.
 
 
 One example :
-The probe **neuronexus A1x32-Poly2** with the headstage **intan RHD32* using **omnetics 1315**
-and  connected on the **port B of open ephys board** while the **port A ** use ...
-This is a total headache for the user. Anyone having done it once totally known it.
+
+A probe **neuronexus A1x32-Poly2** with the headstage **intan RHD32** using **omnetics 1315**
+and  connected on the **port B of open ephys board**.
+This is a total headache for the user about channels.
+Anyone having done it once know it  totally.
 
 
 Scope
@@ -58,8 +60,7 @@ This common interface could be used by several project of spike sorting and/or e
   * spyking-circus team : handle probe with this package
   * kilosort team : handle probe with this package
   * tridesclous team : handle probe with this package
-  * ..
-
+  * ...
 
 
 Goal 2
@@ -68,8 +69,8 @@ Goal 2
 If this package is widely adopted, then I plan to implement a collections of widly use probe layout :
 
   * `neuronexus <https://neuronexus.com/support/mapping-and-wiring/probe-mapping/>`_
-  * 'imec <https://www.imec-int.com/en/expertise/lifesciences/neural-probes>`_
-  * 'cambridge neurotech <https://www.cambridgeneurotech.com/neural-probes>'_
+  * `imec <https://www.imec-int.com/en/expertise/lifesciences/neural-probes>`_
+  * `cambridge neurotech <https://www.cambridgeneurotech.com/neural-probes>'_
 
 
 Already existing  projects
@@ -79,20 +80,22 @@ prointerface is not the first tentative of doing this:
 
   * The JRclust team already start a collection of probe descrition here https://github.com/JaneliaSciComp/JRCLUST/tree/master/probes
   * The klusta team already start a collection of probe here https://github.com/kwikteam/probes
+  * The spyking circus team also did something similar https://github.com/spyking-circus/spyking-circus/tree/master/probes
   
-Both this project mainlly describe the electrode positions only.
+Both of theses projects describe almost only the electrode positions and there is a string amibiguity for users
+in between electrode index and channel index on device. Because if one probe is pluged in another port on the device
+then the wiring is wiring in theses projects.
   
-The probeinterface package try a deeper description with multi probe description, shape handling, 3d handling.
+Here, in probeinterface we package try a deeper description with multi probe description,
+shape handling, 3d, device indices, main axes, ...
   
 
 Aknowledgement
 ---------------------------
 
-This work is based on the package MEAutility made by Alessio buccino.
-https://github.com/alejoe91/MEAutility
+This work is based on the package `MEAutility <https://github.com/alejoe91/MEAutility>`_ made by Alessio buccino.
 
 The MEAutility is focusing on generating current over electrodes for MEArec.
 
 Here, in probeinterface the focus is to combinate several Probe to handle complex wiring
 for experimental description.
-
