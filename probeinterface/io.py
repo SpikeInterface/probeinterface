@@ -6,11 +6,7 @@ Read/write some formats:
   * mearec (.h5)
   * spikeglx (.meta)
   * ironclust/jrclust (.mat)
-
-Also include some generator:
-  * fake probe for testing.
-  * generate tetrode, linear probe, multi columns probe, ...
-
+  * NWB
 
 
 """
@@ -172,7 +168,6 @@ def write_prb(file, probebunch):
     with open(file, 'w') as f:
         f.write('channel_groups = {\n')
         
-        
         for probe_ind, probe in enumerate(probebunch.probes):
             f.write(f"    {probe_ind}:\n")
             f.write("        {\n")
@@ -193,10 +188,6 @@ def write_prb(file, probebunch):
         
         f.write("}\n")
 
-
-
-
-
 def read_cvs(file):
     """
     Return a 2 or 3 columns csv file with electrodes position
@@ -209,13 +200,6 @@ def write_cvs(file, probe):
     """
     raise NotImplementedError
 
-def read_mearec(file):
-    """
-    read probe position, and electrode shape from a mearec file
-    
-    Alesio : this is for you
-    """
-    raise NotImplementedError
     
 def read_spikeglx(file,):
     """
@@ -259,6 +243,14 @@ def read_spikeglx(file,):
     return probe
 
 
+
+def read_mearec(file):
+    """
+    read probe position, and electrode shape from a mearec file
+    
+    Alesio : this is for you
+    """
+    raise NotImplementedError
 
 
 def read_nwb(file):
