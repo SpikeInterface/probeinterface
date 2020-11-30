@@ -11,7 +11,11 @@ import numpy as np
 
 def plot_probe(probe, ax=None, electrode_colors=None, with_channel_index=False,
                     electrodes_kargs = {}, probe_shape_kwargs={}):
+    """
+    plot one probe.
+    switch 2d 3d depending the Probe.ndim
     
+    """
     import matplotlib.pyplot as plt
     if probe.ndim == 2:
         from matplotlib.collections import PolyCollection
@@ -92,6 +96,11 @@ def plot_probe(probe, ax=None, electrode_colors=None, with_channel_index=False,
 
 
 def plot_probe_bunch(probebunch, same_axe=True, **kargs):
+    """
+    Plot all prbe from a ProbeBunch
+    
+    Can be in the same axe or separated axes.
+    """
     import matplotlib.pyplot as plt
     n = len(probebunch.probes)
     
