@@ -1,6 +1,7 @@
 from probeinterface import write_probeinterface, read_probeinterface
 from probeinterface import read_prb, write_prb
 from probeinterface import read_spikeglx
+from probeinterface import generate_fake_probe_bunch
 
 
 from pathlib import Path
@@ -99,6 +100,6 @@ def test_readspikeglx():
 
 
 if __name__ == '__main__':
-    #~ test_probeinterface_format()
-    test_prb()
+    test_probeinterface_format()
+    #~ test_prb()
     #~ test_readspikeglx()
