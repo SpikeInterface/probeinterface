@@ -1,12 +1,15 @@
 API
 ===
 
+
+
 Probe
 ----------------
 
 .. automodule:: probeinterface
 
     .. autoclass:: probeinterface.Probe
+        :members:
     
 ProbeBunch
 ----------------
@@ -14,6 +17,7 @@ ProbeBunch
 .. automodule:: probeinterface
     
     .. autoclass:: probeinterface.ProbeBunch
+        :members:
 
 Import/export to formats
 ----------------------------------------
