@@ -13,6 +13,7 @@ def test_probebunch():
         probebunch.add_probe(probe)
     
     indices = probebunch.get_global_device_channel_indices()
+    ids = probebunch.get_global_electrode_ids()
 
 
 def test_probebunch_3d():

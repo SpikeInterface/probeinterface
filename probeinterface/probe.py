@@ -41,7 +41,12 @@ class Probe:
         
         # this handle the wiring to device : channel index on device side.
         # this is due to complex routing
+        #  This must be unique at Probe AND ProbeBunch level
         self.device_channel_indices = None
+        
+        # Handle ids with str so it can be displayed like names
+        #  This must be unique at Probe AND ProbeBunch level
+        self.electrode_ids = None
         
         # the Probe can belong to a ProbeBunch
         self._probe_bunch = None
@@ -140,13 +145,43 @@ class Probe:
         Set the channel indices on device side.
         
         If some channel are not connected or not recorded then channel can be "-1"
+
+
+        Parameters
+        ----------
+        channel_indices: array of int
+        
         """
         channel_indices = np.asarray(channel_indices)
         if channel_indices.size != self.get_electrode_count():
             valueError('channel_indices have not the same size as electrode')
         self.device_channel_indices = channel_indices
         if self._probe_bunch is not None:
-            self._probe_bunch.check_global_device_wiring()
+            self._probe_bunch.check_global_device_wiring_and_ids()
+    
+    def set_electrode_ids(self, elec_ids):
+        """
+        Set electrode ids. This is handle with string.
+        It is like a name but must be **unique** for the Probe
+        and also for the **ProbeBunch**
+        
+        Parameters
+        ----------
+        elec_ids: array of str
+            If elec_ids is int or float then convert to str
+        """
+        elec_ids = np.asarray(elec_ids)
+        
+        if elec_ids.size != self.get_electrode_count():
+            valueError('channel_indices have not the same size as electrode')
+
+        if elec_ids.dtype.kind != 'U':
+            elec_ids = elec_ids.astype('U')
+        
+        self.electrode_ids = elec_ids
+        if self._probe_bunch is not None:
+            self._probe_bunch.check_global_device_wiring_and_ids()
+
     
     def copy(self):
         """

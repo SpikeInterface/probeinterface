@@ -17,27 +17,21 @@ from probeinterface import Probe
 from probeinterface.plotting import plot_probe
 
 
-
 ##############################################################################
 # Positions of electrodes
 
 n = 24
-
 positions = np.zeros((n,2))
 for i in range(3):
     positions[i*8: (i + 1) *8, 0] = i * 30
     positions[i*8: (i + 1) *8, 1] = np.arange(0, 240, 30)
 
 
-
 ##############################################################################
-# shape can be arrays
+# shape of electrodes can be arrays to handle hybrid shape electrodes
 
-#~ shapes = ['circle', 'square'] * 12
-#~ shape_params = [{'radius': 8}, {'width' : 12} ] * 12
-
-shapes = ['circle', 'square'] * 12
-shape_params = [{'radius': 8}, {'width' : 12} ] * 12
+shapes = np.array(['circle', 'square'] * 12)
+shape_params = np.array([{'radius': 8}, {'width' : 12} ] * 12)
 
 
 ##############################################################################
@@ -49,10 +43,11 @@ plane_axes = [[[1/np.sqrt(2),  1/np.sqrt(2)], [-1/np.sqrt(2),  1/np.sqrt(2)]]] *
 plane_axes = np.array(plane_axes)
 
 ##############################################################################
-# Create the probes
+# Create the probe
 
 probe = Probe(ndim=2, si_units='um')
-probe.set_electrodes(positions=positions, plane_axes=plane_axes, shapes=shapes, shape_params=shape_params)
+probe.set_electrodes(positions=positions, plane_axes=plane_axes,
+                                        shapes=shapes, shape_params=shape_params)
 probe.create_auto_shape()
 
 ##############################################################################
@@ -65,9 +60,7 @@ plot_probe(probe)
 from probeinterface import generate_multi_columns_probe
 
 probe = generate_multi_columns_probe(num_columns=3,
-            num_elec_per_column=[10, 12, 10],
-            xpitch=22, ypitch=20,
-            y_shift_per_column=[0, -10, 0],
+            num_elec_per_column=8, xpitch=20, ypitch=20,
             electrode_shapes='square', electrode_shape_params={'width': 12})
 probe.rotate_electrodes(45)
 plot_probe(probe)
@@ -82,6 +75,4 @@ probe.rotate_electrodes(thetas)
 plot_probe(probe)
 
 plt.show()
-
-
 

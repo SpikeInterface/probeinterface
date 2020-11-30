@@ -38,6 +38,12 @@ def test_probe():
     np.random.shuffle(chans)
     probe.set_device_channel_indices(chans)
     
+    # electrode_ids int or str
+    elec_ids = np.arange(24)
+    probe.set_electrode_ids(elec_ids)
+    elec_ids = [f'elec #{e}' for e in range(24)]
+    probe.set_electrode_ids(elec_ids)
+    
     # copy
     probe2 = probe.copy()
     

@@ -35,7 +35,7 @@ class ProbeBunch:
         
         # check global channel maps
         self.probes.append(probe)
-        self.check_global_device_wiring()
+        self.check_global_device_wiring_and_ids()
         self.probes =self.probes[:-1]
         
     
@@ -91,13 +91,36 @@ class ProbeBunch:
             n = probe.get_electrode_count()
             probe.set_device_channel_indices(channels[ind:ind+n])
             ind += n 
-        
     
-    def check_global_device_wiring(self):
+    def get_global_electrode_ids(self):
+        """
+        get all electrode ids conctenated acroos probes
+        """
+        
+        all_ids = []
+        for i, probe in enumerate(self.probes):
+            n = probe.get_electrode_count()
+            ids = probe.electrode_ids
+            if ids is None:
+                ids = [''] * n
+            all_ids.append(ids)
+        all_ids = np.concatenate(all_ids)
+        return all_ids
+    
+    def check_global_device_wiring_and_ids(self):
+        # check unique device_channel_indices for !=-1
         chans = self.get_global_device_channel_indices()
         keep = chans['device_channel_index'] >=0
         valid_chans = chans[keep]['device_channel_index']
         
         if valid_chans.size != np.unique(valid_chans).size:
-            raise ValueError('channel are not unique on device across probes')
+            raise ValueError('channel device index are not unique across probes')
+        
+        # check unique ids for != ''
+        all_ids = self.get_global_electrode_ids()
+        keep = [ e!='' for e in all_ids ]
+        valid_ids = all_ids[keep]
+        
+        if valid_ids.size != np.unique(valid_ids).size:
+            raise ValueError('electrode_ids are not unique across probes')
 
