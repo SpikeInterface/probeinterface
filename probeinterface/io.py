@@ -156,8 +156,46 @@ def write_prb(file, probebunch):
       * electrode shape
       * shape
       * channel index
+    
+    Note:
+      * "total_nb_channels" is not handle because it is a non sens key
+      * "graph" is not handle because it is useless
+      * "radius" is not handle. It was only for early version of spyking-cicus
     """
-    raise NotImplementedError
+    if len(probebunch.probes) ==0:
+        raise ValueError('Bad boy')
+    
+    for probe in probebunch.probes:
+        if probe.device_channel_indices is None:
+            raise ValueError('For PRB format device_channel_indices must be set')
+    
+    with open(file, 'w') as f:
+        f.write('channel_groups = {\n')
+        
+        
+        for probe_ind, probe in enumerate(probebunch.probes):
+            f.write(f"    {probe_ind}:\n")
+            f.write("        {\n")
+            channels = probe.device_channel_indices
+            keep = channels>=0
+            #  channels -1 are not wired
+            
+            chans = list(channels[keep])
+            f.write(f"           'channels': {chans},\n")
+            f.write("           'geometry':  {\n")
+            for c in range(probe.get_electrode_count()):
+                if not keep[c]:
+                    continue
+                pos = list(probe.electrode_positions[c, :])
+                f.write(f"               {channels[c]}: {pos},\n")
+            f.write("           }\n")
+            f.write("       },\n")
+        
+        f.write("}\n")
+
+
+
+
 
 def read_cvs(file):
     """

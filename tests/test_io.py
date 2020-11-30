@@ -73,7 +73,10 @@ def test_prb():
     assert len(two_tetrode.probes) == 2
     assert two_tetrode.probes[0].get_electrode_count() == 4
     
-    #~ write_prb('two_tetrodes.prb', two_tetrode)
+    write_prb('two_tetrodes_written.prb', two_tetrode)
+    two_tetrode_back = read_prb('two_tetrodes_written.prb')
+    
+    
     
     
     
@@ -97,5 +100,5 @@ def test_readspikeglx():
 
 if __name__ == '__main__':
     #~ test_probeinterface_format()
-    #~ test_prb()
-    test_readspikeglx()
+    test_prb()
+    #~ test_readspikeglx()
