@@ -11,6 +11,15 @@ Probe
 ProbeBunch
 
 
+Goal
+-------
+
+If this package is widely adopted, then I plan to implement a collections of widly use probe fomr:
+
+  * neuronexus
+  * imec
+  * cambridge neurotech
+
 
 Aknowledgement
 ---------------------------

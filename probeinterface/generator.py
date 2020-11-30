@@ -12,7 +12,8 @@ from .probebunch import ProbeBunch
 
 def generate_fake_probe(elec_shapes='circle'):
     """
-    Generate a 3 columns 32 channels electrode
+    Generate a 3 columns 32 channels electrode.
+    Mainly used for testing and examples.
     """
     n = 32
     positions = np.zeros((n, 2))
@@ -41,6 +42,7 @@ def generate_fake_probe(elec_shapes='circle'):
 def generate_fake_probe_bunch():
     """
     Generate a ProbeBunch with 2 probe.
+    Mainly used for testing and examples.
     """
     probe0 = generate_fake_probe()
     probe1 = generate_fake_probe(elec_shapes='rect')
@@ -71,8 +73,7 @@ def generate_multi_columns_probe(num_columns=3, num_elec_per_column=10,
                 xpitch=20, ypitch=20, y_shift_per_column=None,
                 electrode_shapes='circle', electrode_shape_params={'radius': 6}):
     """
-    
-    
+    Generate a Probe with several columns
     """
     
     if isinstance(num_elec_per_column, int):
@@ -97,6 +98,10 @@ def generate_multi_columns_probe(num_columns=3, num_elec_per_column=10,
 
 def generate_linear_probe(num_elec=16,  ypitch=20,
             electrode_shapes='circle', electrode_shape_params={'radius': 6}):
+    """
+    Generate a linear Probe (one columns)
+    """
+    
     probe = generate_multi_columns_probe(num_columns=1, num_elec_per_column=num_elec,
             xpitch=0, ypitch=ypitch, electrode_shapes=electrode_shapes, electrode_shape_params=electrode_shape_params)
     return probe

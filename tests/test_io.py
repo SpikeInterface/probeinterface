@@ -1,7 +1,7 @@
 from probeinterface import write_probeinterface, read_probeinterface
 from probeinterface import read_prb, write_prb
-from probeinterface import (generate_fake_probe, generate_fake_probe_bunch,
-        generate_tetrode, generate_linear_probe, generate_multi_columns_probe)
+from probeinterface import read_spikeglx
+from probeinterface import generate_fake_probe_bunch
 
 
 from pathlib import Path
@@ -74,7 +74,10 @@ def test_prb():
     assert len(two_tetrode.probes) == 2
     assert two_tetrode.probes[0].get_electrode_count() == 4
     
-    #~ write_prb('two_tetrodes.prb', two_tetrode)
+    write_prb('two_tetrodes_written.prb', two_tetrode)
+    two_tetrode_back = read_prb('two_tetrodes_written.prb')
+    
+    
     
     
     
@@ -82,9 +85,21 @@ def test_prb():
     #~ import matplotlib.pyplot as plt
     #~ plot_probe_bunch(probebunch, with_channel_index=True, same_axe=False)
     #~ plt.show()
+
+
+def test_readspikeglx():
+    probe = read_spikeglx(folder / 'Noise_g0_t0.imec0.ap.meta')
+
+    #~ from probeinterface.plotting import plot_probe_bunch, plot_probe
+    #~ import matplotlib.pyplot as plt
+    #~ plot_probe(probe)
+    #~ plt.show()
+    
+    
     
 
 
 if __name__ == '__main__':
     test_probeinterface_format()
-    test_prb()
+    #~ test_prb()
+    #~ test_readspikeglx()

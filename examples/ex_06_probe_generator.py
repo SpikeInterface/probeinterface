@@ -44,7 +44,6 @@ from probeinterface import generate_linear_probe
 linear_probe = generate_linear_probe(num_elec=16,  ypitch=20)
 plot_probe(linear_probe, with_channel_index=True)
 
-    
 
 
 ##############################################################################

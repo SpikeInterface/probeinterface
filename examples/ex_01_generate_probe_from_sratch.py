@@ -6,7 +6,6 @@ This generate a probe from sratch.
 """
 
 ##############################################################################
-# Import
 
 import numpy as np
 import matplotlib.pyplot as plt
