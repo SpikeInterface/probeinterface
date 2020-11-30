@@ -187,7 +187,8 @@ class Probe:
         """
         Copy to another Probe instance.
         
-        Note: device_channel_indices is not copied.
+        Note: device_channel_indices is not copied
+        and electrode_ids is not copied
         """
         other = Probe()
         other.set_electrodes(
@@ -363,7 +364,7 @@ class Probe:
 
     _dump_attr_names = ['ndim', 'si_units', 'electrode_positions', 'electrode_plane_axes', 
                     'electrode_shapes', 'electrode_shape_params',
-                    'probe_shape_vertices', 'device_channel_indices']
+                    'probe_shape_vertices', 'device_channel_indices', 'electrode_ids']
     
     def to_dict(self):
         """
