@@ -105,13 +105,18 @@ def plot_probe_bunch(probebunch, same_axe=True, **kargs):
     n = len(probebunch.probes)
     
     if same_axe:
-        if probebunch.ndim == 2:
-            fig, ax = plt.subplots()
+        if 'ax' in kargs:
+            ax = kargs.pop('ax')
         else:
-            fig = plt.figure()
-            ax = fig.add_subplot(1, 1, 1, projection='3d')
+            if probebunch.ndim == 2:
+                fig, ax = plt.subplots()
+            else:
+                fig = plt.figure()
+                ax = fig.add_subplot(1, 1, 1, projection='3d')
         axs = [ax] * n
     else:
+        if 'ax' in kargs:
+            raise valueError('with same_axe=False do not provide ax')
         if probebunch.ndim == 2:
             fig, axs = plt.subplots(ncols=n, nrows=1)
             if n==1:

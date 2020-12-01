@@ -15,27 +15,19 @@ def generate_fake_probe(elec_shapes='circle'):
     Generate a 3 columns 32 channels electrode.
     Mainly used for testing and examples.
     """
-    n = 32
-    positions = np.zeros((n, 2))
-    for i in range(n-2):
-        x = i // 10
-        y = i % 10
-        positions[i] = x, y
-    positions *= 25
-    positions[10:20, 1] -= 12.5
-    positions[30] = [25, 237.5]
-    positions[31] = [25, 262.5]
-
-    probe = Probe(ndim=2, si_units='um')
-    
     if elec_shapes == 'circle':
-        probe.set_electrodes(positions=positions, shapes='circle', shape_params={'radius': 6})
+        electrode_shape_params = {'radius': 6}
     elif elec_shapes == 'square':
-        probe.set_electrodes(positions=positions, shapes='square', shape_params={'width': 7})
+        electrode_shape_params = {'width': 7}
     elif elec_shapes == 'rect':
-        probe.set_electrodes(positions=positions, shapes='rect', shape_params={'width': 6, 'height': 4.5})
-    
-    probe.create_auto_shape(probe_type='tip', margin=25)
+        electrode_shape_params = {'width': 6, 'height': 4.5}
+
+    probe = generate_multi_columns_probe(num_columns=3,
+                num_elec_per_column=[10, 12, 10],
+                xpitch=25, ypitch=25, y_shift_per_column=[0, -12.5, 0],
+                electrode_shapes=elec_shapes, electrode_shape_params=electrode_shape_params)
+
+
 
     return probe
     
