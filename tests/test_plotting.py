@@ -1,4 +1,4 @@
-from probeinterface import Probe, ProbeBunch
+from probeinterface import Probe, ProbeGroup
 from probeinterface import generate_dummy_probe, generate_dummy_probe_bunch
 from probeinterface.plotting import plot_probe, plot_probe_bunch
 
@@ -24,17 +24,17 @@ def test_plot_probe():
 
 
 def test_plot_probe_bunch():
-    probebunch  = generate_dummy_probe_bunch()
+    probegroup  = generate_dummy_probe_bunch()
 
-    plot_probe_bunch(probebunch, same_axe=True, with_channel_index=True)
-    plot_probe_bunch(probebunch, same_axe=False)
+    plot_probe_bunch(probegroup, same_axe=True, with_channel_index=True)
+    plot_probe_bunch(probegroup, same_axe=False)
     
     # 3d
-    probebunch_3d = ProbeBunch()
-    for probe in probebunch.probes:
-        probebunch_3d.add_probe(probe.to_3d())
-    probebunch_3d.probes[-1].move([0,150, -50])
-    plot_probe_bunch(probebunch_3d, same_axe=True)
+    probegroup_3d = ProbeGroup()
+    for probe in probegroup.probes:
+        probegroup_3d.add_probe(probe.to_3d())
+    probegroup_3d.probes[-1].move([0,150, -50])
+    plot_probe_bunch(probegroup_3d, same_axe=True)
     
 
 

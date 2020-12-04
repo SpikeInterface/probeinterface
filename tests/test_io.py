@@ -16,16 +16,16 @@ folder = Path(__file__).absolute().parent
 
 def test_probeinterface_format():
     filename = 'test_pi_format.h5'
-    probebunch = generate_dummy_probe_bunch()
-    write_probeinterface(filename, probebunch)
+    probegroup = generate_dummy_probe_bunch()
+    write_probeinterface(filename, probegroup)
     
-    probebunch2 = read_probeinterface(filename)
+    probegroup2 = read_probeinterface(filename)
     
-    assert len(probebunch.probes) == len(probebunch.probes)
+    assert len(probegroup.probes) == len(probegroup.probes)
     
-    for i in range(len(probebunch.probes)):
-        probe0 = probebunch.probes[i]
-        probe1 = probebunch2.probes[i]
+    for i in range(len(probegroup.probes)):
+        probe0 = probegroup.probes[i]
+        probe1 = probegroup2.probes[i]
         
         assert probe0.get_electrode_count() == probe1.get_electrode_count()
         assert np.allclose(probe0.electrode_positions,probe1.electrode_positions)
@@ -35,8 +35,8 @@ def test_probeinterface_format():
 
     #~ from probeinterface.plotting import plot_probe_bunch
     #~ import matplotlib.pyplot as plt
-    #~ plot_probe_bunch(probebunch, with_channel_index=True, separate_axes=True)
-    #~ plot_probe_bunch(probebunch2, with_channel_index=True, separate_axes=True)
+    #~ plot_probe_bunch(probegroup, with_channel_index=True, separate_axes=True)
+    #~ plot_probe_bunch(probegroup2, with_channel_index=True, separate_axes=True)
     #~ plt.show()
 
     
@@ -65,7 +65,7 @@ channel_groups = {
 """
 
 def test_prb():
-    probebunch = read_prb(folder / 'dummy.prb')
+    probegroup = read_prb(folder / 'dummy.prb')
     
     with open('two_tetrodes.prb', 'w') as f:
         f.write(prb_two_tetrodes)
@@ -83,7 +83,7 @@ def test_prb():
     
     #~ from probeinterface.plotting import plot_probe_bunch
     #~ import matplotlib.pyplot as plt
-    #~ plot_probe_bunch(probebunch, with_channel_index=True, same_axe=False)
+    #~ plot_probe_bunch(probegroup, with_channel_index=True, same_axe=False)
     #~ plt.show()
 
 
@@ -101,5 +101,5 @@ def test_readspikeglx():
 
 if __name__ == '__main__':
     test_probeinterface_format()
-    #~ test_prb()
-    #~ test_readspikeglx()
+    test_prb()
+    test_readspikeglx()

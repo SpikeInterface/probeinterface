@@ -16,7 +16,7 @@ This is why Prbe handle a separate `device_channel_indices`
 import numpy as np
 import matplotlib.pyplot as plt
 
-from probeinterface import Probe, ProbeBunch
+from probeinterface import Probe, ProbeGroup
 from probeinterface.plotting import plot_probe, plot_probe_bunch
 from probeinterface import generate_multi_columns_probe
 
@@ -58,7 +58,7 @@ plot_probe(probe, with_channel_index=True)
 
 ##############################################################################
 # Very often we have several probes on the device this lead to even complex channel indices
-# `ProbeBunch.get_global_device_channel_indices()` give the overview of the device wiring.
+# `ProbeGroup.get_global_device_channel_indices()` give the overview of the device wiring.
 
 #~ probe0 = generate_dummy_probe(elec_shapes='circle')
 #~ probe1 = generate_dummy_probe(elec_shapes='square')
@@ -69,9 +69,9 @@ probe0 = generate_multi_columns_probe(num_columns=3,
 probe1 = probe0.copy()
 
 probe1.move([350, 200])
-probebunch = ProbeBunch()
-probebunch.add_probe(probe0)
-probebunch.add_probe(probe1)
+probegroup = ProbeGroup()
+probegroup.add_probe(probe0)
+probegroup.add_probe(probe1)
 
 # wire probe0 0 to 31
 #  and shuffle
@@ -85,12 +85,12 @@ channel_indices1 = np.arange(16, 32)
 np.random.shuffle(channel_indices1)
 probe1.set_device_channel_indices(channel_indices1)
 
-print(probebunch.get_global_device_channel_indices())
+print(probegroup.get_global_device_channel_indices())
 
 ##############################################################################
 # Can be also ploted
 fig, ax = plt.subplots()
-plot_probe_bunch(probebunch, with_channel_index=True, same_axe=True, ax=ax)
+plot_probe_bunch(probegroup, with_channel_index=True, same_axe=True, ax=ax)
 ax.set_xlim(-100, 600)
 ax.set_ylim(-100, 600)
 

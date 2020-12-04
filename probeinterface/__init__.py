@@ -1,7 +1,7 @@
 from .version import version as __version__
 
 from .probe import Probe
-from .probebunch import ProbeBunch
+from .probegroup import ProbeGroup
 from .io import (
     write_probeinterface, read_probeinterface,
     read_prb, write_prb,

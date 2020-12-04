@@ -18,7 +18,7 @@ from pprint import pformat, pprint
 import numpy as np
 
 from .probe import Probe
-from .probebunch import ProbeBunch
+from .probegroup import ProbeGroup
 
 
 def read_probeinterface(file):
@@ -29,7 +29,7 @@ def read_probeinterface(file):
     """
     import h5py
 
-    probebunch = ProbeBunch()
+    probegroup = ProbeGroup()
 
     file = Path(file)
     with h5py.File(file, 'r') as f:
@@ -60,29 +60,29 @@ def read_probeinterface(file):
                     probe_dict[k] = v2
 
                 probe = Probe.from_dict(probe_dict)
-                probebunch.add_probe(probe)
-    return probebunch
+                probegroup.add_probe(probe)
+    return probegroup
 
 
-def write_probeinterface(file, probe_or_probebunch):
+def write_probeinterface(file, probe_or_probegroup):
     """
     Write to probeinterface own format hdf5 based.
     
     Implementation is naive but ot works.
     """
     import h5py
-    if isinstance(probe_or_probebunch, Probe):
-        probebunch = ProbeBunch()
-        probebunch.add_probe(probe)
-    elif isinstance(probe_or_probebunch, ProbeBunch):
-        probebunch = probe_or_probebunch
+    if isinstance(probe_or_probegroup, Probe):
+        probegroup = ProbeGroup()
+        probegroup.add_probe(probe)
+    elif isinstance(probe_or_probegroup, ProbeGroup):
+        probegroup = probe_or_probegroup
     else:
         raise valueError('Bad boy')
 
     file = Path(file)
 
     with h5py.File(file, 'w') as f:
-        for probe_ind, probe in enumerate(probebunch.probes):
+        for probe_ind, probe in enumerate(probegroup.probes):
             d = probe.to_dict()
             for k, v in d.items():
                 if k == 'electrode_shapes':
@@ -101,7 +101,7 @@ def write_probeinterface(file, probe_or_probebunch):
 
 def read_prb(file):
     """
-    Read a PRB file and return a ProbeBunch object.
+    Read a PRB file and return a ProbeGroup object.
     
     Since PRB do not handle electrode shape then circle of 5um are put.
     Same for electrode shape a dummy tip is put.
@@ -123,7 +123,7 @@ def read_prb(file):
     if 'channel_groups' not in prb:
         raise ValueError('This file is not a standard PRB file')
 
-    probebunch = ProbeBunch()
+    probegroup = ProbeGroup()
     for i, group in prb['channel_groups'].items():
         probe = Probe(ndim=2, si_units='um')
 
@@ -134,14 +134,14 @@ def read_prb(file):
         probe.create_auto_shape(probe_type='tip')
 
         probe.set_device_channel_indices(chans)
-        probebunch.add_probe(probe)
+        probegroup.add_probe(probe)
 
-    return probebunch
+    return probegroup
 
 
-def write_prb(file, probebunch):
+def write_prb(file, probegroup):
     """
-    Write ProbeBunch into a prb file.
+    Write ProbeGroup into a prb file.
     
     This format handle:
       * multi Probe with channel group index key
@@ -158,17 +158,17 @@ def write_prb(file, probebunch):
       * "graph" is not handle because it is useless
       * "radius" is not handle. It was only for early version of spyking-cicus
     """
-    if len(probebunch.probes) == 0:
+    if len(probegroup.probes) == 0:
         raise ValueError('Bad boy')
 
-    for probe in probebunch.probes:
+    for probe in probegroup.probes:
         if probe.device_channel_indices is None:
             raise ValueError('For PRB format device_channel_indices must be set')
 
     with open(file, 'w') as f:
         f.write('channel_groups = {\n')
 
-        for probe_ind, probe in enumerate(probebunch.probes):
+        for probe_ind, probe in enumerate(probegroup.probes):
             f.write(f"    {probe_ind}:\n")
             f.write("        {\n")
             channels = probe.device_channel_indices

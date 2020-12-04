@@ -16,7 +16,7 @@ probeinterface have also basic function to generate simple electrode layout like
 import numpy as np
 import matplotlib.pyplot as plt
 
-from probeinterface import Probe, ProbeBunch
+from probeinterface import Probe, ProbeGroup
 from probeinterface.plotting import plot_probe, plot_probe_bunch
 
 
@@ -26,13 +26,13 @@ from probeinterface.plotting import plot_probe, plot_probe_bunch
 
 from probeinterface import generate_tetrode
 
-probebunch = ProbeBunch()
+probegroup = ProbeGroup()
 for i in range(4):
     tetrode = generate_tetrode()
     tetrode.move([i*50, 0])
-    probebunch.add_probe(tetrode)
-probebunch.set_global_device_channel_indices(np.arange(16))
-plot_probe_bunch(probebunch, with_channel_index=True, same_axe=True)
+    probegroup.add_probe(tetrode)
+probegroup.set_global_device_channel_indices(np.arange(16))
+plot_probe_bunch(probegroup, with_channel_index=True, same_axe=True)
 
 
 ##############################################################################

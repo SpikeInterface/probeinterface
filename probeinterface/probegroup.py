@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class ProbeBunch:
+class ProbeGroup:
     """
     Class that handle a group of Probe objects and the wiring to device.
     
@@ -24,7 +24,7 @@ class ProbeBunch:
 
     def _check_compatible(self, probe):
         if probe._probe_bunch is not None:
-            raise ValueError("This probe is already attached to another ProbeBunch")
+            raise ValueError("This probe is already attached to another ProbeGroup")
 
         if probe.ndim != self.probes[-1].ndim:
             raise ValueError("ndim are not compatible")
