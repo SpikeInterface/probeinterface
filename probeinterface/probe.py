@@ -1,5 +1,7 @@
 import numpy as np
 
+from .shank import Shank
+
 _possible_electrode_shapes = ['circle', 'square', 'rect']
 
 
@@ -57,6 +59,14 @@ class Probe:
         """
         assert self.electrode_positions is not None
         return len(self.electrode_positions)
+    
+    def get_shank_count(self):
+        """
+        Return  the number of shank for this probe
+        """
+        assert self.shank_ids is not None
+        n = len(np.unique(self.shank_ids))
+        return n
 
     def set_electrodes(self, positions=None, 
                     shapes='circle', shape_params={'radius': 10}
@@ -191,6 +201,26 @@ class Probe:
         self.electrode_ids = elec_ids
         if self._probe_bunch is not None:
             self._probe_bunch.check_global_device_wiring_and_ids()
+
+    def set_shank_ids(self, shank_ids):
+        """
+        Set shank ids
+        """
+        shank_ids = np.asarray(shank_ids)
+        if self.shank_ids.size != self.get_electrode_count():
+            raise ValueError('shan_ids have wring size') 
+        self.shank_ids = shank_ids
+
+    def get_shanks(self):
+        """
+        Return the list of Shank object for this Probe
+        """
+        assert self.shank_ids is not None
+        shanks = []
+        for shan_id  in np.unique(self.shank_ids):
+            shank = Shank(self, shank_id)
+            shanks.append(shank)
+        return shanks
 
     def copy(self):
         """
@@ -372,7 +402,8 @@ class Probe:
 
     _dump_attr_names = ['ndim', 'si_units', 'electrode_positions', 'electrode_plane_axes',
                         'electrode_shapes', 'electrode_shape_params',
-                        'probe_shape_vertices', 'device_channel_indices', 'electrode_ids']
+                        'probe_shape_vertices', 'device_channel_indices', 'electrode_ids'
+                        'shank_ids']
 
     def to_dict(self):
         """
