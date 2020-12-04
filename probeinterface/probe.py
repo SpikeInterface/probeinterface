@@ -38,7 +38,7 @@ class Probe:
         # vertices for the shape of the probe
         self.probe_shape_vertices = None
 
-        # This handle
+        # This handle shankd ids
         self.shank_ids = None
 
         # this handle the wiring to device : channel index on device side.
@@ -69,7 +69,7 @@ class Probe:
         return n
 
     def set_electrodes(self, positions=None, 
-                    shapes='circle', shape_params={'radius': 10}
+                    shapes='circle', shape_params={'radius': 10},
                     plane_axes=None, shank_ids=None):
         """
         Parameters
@@ -217,7 +217,7 @@ class Probe:
         """
         assert self.shank_ids is not None
         shanks = []
-        for shan_id  in np.unique(self.shank_ids):
+        for shank_id  in np.unique(self.shank_ids):
             shank = Shank(self, shank_id)
             shanks.append(shank)
         return shanks

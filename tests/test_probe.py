@@ -66,6 +66,11 @@ def test_probe():
     #~ plot_probe(probe_3d)
     #~ plt.show()
 
+    # get shanks
+    for shank in probe.get_shanks():
+        print(shank)
+        print(shank.electrode_positions)
+
 
 
 if __name__ == '__main__':
