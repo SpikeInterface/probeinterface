@@ -36,6 +36,9 @@ class Probe:
         # vertices for the shape of the probe
         self.probe_shape_vertices = None
 
+        # This handle
+        self.shank_ids = None
+
         # this handle the wiring to device : channel index on device side.
         # this is due to complex routing
         #  This must be unique at Probe AND ProbeGroup level
@@ -55,22 +58,25 @@ class Probe:
         assert self.electrode_positions is not None
         return len(self.electrode_positions)
 
-    def set_electrodes(self, positions=None, plane_axes=None, shapes='circle',
-                       shape_params={'radius': 10}):
+    def set_electrodes(self, positions=None, 
+                    shapes='circle', shape_params={'radius': 10}
+                    plane_axes=None, shank_ids=None):
         """
         Parameters
         ----------
         positions :array (num_electrodes, ndim)
             Posisitions of electrodes.
         
-        plane_axes:  (num_electrodes, 2, ndim)
-            This defines the axes of the electrode plane (2d or 3d)
-            
         shapes: scalar or array in 'circle'/'square'/'rect'
             Shape for each electrodes.
         
         shape_params dict or list of dict
             Contain kargs for shapes ("radius" for circle, "width" for sqaure, "width/height" for rect)
+        plane_axes:  (num_electrodes, 2, ndim)
+            This defines the axes of the electrode plane (2d or 3d)
+        shank_ids: None or vector of int
+            This define the shank id for electrodes. If None then
+            there are assign to a unique Shank.
         """
         assert positions is not None
 
@@ -92,6 +98,13 @@ class Probe:
                 plane_axes[:, 1, 1] = 1
         plane_axes = np.array(plane_axes)
         self.electrode_plane_axes = plane_axes
+
+        if shank_ids is None:
+            self.shank_ids = np.zeros(n, dtype='int64')
+        else:
+            self.shank_ids = np.asarray(shank_ids)
+            if self.shank_ids.size != n:
+                raise ValueError('shan_ids have wring size') 
 
         # shape
         if isinstance(shapes, str):
