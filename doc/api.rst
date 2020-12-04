@@ -11,12 +11,12 @@ Probe
     .. autoclass:: probeinterface.Probe
         :members:
     
-ProbeBunch
+ProbeGroup
 ----------------
 
 .. automodule:: probeinterface
     
-    .. autoclass:: probeinterface.ProbeBunch
+    .. autoclass:: probeinterface.ProbeGroup
         :members:
 
 Import/export to formats

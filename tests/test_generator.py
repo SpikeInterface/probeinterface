@@ -10,7 +10,7 @@ import pytest
 
 def test_generate():
     probe = generate_dummy_probe()
-    probebunch = generate_dummy_probe_bunch()
+    probegroup = generate_dummy_probe_bunch()
     
     tetrode = generate_tetrode()
     

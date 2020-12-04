@@ -1,5 +1,5 @@
 """
-A simple implementation of ploting Probe and ProbeBunch
+A simple implementation of ploting Probe and ProbeGroup
 using matplotlib.
 
 Depending Probe.ndim the plotting is done in 2d or 3d
@@ -93,20 +93,20 @@ def plot_probe(probe, ax=None, electrode_colors=None, with_channel_index=False,
         ax.set_aspect('equal')
 
 
-def plot_probe_bunch(probebunch, same_axe=True, **kargs):
+def plot_probe_bunch(probegroup, same_axe=True, **kargs):
     """
-    Plot all prbe from a ProbeBunch
+    Plot all prbe from a ProbeGroup
     
     Can be in the same axe or separated axes.
     """
     import matplotlib.pyplot as plt
-    n = len(probebunch.probes)
+    n = len(probegroup.probes)
 
     if same_axe:
         if 'ax' in kargs:
             ax = kargs.pop('ax')
         else:
-            if probebunch.ndim == 2:
+            if probegroup.ndim == 2:
                 fig, ax = plt.subplots()
             else:
                 fig = plt.figure()
@@ -115,12 +115,12 @@ def plot_probe_bunch(probebunch, same_axe=True, **kargs):
     else:
         if 'ax' in kargs:
             raise valueError('with same_axe=False do not provide ax')
-        if probebunch.ndim == 2:
+        if probegroup.ndim == 2:
             fig, axs = plt.subplots(ncols=n, nrows=1)
             if n == 1:
                 axs = [axs]
         else:
             raise NotImplementedError
 
-    for i, probe in enumerate(probebunch.probes):
+    for i, probe in enumerate(probegroup.probes):
         plot_probe(probe, ax=axs[i], **kargs)

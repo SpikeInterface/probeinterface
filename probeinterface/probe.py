@@ -38,14 +38,14 @@ class Probe:
 
         # this handle the wiring to device : channel index on device side.
         # this is due to complex routing
-        #  This must be unique at Probe AND ProbeBunch level
+        #  This must be unique at Probe AND ProbeGroup level
         self.device_channel_indices = None
 
         # Handle ids with str so it can be displayed like names
-        #  This must be unique at Probe AND ProbeBunch level
+        #  This must be unique at Probe AND ProbeGroup level
         self.electrode_ids = None
 
-        # the Probe can belong to a ProbeBunch
+        # the Probe can belong to a ProbeGroup
         self._probe_bunch = None
 
     def get_electrode_count(self):
@@ -160,7 +160,7 @@ class Probe:
         """
         Set electrode ids. This is handle with string.
         It is like a name but must be **unique** for the Probe
-        and also for the **ProbeBunch**
+        and also for the **ProbeGroup**
         
         Parameters
         ----------

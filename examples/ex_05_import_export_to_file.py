@@ -20,7 +20,7 @@ It also support read from theses formats: (and sometimes write)
 import numpy as np
 import matplotlib.pyplot as plt
 
-from probeinterface import Probe, ProbeBunch
+from probeinterface import Probe, ProbeGroup
 from probeinterface.plotting import plot_probe, plot_probe_bunch
 from probeinterface import generate_dummy_probe
 from probeinterface import write_probeinterface, read_probeinterface
@@ -30,23 +30,23 @@ from probeinterface import write_prb, read_prb
 
 ##############################################################################
 # Generate 2 dummy Probe with util function
-# and a ProbeBunch
+# and a ProbeGroup
 
 probe0 = generate_dummy_probe(elec_shapes='square')
 probe1 = generate_dummy_probe(elec_shapes='circle')
 probe1.move([250, -90])
 
-probebunch = ProbeBunch()
-probebunch.add_probe(probe0)
-probebunch.add_probe(probe1)
+probegroup = ProbeGroup()
+probegroup.add_probe(probe0)
+probegroup.add_probe(probe1)
 
 ##############################################################################
-# probe interface have its own format hdf5 based that store one ProbeBunch (and so several Probe)
+# probe interface have its own format hdf5 based that store one ProbeGroup (and so several Probe)
 
-write_probeinterface('my_two_probe_setup.h5', probebunch)
+write_probeinterface('my_two_probe_setup.h5', probegroup)
 
-probebunch2 = read_probeinterface('my_two_probe_setup.h5')
-plot_probe_bunch(probebunch2)
+probegroup2 = read_probeinterface('my_two_probe_setup.h5')
+plot_probe_bunch(probegroup2)
 
 
 

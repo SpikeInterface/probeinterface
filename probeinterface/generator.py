@@ -6,7 +6,7 @@ This module give some utils function to generate probes.
 import numpy as np
 
 from .probe import Probe
-from .probebunch import ProbeBunch
+from .probegroup import ProbeGroup
 
 
 def generate_dummy_probe(elec_shapes='circle'):
@@ -31,7 +31,7 @@ def generate_dummy_probe(elec_shapes='circle'):
 
 def generate_dummy_probe_bunch():
     """
-    Generate a ProbeBunch with 2 probe.
+    Generate a ProbeGroup with 2 probe.
     Mainly used for testing and examples.
     """
     probe0 = generate_dummy_probe()
@@ -39,11 +39,11 @@ def generate_dummy_probe_bunch():
     probe1.move([150, -50])
 
     # probe bunch
-    probebunch = ProbeBunch()
-    probebunch.add_probe(probe0)
-    probebunch.add_probe(probe1)
+    probegroup = ProbeGroup()
+    probegroup.add_probe(probe0)
+    probegroup.add_probe(probe1)
 
-    return probebunch
+    return probegroup
 
 
 def generate_tetrode():

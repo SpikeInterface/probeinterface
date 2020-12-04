@@ -1,8 +1,8 @@
 """
-Generate a ProbeBunch
+Generate a ProbeGroup
 -----------------------------------
 
-This code show how to assmble several Probe into a ProbeBunch object.
+This code show how to assmble several Probe into a ProbeGroup object.
 
 """
 
@@ -12,7 +12,7 @@ This code show how to assmble several Probe into a ProbeBunch object.
 import numpy as np
 import matplotlib.pyplot as plt
 
-from probeinterface import Probe, ProbeBunch
+from probeinterface import Probe, ProbeGroup
 from probeinterface.plotting import plot_probe_bunch
 from probeinterface import generate_dummy_probe
 
@@ -26,26 +26,26 @@ probe1 = generate_dummy_probe(elec_shapes='circle')
 probe1.move([250, -90])
 
 ##############################################################################
-# Create a ProbeBunch and
+# Create a ProbeGroup and
 # add the Probe into it
 
-probebunch = ProbeBunch()
-probebunch.add_probe(probe0)
-probebunch.add_probe(probe1)
+probegroup = ProbeGroup()
+probegroup.add_probe(probe0)
+probegroup.add_probe(probe1)
 
 print('probe0.get_electrode_count()', probe0.get_electrode_count())
 print('probe1.get_electrode_count()', probe1.get_electrode_count())
-print('probebunch.get_channel_count()', probebunch.get_channel_count())
+print('probegroup.get_channel_count()', probegroup.get_channel_count())
 
 ##############################################################################
 # Plot all probe in the same axes
 
-plot_probe_bunch(probebunch, same_axe=True)
+plot_probe_bunch(probegroup, same_axe=True)
 
 ##############################################################################
 # Plot all probe in seperated axes
 
-plot_probe_bunch(probebunch, same_axe=False,  with_channel_index=True)
+plot_probe_bunch(probegroup, same_axe=False,  with_channel_index=True)
 
 plt.show()
 
