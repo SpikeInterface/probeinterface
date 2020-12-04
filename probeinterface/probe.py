@@ -152,10 +152,10 @@ class Probe:
         y1 += margin
 
         if probe_type == 'rect':
-            vertices = [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
+            vertices = [(x0, y1), (x0, y0), (x1, y0), (x1, y1), ]
         elif probe_type == 'tip':
             tip = ((x0 + x1) * 0.5, y0 - margin * 4)
-            vertices = [(x0, y0), tip, (x1, y0), (x1, y1), (x0, y1)]
+            vertices = [(x0, y1), (x0, y0), tip, (x1, y0), (x1, y1), ]
         else:
             raise ValueError()
         self.set_shape_vertices(vertices)

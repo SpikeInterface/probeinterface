@@ -5,7 +5,7 @@ import numpy as np
 
 from .probe import Probe
 
-def combinate_probes(probes):
+def combinate_probes(probes, connect_shape=True):
     """
     Combinate several Probe object into a unique
     Probe object multi multi shank.
@@ -16,6 +16,18 @@ def combinate_probes(probes):
       * probes have been rotated
       * probes NOT have been moved (probe overlap in space )
     
+    
+    Parameters
+    ----------
+    probes: list of Probe
+    
+    connect_shape: bool (default True)
+        Connect all shape togother.
+        This can lead to strange probe shape....
+
+    Return
+    ----------
+    A multi-shank probe object.
     
     """
 
@@ -47,8 +59,10 @@ def combinate_probes(probes):
     # global shape
     have_shape = all(p.probe_shape_vertices is not None for p in probes)
     
-    if have_shape:
+    if have_shape and connect_shape:
         verts = np.concatenate([p.probe_shape_vertices for p in probes], axis=0)
+        verts = np.concatenate([verts[0:1] + [0, 40], verts, verts[-1:] + [0, 40]], axis=0)
+        
         multi_shank.set_shape_vertices(verts)
 
     return multi_shank
