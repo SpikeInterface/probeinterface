@@ -14,15 +14,15 @@ import matplotlib.pyplot as plt
 
 from probeinterface import Probe, ProbeBunch
 from probeinterface.plotting import plot_probe_bunch
-from probeinterface import generate_fake_probe
+from probeinterface import generate_dummy_probe
 
 
 ##############################################################################
-# Generate 2 fake Probe with util function
+# Generate 2 dummy Probe with util function
 # 
 
-probe0 = generate_fake_probe(elec_shapes='square')
-probe1 = generate_fake_probe(elec_shapes='circle')
+probe0 = generate_dummy_probe(elec_shapes='square')
+probe1 = generate_dummy_probe(elec_shapes='circle')
 probe1.move([250, -90])
 
 ##############################################################################

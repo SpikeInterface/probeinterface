@@ -3,53 +3,48 @@ import numpy as np
 
 class ProbeBunch:
     """
-    Class that handle a bunch of Probe and the wiring to device.
+    Class that handle a group of Probe objects and the wiring to device.
     
-    Optionaly handle the geometry in between probes.
-    
-    ProbeBunch can have purpose:
-    
-       * deal with several probe for the same recording
-       * deal with several shank of the same physical probe but we want to split the sorting by shank
-    
+    Optionally, it can handle the location of different probes.
+
     """
+
     def __init__(self):
         self.probes = []
-    
+
     def add_probe(self, probe):
         """
         
         """
         if len(self.probes) > 0:
             self._check_compatible(probe)
-            
+
         self.probes.append(probe)
         probe._probe_bunch = self
-    
+
     def _check_compatible(self, probe):
         if probe._probe_bunch is not None:
             raise ValueError("This probe is already attached to another ProbeBunch")
-        
+
         if probe.ndim != self.probes[-1].ndim:
             raise ValueError("ndim are not compatible")
-        
+
         # check global channel maps
         self.probes.append(probe)
         self.check_global_device_wiring_and_ids()
-        self.probes =self.probes[:-1]
-        
-    
+        self.probes = self.probes[:-1]
+
     @property
     def ndim(self):
         return self.probes[0].ndim
-    
+
     def get_channel_count(self):
         """
         Total number of channel.
         """
         n = sum(probe.get_electrode_count() for probe in self.probes)
         return n
-    
+
     def get_global_device_channel_indices(self):
         """
         return a numpy array vector with 2 columns
@@ -61,15 +56,15 @@ class ProbeBunch:
         total_chan = self.get_channel_count()
         channels = np.zeros(total_chan, dtype=[('probe_index', 'int64'), ('device_channel_index', 'int64')])
         channels['device_channel_index'] = -1
-        
+
         ind = 0
         for i, probe in enumerate(self.probes):
             n = probe.get_electrode_count()
-            channels['probe_index'][ind:ind+n] = i
+            channels['probe_index'][ind:ind + n] = i
             if probe.device_channel_indices is not None:
-                channels['device_channel_index'][ind:ind+n] = probe.device_channel_indices
+                channels['device_channel_index'][ind:ind + n] = probe.device_channel_indices
             ind += n
-        
+
         return channels
 
     def set_global_device_channel_indices(self, channels):
@@ -78,25 +73,25 @@ class ProbeBunch:
         """
         channels = np.asarray(channels)
         if channels.size != self.get_channel_count():
-            raise ValurError('Wrong channels size')
-        
+            raise ValueError('Wrong channels size')
+
         # first reset previsous indices
         for i, probe in enumerate(self.probes):
             n = probe.get_electrode_count()
             probe.set_device_channel_indices([-1] * n)
-        
+
         # then set new indices
         ind = 0
         for i, probe in enumerate(self.probes):
             n = probe.get_electrode_count()
-            probe.set_device_channel_indices(channels[ind:ind+n])
-            ind += n 
-    
+            probe.set_device_channel_indices(channels[ind:ind + n])
+            ind += n
+
     def get_global_electrode_ids(self):
         """
         get all electrode ids conctenated acroos probes
         """
-        
+
         all_ids = []
         for i, probe in enumerate(self.probes):
             n = probe.get_electrode_count()
@@ -106,21 +101,20 @@ class ProbeBunch:
             all_ids.append(ids)
         all_ids = np.concatenate(all_ids)
         return all_ids
-    
+
     def check_global_device_wiring_and_ids(self):
         # check unique device_channel_indices for !=-1
         chans = self.get_global_device_channel_indices()
-        keep = chans['device_channel_index'] >=0
+        keep = chans['device_channel_index'] >= 0
         valid_chans = chans[keep]['device_channel_index']
-        
+
         if valid_chans.size != np.unique(valid_chans).size:
             raise ValueError('channel device index are not unique across probes')
-        
+
         # check unique ids for != ''
         all_ids = self.get_global_electrode_ids()
-        keep = [ e!='' for e in all_ids ]
+        keep = [e != '' for e in all_ids]
         valid_ids = all_ids[keep]
-        
+
         if valid_ids.size != np.unique(valid_ids).size:
             raise ValueError('electrode_ids are not unique across probes')
-
