@@ -17,7 +17,7 @@ The :code:`probeinterface` package also provide:
   * basic plotting functions with matplotlib
   * input/output functions to several formats (PRB, NWB, CSV, MEArec, SpikeGLX, ...)
 
-
+.. include:: examples/index.rst
    
 .. toctree::
    :caption: Contents:
