@@ -7,14 +7,11 @@ class Probe:
     """
     Class to handle the geometry of one probe.
     
-    Handle mainly electrode position.
-    
-    Can be 2D or 3D.
-    
-    Can handle also optionally the shape of eletrode and the shape of the probe.
-    
+    This class mainly handles electrode positions, in 2D or 3D. Optionally, it can also handle the shape of the
+    eletrodes and the shape of the probe.
     
     """
+
     def __init__(self, ndim=2, si_units='um'):
         """
         
@@ -29,37 +26,37 @@ class Probe:
         assert ndim in (2, 3)
         self.ndim = int(ndim)
         self.si_units = str(si_units)
-        
+
         # electrode position and shape : handle with arrays
         self.electrode_positions = None
         self.electrode_plane_axes = None
         self.electrode_shapes = None
         self.electrode_shape_params = None
-        
+
         # vertices for the shape of the probe
         self.probe_shape_vertices = None
-        
+
         # this handle the wiring to device : channel index on device side.
         # this is due to complex routing
         #  This must be unique at Probe AND ProbeBunch level
         self.device_channel_indices = None
-        
+
         # Handle ids with str so it can be displayed like names
         #  This must be unique at Probe AND ProbeBunch level
         self.electrode_ids = None
-        
+
         # the Probe can belong to a ProbeBunch
         self._probe_bunch = None
-    
+
     def get_electrode_count(self):
         """
-        Return how many electrodes on the probe.
+        Return the number of electrodes on the probe.
         """
         assert self.electrode_positions is not None
         return len(self.electrode_positions)
-    
+
     def set_electrodes(self, positions=None, plane_axes=None, shapes='circle',
-                shape_params={'radius': 10}):
+                       shape_params={'radius': 10}):
         """
         Parameters
         ----------
@@ -76,18 +73,18 @@ class Probe:
             Contain kargs for shapes ("radius" for circle, "width" for sqaure, "width/height" for rect)
         """
         assert positions is not None
-        
+
         positions = np.array(positions)
         if positions.shape[1] != self.ndim:
-            raise ValueErrorr('posistions.shape[1] and ndim do not match!')
-        
+            raise ValueError('posistions.shape[1] and ndim do not match!')
+
         self.electrode_positions = positions
         n = positions.shape[0]
-        
+
         # This defines the electrod plane (2d or 3d) where the electrode lies.
         # For 2D we make auto
         if plane_axes is None:
-            if self.ndim ==3:
+            if self.ndim == 3:
                 raise ValueError('you need to give plane_axes')
             else:
                 plane_axes = np.zeros((n, 2, self.ndim))
@@ -102,44 +99,44 @@ class Probe:
         shapes = np.array(shapes)
         if not np.all(np.in1d(shapes, _possible_electrode_shapes)):
             raise ValueError(f'Electrodes shape must be in {_possible_electrode_shapes}')
-        if shapes.shape[0] !=n:
+        if shapes.shape[0] != n:
             raise ValueError(f'Electrodes shape must have same length as posistions')
         self.electrode_shapes = np.array(shapes)
-        
+
         # shape params
         if isinstance(shape_params, dict):
             shape_params = [shape_params] * n
         self.electrode_shape_params = np.array(shape_params)
-    
+
     def set_shape_vertices(self, shape_vertices):
         shape_vertices = np.asarray(shape_vertices)
         if shape_vertices.shape[1] != self.ndim:
-            raise ValueErrorr('shape_vertices.shape[1] and ndim do not match!')
+            raise ValueError('shape_vertices.shape[1] and ndim do not match!')
         self.probe_shape_vertices = shape_vertices
-    
+
     def create_auto_shape(self, probe_type='tip', margin=20):
-        if self.ndim !=2:
-            raise ValueErrror('Auto shape is supported only for 2d')
-        
+        if self.ndim != 2:
+            raise ValueError('Auto shape is supported only for 2d')
+
         x0 = np.min(self.electrode_positions[:, 0])
         x1 = np.max(self.electrode_positions[:, 0])
         x0 -= margin
         x1 += margin
-        
+
         y0 = np.min(self.electrode_positions[:, 1])
         y1 = np.max(self.electrode_positions[:, 1])
         y0 -= margin
         y1 += margin
-        
+
         if probe_type == 'rect':
             vertices = [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
         elif probe_type == 'tip':
-            tip = ((x0+x1)*0.5, y0 - margin*4)
+            tip = ((x0 + x1) * 0.5, y0 - margin * 4)
             vertices = [(x0, y0), tip, (x1, y0), (x1, y1), (x0, y1)]
         else:
             raise ValueError()
         self.set_shape_vertices(vertices)
-    
+
     def set_device_channel_indices(self, channel_indices):
         """
         Set the channel indices on device side.
@@ -158,7 +155,7 @@ class Probe:
         self.device_channel_indices = channel_indices
         if self._probe_bunch is not None:
             self._probe_bunch.check_global_device_wiring_and_ids()
-    
+
     def set_electrode_ids(self, elec_ids):
         """
         Set electrode ids. This is handle with string.
@@ -171,18 +168,17 @@ class Probe:
             If elec_ids is int or float then convert to str
         """
         elec_ids = np.asarray(elec_ids)
-        
+
         if elec_ids.size != self.get_electrode_count():
-            valueError('channel_indices have not the same size as electrode')
+            ValueError('channel_indices have not the same size as electrode')
 
         if elec_ids.dtype.kind != 'U':
             elec_ids = elec_ids.astype('U')
-        
+
         self.electrode_ids = elec_ids
         if self._probe_bunch is not None:
             self._probe_bunch.check_global_device_wiring_and_ids()
 
-    
     def copy(self):
         """
         Copy to another Probe instance.
@@ -192,10 +188,10 @@ class Probe:
         """
         other = Probe()
         other.set_electrodes(
-                    positions=self.electrode_positions.copy(),
-                    plane_axes=self.electrode_plane_axes.copy(),
-                    shapes=self.electrode_shapes.copy(),
-                    shape_params=self.electrode_shape_params.copy())
+            positions=self.electrode_positions.copy(),
+            plane_axes=self.electrode_plane_axes.copy(),
+            shapes=self.electrode_shapes.copy(),
+            shape_params=self.electrode_shape_params.copy())
         if self.probe_shape_vertices is not None:
             other.set_shape_vertices(self.probe_shape_vertices.copy())
         # channel_indices are not copied
@@ -211,29 +207,29 @@ class Probe:
         ----------
         plane: 'xy', 'yz' ', xz'
         """
-        assert self.ndim ==2
-        
+        assert self.ndim == 2
+
         probe3d = Probe(ndim=3, si_units=self.si_units)
-        
+
         # electrodes
         positions = _2d_to_3d(self.electrode_positions, plane)
         plane0 = _2d_to_3d(self.electrode_plane_axes[:, 0, :], plane)
         plane1 = _2d_to_3d(self.electrode_plane_axes[:, 1, :], plane)
         plane_axes = np.concatenate([plane0[:, np.newaxis, :], plane1[:, np.newaxis, :]], axis=1)
         probe3d.set_electrodes(
-                    positions=positions,
-                    plane_axes=plane_axes,
-                    shapes=self.electrode_shapes.copy(),
-                    shape_params=self.electrode_shape_params.copy())
+            positions=positions,
+            plane_axes=plane_axes,
+            shapes=self.electrode_shapes.copy(),
+            shape_params=self.electrode_shape_params.copy())
 
         # shape
         if self.probe_shape_vertices is not None:
             vertices3d = _2d_to_3d(self.probe_shape_vertices, plane)
             probe3d.set_shape_vertices(vertices3d)
-        
+
         if self.device_channel_indices is not None:
             probe3d.device_channel_indices = self.device_channel_indices
-        
+
         return probe3d
 
     def get_electrodes_vertices(self):
@@ -246,13 +242,13 @@ class Probe:
             shape_param = self.electrode_shape_params[i]
             plane_axe = self.electrode_plane_axes[i]
             pos = self.electrode_positions[i]
-            
+
             if shape == 'circle':
                 r = shape_param['radius']
                 theta = np.linspace(0, 2 * np.pi, 360)
                 theta = np.tile(theta[:, np.newaxis], [1, self.ndim])
                 one_vertice = pos + r * np.cos(theta) * plane_axe[0] + \
-                                    r * np.sin(theta) * plane_axe[1]
+                              r * np.sin(theta) * plane_axe[1]
             elif shape == 'square':
                 w = shape_param['width']
                 one_vertice = [
@@ -271,7 +267,7 @@ class Probe:
                     pos + w / 2 * plane_axe[0] - h / 2 * plane_axe[1],
                 ]
             else:
-                raise ValueError            
+                raise ValueError
             vertices.append(one_vertice)
         return vertices
 
@@ -285,12 +281,12 @@ class Probe:
         """
         translation_vetor = np.asarray(translation_vetor)
         assert translation_vetor.shape[0] == self.ndim
-        
+
         self.electrode_positions += translation_vetor
-        
+
         if self.probe_shape_vertices is not None:
             self.probe_shape_vertices += translation_vetor
-    
+
     def rotate(self, theta, center=None, axis=None):
         """
         Rorate the probe the specified axis
@@ -307,35 +303,34 @@ class Probe:
         """
         if center is None:
             center = np.mean(self.electrode_positions, axis=0)
-        
+
         center = np.asarray(center)
         assert center.size == self.ndim
         center = center[None, :]
-        
+
         theta = np.deg2rad(theta)
-        
+
         if self.ndim == 2:
             if axis is not None:
                 raise ValueError('axis must be None for 2d')
             R = _rotation_matrix_2d(theta)
         elif self.ndim == 3:
             R = _rotation_matrix_3d(axis, theta).T
-        
+
         new_positions = (self.electrode_positions - center) @ R + center
-        
-        
+
         new_plane_axes = np.zeros_like(self.electrode_plane_axes)
         for i in range(2):
-            new_plane_axes[:, i, :] = (self.electrode_plane_axes[:, i, :] - center + self.electrode_positions) @ R +center - new_positions
-            
-        
+            new_plane_axes[:, i, :] = (self.electrode_plane_axes[:, i,
+                                       :] - center + self.electrode_positions) @ R + center - new_positions
+
         self.electrode_positions = new_positions
         self.electrode_plane_axes = new_plane_axes
 
         if self.probe_shape_vertices is not None:
             new_vertices = (self.probe_shape_vertices - center) @ R + center
             self.probe_shape_vertices = new_vertices
-        
+
     def rotate_electrodes(self, thetas, center=None, axis=None):
         """
         Rotate each electrodes.
@@ -349,23 +344,23 @@ class Probe:
         """
         if self.ndim == 3:
             raise ValueError('By electrode rotation is implemented only for 2d')
-        
+
         n = self.get_electrode_count()
-        
+
         if isinstance(thetas, (int, float)):
             thetas = np.array([thetas] * n, dtype='float64')
-        
+
         thetas = np.deg2rad(thetas)
-        
+
         for e in range(n):
             R = _rotation_matrix_2d(thetas[e])
             for i in range(2):
                 self.electrode_plane_axes[e, i, :] = self.electrode_plane_axes[e, i, :] @ R
 
-    _dump_attr_names = ['ndim', 'si_units', 'electrode_positions', 'electrode_plane_axes', 
-                    'electrode_shapes', 'electrode_shape_params',
-                    'probe_shape_vertices', 'device_channel_indices', 'electrode_ids']
-    
+    _dump_attr_names = ['ndim', 'si_units', 'electrode_positions', 'electrode_plane_axes',
+                        'electrode_shapes', 'electrode_shape_params',
+                        'probe_shape_vertices', 'device_channel_indices', 'electrode_ids']
+
     def to_dict(self):
         """
         Create a dict of all necessary attributes.
@@ -377,17 +372,17 @@ class Probe:
             if v is not None:
                 d[k] = v
         return d
-    
+
     @staticmethod
     def from_dict(d):
         probe = Probe(ndim=d['ndim'], si_units=d['si_units'])
-        
+
         probe.set_electrodes(
-                    positions=d['electrode_positions'],
-                    plane_axes=d['electrode_plane_axes'],
-                    shapes=d['electrode_shapes'],
-                    shape_params=d['electrode_shape_params'])
-        
+            positions=d['electrode_positions'],
+            plane_axes=d['electrode_plane_axes'],
+            shapes=d['electrode_shapes'],
+            shape_params=d['electrode_shape_params'])
+
         v = d.get('probe_shape_vertices', None)
         if v is not None:
             probe.set_shape_vertices(v)
@@ -395,7 +390,7 @@ class Probe:
         v = d.get('device_channel_indices', None)
         if v is not None:
             probe.set_device_channel_indices(v)
-        
+
         return probe
 
 
@@ -413,7 +408,6 @@ def _2d_to_3d(data2d, plane):
     else:
         raise ValueError('Bad plane')
     return data3d
-    
 
 
 def _rotation_matrix_2d(theta):
@@ -432,6 +426,7 @@ def _rotation_matrix_2d(theta):
     """
     R = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
     return R
+
 
 def _rotation_matrix_3d(axis, theta):
     '''
@@ -459,9 +454,6 @@ def _rotation_matrix_3d(axis, theta):
     aa, bb, cc, dd = a * a, b * b, c * c, d * d
     bc, ad, ac, ab, bd, cd = b * c, a * d, a * c, a * b, b * d, c * d
     R = np.array([[aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)],
-                     [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
-                     [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]])
+                  [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
+                  [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]])
     return R
-
-
-

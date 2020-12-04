@@ -1,5 +1,5 @@
 from probeinterface import Probe, ProbeBunch
-from probeinterface import generate_fake_probe, generate_fake_probe_bunch
+from probeinterface import generate_dummy_probe, generate_dummy_probe_bunch
 from probeinterface.plotting import plot_probe, plot_probe_bunch
 
 import matplotlib.pyplot as plt
@@ -9,7 +9,7 @@ import pytest
 
 
 def test_plot_probe():
-    probe = generate_fake_probe()
+    probe = generate_dummy_probe()
     plot_probe(probe)
     plot_probe(probe, with_channel_index=True)
     
@@ -24,7 +24,7 @@ def test_plot_probe():
 
 
 def test_plot_probe_bunch():
-    probebunch  = generate_fake_probe_bunch()
+    probebunch  = generate_dummy_probe_bunch()
 
     plot_probe_bunch(probebunch, same_axe=True, with_channel_index=True)
     plot_probe_bunch(probebunch, same_axe=False)

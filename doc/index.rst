@@ -1,25 +1,22 @@
-Doc probeinterface
-===============
+Probeinterface: a unified framework for probe handling in neuroscience
+======================================================================
 
-Python package to handle probe layout, geometry and wiring to device. 
+:code:`probeinterface` is Python package to handle probe layout, geometry and wiring to device for neuroscience experiments.
 
 
-The package handle mainly:
+The package handles the following items:
 
-  * probe geometry (2d, 3d electrode layout)
+  * probe geometry (2D or 3D electrode layout)
   * probe shape (contour of the probe)
-  * shape of electrodes
-  * probe wiring to device (channel are not in order generaly)
-  * combinaison of several probe : global geometry + global wiring
+  * shape and size of the electrodes
+  * probe wiring to the recording device
+  * combination of several probes: global geometry + global wiring
 
-The probeinterface package also provide:
+The :code:`probeinterface` package also provide:
 
-  * basic plotting function with matplotlib (to demonstrate the use)
-  * input/ouput to several formats (PRB, CSV, mearec, spikeglx, ...)
-  
+  * basic plotting functions with matplotlib
+  * input/output functions to several formats (PRB, NWB, CSV, MEArec, SpikeGLX, ...)
 
-
-.. include:: examples/index.rst
 
    
 .. toctree::
@@ -27,6 +24,6 @@ The probeinterface package also provide:
    :maxdepth: 2
    
    overview
-   api
    examples/index.rst
+   api
 

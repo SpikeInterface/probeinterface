@@ -1,4 +1,4 @@
-from probeinterface import (generate_fake_probe, generate_fake_probe_bunch,
+from probeinterface import (generate_dummy_probe, generate_dummy_probe_bunch,
         generate_tetrode, generate_linear_probe, generate_multi_columns_probe)
 
 
@@ -9,8 +9,8 @@ import pytest
 
 
 def test_generate():
-    probe = generate_fake_probe()
-    probebunch = generate_fake_probe_bunch()
+    probe = generate_dummy_probe()
+    probebunch = generate_dummy_probe_bunch()
     
     tetrode = generate_tetrode()
     

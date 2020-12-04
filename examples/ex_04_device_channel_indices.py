@@ -60,8 +60,8 @@ plot_probe(probe, with_channel_index=True)
 # Very often we have several probes on the device this lead to even complex channel indices
 # `ProbeBunch.get_global_device_channel_indices()` give the overview of the device wiring.
 
-#~ probe0 = generate_fake_probe(elec_shapes='circle')
-#~ probe1 = generate_fake_probe(elec_shapes='square')
+#~ probe0 = generate_dummy_probe(elec_shapes='circle')
+#~ probe1 = generate_dummy_probe(elec_shapes='square')
 probe0 = generate_multi_columns_probe(num_columns=3,
                 num_elec_per_column=[5, 6, 5],
                 xpitch=75, ypitch=75, y_shift_per_column=[0, -37.5, 0],

@@ -9,8 +9,7 @@ from .probe import Probe
 from .probebunch import ProbeBunch
 
 
-
-def generate_fake_probe(elec_shapes='circle'):
+def generate_dummy_probe(elec_shapes='circle'):
     """
     Generate a 3 columns 32 channels electrode.
     Mainly used for testing and examples.
@@ -23,28 +22,27 @@ def generate_fake_probe(elec_shapes='circle'):
         electrode_shape_params = {'width': 6, 'height': 4.5}
 
     probe = generate_multi_columns_probe(num_columns=3,
-                num_elec_per_column=[10, 12, 10],
-                xpitch=25, ypitch=25, y_shift_per_column=[0, -12.5, 0],
-                electrode_shapes=elec_shapes, electrode_shape_params=electrode_shape_params)
-
-
+                                         num_elec_per_column=[10, 12, 10],
+                                         xpitch=25, ypitch=25, y_shift_per_column=[0, -12.5, 0],
+                                         electrode_shapes=elec_shapes, electrode_shape_params=electrode_shape_params)
 
     return probe
-    
-def generate_fake_probe_bunch():
+
+
+def generate_dummy_probe_bunch():
     """
     Generate a ProbeBunch with 2 probe.
     Mainly used for testing and examples.
     """
-    probe0 = generate_fake_probe()
-    probe1 = generate_fake_probe(elec_shapes='rect')
+    probe0 = generate_dummy_probe()
+    probe1 = generate_dummy_probe(elec_shapes='rect')
     probe1.move([150, -50])
 
     # probe bunch
     probebunch = ProbeBunch()
     probebunch.add_probe(probe0)
     probebunch.add_probe(probe1)
-    
+
     return probebunch
 
 
@@ -55,45 +53,47 @@ def generate_tetrode():
     
     """
     probe = Probe(ndim=2, si_units='um')
-    phi = np.arange(0, np.pi *2, np.pi / 2)[:, None]
+    phi = np.arange(0, np.pi * 2, np.pi / 2)[:, None]
     positions = np.hstack([np.cos(phi), np.sin(phi)]) * 10
     probe.set_electrodes(positions=positions, shapes='circle', shape_params={'radius': 6})
     return probe
-    
+
 
 def generate_multi_columns_probe(num_columns=3, num_elec_per_column=10,
-                xpitch=20, ypitch=20, y_shift_per_column=None,
-                electrode_shapes='circle', electrode_shape_params={'radius': 6}):
+                                 xpitch=20, ypitch=20, y_shift_per_column=None,
+                                 electrode_shapes='circle', electrode_shape_params={'radius': 6}):
     """
     Generate a Probe with several columns
     """
-    
+
     if isinstance(num_elec_per_column, int):
         num_elec_per_column = [num_elec_per_column] * num_columns
-    
+
     if y_shift_per_column is None:
         y_shift_per_column = [0] * num_columns
-    
+
     positions = []
     for i in range(num_columns):
         x = np.ones(num_elec_per_column[i]) * xpitch * i
         y = np.arange(num_elec_per_column[i]) * ypitch + y_shift_per_column[i]
         positions.append(np.hstack((x[:, None], y[:, None])))
     positions = np.vstack(positions)
-    
+
     probe = Probe(ndim=2, si_units='um')
     probe.set_electrodes(positions=positions, shapes=electrode_shapes,
-                shape_params=electrode_shape_params)
+                         shape_params=electrode_shape_params)
     probe.create_auto_shape(probe_type='tip', margin=25)
-    
+
     return probe
 
-def generate_linear_probe(num_elec=16,  ypitch=20,
-            electrode_shapes='circle', electrode_shape_params={'radius': 6}):
+
+def generate_linear_probe(num_elec=16, ypitch=20,
+                          electrode_shapes='circle', electrode_shape_params={'radius': 6}):
     """
     Generate a linear Probe (one columns)
     """
-    
+
     probe = generate_multi_columns_probe(num_columns=1, num_elec_per_column=num_elec,
-            xpitch=0, ypitch=ypitch, electrode_shapes=electrode_shapes, electrode_shape_params=electrode_shape_params)
+                                         xpitch=0, ypitch=ypitch, electrode_shapes=electrode_shapes,
+                                         electrode_shape_params=electrode_shape_params)
     return probe

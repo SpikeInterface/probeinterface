@@ -4,7 +4,7 @@ import numpy as np
 
 import pytest
 
-def _fake_posistion():
+def _dummy_posistion():
     n = 24
     positions = np.zeros((n, 2))
     for i in range(n):
@@ -17,7 +17,7 @@ def _fake_posistion():
     
 
 def test_probe():
-    positions = _fake_posistion()
+    positions = _dummy_posistion()
     
     probe = Probe(ndim=2, si_units='um')
     probe.set_electrodes(positions=positions, shapes='circle', shape_params={'radius': 5})

@@ -15,7 +15,7 @@ from probeinterface.plotting import plot_probe
 
 
 ##############################################################################
-# First, let's create fake positions for 32 electrodes probe
+# First, let's create dummy positions for 32 electrodes probe
 
 n = 24
 positions = np.zeros((n, 2))

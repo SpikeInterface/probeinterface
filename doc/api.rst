@@ -48,17 +48,15 @@ Probe generators
 
 .. automodule:: probeinterface.generator
 
-    .. autofunction:: generate_fake_probe
+    .. autofunction:: generate_dummy_probe
     
-    .. autofunction:: generate_fake_probe_bunch
+    .. autofunction:: generate_dummy_probe_bunch
     
     .. autofunction:: generate_tetrode
     
     .. autofunction:: generate_multi_columns_probe
     
     .. autofunction:: generate_linear_probe
-    
-    .. autofunction:: 
 
 Plotting
 --------------------

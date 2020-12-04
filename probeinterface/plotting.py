@@ -10,7 +10,7 @@ import numpy as np
 
 
 def plot_probe(probe, ax=None, electrode_colors=None, with_channel_index=False,
-                    electrodes_kargs = {}, probe_shape_kwargs={}):
+               electrodes_kargs={}, probe_shape_kwargs={}):
     """
     plot one probe.
     switch 2d 3d depending the Probe.ndim
@@ -21,8 +21,7 @@ def plot_probe(probe, ax=None, electrode_colors=None, with_channel_index=False,
         from matplotlib.collections import PolyCollection
     elif probe.ndim == 3:
         from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-    
-    
+
     if ax is None:
         if probe.ndim == 2:
             fig, ax = plt.subplots()
@@ -30,31 +29,30 @@ def plot_probe(probe, ax=None, electrode_colors=None, with_channel_index=False,
         else:
             fig = plt.figure()
             ax = fig.add_subplot(1, 1, 1, projection='3d')
-    
+
     _probe_shape_kwargs = dict(facecolor='green', edgecolor='k', lw=0.5, alpha=0.3)
     _probe_shape_kwargs.update(probe_shape_kwargs)
-    
+
     _electrodes_kargs = dict(alpha=0.7, edgecolor=[0.3, 0.3, 0.3], lw=0.5)
     _electrodes_kargs.update(electrodes_kargs)
-    
 
     n = probe.get_electrode_count()
-    
+
     if electrode_colors is None:
-        electrode_colors = [ 'orange'] * n
-    
+        electrode_colors = ['orange'] * n
+
     # electrodes
     positions = probe.electrode_positions
     min_, max_ = np.min(positions), np.max(positions)
-    
+
     vertices = probe.get_electrodes_vertices()
     if probe.ndim == 2:
-        poly = PolyCollection(vertices,color=electrode_colors,  **_electrodes_kargs)
-        ax.add_collection(poly)        
+        poly = PolyCollection(vertices, color=electrode_colors, **_electrodes_kargs)
+        ax.add_collection(poly)
     elif probe.ndim == 3:
-        poly3d = Poly3DCollection(vertices,color=electrode_colors,  **_electrodes_kargs)
+        poly3d = Poly3DCollection(vertices, color=electrode_colors, **_electrodes_kargs)
         ax.add_collection3d(poly3d)
-    
+
     # probe shape
     vertices = probe.probe_shape_vertices
     if vertices is not None:
@@ -64,7 +62,7 @@ def plot_probe(probe, ax=None, electrode_colors=None, with_channel_index=False,
         elif probe.ndim == 3:
             poly = Poly3DCollection([vertices], **_probe_shape_kwargs)
             ax.add_collection3d(poly)
-        
+
         min_, max_ = np.min(vertices), np.max(vertices)
 
     if with_channel_index:
@@ -81,16 +79,16 @@ def plot_probe(probe, ax=None, electrode_colors=None, with_channel_index=False,
 
     min_ -= 40
     max_ += 40
-    
+
     ax.set_xlim(min_, max_)
     ax.set_ylim(min_, max_)
     ax.set_xlabel('x')
     ax.set_ylabel('y')
-    
+
     if probe.ndim == 3:
         ax.set_zlim(min_, max_)
         ax.set_zlabel('z')
-    
+
     if probe.ndim == 2:
         ax.set_aspect('equal')
 
@@ -103,7 +101,7 @@ def plot_probe_bunch(probebunch, same_axe=True, **kargs):
     """
     import matplotlib.pyplot as plt
     n = len(probebunch.probes)
-    
+
     if same_axe:
         if 'ax' in kargs:
             ax = kargs.pop('ax')
@@ -119,11 +117,10 @@ def plot_probe_bunch(probebunch, same_axe=True, **kargs):
             raise valueError('with same_axe=False do not provide ax')
         if probebunch.ndim == 2:
             fig, axs = plt.subplots(ncols=n, nrows=1)
-            if n==1:
+            if n == 1:
                 axs = [axs]
         else:
             raise NotImplementedError
 
     for i, probe in enumerate(probebunch.probes):
         plot_probe(probe, ax=axs[i], **kargs)
-

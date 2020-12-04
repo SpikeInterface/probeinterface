@@ -22,18 +22,18 @@ import matplotlib.pyplot as plt
 
 from probeinterface import Probe, ProbeBunch
 from probeinterface.plotting import plot_probe, plot_probe_bunch
-from probeinterface import generate_fake_probe
+from probeinterface import generate_dummy_probe
 from probeinterface import write_probeinterface, read_probeinterface
 from probeinterface import write_prb, read_prb
 
 
 
 ##############################################################################
-# Generate 2 fake Probe with util function
+# Generate 2 dummy Probe with util function
 # and a ProbeBunch
 
-probe0 = generate_fake_probe(elec_shapes='square')
-probe1 = generate_fake_probe(elec_shapes='circle')
+probe0 = generate_dummy_probe(elec_shapes='square')
+probe1 = generate_dummy_probe(elec_shapes='circle')
 probe1.move([250, -90])
 
 probebunch = ProbeBunch()

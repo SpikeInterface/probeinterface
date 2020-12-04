@@ -1,7 +1,7 @@
 from probeinterface import write_probeinterface, read_probeinterface
 from probeinterface import read_prb, write_prb
 from probeinterface import read_spikeglx
-from probeinterface import generate_fake_probe_bunch
+from probeinterface import generate_dummy_probe_bunch
 
 
 from pathlib import Path
@@ -16,7 +16,7 @@ folder = Path(__file__).absolute().parent
 
 def test_probeinterface_format():
     filename = 'test_pi_format.h5'
-    probebunch = generate_fake_probe_bunch()
+    probebunch = generate_dummy_probe_bunch()
     write_probeinterface(filename, probebunch)
     
     probebunch2 = read_probeinterface(filename)
@@ -65,7 +65,7 @@ channel_groups = {
 """
 
 def test_prb():
-    probebunch = read_prb(folder / 'fake.prb')
+    probebunch = read_prb(folder / 'dummy.prb')
     
     with open('two_tetrodes.prb', 'w') as f:
         f.write(prb_two_tetrodes)
