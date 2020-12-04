@@ -15,6 +15,9 @@ class Shank:
     def get_indices(self):
         inds, = np.nonzero(self.probe.shank_ids == self.shank_id)
         return inds
+        
+    def get_electrode_count(self):
+        return self.get_indices().size
 
     @property
     def electrode_positions(self):

@@ -37,9 +37,6 @@ def combinate_probes(probes, connect_shape=True):
 
 
     n = sum(p.get_electrode_count() for p in probes)
-    print('n', n)
-
-
     
     kwargs = {}
     for k in ('electrode_positions', 'electrode_plane_axes',
