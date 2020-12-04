@@ -1,5 +1,6 @@
 from probeinterface import (generate_dummy_probe, generate_dummy_probe_bunch,
-        generate_tetrode, generate_linear_probe, generate_multi_columns_probe)
+        generate_tetrode, generate_linear_probe, generate_multi_columns_probe,
+        generate_multi_shank)
 
 
 from pathlib import Path
@@ -22,10 +23,12 @@ def test_generate():
     linear = generate_linear_probe(num_elec=16,  ypitch=20,
                     electrode_shapes='square', electrode_shape_params={'width': 15})
     
-    #~ from probeinterface.plotting import plot_probe_bunch, plot_probe
-    #~ import matplotlib.pyplot as plt
-    #~ plot_probe(linear, with_channel_index=True,)
-    #~ plt.show()
+    multi_shank = generate_multi_shank()
+    
+    from probeinterface.plotting import plot_probe_bunch, plot_probe
+    import matplotlib.pyplot as plt
+    plot_probe(multi_shank, with_channel_index=True,)
+    plt.show()
 
 if __name__ == '__main__':
     test_generate()
