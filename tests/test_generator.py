@@ -25,10 +25,10 @@ def test_generate():
     
     multi_shank = generate_multi_shank()
     
-    from probeinterface.plotting import plot_probe_bunch, plot_probe
-    import matplotlib.pyplot as plt
-    plot_probe(multi_shank, with_channel_index=True,)
-    plt.show()
+    #~ from probeinterface.plotting import plot_probe_bunch, plot_probe
+    #~ import matplotlib.pyplot as plt
+    #~ plot_probe(multi_shank, with_channel_index=True,)
+    #~ plt.show()
 
 if __name__ == '__main__':
     test_generate()
