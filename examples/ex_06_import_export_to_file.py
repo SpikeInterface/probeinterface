@@ -2,8 +2,11 @@
 Import export to files
 -----------------------------------
 
-probeinterface have its own format based on hdf5.
-It is a trivial map between array and hfd tree.
+probeinterface have its own format based on JSON.
+The format handle several probe in one file.
+It have 'probes' key that hanle a list of probe.
+
+Each probe dict in the json folow the class attributes.
 
 It also support read from theses formats: (and sometimes write)
 
@@ -43,12 +46,19 @@ probegroup.add_probe(probe1)
 ##############################################################################
 # probe interface have its own format hdf5 based that store one ProbeGroup (and so several Probe)
 
-write_probeinterface('my_two_probe_setup.h5', probegroup)
+write_probeinterface('my_two_probe_setup.json', probegroup)
 
-probegroup2 = read_probeinterface('my_two_probe_setup.h5')
+probegroup2 = read_probeinterface('my_two_probe_setup.json')
 plot_probe_bunch(probegroup2)
 
 
+##############################################################################
+# The format looks like this
+
+with open('my_two_probe_setup.json', mode='r') as f:
+    txt = f.read()
+
+print(txt[:600], '...')
 
 
 ##############################################################################
