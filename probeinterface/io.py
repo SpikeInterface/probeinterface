@@ -14,63 +14,69 @@ import csv
 from pathlib import Path
 import re
 from pprint import pformat, pprint
+import json
+from collections import OrderedDict
 
 import numpy as np
 
+from .version import version
 from .probe import Probe
 from .probegroup import ProbeGroup
 
 
+def _probeinterface_format_check_version(d):
+    """
+    Check here format version for future version
+    """
+    pass
+
 def read_probeinterface(file):
     """
-    Read probeinterface own format hdf5 based.
+    Read probeinterface own format JSON based.
     
     Implementation is naive but ot works.
+    
+    Parameters
+    ----------
+    
+    file: Path or str
+        The file name.
+    
+    Returns
+    --------
+    
+    a ProbeGroup
     """
-    import h5py
-
-    probegroup = ProbeGroup()
-
     file = Path(file)
-    with h5py.File(file, 'r') as f:
-        for key in f.keys():
-            if key.startswith('probe_'):
-                probe_ind = int(key.split('_')[1])
-                probe_dict = {}
-                for k in Probe._dump_attr_names:
-                    path = f'/{key}/{k}'
-                    if not path in f:
-                        continue
-                    v = f[path]
-                    if k == 'electrode_shapes':
-                        v2 = np.array(v).astype('U')
-                    elif k == 'electrode_shape_params':
-                        l = []
-                        for e in v:
-                            d = {}
-                            exec(e.decode(), None, d)
-                            l.append(d['value'])
-                        v2 = np.array(l, dtype='O')
-                    elif k == 'si_units':
-                        v2 = str(v[0])
-                    elif k == 'ndim':
-                        v2 = int(v[0])
-                    else:
-                        v2 = np.array(v)
-                    probe_dict[k] = v2
-
-                probe = Probe.from_dict(probe_dict)
-                probegroup.add_probe(probe)
+    with open(file, 'r', encoding='utf8') as f:
+        d = json.load(f)
+    
+    # check version
+    _probeinterface_format_check_version(d)
+    
+    # create probegroup
+    probegroup = ProbeGroup()
+    for probe_dict in d['probes']:
+        probe = Probe.from_dict(probe_dict)
+        probegroup.add_probe(probe)
     return probegroup
-
-
+    
+    
 def write_probeinterface(file, probe_or_probegroup):
     """
-    Write to probeinterface own format hdf5 based.
+    Write to probeinterface own format JSON based.
     
-    Implementation is naive but ot works.
+    The format handle several probes in one file.
+    
+    Parameters
+    ----------
+    file: Path or str
+        The file name.
+    
+    probe_or_probegroup : Probe or ProbeGroup
+        If probe is given a probegroup is created anyway.
+        
     """
-    import h5py
     if isinstance(probe_or_probegroup, Probe):
         probegroup = ProbeGroup()
         probegroup.add_probe(probe)
@@ -80,23 +86,17 @@ def write_probeinterface(file, probe_or_probegroup):
         raise valueError('Bad boy')
 
     file = Path(file)
-
-    with h5py.File(file, 'w') as f:
-        for probe_ind, probe in enumerate(probegroup.probes):
-            d = probe.to_dict()
-            for k, v in d.items():
-                if k == 'electrode_shapes':
-                    v2 = v.astype('S')
-                elif k == 'electrode_shape_params':
-                    v2 = np.array(['value=' + pformat(e) for e in v], dtype='S')
-                elif k == 'si_units':
-                    v2 = np.array([v.encode('utf8')])
-                elif k == 'ndim':
-                    v2 = np.array([v])
-                else:
-                    v2 = v
-                path = f'/probe_{probe_ind}/{k}'
-                f.create_dataset(path, data=v2)
+    
+    d = OrderedDict()
+    d['specification'] = 'probeinterface'
+    d['version'] = version
+    d['probes'] = []
+    for probe_ind, probe in enumerate(probegroup.probes):
+        probe_dict = probe.to_dict(array_as_list=True)
+        d['probes'].append(probe_dict)
+    
+    with open(file, 'w', encoding='utf8') as f:
+        json.dump(d, f, indent=4)
 
 
 def read_prb(file):
@@ -258,3 +258,87 @@ def read_nwb(file):
     read probe position from the NWB format
     """
     raise NotImplementedError
+
+
+
+
+# OLD hdf5 implementation
+'''
+
+def read_probeinterface(file):
+    """
+    Read probeinterface own format hdf5 based.
+    
+    Implementation is naive but ot works.
+    """
+    import h5py
+
+    probegroup = ProbeGroup()
+
+    file = Path(file)
+    with h5py.File(file, 'r') as f:
+        for key in f.keys():
+            if key.startswith('probe_'):
+                probe_ind = int(key.split('_')[1])
+                probe_dict = {}
+                for k in Probe._dump_attr_names:
+                    path = f'/{key}/{k}'
+                    if not path in f:
+                        continue
+                    v = f[path]
+                    if k == 'electrode_shapes':
+                        v2 = np.array(v).astype('U')
+                    elif k == 'electrode_shape_params':
+                        l = []
+                        for e in v:
+                            d = {}
+                            exec(e.decode(), None, d)
+                            l.append(d['value'])
+                        v2 = np.array(l, dtype='O')
+                    elif k == 'si_units':
+                        v2 = str(v[0])
+                    elif k == 'ndim':
+                        v2 = int(v[0])
+                    else:
+                        v2 = np.array(v)
+                    probe_dict[k] = v2
+
+                probe = Probe.from_dict(probe_dict)
+                probegroup.add_probe(probe)
+    return probegroup
+
+
+def write_probeinterface(file, probe_or_probegroup):
+    """
+    Write to probeinterface own format hdf5 based.
+    
+    Implementation is naive but ot works.
+    """
+    import h5py
+    if isinstance(probe_or_probegroup, Probe):
+        probegroup = ProbeGroup()
+        probegroup.add_probe(probe)
+    elif isinstance(probe_or_probegroup, ProbeGroup):
+        probegroup = probe_or_probegroup
+    else:
+        raise valueError('Bad boy')
+
+    file = Path(file)
+
+    with h5py.File(file, 'w') as f:
+        for probe_ind, probe in enumerate(probegroup.probes):
+            d = probe.to_dict()
+            for k, v in d.items():
+                if k == 'electrode_shapes':
+                    v2 = v.astype('S')
+                elif k == 'electrode_shape_params':
+                    v2 = np.array(['value=' + pformat(e) for e in v], dtype='S')
+                elif k == 'si_units':
+                    v2 = np.array([v.encode('utf8')])
+                elif k == 'ndim':
+                    v2 = np.array([v])
+                else:
+                    v2 = v
+                path = f'/probe_{probe_ind}/{k}'
+                f.create_dataset(path, data=v2)
+'''

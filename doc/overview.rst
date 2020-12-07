@@ -52,7 +52,7 @@ These classes handle:
   * combination of several probes: global geometry + global wiring
 
 This package also provide:
-  * read/write to a common hdf5 format
+  * read/write to a common format (JSON based)
   * read/write function to existing format (PRB, NWB, CSV, MEArec, SpikeGLX, ...)
   * plotting routines
   * generator functions to create user-defined probes

@@ -15,7 +15,7 @@ folder = Path(__file__).absolute().parent
 
 
 def test_probeinterface_format():
-    filename = 'test_pi_format.h5'
+    filename = 'test_pi_format.json'
     probegroup = generate_dummy_probe_bunch()
     write_probeinterface(filename, probegroup)
     
@@ -35,8 +35,8 @@ def test_probeinterface_format():
 
     #~ from probeinterface.plotting import plot_probe_bunch
     #~ import matplotlib.pyplot as plt
-    #~ plot_probe_bunch(probegroup, with_channel_index=True, separate_axes=True)
-    #~ plot_probe_bunch(probegroup2, with_channel_index=True, separate_axes=True)
+    #~ plot_probe_bunch(probegroup, with_channel_index=True, same_axe=False)
+    #~ plot_probe_bunch(probegroup2, with_channel_index=True, same_axe=False)
     #~ plt.show()
 
     

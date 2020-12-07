@@ -405,7 +405,7 @@ class Probe:
                         'probe_shape_vertices', 'device_channel_indices', 'electrode_ids'
                         'shank_ids']
 
-    def to_dict(self):
+    def to_dict(self, array_as_list=False):
         """
         Create a dict of all necessary attributes.
         Usefull for dumping or saving to hdf5.
@@ -413,6 +413,8 @@ class Probe:
         d = {}
         for k in self._dump_attr_names:
             v = getattr(self, k, None)
+            if array_as_list and v is not None and isinstance(v, np.ndarray): 
+                v = v.tolist()
             if v is not None:
                 d[k] = v
         return d
