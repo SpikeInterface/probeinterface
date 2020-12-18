@@ -46,7 +46,7 @@ The scope of this project is handle one (or several) Probe with three simple pyt
 
 These classes handle:
   * probe geometry (2D or 3D electrode layout)
-  * probe shape (contour of the probe)
+  * probe planar contour (polygon)
   * shape and size of the electrodes
   * probe wiring to the recording device
   * combination of several probes: global geometry + global wiring
@@ -81,6 +81,8 @@ Implement and maintain a collection of widely used probes in Neuroscience, for e
   * `Neuronexus <https://neuronexus.com/support/mapping-and-wiring/probe-mapping/>`_
   * `IMEC <https://www.imec-int.com/en/expertise/lifesciences/neural-probes>`_
   * `Cambridge Neurotech <https://www.cambridgeneurotech.com/neural-probes>`_
+
+We have started  a work-in-progess repo of `probe library <https://gin.g-node.org/spikeinterface/probeinterface_library>`_
 
 
 Existing projects
