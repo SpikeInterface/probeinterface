@@ -29,7 +29,7 @@ def test_probeinterface_format():
         
         assert probe0.get_electrode_count() == probe1.get_electrode_count()
         assert np.allclose(probe0.electrode_positions,probe1.electrode_positions)
-        assert np.allclose(probe0.probe_shape_vertices,probe1.probe_shape_vertices)
+        assert np.allclose(probe0.probe_planar_contour,probe1.probe_planar_contour)
         
         # TODO more test
 

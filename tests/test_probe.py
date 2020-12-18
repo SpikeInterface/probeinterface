@@ -28,7 +28,7 @@ def test_probe():
 
     # shape of the probe
     vertices = [(-20, -30), (20, -110), (60, -30), (60, 190), (-20, 190)]
-    probe.set_shape_vertices(vertices)
+    probe.set_planar_contour(vertices)
         
     # auto shape
     probe.create_auto_shape()
