@@ -36,7 +36,7 @@ class Probe:
         self.electrode_shape_params = None
 
         # vertices for the shape of the probe
-        self.probe_shape_vertices = None
+        self.probe_planar_contour = None
 
         # This handle shankd ids
         self.shank_ids = None
@@ -49,10 +49,40 @@ class Probe:
         # Handle ids with str so it can be displayed like names
         #  This must be unique at Probe AND ProbeGroup level
         self.electrode_ids = None
+        
+        # annotation:  a dict that contain all meta information about 
+        # the probe (name, manufacturor, date of production, ...)
+        # See
+        self.annotations = dict(name='')
 
         # the Probe can belong to a ProbeGroup
         self._probe_bunch = None
+    
+    def get_title(self):
+        if self.electrode_positions is None:
+            txt = 'Undefined probe'
+        else:
+            n = self.get_electrode_count()
+            name = self.annotations.get('name', '')
+            manufacturer = self.annotations.get('manufacturer', '')
+            if len(name) >0 or len(manufacturer):
+                txt = f'{manufacturer} - {name} - {n}ch'
+            else:
+                txt = f'Probe - {n}ch'
+        return txt
 
+    def __repr__(self):
+        return self.get_title()
+    
+    def annotate(self, **kwargs):
+        self.annotations.update(kwargs)
+        self.check_annotations()
+    
+    def check_annotations(self):
+        d = self.annotations
+        if 'first_index' in d:
+            assert d['first_index'] in (0, 1)
+    
     def get_electrode_count(self):
         """
         Return the number of electrodes on the probe.
@@ -131,11 +161,11 @@ class Probe:
             shape_params = [shape_params] * n
         self.electrode_shape_params = np.array(shape_params)
 
-    def set_shape_vertices(self, shape_vertices):
-        shape_vertices = np.asarray(shape_vertices)
-        if shape_vertices.shape[1] != self.ndim:
-            raise ValueError('shape_vertices.shape[1] and ndim do not match!')
-        self.probe_shape_vertices = shape_vertices
+    def set_planar_contour(self, contour_polygon):
+        contour_polygon = np.asarray(contour_polygon)
+        if contour_polygon.shape[1] != self.ndim:
+            raise ValueError('contour_polygon.shape[1] and ndim do not match!')
+        self.probe_planar_contour = contour_polygon
 
     def create_auto_shape(self, probe_type='tip', margin=20):
         if self.ndim != 2:
@@ -152,13 +182,13 @@ class Probe:
         y1 += margin
 
         if probe_type == 'rect':
-            vertices = [(x0, y1), (x0, y0), (x1, y0), (x1, y1), ]
+            polygon = [(x0, y1), (x0, y0), (x1, y0), (x1, y1), ]
         elif probe_type == 'tip':
             tip = ((x0 + x1) * 0.5, y0 - margin * 4)
-            vertices = [(x0, y1), (x0, y0), tip, (x1, y0), (x1, y1), ]
+            polygon = [(x0, y1), (x0, y0), tip, (x1, y0), (x1, y1), ]
         else:
             raise ValueError()
-        self.set_shape_vertices(vertices)
+        self.set_planar_contour(polygon)
 
     def set_device_channel_indices(self, channel_indices):
         """
@@ -235,8 +265,8 @@ class Probe:
             plane_axes=self.electrode_plane_axes.copy(),
             shapes=self.electrode_shapes.copy(),
             shape_params=self.electrode_shape_params.copy())
-        if self.probe_shape_vertices is not None:
-            other.set_shape_vertices(self.probe_shape_vertices.copy())
+        if self.probe_planar_contour is not None:
+            other.set_planar_contour(self.probe_planar_contour.copy())
         # channel_indices are not copied
         return other
 
@@ -266,9 +296,9 @@ class Probe:
             shape_params=self.electrode_shape_params.copy())
 
         # shape
-        if self.probe_shape_vertices is not None:
-            vertices3d = _2d_to_3d(self.probe_shape_vertices, plane)
-            probe3d.set_shape_vertices(vertices3d)
+        if self.probe_planar_contour is not None:
+            vertices3d = _2d_to_3d(self.probe_planar_contour, plane)
+            probe3d.set_planar_contour(vertices3d)
 
         if self.device_channel_indices is not None:
             probe3d.device_channel_indices = self.device_channel_indices
@@ -327,8 +357,8 @@ class Probe:
 
         self.electrode_positions += translation_vetor
 
-        if self.probe_shape_vertices is not None:
-            self.probe_shape_vertices += translation_vetor
+        if self.probe_planar_contour is not None:
+            self.probe_planar_contour += translation_vetor
 
     def rotate(self, theta, center=None, axis=None):
         """
@@ -370,9 +400,9 @@ class Probe:
         self.electrode_positions = new_positions
         self.electrode_plane_axes = new_plane_axes
 
-        if self.probe_shape_vertices is not None:
-            new_vertices = (self.probe_shape_vertices - center) @ R + center
-            self.probe_shape_vertices = new_vertices
+        if self.probe_planar_contour is not None:
+            new_vertices = (self.probe_planar_contour - center) @ R + center
+            self.probe_planar_contour = new_vertices
 
     def rotate_electrodes(self, thetas, center=None, axis=None):
         """
@@ -400,9 +430,10 @@ class Probe:
             for i in range(2):
                 self.electrode_plane_axes[e, i, :] = self.electrode_plane_axes[e, i, :] @ R
 
-    _dump_attr_names = ['ndim', 'si_units', 'electrode_positions', 'electrode_plane_axes',
+    _dump_attr_names = ['ndim', 'si_units', 'annotations',
+                        'electrode_positions', 'electrode_plane_axes',
                         'electrode_shapes', 'electrode_shape_params',
-                        'probe_shape_vertices', 'device_channel_indices', 'electrode_ids'
+                        'probe_planar_contour', 'device_channel_indices', 'electrode_ids'
                         'shank_ids']
 
     def to_dict(self, array_as_list=False):
@@ -429,9 +460,9 @@ class Probe:
             shapes=d['electrode_shapes'],
             shape_params=d['electrode_shape_params'])
 
-        v = d.get('probe_shape_vertices', None)
+        v = d.get('probe_planar_contour', None)
         if v is not None:
-            probe.set_shape_vertices(v)
+            probe.set_planar_contour(v)
 
         v = d.get('device_channel_indices', None)
         if v is not None:

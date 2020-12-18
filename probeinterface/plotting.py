@@ -9,8 +9,9 @@ Depending Probe.ndim the plotting is done in 2d or 3d
 import numpy as np
 
 
-def plot_probe(probe, ax=None, electrode_colors=None, with_channel_index=False,
-               electrodes_kargs={}, probe_shape_kwargs={}):
+def plot_probe(probe, ax=None, electrode_colors=None,
+                 with_channel_index=False, first_index='auto',
+                title=True, electrodes_kargs={}, probe_shape_kwargs={}):
     """
     plot one probe.
     switch 2d 3d depending the Probe.ndim
@@ -29,7 +30,17 @@ def plot_probe(probe, ax=None, electrode_colors=None, with_channel_index=False,
         else:
             fig = plt.figure()
             ax = fig.add_subplot(1, 1, 1, projection='3d')
-
+    
+    if first_index == 'auto':
+        if 'first_index' in probe.annotations:
+            first_index = probe.annotations['first_index']
+        elif probe.annotations.get('manufacturer', None) == 'neuronexus':
+            # neuronexus is one based indexing
+            first_index = 1
+        else:
+            first_index = 0
+    assert first_index in (0, 1)
+        
     _probe_shape_kwargs = dict(facecolor='green', edgecolor='k', lw=0.5, alpha=0.3)
     _probe_shape_kwargs.update(probe_shape_kwargs)
 
@@ -54,7 +65,7 @@ def plot_probe(probe, ax=None, electrode_colors=None, with_channel_index=False,
         ax.add_collection3d(poly3d)
 
     # probe shape
-    vertices = probe.probe_shape_vertices
+    vertices = probe.probe_planar_contour
     if vertices is not None:
         if probe.ndim == 2:
             poly = PolyCollection([vertices], **_probe_shape_kwargs)
@@ -71,10 +82,10 @@ def plot_probe(probe, ax=None, electrode_colors=None, with_channel_index=False,
         for i in range(n):
             x, y = probe.electrode_positions[i]
             if probe.device_channel_indices is None:
-                txt = f'{i}'
+                txt = f'{i+first_index}'
             else:
                 chan_ind = probe.device_channel_indices[i]
-                txt = f'prb{i}\ndev{chan_ind}'
+                txt = f'prb{i+first_index}\ndev{chan_ind}'
             ax.text(x, y, txt, ha='center', va='center')
 
     min_ -= 40
@@ -91,6 +102,9 @@ def plot_probe(probe, ax=None, electrode_colors=None, with_channel_index=False,
 
     if probe.ndim == 2:
         ax.set_aspect('equal')
+    
+    if title:
+        ax.set_title(probe.get_title())
 
 
 def plot_probe_bunch(probegroup, same_axe=True, **kargs):
@@ -121,6 +135,7 @@ def plot_probe_bunch(probegroup, same_axe=True, **kargs):
                 axs = [axs]
         else:
             raise NotImplementedError
-
+    
+    kargs['title'] = True
     for i, probe in enumerate(probegroup.probes):
         plot_probe(probe, ax=axs[i], **kargs)

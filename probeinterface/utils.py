@@ -54,12 +54,12 @@ def combinate_probes(probes, connect_shape=True):
     multi_shank.set_electrodes(**kwargs)
 
     # global shape
-    have_shape = all(p.probe_shape_vertices is not None for p in probes)
+    have_shape = all(p.probe_planar_contour is not None for p in probes)
     
     if have_shape and connect_shape:
-        verts = np.concatenate([p.probe_shape_vertices for p in probes], axis=0)
+        verts = np.concatenate([p.probe_planar_contour for p in probes], axis=0)
         verts = np.concatenate([verts[0:1] + [0, 40], verts, verts[-1:] + [0, 40]], axis=0)
         
-        multi_shank.set_shape_vertices(verts)
+        multi_shank.set_planar_contour(verts)
 
     return multi_shank
