@@ -78,6 +78,7 @@ def write_probeinterface(file, probe_or_probegroup):
         
     """
     if isinstance(probe_or_probegroup, Probe):
+        probe = probe_or_probegroup
         probegroup = ProbeGroup()
         probegroup.add_probe(probe)
     elif isinstance(probe_or_probegroup, ProbeGroup):

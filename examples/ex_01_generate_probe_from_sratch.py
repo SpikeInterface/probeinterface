@@ -39,10 +39,10 @@ probe = Probe(ndim=2, si_units='um')
 probe.set_electrodes(positions=positions, shapes='circle', shape_params={'radius': 5})
 
 ##############################################################################
-# cerate the shape (contour) of the probe
+# cerate the planar contour (polygon) of the probe
 
-vertices = [(-20, -30), (20, -110), (60, -30), (60, 190), (-20, 190)]
-probe.set_shape_vertices(vertices)
+polygon = [(-20, -30), (20, -110), (60, -30), (60, 190), (-20, 190)]
+probe.set_planar_contour(polygon)
 
 ##############################################################################
 # and plot it
