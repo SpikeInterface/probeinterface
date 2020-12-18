@@ -76,6 +76,12 @@ class Probe:
     
     def annotate(self, **kwargs):
         self.annotations.update(kwargs)
+        self.check_annotations()
+    
+    def check_annotations(self):
+        d = self.annotations
+        if 'first_index' in d:
+            assert d['first_index'] in (0, 1)
     
     def get_electrode_count(self):
         """
