@@ -467,6 +467,8 @@ class Probe:
         v = d.get('device_channel_indices', None)
         if v is not None:
             probe.set_device_channel_indices(v)
+        
+        probe.annotate(**d['annotations'])
 
         return probe
 
