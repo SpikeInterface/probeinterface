@@ -67,3 +67,11 @@ Plotting
     
     .. autofunction:: plot_probe_bunch
 
+Library
+----------
+
+.. automodule:: probeinterface.library
+
+    .. autofunction:: get_probe
+
+    
