@@ -1,14 +1,8 @@
 """
-Get probe from library
----------------------------------------
+Automatic wiring
+--------------------------
 
-Probe interface provide a libray of probes from several manufactrers on the gin platform
-here https://gin.g-node.org/spikeinterface/probeinterface_library
-
-User and manufacturer can so contribute to it.
-
-The python module provide a function to download and cache files locally
-with probeinterface format json based.
+Here an example to make automatically the wiring and get the device_channel_indices.
 """
 
 
