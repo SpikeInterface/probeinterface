@@ -192,7 +192,7 @@ class Probe:
 
     def set_device_channel_indices(self, channel_indices):
         """
-        Set the channel indices on device side.
+        Set manually the channel indices on device side.
         
         If some channel are not connected or not recorded then channel can be "-1"
 
@@ -208,7 +208,27 @@ class Probe:
         self.device_channel_indices = channel_indices
         if self._probe_bunch is not None:
             self._probe_bunch.check_global_device_wiring_and_ids()
+    
+    def wiring_to_device(self, pathway, channel_offset=0):
+        """
+        Automatically device_channel_indices.
+        
+        This use internal 
+        
+        See probeinterface.wiring module.
+        
+        Parameters
+        ----------
+        
+        pathway: str
+        
+        
+        
+        """
+        from .wiring import wire_probe
+        wire_probe(self, pathway, channel_offset=channel_offset)
 
+    
     def set_electrode_ids(self, elec_ids):
         """
         Set electrode ids. This is handle with string.

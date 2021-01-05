@@ -7,7 +7,7 @@ When they are plug to a device like openephys with intan headstage,
 the channel order is mixed again. So the physical electrodes channel index
 is rarely the channel index on the device.
 
-This is why Prbe handle a separate `device_channel_indices`
+This is why Probe handle a separate `device_channel_indices`
 """
 
 ##############################################################################
