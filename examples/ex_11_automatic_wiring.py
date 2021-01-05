@@ -52,7 +52,7 @@ probe.set_device_channel_indices(device_channel_indices)
 # but probeinterface also include internally some commonly used wiring based on classical pathway
 # in our case it is
 
-probe.wiring_to_device('H32>RDH')
+probe.wiring_to_device('H32>RHD')
 print(probe.device_channel_indices)
 
 ##############################################################################

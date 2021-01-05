@@ -13,7 +13,7 @@ def test_wire_probe():
     probe_name = 'A1x32-Poly3-10mm-50-177'
     probe = get_probe(manufacturer, probe_name)
     
-    probe.wiring_to_device('H32>RDH')
+    probe.wiring_to_device('H32>RHD')
     
     plot_probe(probe, with_channel_index=True)
 

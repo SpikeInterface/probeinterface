@@ -5,8 +5,8 @@ import numpy as np
 
 
 pathways = {
-    # this is the neuronexus H32 with omnetics connected to the intantec RDH headstage
-    'H32>RDH' : [
+    # this is the neuronexus H32 with omnetics connected to the intantec RHD headstage
+    'H32>RHD' : [
         16, 17, 18, 20, 21, 22, 31, 30, 29, 27, 26, 25, 24, 28, 23, 19, 
         12, 8, 3, 7, 6, 5, 4,  2, 1, 0, 9, 10, 11, 13, 14, 15],
 }
