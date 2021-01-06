@@ -44,6 +44,13 @@ print(probe_3d.electrode_positions.shape)
 
 
 ##############################################################################
+# Note that **"y"** is set to 0
+
+df = probe_3d.to_dataframe()
+df[['x', 'y', 'z']].head()
+
+
+##############################################################################
 #  the plotting switch to 3d
 
 plot_probe(probe_3d)

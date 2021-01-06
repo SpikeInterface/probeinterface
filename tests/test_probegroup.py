@@ -14,6 +14,9 @@ def test_probegroup():
     
     indices = probegroup.get_global_device_channel_indices()
     ids = probegroup.get_global_electrode_ids()
+    
+    df = probegroup.to_dataframe()
+    #~ print(df['global_electrode_ids'])
 
 
 def test_probegroup_3d():

@@ -39,13 +39,25 @@ probe = Probe(ndim=2, si_units='um')
 probe.set_electrodes(positions=positions, shapes='circle', shape_params={'radius': 5})
 
 ##############################################################################
+# probe object have a fancy print
+
+print(probe)
+
+##############################################################################
 # cerate the planar contour (polygon) of the probe
 
 polygon = [(-20, -30), (20, -110), (60, -30), (60, 190), (-20, 190)]
 probe.set_planar_contour(polygon)
 
 ##############################################################################
-# and plot it
+# if pandas is installed the probe object can be export to a dataframe for simpler view
+
+df = probe.to_dataframe()
+df
+
+##############################################################################
+# and plot it (need matmatplotlib installed)
+
 plot_probe(probe)
 
 ##############################################################################
