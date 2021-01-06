@@ -45,6 +45,13 @@ plot_probe(multi_shank)
 print(multi_shank.shank_ids)
 
 ##############################################################################
+# see shank_ids columns
+
+df = multi_shank.to_dataframe()
+df
+
+
+##############################################################################
 #  we can iterate and get a :py:class:`Shank`
 # A Shank is link to a Pobe object and can also retrieve posistions/electrode shape/...
 
@@ -71,6 +78,7 @@ multi_shank = combinate_probes([probe0, probe1])
 ##############################################################################
 
 print(multi_shank.shank_ids)
+
 
 
 ##############################################################################

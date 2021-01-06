@@ -70,6 +70,12 @@ def test_probe():
     for shank in probe.get_shanks():
         print(shank)
         print(shank.electrode_positions)
+        
+    # get dict and df
+    d = probe.to_dict()
+    #~ print(d)
+    df = probe.to_dataframe()
+    print(df)
 
 
 
