@@ -56,7 +56,7 @@ class Probe:
         self.annotations = dict(name='')
 
         # the Probe can belong to a ProbeGroup
-        self._probe_bunch = None
+        self._probe_group = None
     
     def get_title(self):
         if self.electrode_positions is None:
@@ -206,8 +206,8 @@ class Probe:
         if channel_indices.size != self.get_electrode_count():
             valueError('channel_indices have not the same size as electrode')
         self.device_channel_indices = channel_indices
-        if self._probe_bunch is not None:
-            self._probe_bunch.check_global_device_wiring_and_ids()
+        if self._probe_group is not None:
+            self._probe_group.check_global_device_wiring_and_ids()
     
     def wiring_to_device(self, pathway, channel_offset=0):
         """
@@ -249,8 +249,8 @@ class Probe:
             elec_ids = elec_ids.astype('U')
 
         self.electrode_ids = elec_ids
-        if self._probe_bunch is not None:
-            self._probe_bunch.check_global_device_wiring_and_ids()
+        if self._probe_group is not None:
+            self._probe_group.check_global_device_wiring_and_ids()
 
     def set_shank_ids(self, shank_ids):
         """
@@ -453,7 +453,7 @@ class Probe:
     _dump_attr_names = ['ndim', 'si_units', 'annotations',
                         'electrode_positions', 'electrode_plane_axes',
                         'electrode_shapes', 'electrode_shape_params',
-                        'probe_planar_contour', 'device_channel_indices', 'electrode_ids'
+                        'probe_planar_contour', 'device_channel_indices', 'electrode_ids',
                         'shank_ids']
 
     def to_dict(self, array_as_list=False):
@@ -466,6 +466,7 @@ class Probe:
             v = getattr(self, k, None)
             if array_as_list and v is not None and isinstance(v, np.ndarray): 
                 v = v.tolist()
+            print(k, v)
             if v is not None:
                 d[k] = v
         return d

@@ -1,7 +1,7 @@
 from probeinterface import write_probeinterface, read_probeinterface
 from probeinterface import read_prb, write_prb
 from probeinterface import read_spikeglx
-from probeinterface import generate_dummy_probe_bunch
+from probeinterface import generate_dummy_probe_group
 
 
 from pathlib import Path
@@ -16,7 +16,7 @@ folder = Path(__file__).absolute().parent
 
 def test_probeinterface_format():
     filename = 'test_pi_format.json'
-    probegroup = generate_dummy_probe_bunch()
+    probegroup = generate_dummy_probe_group()
     write_probeinterface(filename, probegroup)
     
     probegroup2 = read_probeinterface(filename)
@@ -33,10 +33,10 @@ def test_probeinterface_format():
         
         # TODO more test
 
-    #~ from probeinterface.plotting import plot_probe_bunch
+    #~ from probeinterface.plotting import plot_probe_group
     #~ import matplotlib.pyplot as plt
-    #~ plot_probe_bunch(probegroup, with_channel_index=True, same_axe=False)
-    #~ plot_probe_bunch(probegroup2, with_channel_index=True, same_axe=False)
+    #~ plot_probe_group(probegroup, with_channel_index=True, same_axe=False)
+    #~ plot_probe_group(probegroup2, with_channel_index=True, same_axe=False)
     #~ plt.show()
 
     
@@ -81,16 +81,16 @@ def test_prb():
     
     
     
-    #~ from probeinterface.plotting import plot_probe_bunch
+    #~ from probeinterface.plotting import plot_probe_group
     #~ import matplotlib.pyplot as plt
-    #~ plot_probe_bunch(probegroup, with_channel_index=True, same_axe=False)
+    #~ plot_probe_group(probegroup, with_channel_index=True, same_axe=False)
     #~ plt.show()
 
 
 def test_readspikeglx():
     probe = read_spikeglx(folder / 'Noise_g0_t0.imec0.ap.meta')
 
-    #~ from probeinterface.plotting import plot_probe_bunch, plot_probe
+    #~ from probeinterface.plotting import plot_probe_group, plot_probe
     #~ import matplotlib.pyplot as plt
     #~ plot_probe(probe)
     #~ plt.show()

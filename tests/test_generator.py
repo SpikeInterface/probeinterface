@@ -1,4 +1,4 @@
-from probeinterface import (generate_dummy_probe, generate_dummy_probe_bunch,
+from probeinterface import (generate_dummy_probe, generate_dummy_probe_group,
         generate_tetrode, generate_linear_probe, generate_multi_columns_probe,
         generate_multi_shank)
 
@@ -11,7 +11,7 @@ import pytest
 
 def test_generate():
     probe = generate_dummy_probe()
-    probegroup = generate_dummy_probe_bunch()
+    probegroup = generate_dummy_probe_group()
     
     tetrode = generate_tetrode()
     
@@ -25,7 +25,7 @@ def test_generate():
     
     multi_shank = generate_multi_shank()
     
-    #~ from probeinterface.plotting import plot_probe_bunch, plot_probe
+    #~ from probeinterface.plotting import plot_probe_group, plot_probe
     #~ import matplotlib.pyplot as plt
     #~ plot_probe(multi_shank, with_channel_index=True,)
     #~ plt.show()

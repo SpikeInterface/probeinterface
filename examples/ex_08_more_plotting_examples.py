@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from probeinterface import Probe, ProbeGroup
-from probeinterface.plotting import plot_probe, plot_probe_bunch
+from probeinterface.plotting import plot_probe, plot_probe_group
 from probeinterface import generate_multi_columns_probe, generate_linear_probe
 
 

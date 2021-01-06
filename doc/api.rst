@@ -50,7 +50,7 @@ Probe generators
 
     .. autofunction:: generate_dummy_probe
     
-    .. autofunction:: generate_dummy_probe_bunch
+    .. autofunction:: generate_dummy_probe_group
     
     .. autofunction:: generate_tetrode
     
@@ -65,7 +65,7 @@ Plotting
 
     .. autofunction:: plot_probe
     
-    .. autofunction:: plot_probe_bunch
+    .. autofunction:: plot_probe_group
 
 Library
 ----------
