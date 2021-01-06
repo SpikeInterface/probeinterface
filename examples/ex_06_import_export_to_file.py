@@ -1,6 +1,6 @@
 """
 Import export to files
------------------------------------
+----------------------
 
 probeinterface have its own format based on JSON.
 The format handle several probe in one file.

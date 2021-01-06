@@ -221,7 +221,7 @@ class Probe:
         ----------
         
         pathway: str
-        
+           For instance 'H32>RHD'
         
         
         """
@@ -298,7 +298,9 @@ class Probe:
         
         Parameters
         ----------
-        plane: 'xy', 'yz' ', xz'
+        plane: str
+            'xy', 'yz' ', xz'
+
         """
         assert self.ndim == 2
 

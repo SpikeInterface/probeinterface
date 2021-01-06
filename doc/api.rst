@@ -4,7 +4,7 @@ API
 
 
 Probe
-----------------
+-----
 
 .. automodule:: probeinterface
 
@@ -12,7 +12,7 @@ Probe
         :members:
     
 ProbeGroup
-----------------
+----------
 
 .. automodule:: probeinterface
     
@@ -20,7 +20,7 @@ ProbeGroup
         :members:
 
 Import/export to formats
-----------------------------------------
+------------------------
 
 .. automodule:: probeinterface.io
 
@@ -44,7 +44,7 @@ Import/export to formats
 
 
 Probe generators
-----------------------------------------
+----------------
 
 .. automodule:: probeinterface.generator
 
@@ -59,7 +59,7 @@ Probe generators
     .. autofunction:: generate_linear_probe
 
 Plotting
---------------------
+--------
 
 .. automodule:: probeinterface.plotting
 
@@ -68,10 +68,9 @@ Plotting
     .. autofunction:: plot_probe_group
 
 Library
-----------
+-------
 
 .. automodule:: probeinterface.library
 
     .. autofunction:: get_probe
 
-    

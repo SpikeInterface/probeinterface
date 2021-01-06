@@ -1,6 +1,6 @@
 """
 Generate a Probe from scatch
-----------------------------------------------
+----------------------------
 
 This generate a probe from sratch.
 """

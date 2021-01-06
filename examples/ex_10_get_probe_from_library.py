@@ -1,6 +1,6 @@
 """
 Get probe from library
----------------------------------------
+----------------------
 
 Probe interface provide a libray of probes from several manufactrers on the gin platform
 here https://gin.g-node.org/spikeinterface/probeinterface_library

@@ -1,6 +1,6 @@
 """
 Automatic wiring
---------------------------
+----------------
 
 Here an example to make automatically the wiring and get the device_channel_indices.
 """

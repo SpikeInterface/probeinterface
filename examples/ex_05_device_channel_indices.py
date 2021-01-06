@@ -1,6 +1,6 @@
 """
 Handle channel indices
------------------------------------
+----------------------
 
 Probe have a complex electrodes index system due to layout.
 When they are plug to a device like openephys with intan headstage, 

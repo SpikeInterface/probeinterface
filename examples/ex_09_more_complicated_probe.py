@@ -1,6 +1,6 @@
 """
 More complicated probes
----------------------------------------
+-----------------------
 
 
 Here an example to demonstrate how to generator more complicated probe with hybrid electrodes shape

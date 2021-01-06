@@ -1,6 +1,6 @@
 """
 Probe generator
---------------------------
+---------------
 
 probeinterface have also basic function to generate simple electrode layout like:
 

@@ -1,6 +1,6 @@
 """
 Probe 2d and Probe 3d
------------------------------------
+---------------------
 
 This show manipulation of the probe in 2d or 3d
 """

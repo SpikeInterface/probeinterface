@@ -1,6 +1,6 @@
 """
 Generate a ProbeGroup
------------------------------------
+---------------------
 
 This code show how to assmble several Probe into a ProbeGroup object.
 

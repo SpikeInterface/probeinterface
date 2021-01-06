@@ -1,6 +1,6 @@
 """
 More plotting examples
-------------------------------------
+----------------------
 
 Here some examples to showcase plotting scenario.
 
