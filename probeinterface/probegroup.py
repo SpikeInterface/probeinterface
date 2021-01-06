@@ -118,3 +118,22 @@ class ProbeGroup:
 
         if valid_ids.size != np.unique(valid_ids).size:
             raise ValueError('electrode_ids are not unique across probes')
+    
+    
+    def to_dataframe(self):
+        import pandas as pd
+        
+        all_df =[]
+        for i, probe in enumerate(self.probes):
+            df = probe.to_dataframe()
+            df['probe_num'] = i
+            df.index = [(i, ind) for ind in df.index]
+            all_df.append(df)
+        df = pd.concat(all_df, axis=0)
+        
+        df['global_electrode_ids'] = self.get_global_electrode_ids()
+        
+        return df
+        
+        
+

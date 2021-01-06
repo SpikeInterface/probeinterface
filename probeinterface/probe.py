@@ -491,6 +491,24 @@ class Probe:
         probe.annotate(**d['annotations'])
 
         return probe
+    
+    def to_dataframe(self):
+        import pandas as pd
+        index = np.arange(self.get_electrode_count(), dtype=int)
+        df = pd.DataFrame(index=index)
+        df['x'] = self.electrode_positions[:, 0]
+        df['y'] = self.electrode_positions[:, 1]
+        if self.ndim == 3:
+            df['z'] = self.electrode_positions[:, 2]
+        df['electrode_shapes'] = self.electrode_shapes
+        for i, p in enumerate(self.electrode_shape_params):
+            for k, v in p.items():
+                df.at[i, k] = v
+        df['device_channel_indices'] = self.device_channel_indices
+        df['shank_ids'] = self.shank_ids
+        
+        
+        return df
 
 
 def _2d_to_3d(data2d, plane):

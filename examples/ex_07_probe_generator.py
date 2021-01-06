@@ -32,6 +32,14 @@ for i in range(4):
     tetrode.move([i*50, 0])
     probegroup.add_probe(tetrode)
 probegroup.set_global_device_channel_indices(np.arange(16))
+
+df = probegroup.to_dataframe()
+df
+
+
+##############################################################################
+# 
+
 plot_probe_bunch(probegroup, with_channel_index=True, same_axe=True)
 
 
