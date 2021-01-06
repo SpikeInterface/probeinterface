@@ -21,9 +21,10 @@ The :code:`probeinterface` package also provide:
    
 .. toctree::
    :caption: Contents:
-   :maxdepth: 2
+   :maxdepth: 1
    
    overview
    examples/index.rst
+   format_spec
+   library
    api
-

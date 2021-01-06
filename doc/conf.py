@@ -77,8 +77,8 @@ sphinx_gallery_conf = {
     'examples_dirs': ['../examples', ],   # path to your example scripts
     'gallery_dirs': ['examples'],  # path where to save gallery generated examples
     'subsection_order': ExplicitOrder([
-                                       ]),
-    #~ 'within_subsection_order': FileNameSortKey,
+           ]),
+    'within_subsection_order': FileNameSortKey,
     'ignore_pattern': '/generate_',
     'filename_pattern' : 'ex_',
     'download_all_examples': False,
