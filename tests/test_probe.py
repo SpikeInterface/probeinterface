@@ -51,7 +51,7 @@ def test_probe():
     probe.move([20, 50])
     probe.rotate(theta=45, center=[0, 0], axis=None)
 
-    #~ from probeinterface.plotting import plot_probe_bunch, plot_probe
+    #~ from probeinterface.plotting import plot_probe_group, plot_probe
     #~ import matplotlib.pyplot as plt
     #~ plot_probe(probe)
     #~ plt.show()
@@ -61,7 +61,7 @@ def test_probe():
     probe_3d = probe.to_3d()
     probe_3d.rotate(theta=60, center=[0, 0, 0], axis=[0,1,0])
 
-    #~ from probeinterface.plotting import plot_probe_bunch, plot_probe
+    #~ from probeinterface.plotting import plot_probe_group, plot_probe
     #~ import matplotlib.pyplot as plt
     #~ plot_probe(probe_3d)
     #~ plt.show()

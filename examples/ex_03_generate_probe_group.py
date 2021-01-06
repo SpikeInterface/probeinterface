@@ -1,6 +1,6 @@
 """
 Generate a ProbeGroup
------------------------------------
+---------------------
 
 This code show how to assmble several Probe into a ProbeGroup object.
 
@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from probeinterface import Probe, ProbeGroup
-from probeinterface.plotting import plot_probe_bunch
+from probeinterface.plotting import plot_probe_group
 from probeinterface import generate_dummy_probe
 
 
@@ -40,12 +40,12 @@ print('probegroup.get_channel_count()', probegroup.get_channel_count())
 ##############################################################################
 # Plot all probe in the same axes
 
-plot_probe_bunch(probegroup, same_axe=True)
+plot_probe_group(probegroup, same_axe=True)
 
 ##############################################################################
 # Plot all probe in seperated axes
 
-plot_probe_bunch(probegroup, same_axe=False,  with_channel_index=True)
+plot_probe_group(probegroup, same_axe=False,  with_channel_index=True)
 
 plt.show()
 

@@ -107,7 +107,7 @@ def plot_probe(probe, ax=None, electrode_colors=None,
         ax.set_title(probe.get_title())
 
 
-def plot_probe_bunch(probegroup, same_axe=True, **kargs):
+def plot_probe_group(probegroup, same_axe=True, **kargs):
     """
     Plot all prbe from a ProbeGroup
     

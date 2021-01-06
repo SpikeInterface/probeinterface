@@ -1,10 +1,10 @@
 Overview
-=========
+========
 
 .. currentmodule:: probeinterface
 
 Introduction
----------------
+------------
 
 To record neural electrical signals, extracellular neural probes are inserted in the brain.
 Neural probes are (usually) multi-channel arrays able to record from multiple electrodes simultaneously, spanning from
@@ -36,7 +36,7 @@ The goal of :code:`probeinterface` is to make this time-consuming and error-pron
 
 
 Scope
----------
+-----
 
 The scope of this project is handle one (or several) Probe with three simple python classes:
 
@@ -82,7 +82,7 @@ Implement and maintain a collection of widely used probes in Neuroscience, for e
   * `IMEC <https://www.imec-int.com/en/expertise/lifesciences/neural-probes>`_
   * `Cambridge Neurotech <https://www.cambridgeneurotech.com/neural-probes>`_
 
-We have started  a work-in-progess repo of `probe library <https://gin.g-node.org/spikeinterface/probeinterface_library>`_
+We have started a work-in-progess repo of `probe library <https://gin.g-node.org/spikeinterface/probeinterface_library>`_
 
 
 Existing projects
@@ -105,12 +105,12 @@ probe library.
 Acknowledgements
 --------------------
 
-The :code:`probeinterface` is strongly based on the  `MEAutility <https://github.com/alejoe91/MEAutility>`_ package,
+The :code:`probeinterface` is inspired on the  `MEAutility <https://github.com/alejoe91/MEAutility>`_ package,
 written by `Alessio Buccino <https://alessiobuccino.com/>`_.
 
 While the general idea of having an enhanced probe description is present, the :code:`MEAutility` package mainly focuses
 on handling probes for modeling purposes, hence missing the wiring concept, and it can only handle a single probe at a
 time.
 
-Witth :code:`probeinterface` the focus is also to combinade several Probes and to handle complex wiring
+With :code:`probeinterface` the focus is also to combinade several Probes and to handle complex wiring
 for experimental description.

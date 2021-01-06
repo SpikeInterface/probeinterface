@@ -1,6 +1,6 @@
 """
 Handle channel indices
------------------------------------
+----------------------
 
 Probe have a complex electrodes index system due to layout.
 When they are plug to a device like openephys with intan headstage, 
@@ -17,7 +17,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from probeinterface import Probe, ProbeGroup
-from probeinterface.plotting import plot_probe, plot_probe_bunch
+from probeinterface.plotting import plot_probe, plot_probe_group
 from probeinterface import generate_multi_columns_probe
 
 ##############################################################################
@@ -90,7 +90,7 @@ print(probegroup.get_global_device_channel_indices())
 ##############################################################################
 # Can be also ploted
 fig, ax = plt.subplots()
-plot_probe_bunch(probegroup, with_channel_index=True, same_axe=True, ax=ax)
+plot_probe_group(probegroup, with_channel_index=True, same_axe=True, ax=ax)
 ax.set_xlim(-100, 600)
 ax.set_ylim(-100, 600)
 

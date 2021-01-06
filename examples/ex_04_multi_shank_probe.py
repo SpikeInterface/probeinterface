@@ -1,6 +1,6 @@
 """
-Multi shank probes.
------------------------------------
+Multi shank probes
+------------------
 
 Some probes have multi shank.
 In probeinterface it is still a probe but internally

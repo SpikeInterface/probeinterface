@@ -29,7 +29,7 @@ def generate_dummy_probe(elec_shapes='circle'):
     return probe
 
 
-def generate_dummy_probe_bunch():
+def generate_dummy_probe_group():
     """
     Generate a ProbeGroup with 2 probe.
     Mainly used for testing and examples.
@@ -38,7 +38,7 @@ def generate_dummy_probe_bunch():
     probe1 = generate_dummy_probe(elec_shapes='rect')
     probe1.move([150, -50])
 
-    # probe bunch
+    # probe group
     probegroup = ProbeGroup()
     probegroup.add_probe(probe0)
     probegroup.add_probe(probe1)
@@ -46,7 +46,7 @@ def generate_dummy_probe_bunch():
     return probegroup
 
 
-def generate_tetrode():
+def generate_tetrode(r=10):
     """
     Generate tetrode Probe
     
@@ -54,7 +54,7 @@ def generate_tetrode():
     """
     probe = Probe(ndim=2, si_units='um')
     phi = np.arange(0, np.pi * 2, np.pi / 2)[:, None]
-    positions = np.hstack([np.cos(phi), np.sin(phi)]) * 10
+    positions = np.hstack([np.cos(phi), np.sin(phi)]) * r
     probe.set_electrodes(positions=positions, shapes='circle', shape_params={'radius': 6})
     return probe
 

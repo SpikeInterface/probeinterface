@@ -9,3 +9,5 @@ examples/*.h5
 dist/*
 doc/_*
 doc/examples/*
+
+dev_*

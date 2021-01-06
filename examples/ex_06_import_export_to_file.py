@@ -1,6 +1,6 @@
 """
 Import export to files
------------------------------------
+----------------------
 
 probeinterface have its own format based on JSON.
 The format handle several probe in one file.
@@ -24,7 +24,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from probeinterface import Probe, ProbeGroup
-from probeinterface.plotting import plot_probe, plot_probe_bunch
+from probeinterface.plotting import plot_probe, plot_probe_group
 from probeinterface import generate_dummy_probe
 from probeinterface import write_probeinterface, read_probeinterface
 from probeinterface import write_prb, read_prb
@@ -49,7 +49,7 @@ probegroup.add_probe(probe1)
 write_probeinterface('my_two_probe_setup.json', probegroup)
 
 probegroup2 = read_probeinterface('my_two_probe_setup.json')
-plot_probe_bunch(probegroup2)
+plot_probe_group(probegroup2)
 
 
 ##############################################################################
@@ -69,7 +69,7 @@ print(txt[:600], '...')
 #   * electrode_positions with 'geometry'
 #   * device_channel_indeices with 'channels'
 #
-# Lets make a file with this and read back into ProbBunch.
+# Lets make a file with this and read back into ProbGroup.
 #
 # Here an example with 
 
@@ -101,7 +101,7 @@ with open('two_tetrodes.prb', 'w') as f:
     f.write(prb_two_tetrodes)
 
 two_tetrode = read_prb('two_tetrodes.prb')
-plot_probe_bunch(two_tetrode, same_axe=False, with_channel_index=True)
+plot_probe_group(two_tetrode, same_axe=False, with_channel_index=True)
 
 
 plt.show()

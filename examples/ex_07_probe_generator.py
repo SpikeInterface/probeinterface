@@ -1,6 +1,6 @@
 """
 Probe generator
---------------------------
+---------------
 
 probeinterface have also basic function to generate simple electrode layout like:
 
@@ -17,7 +17,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from probeinterface import Probe, ProbeGroup
-from probeinterface.plotting import plot_probe, plot_probe_bunch
+from probeinterface.plotting import plot_probe, plot_probe_group
 
 
 ##############################################################################
@@ -40,7 +40,7 @@ df
 ##############################################################################
 # 
 
-plot_probe_bunch(probegroup, with_channel_index=True, same_axe=True)
+plot_probe_group(probegroup, with_channel_index=True, same_axe=True)
 
 
 ##############################################################################

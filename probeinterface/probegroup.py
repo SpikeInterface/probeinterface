@@ -20,10 +20,10 @@ class ProbeGroup:
             self._check_compatible(probe)
 
         self.probes.append(probe)
-        probe._probe_bunch = self
+        probe._probe_group = self
 
     def _check_compatible(self, probe):
-        if probe._probe_bunch is not None:
+        if probe._probe_group is not None:
             raise ValueError("This probe is already attached to another ProbeGroup")
 
         if probe.ndim != self.probes[-1].ndim:

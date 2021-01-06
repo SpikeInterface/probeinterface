@@ -8,7 +8,7 @@ from .io import (
     read_cvs, write_cvs,
     read_spikeglx, read_mearec, read_nwb)
 from .utils import combinate_probes
-from .generator import (generate_dummy_probe, generate_dummy_probe_bunch, 
+from .generator import (generate_dummy_probe, generate_dummy_probe_group, 
             generate_tetrode, generate_linear_probe,
             generate_multi_columns_probe, generate_multi_shank)
 from .library import get_probe
