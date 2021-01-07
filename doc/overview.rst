@@ -94,6 +94,7 @@ resources:
   * `JRClust probe library <https://github.com/JaneliaSciComp/JRCLUST/tree/master/probes>`_ - Matlab format
   * `Klusta probe library <https://github.com/kwikteam/probes>`_ - PRB format
   * `SpyKING Circus probe library <https://github.com/spyking-circus/spyking-circus/tree/master/probes>`_ - PRB format
+  * `Justin Kiggins did some script for neuronexus mapping <https://github.com/neuromusic/neuronexus-probe-data>`_
 
 All of these projects only describe the electrode positions. Furthermore there is a strong ambiguity for users
 between the **electrode index on the probe** and the **channel index on device**.
