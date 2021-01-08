@@ -18,9 +18,9 @@ from .io import read_probeinterface
 
 public_url = "https://web.gin.g-node.org/spikeinterface/probeinterface_library/raw/master/"
 
-
 # check this for windows and osx
 cache_folder = Path(os.path.expanduser("~")) / '.config' / 'probeinterface' / 'library'
+
 
 def download_probeinterface_file(manufacturer, probe_name):
     """
@@ -65,12 +65,11 @@ def get_probe(manufacturer, probe_name):
 
     
     """
-    
+
     probe = get_from_cache(manufacturer, probe_name)
-    
+
     if probe is None:
         download_probeinterface_file(manufacturer, probe_name)
         probe = get_from_cache(manufacturer, probe_name)
-    
-    return probe
 
+    return probe

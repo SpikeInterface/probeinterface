@@ -1,14 +1,14 @@
 """
-Import export to files
-----------------------
+Import/export functions
+-----------------------
 
-probeinterface have its own format based on JSON.
-The format handle several probe in one file.
-It have 'probes' key that hanle a list of probe.
+`probeinterface` has its own format based on JSON.
+The format can handle several probes in one file.
+It has a 'probes' key that can contain a list of probes.
 
-Each probe dict in the json folow the class attributes.
+Each probe field in the json format contains the `Probe` class attributes.
 
-It also support read from theses formats: (and sometimes write)
+It also supports reading (and sometimes writing) from theses formats:
 
   * PRB (.prb) : used by klusta/spyking-circus/tridesclous
   * CVS (.csv): 2 or 3 columns locations in text file
@@ -29,11 +29,9 @@ from probeinterface import generate_dummy_probe
 from probeinterface import write_probeinterface, read_probeinterface
 from probeinterface import write_prb, read_prb
 
-
-
 ##############################################################################
-# Generate 2 dummy Probe with util function
-# and a ProbeGroup
+# Let's first generate 2 dummy probes and combine them
+# into a ProbeGroup
 
 probe0 = generate_dummy_probe(elec_shapes='square')
 probe1 = generate_dummy_probe(elec_shapes='circle')
@@ -44,34 +42,33 @@ probegroup.add_probe(probe0)
 probegroup.add_probe(probe1)
 
 ##############################################################################
-# probe interface have its own format hdf5 based that store one ProbeGroup (and so several Probe)
+# With the `write_probeinterface` and `read_probeinterface` functions we can
+# write to and read from the json-based probeinterface format:
 
 write_probeinterface('my_two_probe_setup.json', probegroup)
 
 probegroup2 = read_probeinterface('my_two_probe_setup.json')
 plot_probe_group(probegroup2)
 
-
 ##############################################################################
-# The format looks like this
+# The format looks like this:
 
 with open('my_two_probe_setup.json', mode='r') as f:
     txt = f.read()
 
 print(txt[:600], '...')
 
-
 ##############################################################################
-# PRB is an historical format introduce by klusta team and also used by spikeinterface/spyeking-circus/tridesclous
-# The format looks like this and is in fact a python script that describe a dict.
-# This format handle:
-#   * multi group (multi shank or multi probe)
+# PRB is an historical format introduced by the Klusta team and it is also
+# used by SpikeInterface, Spyking-circus, and Tridesclous.
+# The format is in fact a python script that describes a dictionary.
+# This format handles:
+#   * multiple groups (multi-shank or multi-probe)
 #   * electrode_positions with 'geometry'
-#   * device_channel_indeices with 'channels'
+#   * device_channel_indices with 'channels'
 #
-# Lets make a file with this and read back into ProbGroup.
-#
-# Here an example with 
+# Here an example .prb file with 2 channel groups of 4 channels each.
+# It can be easily loaded and plotted with `probeinterface`
 
 
 prb_two_tetrodes = """
@@ -103,16 +100,4 @@ with open('two_tetrodes.prb', 'w') as f:
 two_tetrode = read_prb('two_tetrodes.prb')
 plot_probe_group(two_tetrode, same_axe=False, with_channel_index=True)
 
-
 plt.show()
-
-
-
-
-
-
-
-
-
-
-

@@ -38,7 +38,7 @@ The goal of :code:`probeinterface` is to make this time-consuming and error-pron
 Scope
 -----
 
-The scope of this project is handle one (or several) Probe with three simple python classes:
+The scope of this project is to handle one (or several) Probe with three simple python classes:
 
 - :py:class:`Shank`
 - :py:class:`Probe`
@@ -82,7 +82,7 @@ Implement and maintain a collection of widely used probes in Neuroscience, for e
   * `IMEC <https://www.imec-int.com/en/expertise/lifesciences/neural-probes>`_
   * `Cambridge Neurotech <https://www.cambridgeneurotech.com/neural-probes>`_
 
-We have started a work-in-progess repo of `probe library <https://gin.g-node.org/spikeinterface/probeinterface_library>`_
+We have started a work-in-progess repo with a `probe library <https://gin.g-node.org/spikeinterface/probeinterface_library>`_
 
 
 Existing projects

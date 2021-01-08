@@ -1,8 +1,8 @@
 """
-Probe 2d and Probe 3d
----------------------
+2d and 3d Probes
+----------------
 
-This show manipulation of the probe in 2d or 3d
+This example shows how to manipulate the probe in 2d or 3d.
 """
 
 ##############################################################################
@@ -14,10 +14,8 @@ import matplotlib.pyplot as plt
 from probeinterface import Probe
 from probeinterface.plotting import plot_probe
 
-
 ##############################################################################
-# First, let's create one 2d probe (32 electrodes)
-# 
+# First, let's create one 2d probe with 32 electrodes:
 
 n = 24
 positions = np.zeros((n, 2))
@@ -33,48 +31,39 @@ probe_2d.set_electrodes(positions=positions, shapes='circle', shape_params={'rad
 probe_2d.create_auto_shape(probe_type='tip')
 
 ##############################################################################
-# Lets tranform is into 3d probe
+# Let's transform it into a 3d probe.
 # 
-# Here the plane is 'xy' so y will be 0 for all electrodes.
-# The shape of probe_3d.electrode_positions is now 3
+# Here the plane is 'xz' so y will be 0 for all electrodes.
+# The shape of probe_3d.electrode_positions is now (n_elec, 3)
 
 probe_3d = probe_2d.to_3d(plane='xz')
 print(probe_2d.electrode_positions.shape)
 print(probe_3d.electrode_positions.shape)
 
-
 ##############################################################################
-# Note that **"y"** is set to 0
+#  Note that all **"y"** coordinates are 0
 
 df = probe_3d.to_dataframe()
 df[['x', 'y', 'z']].head()
 
-
 ##############################################################################
-#  the plotting switch to 3d
+#  The plotting function autiomatically displays the `Probe` in 3d:
 
 plot_probe(probe_3d)
 
 ##############################################################################
-# we can create other probe in other axis
+# We can create another probe lying on another plane:
 
 
 other_3d = probe_2d.to_3d(plane='yz')
 plot_probe(other_3d)
 
-
 ##############################################################################
-# Probe can be moved and rotated
+#  `Probe` can be moved and rotated in 3d:
 
 probe_3d.move([0, 30, -50])
-probe_3d.rotate(theta=35, center=[0,0, 0], axis=[0,1,1])
+probe_3d.rotate(theta=35, center=[0, 0, 0], axis=[0, 1, 1])
 
 plot_probe(probe_3d)
 
 plt.show()
-
-
-
-
-
-

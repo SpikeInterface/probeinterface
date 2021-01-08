@@ -7,7 +7,8 @@ import numpy as np
 
 from .probe import Probe
 from .probegroup import ProbeGroup
-from .utils import combinate_probes
+from .utils import combine_probes
+
 
 def generate_dummy_probe(elec_shapes='circle'):
     """
@@ -98,24 +99,21 @@ def generate_linear_probe(num_elec=16, ypitch=20,
                                          electrode_shape_params=electrode_shape_params)
     return probe
 
+
 def generate_multi_shank(num_shank=2, shank_pitch=[150, 0], **kargs):
     """
     Generate a multi shank probe.
     Internally do a call to generate_multi_columns_probe
-    and use combinate_probes.
+    and use combine_probes.
     """
     shank_pitch = np.asarray(shank_pitch)
-    
+
     probes = []
     for i in range(num_shank):
         probe = generate_multi_columns_probe(**kargs)
         probe.move(shank_pitch * i)
         probes.append(probe)
-    
-    multi_shank = combinate_probes(probes)
-    
+
+    multi_shank = combine_probes(probes)
+
     return multi_shank
-    
-    
-    
-    

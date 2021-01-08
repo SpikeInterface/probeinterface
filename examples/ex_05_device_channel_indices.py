@@ -2,12 +2,12 @@
 Handle channel indices
 ----------------------
 
-Probe have a complex electrodes index system due to layout.
-When they are plug to a device like openephys with intan headstage, 
-the channel order is mixed again. So the physical electrodes channel index
+Probes can have a complex electrodes indexing system due to the probe layout.
+When they are plugged into a recording device like an Open Ephys with an Intan headstage,
+the channel order can be mixed again. So the physical electrode channel index
 is rarely the channel index on the device.
 
-This is why Probe handle a separate `device_channel_indices`
+This is why the `Probe` object can handle separate `device_channel_indices`.
 """
 
 ##############################################################################
@@ -21,27 +21,24 @@ from probeinterface.plotting import plot_probe, plot_probe_group
 from probeinterface import generate_multi_columns_probe
 
 ##############################################################################
-# generate  probe
-# note that here the wiring is not so complicated : each column increment the electrode index 
-# from bottom to up
+# Let's first generate a probe. By default, the wiring is not complicated:
+# each column increments the electrode index from the bottom to the top of the probe:
 
 probe = generate_multi_columns_probe(num_columns=3,
-                num_elec_per_column=[5, 6, 5],
-                xpitch=75, ypitch=75, y_shift_per_column=[0, -37.5, 0],
-                electrode_shapes='circle', electrode_shape_params={'radius': 12})
-
+                                     num_elec_per_column=[5, 6, 5],
+                                     xpitch=75, ypitch=75, y_shift_per_column=[0, -37.5, 0],
+                                     electrode_shapes='circle', electrode_shape_params={'radius': 12})
 
 plot_probe(probe, with_channel_index=True)
 
-
 ##############################################################################
-# The Probe is not connected to device yet
+# The Probe is not connected to any device yet:
 
 print(probe.device_channel_indices)
 
 ##############################################################################
-# lets imagine a not very complicated headstage that mixed channel
-# half of channel have natural indices other half is reserved
+# Let's imagine we have a headstage with the following wiring: the first half
+# of the channels have natural indices, but the order of other half is reversed:
 
 channel_indices = np.arange(16)
 channel_indices[8:16] = channel_indices[8:16][::-1]
@@ -49,23 +46,22 @@ probe.set_device_channel_indices(channel_indices)
 print(probe.device_channel_indices)
 
 ##############################################################################
-# We can visualize the 2 indices: 
-# 
+#  We can visualize the two sets of indices:
+#  
 #  * the prbXX is the electrode index ordered from 0 to N
-#  * the devXX is the channel index on the device in another order
+#  * the devXX is the channel index on the device (with the second half reversed)
 
 plot_probe(probe, with_channel_index=True)
 
 ##############################################################################
-# Very often we have several probes on the device this lead to even complex channel indices
-# `ProbeGroup.get_global_device_channel_indices()` give the overview of the device wiring.
+# Very often we have several probes on the device and this can lead to even
+# more complex channel indices.
+# `ProbeGroup.get_global_device_channel_indices()` gives an overview of the device wiring.
 
-#~ probe0 = generate_dummy_probe(elec_shapes='circle')
-#~ probe1 = generate_dummy_probe(elec_shapes='square')
 probe0 = generate_multi_columns_probe(num_columns=3,
-                num_elec_per_column=[5, 6, 5],
-                xpitch=75, ypitch=75, y_shift_per_column=[0, -37.5, 0],
-                electrode_shapes='circle', electrode_shape_params={'radius': 12})
+                                      num_elec_per_column=[5, 6, 5],
+                                      xpitch=75, ypitch=75, y_shift_per_column=[0, -37.5, 0],
+                                      electrode_shapes='circle', electrode_shape_params={'radius': 12})
 probe1 = probe0.copy()
 
 probe1.move([350, 200])
@@ -73,14 +69,12 @@ probegroup = ProbeGroup()
 probegroup.add_probe(probe0)
 probegroup.add_probe(probe1)
 
-# wire probe0 0 to 31
-#  and shuffle
+# wire probe0 0 to 31 and shuffle
 channel_indices0 = np.arange(16)
 np.random.shuffle(channel_indices0)
 probe0.set_device_channel_indices(channel_indices0)
 
-# wire probe0 32 to 63
-#  and shuffle
+# wire probe0 32 to 63 and shuffle
 channel_indices1 = np.arange(16, 32)
 np.random.shuffle(channel_indices1)
 probe1.set_device_channel_indices(channel_indices1)
@@ -88,12 +82,11 @@ probe1.set_device_channel_indices(channel_indices1)
 print(probegroup.get_global_device_channel_indices())
 
 ##############################################################################
-# Can be also ploted
+# The indices of the probe group can also be plotted:
+
 fig, ax = plt.subplots()
 plot_probe_group(probegroup, with_channel_index=True, same_axe=True, ax=ax)
 ax.set_xlim(-100, 600)
 ax.set_ylim(-100, 600)
 
-
 plt.show()
-

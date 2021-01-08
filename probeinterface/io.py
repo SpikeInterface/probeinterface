@@ -30,12 +30,11 @@ def _probeinterface_format_check_version(d):
     """
     pass
 
+
 def read_probeinterface(file):
     """
-    Read probeinterface own format JSON based.
-    
-    Implementation is naive but ot works.
-    
+    Read probeinterface JSON-baesd format.
+
     Parameters
     ----------
     
@@ -50,18 +49,18 @@ def read_probeinterface(file):
     file = Path(file)
     with open(file, 'r', encoding='utf8') as f:
         d = json.load(f)
-    
+
     # check version
     _probeinterface_format_check_version(d)
-    
+
     # create probegroup
     probegroup = ProbeGroup()
     for probe_dict in d['probes']:
         probe = Probe.from_dict(probe_dict)
         probegroup.add_probe(probe)
     return probegroup
-    
-    
+
+
 def write_probeinterface(file, probe_or_probegroup):
     """
     Write to probeinterface own format JSON based.
@@ -87,7 +86,7 @@ def write_probeinterface(file, probe_or_probegroup):
         raise valueError('Bad boy')
 
     file = Path(file)
-    
+
     d = OrderedDict()
     d['specification'] = 'probeinterface'
     d['version'] = version
@@ -95,7 +94,7 @@ def write_probeinterface(file, probe_or_probegroup):
     for probe_ind, probe in enumerate(probegroup.probes):
         probe_dict = probe.to_dict(array_as_list=True)
         d['probes'].append(probe_dict)
-    
+
     with open(file, 'w', encoding='utf8') as f:
         json.dump(d, f, indent=4)
 
@@ -259,8 +258,6 @@ def read_nwb(file):
     read probe position from the NWB format
     """
     raise NotImplementedError
-
-
 
 
 # OLD hdf5 implementation
