@@ -3,7 +3,7 @@ import numpy as np
 
 class ProbeGroup:
     """
-    Class that handle a group of Probe objects and the wiring to device.
+    Class to handlesa group of Probe objects and the wiring to a device.
     
     Optionally, it can handle the location of different probes.
 

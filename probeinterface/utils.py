@@ -5,7 +5,8 @@ import numpy as np
 
 from .probe import Probe
 
-def combinate_probes(probes, connect_shape=True):
+
+def combine_probes(probes, connect_shape=True):
     """
     Combinate several Probe object into a unique
     Probe object multi multi shank.
@@ -33,21 +34,20 @@ def combinate_probes(probes, connect_shape=True):
 
     # check ndim
     assert all(probes[0].ndim == p.ndim for p in probes)
-    assert probes[0].ndim ==2
-
+    assert probes[0].ndim == 2
 
     n = sum(p.get_electrode_count() for p in probes)
-    
+
     kwargs = {}
     for k in ('electrode_positions', 'electrode_plane_axes',
-                        'electrode_shapes', 'electrode_shape_params'):
+              'electrode_shapes', 'electrode_shape_params'):
         v = np.concatenate([getattr(p, k) for p in probes], axis=0)
         kwargs[k.replace('electrode_', '')] = v
 
     shank_ids = np.concatenate([np.ones(p.get_electrode_count(), dtype='int64') * i
-                                                     for i,p in enumerate(probes)])
+                                for i, p in enumerate(probes)])
     kwargs['shank_ids'] = shank_ids
-    
+
     # TODO deal with electrode_ids/device_channel_indices
 
     multi_shank = Probe(ndim=probes[0].ndim, si_units=probes[0].si_units)
@@ -55,11 +55,11 @@ def combinate_probes(probes, connect_shape=True):
 
     # global shape
     have_shape = all(p.probe_planar_contour is not None for p in probes)
-    
+
     if have_shape and connect_shape:
         verts = np.concatenate([p.probe_planar_contour for p in probes], axis=0)
         verts = np.concatenate([verts[0:1] + [0, 40], verts, verts[-1:] + [0, 40]], axis=0)
-        
+
         multi_shank.set_planar_contour(verts)
 
     return multi_shank

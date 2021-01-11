@@ -2,7 +2,7 @@
 Generate a ProbeGroup
 ---------------------
 
-This code show how to assmble several Probe into a ProbeGroup object.
+This example shows how to assemble several Probe objects into a ProbeGroup object.
 
 """
 
@@ -16,9 +16,8 @@ from probeinterface import Probe, ProbeGroup
 from probeinterface.plotting import plot_probe_group
 from probeinterface import generate_dummy_probe
 
-
 ##############################################################################
-# Generate 2 dummy Probe with util function
+# Generate 2 dummy `Probe` objects with the utils function:
 # 
 
 probe0 = generate_dummy_probe(elec_shapes='square')
@@ -26,8 +25,8 @@ probe1 = generate_dummy_probe(elec_shapes='circle')
 probe1.move([250, -90])
 
 ##############################################################################
-# Create a ProbeGroup and
-# add the Probe into it
+# Let's create a `ProbeGroup` and
+# add the `Probe` objects into it:
 
 probegroup = ProbeGroup()
 probegroup.add_probe(probe0)
@@ -38,18 +37,13 @@ print('probe1.get_electrode_count()', probe1.get_electrode_count())
 print('probegroup.get_channel_count()', probegroup.get_channel_count())
 
 ##############################################################################
-# Plot all probe in the same axes
+#  We can now plot all probes in the same axis:
 
 plot_probe_group(probegroup, same_axe=True)
 
 ##############################################################################
-# Plot all probe in seperated axes
+#  or in separate axes:
 
-plot_probe_group(probegroup, same_axe=False,  with_channel_index=True)
+plot_probe_group(probegroup, same_axe=False, with_channel_index=True)
 
 plt.show()
-
-
-
-
-

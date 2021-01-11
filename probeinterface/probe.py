@@ -10,10 +10,9 @@ class Probe:
     Class to handle the geometry of one probe.
     
     This class mainly handles electrode positions, in 2D or 3D. Optionally, it can also handle the shape of the
-    eletrodes and the shape of the probe.
+    electrodes and the shape of the probe.
     
     """
-
     def __init__(self, ndim=2, si_units='um'):
         """
         

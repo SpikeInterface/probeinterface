@@ -1,13 +1,13 @@
-"""
-Handle Shank object.
-A shank is a sub part of a Probe.
-
-
-"""
 import numpy as np
 
 
 class Shank:
+    """
+    Class to handle a shank in probe.
+
+    A Shank object is a sub-part of a Probe object.
+
+    """
     def __init__(self, probe, shank_id):
         self.probe = probe
         self.shank_id = shank_id

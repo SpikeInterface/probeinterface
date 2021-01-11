@@ -5,7 +5,7 @@ Use to generate figure and format for documentation
 import numpy as np
 import matplotlib.pyplot as plt
 
-from probeinterface import Probe, ProbeGroup, combinate_probes, write_probeinterface
+from probeinterface import Probe, ProbeGroup, combine_probes, write_probeinterface
 from probeinterface.plotting import plot_probe, plot_probe_group
 
 from probeinterface import generate_tetrode
@@ -17,7 +17,7 @@ probe1 = generate_tetrode(r=25)
 probe1.create_auto_shape(probe_type='tip')
 probe1.move([150, 0])
 
-probe = combinate_probes([probe0, probe1])
+probe = combine_probes([probe0, probe1])
 
 pos = probe.electrode_positions
 pos[np.abs(pos)<0.0001] = 0

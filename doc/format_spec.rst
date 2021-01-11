@@ -1,20 +1,19 @@
 Format specifications
 =====================
 
-Probe interface propose a simple format based on JSON.
-The format is more or less a trivial serialisation into a python
-dictionary which is jsonified. The dictionary, itself, map every 
-attributes from the Probe class.
+With :code:`probeinterface` we introduce a simple format based on JSON format.
+The format is a trivial json-serialisation of a Python
+dictionary. The dictionary maps every
+attributes of the Probe class.
 
-In fact, the format itself describe a ProbeGroup, so several probes.
-So the format is able to describe a simple unique probe for the geometry
-but also a full experimental setup with several probes and there wiring
-to device.
+In fact, the format itself describes a ProbeGroup, so it can include several probes.
+The format can describe a simple unique probe with its geometry and wiring, as well as a full experimental setup
+with several probes and their wiring to the recordingdevice.
 
 
-Here a description field by field.
+Here a description of the fields in the json file.
 
-Lets image we want to describe this probe with:
+Let's imagine we want to describe a probe with:
   * 8 channels
   * 2 shanks (one tetrode on each shank)
 
@@ -23,9 +22,7 @@ Lets image we want to describe this probe with:
 
 
 
-
-
-The first part contain field that give the version of probeinterface
+The first part contains fields about the :code:`probeinterface` version
 and a list of probes::
 
   {
@@ -38,7 +35,7 @@ and a list of probes::
     ]
   }
 
-Then each probe will be a sub dictionary in the probes list::
+Then each probe will be a sub-dictionary in the :code:`probes` list::
 
         {
             "ndim": 2,
@@ -50,7 +47,7 @@ Then each probe will be a sub dictionary in the probes list::
             "electrode_positions": [
         ...
 
-This dict contain neceassy fields and optional fields.
+The probe dictionary contains all necessary fields and optional fields.
 
 Necessary:
   * ndim
@@ -67,7 +64,7 @@ Optional:
   * shank_ids
 
 
-Here the full format
+The full json file looks as follows:
 
 .. include:: probe_format_example.json
     :code: json

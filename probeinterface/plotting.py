@@ -5,13 +5,12 @@ using matplotlib.
 Depending Probe.ndim the plotting is done in 2d or 3d
 """
 
-# matplotlib is a weak dep
 import numpy as np
 
 
 def plot_probe(probe, ax=None, electrode_colors=None,
-                 with_channel_index=False, first_index='auto',
-                title=True, electrodes_kargs={}, probe_shape_kwargs={}):
+               with_channel_index=False, first_index='auto',
+               title=True, electrodes_kargs={}, probe_shape_kwargs={}):
     """
     plot one probe.
     switch 2d 3d depending the Probe.ndim
@@ -30,7 +29,7 @@ def plot_probe(probe, ax=None, electrode_colors=None,
         else:
             fig = plt.figure()
             ax = fig.add_subplot(1, 1, 1, projection='3d')
-    
+
     if first_index == 'auto':
         if 'first_index' in probe.annotations:
             first_index = probe.annotations['first_index']
@@ -40,7 +39,7 @@ def plot_probe(probe, ax=None, electrode_colors=None,
         else:
             first_index = 0
     assert first_index in (0, 1)
-        
+
     _probe_shape_kwargs = dict(facecolor='green', edgecolor='k', lw=0.5, alpha=0.3)
     _probe_shape_kwargs.update(probe_shape_kwargs)
 
@@ -82,10 +81,10 @@ def plot_probe(probe, ax=None, electrode_colors=None,
         for i in range(n):
             x, y = probe.electrode_positions[i]
             if probe.device_channel_indices is None:
-                txt = f'{i+first_index}'
+                txt = f'{i + first_index}'
             else:
                 chan_ind = probe.device_channel_indices[i]
-                txt = f'prb{i+first_index}\ndev{chan_ind}'
+                txt = f'prb{i + first_index}\ndev{chan_ind}'
             ax.text(x, y, txt, ha='center', va='center')
 
     min_ -= 40
@@ -102,7 +101,7 @@ def plot_probe(probe, ax=None, electrode_colors=None,
 
     if probe.ndim == 2:
         ax.set_aspect('equal')
-    
+
     if title:
         ax.set_title(probe.get_title())
 
@@ -135,7 +134,7 @@ def plot_probe_group(probegroup, same_axe=True, **kargs):
                 axs = [axs]
         else:
             raise NotImplementedError
-    
+
     kargs['title'] = True
     for i, probe in enumerate(probegroup.probes):
         plot_probe(probe, ax=axs[i], **kargs)
