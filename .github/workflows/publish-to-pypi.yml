@@ -1,9 +1,9 @@
 name: Release to PyPI
 
 on:
-  release:
-    types: [released]
-
+  push:
+    tags:
+       - '*'
 jobs:
   release:
 
