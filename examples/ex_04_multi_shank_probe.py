@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 
 from probeinterface import Probe, ProbeGroup
 from probeinterface import generate_linear_probe, generate_multi_shank
-from probeinterface import combinate_probes
+from probeinterface import combine_probes
 from probeinterface.plotting import plot_probe
 
 ##############################################################################
@@ -61,7 +61,7 @@ probe0 = generate_linear_probe(num_elec=16, ypitch=20,
 probe1 = probe0.copy()
 probe1.move([100, 0])
 
-multi_shank = combinate_probes([probe0, probe1])
+multi_shank = combine_probes([probe0, probe1])
 
 ##############################################################################
 
