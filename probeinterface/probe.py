@@ -509,8 +509,42 @@ class Probe:
         df['device_channel_indices'] = self.device_channel_indices
         df['shank_ids'] = self.shank_ids
         
-        
         return df
+    
+    def to_image(self, values, pixel_width=0.5, method='linear'):
+        """
+        Generated a 2d (image) from a values vector which an interpolation
+        into a grid mesh.
+        
+        
+        Parameters
+        ----------
+        values: vector same size as electrode number
+        pixel_width: 
+        method: 'linear' or 'nearest' or 'cubic'
+        
+        returns
+        --------
+        image: 2d array
+        xlims
+        ylims
+        """
+        from scipy.interpolate import griddata
+        assert self.ndim == 2
+        
+        x0 = np.min(self.electrode_positions[:, 0])
+        x1 = np.max(self.electrode_positions[:, 0])
+        xlims = (x0, x1)
+        
+        y0 = np.min(self.electrode_positions[:, 1])
+        y1 = np.max(self.electrode_positions[:, 1])
+        ylims = (y0, y1)
+        
+        grid_x, grid_y = np.meshgrid(np.arange(x0, x1, pixel_width), np.arange(y0, y1, pixel_width))
+        image = griddata(self.electrode_positions, values, (grid_x, grid_y), method=method)
+        #~ image = image.T
+        return image, xlims, ylims
+        
 
 
 def _2d_to_3d(data2d, plane):

@@ -49,12 +49,18 @@ def test_probe():
     
     # move rotate
     probe.move([20, 50])
-    probe.rotate(theta=45, center=[0, 0], axis=None)
+    probe.rotate(theta=40, center=[0, 0], axis=None)
 
-    #~ from probeinterface.plotting import plot_probe_group, plot_probe
-    #~ import matplotlib.pyplot as plt
-    #~ plot_probe(probe)
-    #~ plt.show()
+    # make annimage
+    values = np.random.randn(24)
+    image, xlims, ylims = probe.to_image(values, method='cubic')
+    
+    from probeinterface.plotting import plot_probe_group, plot_probe
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots()
+    plot_probe(probe, ax=ax)
+    ax.imshow(image, extent=xlims+ylims, origin='lower')
+    plt.show()
     
     
     # 3d
