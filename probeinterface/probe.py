@@ -542,7 +542,7 @@ class Probe:
         
         grid_x, grid_y = np.meshgrid(np.arange(x0, x1, pixel_width), np.arange(y0, y1, pixel_width))
         image = griddata(self.electrode_positions, values, (grid_x, grid_y), method=method)
-        #~ image = image.T
+        
         return image, xlims, ylims
         
 

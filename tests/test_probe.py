@@ -55,12 +55,12 @@ def test_probe():
     values = np.random.randn(24)
     image, xlims, ylims = probe.to_image(values, method='cubic')
     
-    from probeinterface.plotting import plot_probe_group, plot_probe
-    import matplotlib.pyplot as plt
-    fig, ax = plt.subplots()
-    plot_probe(probe, ax=ax)
-    ax.imshow(image, extent=xlims+ylims, origin='lower')
-    plt.show()
+    #~ from probeinterface.plotting import plot_probe_group, plot_probe
+    #~ import matplotlib.pyplot as plt
+    #~ fig, ax = plt.subplots()
+    #~ plot_probe(probe, ax=ax)
+    #~ ax.imshow(image, extent=xlims+ylims, origin='lower')
+    #~ plt.show()
     
     
     # 3d
