@@ -10,7 +10,7 @@ import numpy as np
 
 def plot_probe(probe, ax=None, electrode_colors=None,
                 with_channel_index=False, first_index='auto',
-                electrode_values=None, clim=None, cmap='viridis',
+                electrode_values=None, cmap='viridis',
                 title=True, electrodes_kargs={}, probe_shape_kwargs={}):
     """
     plot one probe.
@@ -55,11 +55,6 @@ def plot_probe(probe, ax=None, electrode_colors=None,
         electrode_colors = electrode_colors
     elif electrode_values is not None:
         electrode_colors = None
-        #~ plt.get_cmap('Blues')
-        #~ c = plt.get_cmap(cmap)
-        #~ electrode_colors = c(electrode_values)
-        #~ electrode_colors = electrode_values
-        #~ _electrodes_kargs['cmap'] = cmap
 
     # electrodes
     positions = probe.electrode_positions
