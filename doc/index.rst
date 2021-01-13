@@ -28,3 +28,4 @@ The :code:`probeinterface` package also provide:
    format_spec
    library
    api
+   release_notes
