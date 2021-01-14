@@ -540,6 +540,7 @@ class Probe:
         """
         from scipy.interpolate import griddata
         assert self.ndim == 2
+        assert values.shape = (self.get_electrode_count(), ), 'Bad boy: values must have size equal electrode count'
         
         if xlims is None:
             x0 = np.min(self.electrode_positions[:, 0])
