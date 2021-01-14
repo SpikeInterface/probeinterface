@@ -511,7 +511,8 @@ class Probe:
         
         return df
     
-    def to_image(self, values, pixel_width=0.5, method='linear'):
+    def to_image(self, values, pixel_size=0.5, num_pixel=None, method='linear', 
+                xlims=None, ylims=None):
         """
         Generated a 2d (image) from a values vector which an interpolation
         into a grid mesh.
@@ -519,9 +520,17 @@ class Probe:
         
         Parameters
         ----------
-        values: vector same size as electrode number
-        pixel_width: 
+        values:
+            vector same size as electrode number to be color ploted
+        pixel_size:
+            size of one pixel in micrometers
+        num_pixel:
+            alternative to pixel_size give pixel number of the image width
         method: 'linear' or 'nearest' or 'cubic'
+        xlims: tuple or None
+            Force image xlims
+        ylims: tuple or None
+            Force image ylims
         
         returns
         --------
@@ -532,16 +541,31 @@ class Probe:
         from scipy.interpolate import griddata
         assert self.ndim == 2
         
-        x0 = np.min(self.electrode_positions[:, 0])
-        x1 = np.max(self.electrode_positions[:, 0])
-        xlims = (x0, x1)
+        if xlims is None:
+            x0 = np.min(self.electrode_positions[:, 0])
+            x1 = np.max(self.electrode_positions[:, 0])
+            xlims = (x0, x1)
         
-        y0 = np.min(self.electrode_positions[:, 1])
-        y1 = np.max(self.electrode_positions[:, 1])
-        ylims = (y0, y1)
+        if ylims is None:
+            y0 = np.min(self.electrode_positions[:, 1])
+            y1 = np.max(self.electrode_positions[:, 1])
+            ylims = (y0, y1)
         
-        grid_x, grid_y = np.meshgrid(np.arange(x0, x1, pixel_width), np.arange(y0, y1, pixel_width))
+        x0, x1 = xlims
+        y0, y1= ylims
+        
+        if num_pixel is not None:
+            pixel_size = (x1 - x0) / num_pixel
+        
+        
+        grid_x, grid_y = np.meshgrid(np.arange(x0, x1, pixel_size), np.arange(y0, y1, pixel_size))
         image = griddata(self.electrode_positions, values, (grid_x, grid_y), method=method)
+        
+        if method == 'nearest':
+            # hack to force nan when nereast to avoid interpolation in the full rectangle
+            image2, _, _ = self.to_image(values, pixel_size=pixel_size,method='linear', xlims=xlims, ylims=ylims)
+            #~ print(im
+            image[np.isnan(image2)] = np.nan
         
         return image, xlims, ylims
         

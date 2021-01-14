@@ -42,7 +42,8 @@ fig.colorbar(poly)
 ##############################################################################
 # generated an interpolated image and plot it on top
 
-image, xlims, ylims = probe.to_image(values, pixel_width=4, method='linear')
+image, xlims, ylims = probe.to_image(values, pixel_size=4, method='linear')
+
 print(image.shape)
 
 fig, ax = plt.subplots()
@@ -50,6 +51,18 @@ plot_probe(probe, ax=ax)
 im = ax.imshow(image, extent=xlims+ylims, origin='lower', cmap='jet')
 im.set_clim(-2,2)
 fig.colorbar(im)
+
+##############################################################################
+# works with several interpolation method
+
+image, xlims, ylims = probe.to_image(values, num_pixel=1000, method='nearest')
+
+fig, ax = plt.subplots()
+plot_probe(probe, ax=ax)
+im = ax.imshow(image, extent=xlims+ylims, origin='lower', cmap='jet')
+im.set_clim(-2,2)
+fig.colorbar(im)
+
 
 
 plt.show()
