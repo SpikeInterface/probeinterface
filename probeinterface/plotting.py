@@ -9,8 +9,9 @@ import numpy as np
 
 
 def plot_probe(probe, ax=None, electrode_colors=None,
-               with_channel_index=False, first_index='auto',
-               title=True, electrodes_kargs={}, probe_shape_kwargs={}):
+                with_channel_index=False, first_index='auto',
+                electrode_values=None, cmap='viridis',
+                title=True, electrodes_kargs={}, probe_shape_kwargs={}):
     """
     plot one probe.
     switch 2d 3d depending the Probe.ndim
@@ -48,8 +49,12 @@ def plot_probe(probe, ax=None, electrode_colors=None,
 
     n = probe.get_electrode_count()
 
-    if electrode_colors is None:
+    if electrode_colors is None and electrode_values is None:
         electrode_colors = ['orange'] * n
+    elif electrode_colors is not None:
+        electrode_colors = electrode_colors
+    elif electrode_values is not None:
+        electrode_colors = None
 
     # electrodes
     positions = probe.electrode_positions
@@ -60,21 +65,28 @@ def plot_probe(probe, ax=None, electrode_colors=None,
         poly = PolyCollection(vertices, color=electrode_colors, **_electrodes_kargs)
         ax.add_collection(poly)
     elif probe.ndim == 3:
-        poly3d = Poly3DCollection(vertices, color=electrode_colors, **_electrodes_kargs)
+        poly = poly3d = Poly3DCollection(vertices, color=electrode_colors, **_electrodes_kargs)
         ax.add_collection3d(poly3d)
+    
+    if electrode_values is not None:
+        poly.set_array(electrode_values)
+        poly.set_cmap(cmap)
+        
 
     # probe shape
     vertices = probe.probe_planar_contour
     if vertices is not None:
         if probe.ndim == 2:
-            poly = PolyCollection([vertices], **_probe_shape_kwargs)
-            ax.add_collection(poly)
+            poly_contour = PolyCollection([vertices], **_probe_shape_kwargs)
+            ax.add_collection(poly_contour)
         elif probe.ndim == 3:
-            poly = Poly3DCollection([vertices], **_probe_shape_kwargs)
-            ax.add_collection3d(poly)
+            poly_contour = Poly3DCollection([vertices], **_probe_shape_kwargs)
+            ax.add_collection3d(poly_contour)
 
         min_, max_ = np.min(vertices), np.max(vertices)
-
+    else:
+        poly_contour = None
+    
     if with_channel_index:
         if probe.ndim == 3:
             raise NotImplementedError('Channel index is 2d only')
@@ -104,7 +116,8 @@ def plot_probe(probe, ax=None, electrode_colors=None,
 
     if title:
         ax.set_title(probe.get_title())
-
+    
+    return poly, poly_contour
 
 def plot_probe_group(probegroup, same_axe=True, **kargs):
     """
