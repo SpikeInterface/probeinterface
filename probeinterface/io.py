@@ -141,7 +141,7 @@ def read_prb(file):
 
 def read_maxwell(file):
     """
-    Read a maxwell file and return a ProbeGroup object.
+    Read a maxwell file and return a Probe object.
 
     Since Maxwell do not handle electrode shape then circle of 5um are put.
     Same for electrode shape a dummy tip is put.
@@ -183,7 +183,7 @@ def read_maxwell(file):
     chans = np.array(prb['channel_groups'][1]['channels'], dtype='int64')
     positions = np.array([prb['channel_groups'][1]['geometry'][c] for c in chans], dtype='float64')
 
-    probe.set_electrodes(positions=positions, shapes='circle', shape_params={'radius': 5})
+    probe.set_electrodes(positions=positions, shapes='rect', shape_params={'width': 5.45, 'height' : 9.3})
     probe.create_auto_shape(probe_type='rect')
 
     probe.set_device_channel_indices(chans)
