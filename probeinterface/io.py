@@ -139,6 +139,58 @@ def read_prb(file):
     return probegroup
 
 
+def read_maxwell(file):
+    """
+    Read a maxwell file and return a ProbeGroup object.
+
+    Since Maxwell do not handle electrode shape then circle of 5um are put.
+    Same for electrode shape a dummy tip is put.
+
+    Maxwell format do not contain any information about the channel of the probe
+    Only the channel index on device is given.
+
+    """
+
+    file = Path(file).absolute()
+    assert file.is_file()
+
+    try:
+        import h5py
+    except ImportError as error:
+        print(error.__class__.__name__ + ": " + error.message)
+
+
+    my_file = h5py.File(file, mode='r')
+    mapping = my_file['mapping'][:]
+    nb_channels = my_file['sig'].shape[0]
+
+    prb = {'channel_groups' : {1 : {}}}
+
+    channels = list(mapping['channel'])
+    x_pos = list(mapping['x'])
+    y_pos = list(mapping['y'])
+    geometry = {}
+    for c, x, y in zip(channels, x_pos, y_pos):
+        geometry[c] = [x, y]
+
+    my_file.close()
+
+    prb['channel_groups'][1]['geometry'] = geometry
+    prb['channel_groups'][1]['channels'] = channels
+
+    probe = Probe(ndim=2, si_units='um')
+
+    chans = np.array(prb['channel_groups'][1]['channels'], dtype='int64')
+    positions = np.array([prb['channel_groups'][1]['geometry'][c] for c in chans], dtype='float64')
+
+    probe.set_electrodes(positions=positions, shapes='circle', shape_params={'radius': 5})
+    probe.create_auto_shape(probe_type='rect')
+
+    probe.set_device_channel_indices(chans)
+
+    return probe
+
+
 def write_prb(file, probegroup):
     """
     Write ProbeGroup into a prb file.
