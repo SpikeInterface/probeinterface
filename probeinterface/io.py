@@ -166,7 +166,7 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
         mapping = my_file['mapping'][:]
         nb_channels = my_file['sig'].shape[0]
     else:
-        settings = my_file['wells'][well_name][rec_name]['settings']['mapping'][:]
+        mapping = my_file['wells'][well_name][rec_name]['settings']['mapping'][:]
         nb_channels = my_file['sig'].shape[0]
 
     prb = {'channel_groups' : {1 : {}}}
