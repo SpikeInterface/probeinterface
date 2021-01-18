@@ -139,7 +139,7 @@ def read_prb(file):
     return probegroup
 
 
-def read_maxwell(file):
+def read_maxwell(file, well_name='well000', rec_name='rec0000'):
     """
     Read a maxwell file and return a Probe object.
 
@@ -161,8 +161,13 @@ def read_maxwell(file):
 
 
     my_file = h5py.File(file, mode='r')
-    mapping = my_file['mapping'][:]
-    nb_channels = my_file['sig'].shape[0]
+
+    if 'mapping' in my_file.keys():
+        mapping = my_file['mapping'][:]
+        nb_channels = my_file['sig'].shape[0]
+    else:
+        settings = my_file['wells'][well_name][rec_name]['settings']['mapping'][:]
+        nb_channels = my_file['sig'].shape[0]
 
     prb = {'channel_groups' : {1 : {}}}
 
