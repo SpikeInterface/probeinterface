@@ -141,13 +141,36 @@ def read_prb(file):
 
 def read_maxwell(file, well_name='well000', rec_name='rec0000'):
     """
-    Read a maxwell file and return a Probe object.
+    Read a maxwell file and return a Probe object. Maxwell file format can be
+    either Maxone (and thus just the file name is needed), or MaxTwo. In case
+    of the latter, you need to explicitly specify what is the well number of 
+    interest (well000 by default), and the recording session (since there can
+    be several. Default is rec0000)
 
     Since Maxwell do not handle electrode shape then circle of 5um are put.
     Same for electrode shape a dummy tip is put.
 
     Maxwell format do not contain any information about the channel of the probe
-    Only the channel index on device is given.
+    Only the channel index on device is given. 
+
+    Parameters
+    ----------
+    
+    file: Path or str
+        The file name.
+
+    well_name: str
+        If MaxTwo file format, the well_name to extract the mapping from
+        (default is well000)
+
+    rec_name: str
+        If MaxTwo file format, the recording session to extract the mapping
+        from (default is rec0000)
+    
+    Returns
+    --------
+    
+    a Probe
 
     """
 
