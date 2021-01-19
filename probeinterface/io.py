@@ -212,7 +212,7 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
     positions = np.array([prb['channel_groups'][1]['geometry'][c] for c in chans], dtype='float64')
 
     probe.set_electrodes(positions=positions, shapes='rect', shape_params={'width': 5.45, 'height' : 9.3})
-    probe.create_auto_shape(probe_type='rect')
+    probe.set_planar_contour(([-12.5, -12.5], [3845, -12.5], [3845, 2095], [-12.5, 2095]))
 
     probe.set_device_channel_indices(chans)
 
