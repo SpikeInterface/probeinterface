@@ -139,6 +139,84 @@ def read_prb(file):
     return probegroup
 
 
+def read_maxwell(file, well_name='well000', rec_name='rec0000'):
+    """
+    Read a maxwell file and return a Probe object. Maxwell file format can be
+    either Maxone (and thus just the file name is needed), or MaxTwo. In case
+    of the latter, you need to explicitly specify what is the well number of 
+    interest (well000 by default), and the recording session (since there can
+    be several. Default is rec0000)
+
+    Since Maxwell do not handle electrode shape then circle of 5um are put.
+    Same for electrode shape a dummy tip is put.
+
+    Maxwell format do not contain any information about the channel of the probe
+    Only the channel index on device is given. 
+
+    Parameters
+    ----------
+    
+    file: Path or str
+        The file name.
+
+    well_name: str
+        If MaxTwo file format, the well_name to extract the mapping from
+        (default is well000)
+
+    rec_name: str
+        If MaxTwo file format, the recording session to extract the mapping
+        from (default is rec0000)
+    
+    Returns
+    --------
+    
+    a Probe
+
+    """
+
+    file = Path(file).absolute()
+    assert file.is_file()
+
+    try:
+        import h5py
+    except ImportError as error:
+        print(error.__class__.__name__ + ": " + error.message)
+
+
+    my_file = h5py.File(file, mode='r')
+
+    if 'mapping' in my_file.keys():
+        mapping = my_file['mapping'][:]
+    else:
+        mapping = my_file['wells'][well_name][rec_name]['settings']['mapping'][:]
+
+    prb = {'channel_groups' : {1 : {}}}
+
+    channels = list(mapping['channel'])
+    x_pos = list(mapping['x'])
+    y_pos = list(mapping['y'])
+    geometry = {}
+    for c, x, y in zip(channels, x_pos, y_pos):
+        geometry[c] = [x, y]
+
+    my_file.close()
+
+    prb['channel_groups'][1]['geometry'] = geometry
+    prb['channel_groups'][1]['channels'] = channels
+
+    probe = Probe(ndim=2, si_units='um')
+
+    chans = np.array(prb['channel_groups'][1]['channels'], dtype='int64')
+    positions = np.array([prb['channel_groups'][1]['geometry'][c] for c in chans], dtype='float64')
+
+    probe.set_electrodes(positions=positions, shapes='rect', shape_params={'width': 5.45, 'height' : 9.3})
+    probe.set_planar_contour(([-12.5, -12.5], [3845, -12.5], [3845, 2095], [-12.5, 2095]))
+
+    probe.set_device_channel_indices(chans)
+
+    return probe
+
+
 def write_prb(file, probegroup):
     """
     Write ProbeGroup into a prb file.
