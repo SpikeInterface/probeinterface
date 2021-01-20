@@ -101,9 +101,9 @@ def plot_probe(probe, ax=None, electrode_colors=None,
 
     
     
-    if xlims is None or ylims is None or zlims is None:
+    if xlims is None or ylims is None or (zlims is None and probe.ndim == 3):
         xlims, ylims, zlims = get_auto_lims(probe)
-
+    
     ax.set_xlim(*xlims)
     ax.set_ylim(*ylims)
     ax.set_xlabel('x')
@@ -199,8 +199,15 @@ def get_auto_lims(probe, margin=40):
 
     xlims = xlims[0] - margin, xlims[1] + margin
     ylims = ylims[0] - margin, ylims[1] + margin
+
     if probe.ndim == 3:
         zlims = zlims[0] - margin, zlims[1] + margin
+
+        # to keep equal ascpect in 3d
+        # all axes have the same limits
+        lims = min(xlims[0], ylims[0], zlims[0]), max(xlims[1], ylims[1], zlims[1])
+        xlims, ylims, zlims =  lims, lims, lims
+
     
     return xlims, ylims, zlims
     

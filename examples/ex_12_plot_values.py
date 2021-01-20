@@ -34,7 +34,7 @@ values = np.random.randn(32)
 
 fig, ax = plt.subplots()
 poly, poly_contour = plot_probe(probe, electrode_values=values,
-            cmap='jet', ax=ax, electrodes_kargs={'alpha' : 1})
+            cmap='jet', ax=ax, electrodes_kargs={'alpha' : 1},  title=False)
 poly.set_clim(-2, 2)
 fig.colorbar(poly)
 
@@ -47,7 +47,7 @@ image, xlims, ylims = probe.to_image(values, pixel_size=4, method='linear')
 print(image.shape)
 
 fig, ax = plt.subplots()
-plot_probe(probe, ax=ax)
+plot_probe(probe, ax=ax, title=False)
 im = ax.imshow(image, extent=xlims+ylims, origin='lower', cmap='jet')
 im.set_clim(-2,2)
 fig.colorbar(im)
@@ -58,7 +58,7 @@ fig.colorbar(im)
 image, xlims, ylims = probe.to_image(values, num_pixel=1000, method='nearest')
 
 fig, ax = plt.subplots()
-plot_probe(probe, ax=ax)
+plot_probe(probe, ax=ax, title=False)
 im = ax.imshow(image, extent=xlims+ylims, origin='lower', cmap='jet')
 im.set_clim(-2,2)
 fig.colorbar(im)

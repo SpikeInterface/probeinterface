@@ -86,7 +86,5 @@ print(probegroup.get_global_device_channel_indices())
 
 fig, ax = plt.subplots()
 plot_probe_group(probegroup, with_channel_index=True, same_axe=True, ax=ax)
-ax.set_xlim(-100, 600)
-ax.set_ylim(-100, 600)
 
 plt.show()
