@@ -40,5 +40,5 @@ def test_plot_probe_group():
 
 if __name__ == '__main__':
     test_plot_probe()
-    #~ test_plot_probe_group()
+    test_plot_probe_group()
     plt.show()
