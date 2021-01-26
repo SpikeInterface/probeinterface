@@ -34,5 +34,8 @@ class Shank:
     @property
     def electrode_shape_params(self):
         return self.probe.electrode_shape_params[self.get_indices()]
-
+    
+    @property
+    def device_channel_indices(self):
+        return self.probe.device_channel_indices[self.get_indices()]
 

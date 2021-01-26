@@ -134,6 +134,33 @@ class ProbeGroup:
         df['global_electrode_ids'] = self.get_global_electrode_ids()
         
         return df
+    
+    def get_groups(self, group_mode='by_probe'):
+        """
+        Get sub groups of channels  by electrodes or by shank.
+        This used for spike sorting in spikeinterface.
+        
+        Parameters
+        ----------
+        group_mode: 'by_probe' or ''by_shank'
+        
+        Returns
+        -----
         
         
+        """
+        assert group_mode in ('by_probe', 'by_shank')
 
+        positions = []
+        device_indices = []
+        if group_mode == 'by_probe':
+            for probe in self.probes:
+                positions.append(probe.electrode_positions)
+                device_indices.append(probe.device_channel_indices)
+        elif group_mode == 'by_shank':
+            for probe in self.probes:
+                for shank in probe.get_shanks():
+                    positions.append(shank.electrode_positions)
+                    device_indices.append(shank.device_channel_indices)
+        
+        return positions, device_indices
