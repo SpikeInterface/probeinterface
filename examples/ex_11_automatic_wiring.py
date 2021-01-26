@@ -53,6 +53,6 @@ print(probe.device_channel_indices)
 
 fig, ax = plt.subplots(figsize=(5, 15))
 plot_probe(probe, with_channel_index=True, ax=ax)
-ax.set_xlim(-100, 200)
+
 
 plt.show()

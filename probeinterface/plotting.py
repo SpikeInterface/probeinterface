@@ -11,7 +11,8 @@ import numpy as np
 def plot_probe(probe, ax=None, electrode_colors=None,
                 with_channel_index=False, first_index='auto',
                 electrode_values=None, cmap='viridis',
-                title=True, electrodes_kargs={}, probe_shape_kwargs={}):
+                title=True, electrodes_kargs={}, probe_shape_kwargs={},
+                xlims=None, ylims=None, zlims=None):
     """
     plot one probe.
     switch 2d 3d depending the Probe.ndim
@@ -58,15 +59,14 @@ def plot_probe(probe, ax=None, electrode_colors=None,
 
     # electrodes
     positions = probe.electrode_positions
-    min_, max_ = np.min(positions), np.max(positions)
 
     vertices = probe.get_electrodes_vertices()
     if probe.ndim == 2:
         poly = PolyCollection(vertices, color=electrode_colors, **_electrodes_kargs)
         ax.add_collection(poly)
     elif probe.ndim == 3:
-        poly = poly3d = Poly3DCollection(vertices, color=electrode_colors, **_electrodes_kargs)
-        ax.add_collection3d(poly3d)
+        poly =  Poly3DCollection(vertices, color=electrode_colors, **_electrodes_kargs)
+        ax.add_collection3d(poly)
     
     if electrode_values is not None:
         poly.set_array(electrode_values)
@@ -74,16 +74,16 @@ def plot_probe(probe, ax=None, electrode_colors=None,
         
 
     # probe shape
-    vertices = probe.probe_planar_contour
-    if vertices is not None:
+    planar_contour = probe.probe_planar_contour
+    if planar_contour is not None:
         if probe.ndim == 2:
-            poly_contour = PolyCollection([vertices], **_probe_shape_kwargs)
+            poly_contour = PolyCollection([planar_contour], **_probe_shape_kwargs)
             ax.add_collection(poly_contour)
         elif probe.ndim == 3:
-            poly_contour = Poly3DCollection([vertices], **_probe_shape_kwargs)
+            poly_contour = Poly3DCollection([planar_contour], **_probe_shape_kwargs)
             ax.add_collection3d(poly_contour)
 
-        min_, max_ = np.min(vertices), np.max(vertices)
+
     else:
         poly_contour = None
     
@@ -99,16 +99,18 @@ def plot_probe(probe, ax=None, electrode_colors=None,
                 txt = f'prb{i + first_index}\ndev{chan_ind}'
             ax.text(x, y, txt, ha='center', va='center')
 
-    min_ -= 40
-    max_ += 40
-
-    ax.set_xlim(min_, max_)
-    ax.set_ylim(min_, max_)
+    
+    
+    if xlims is None or ylims is None or (zlims is None and probe.ndim == 3):
+        xlims, ylims, zlims = get_auto_lims(probe)
+    
+    ax.set_xlim(*xlims)
+    ax.set_ylim(*ylims)
     ax.set_xlabel('x')
     ax.set_ylabel('y')
 
     if probe.ndim == 3:
-        ax.set_zlim(min_, max_)
+        ax.set_zlim(zlims)
         ax.set_zlabel('z')
 
     if probe.ndim == 2:
@@ -147,7 +149,65 @@ def plot_probe_group(probegroup, same_axe=True, **kargs):
                 axs = [axs]
         else:
             raise NotImplementedError
-
-    kargs['title'] = True
+    
+    if same_axe:
+        # global lims
+        xlims, ylims, zlims = get_auto_lims(probegroup.probes[0])
+        for i, probe in enumerate(probegroup.probes):
+            xlims2, ylims2, zlims2 = get_auto_lims(probe)
+            xlims = min(xlims[0], xlims2[0]), max(xlims[1], xlims2[1])
+            ylims = min(ylims[0], ylims2[0]), max(ylims[1], ylims2[1])
+            if zlims is not None:
+                zlims = min(zlims[0], zlims2[0]), max(zlims[1], zlims2[1])
+        kargs['xlims'] = xlims
+        kargs['ylims'] = ylims
+        kargs['zlims'] = zlims
+    else:
+        # will be auto for each probe in each axis
+        kargs['xlims'] = None
+        kargs['ylims'] = None
+        kargs['zlims'] = None
+    
+    kargs['title'] = False
     for i, probe in enumerate(probegroup.probes):
         plot_probe(probe, ax=axs[i], **kargs)
+
+
+def get_auto_lims(probe, margin=40):
+    positions = probe.electrode_positions
+    planar_contour = probe.probe_planar_contour
+    
+
+    xlims = np.min(positions[:, 0]), np.max(positions[:, 0])
+    ylims = np.min(positions[:, 1]), np.max(positions[:, 1])
+    zlims = None
+    
+    if probe.ndim == 3:
+        zlims = np.min(positions[:, 2]), np.max(positions[:, 2])
+    
+    if planar_contour is not None:
+        
+        xlims2 = np.min(planar_contour[:, 0]), np.max(planar_contour[:, 0])
+        xlims = min(xlims[0], xlims2[0]), max(xlims[1], xlims2[1])
+
+        ylims2 = np.min(planar_contour[:, 1]), np.max(planar_contour[:, 1])
+        ylims = min(ylims[0], ylims2[0]), max(ylims[1], ylims2[1])
+        
+        if probe.ndim == 3:
+            zlims2 = np.min(planar_contour[:, 2]), np.max(planar_contour[:, 2])
+            zlims = min(zlims[0], zlims2[0]), max(zlims[1], zlims2[1])
+
+    xlims = xlims[0] - margin, xlims[1] + margin
+    ylims = ylims[0] - margin, ylims[1] + margin
+
+    if probe.ndim == 3:
+        zlims = zlims[0] - margin, zlims[1] + margin
+
+        # to keep equal ascpect in 3d
+        # all axes have the same limits
+        lims = min(xlims[0], ylims[0], zlims[0]), max(xlims[1], ylims[1], zlims[1])
+        xlims, ylims, zlims =  lims, lims, lims
+
+    
+    return xlims, ylims, zlims
+    

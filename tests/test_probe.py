@@ -85,7 +85,27 @@ def test_probe():
     #~ print(d)
     df = probe.to_dataframe()
     print(df)
+    
+    
+    # slice handling
+    selection = np.arange(0,18,2)
+    print(selection.dtype.kind)
+    sliced_probe = probe.get_slice(selection)
+    
+    #~ from probeinterface.plotting import plot_probe_group, plot_probe
+    #~ import matplotlib.pyplot as plt
+    #~ plot_probe(probe)
+    #~ plot_probe(sliced_probe)
+    
+    selection = np.ones(24, dtype='bool')
+    selection[::2] = False
+    sliced_probe = probe.get_slice(selection)
+    
+    #~ plot_probe(probe)
+    #~ plot_probe(sliced_probe)
+    #~ plt.show()
 
+    
 
 
 if __name__ == '__main__':

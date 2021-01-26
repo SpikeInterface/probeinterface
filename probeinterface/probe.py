@@ -467,7 +467,6 @@ class Probe:
             v = getattr(self, k, None)
             if array_as_list and v is not None and isinstance(v, np.ndarray): 
                 v = v.tolist()
-            print(k, v)
             if v is not None:
                 d[k] = v
         return d
@@ -569,6 +568,44 @@ class Probe:
             image[np.isnan(image2)] = np.nan
         
         return image, xlims, ylims
+    
+    def get_slice(self, selection):
+        """
+        Get a copy of the Probe with a sub selection of electrodes.
+        
+        Selection can be boolean or by index
+        
+        Parameters
+        ----------
+        selection: np.array of bool or int (for index)
+        """
+        n = self.get_electrode_count()
+        
+        selection = np.asarray(selection)
+        if selection.dtype =='bool':
+            assert selection.shape == (n, )
+        elif selection.dtype.kind =='i':
+            assert np.unique(selection).size == selection.size
+            assert 0 <= np.min(selection) < n
+            assert 0 <= np.max(selection) < n
+        else:
+            raise ValueError('selection must be bool array or int array')
+        
+        
+        d = self.to_dict(array_as_list=False)
+        for k, v in d.items():
+            if k == 'probe_planar_contour':
+                continue
+            
+            if isinstance(v, np.ndarray):
+                assert v.shape[0] == n
+                d[k] = v[selection].copy()
+        
+        sliced_probe = Probe.from_dict(d)
+        
+        return sliced_probe
+        
+        
         
 
 
