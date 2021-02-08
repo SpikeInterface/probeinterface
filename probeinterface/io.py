@@ -99,6 +99,188 @@ def write_probeinterface(file, probe_or_probegroup):
         json.dump(d, f, indent=4)
 
 
+def read_BIDS_probe(folder):
+    raise NotImplementedError()
+
+def write_BIDS_probe(file, probe_or_probegroup):
+    """
+    Write to probe and contact formats as proposed
+    for ephy BIDS extension (tsv & json based).
+
+    The format handles several probes in one file.
+
+    Parameters
+    ----------
+    file: Path or str
+        The folder name.
+
+    probe_or_probegroup : Probe or ProbeGroup
+        If probe is given a probegroup is created anyway.
+
+    """
+    if isinstance(probe_or_probegroup, Probe):
+        probe = probe_or_probegroup
+        probegroup = ProbeGroup()
+        probegroup.add_probe(probe)
+    elif isinstance(probe_or_probegroup, ProbeGroup):
+        probegroup = probe_or_probegroup
+    else:
+        raise ValueError('probe_or_probegroup has to be'
+                         'of type Probe or ProbeGroup')
+    file = Path(file)
+
+    # GENERATION OF PROBE.TSV
+
+    # ensure required keys (probeID, probe_type) are present
+    for probe in probegroup.probes:
+        # create 8-digit identifier of probe
+        if 'probe_id' not in probe.annotations:
+            probe.annotate(probe_id=np.random.randint(1e+7, 1e+8))
+        if 'type' not in probe.annotations:
+            raise ValueError('Export to BIDS probe format requires '
+                             'the probe type to be specified as an '
+                             'annotation (type)')
+
+    annotation_keys = np.concatenate([list(p.annotations) for p in probegroup.probes])
+    annotation_keys = np.unique(annotation_keys)
+
+    # generate a tsv table capturing probe information (ID, type, custom annotations)
+    import pandas as pd
+    index = range(len([p.annotations['probe_id'] for p in probegroup.probes]))
+    df = pd.DataFrame(index=index)
+    for annotation_key in annotation_keys:
+        df[annotation_key] = [p.annotations[annotation_key] for p in probegroup.probes]
+    df['n_shanks'] = [len(np.unique(p.shank_ids)) for p  in probegroup.probes]
+
+    # in principle it would also be possible to add the probe width and depth here based
+    # on the probe contour information. However this would require an alignment of the
+    # probe within the coordinate system.
+
+    df.fillna('n/a', inplace=True)
+    df.replace(to_replace='', value='n/a', inplace=True)
+    df.to_csv(file.joinpath('probes.tsv'), sep='\t')
+
+    # TODO: probe contour information should be stored in probes.json
+
+    # GENERATION OF CONTACTS.TSV
+
+    for probe in probegroup.probes:
+        if probe.electrode_ids is None:
+            raise ValueError('Electrodes must have unique electrode ids '
+                             'and not None for export to BIDS probe format')
+
+    index = range(sum([p.get_electrode_count() for p in probegroup.probes]))
+    df = pd.DataFrame(index=index)
+
+    df['contact_id'] = [el_id for p in probegroup.probes for el_id in p.electrode_ids]
+    df['probe_id'] = [p_id for p in probegroup.probes for p_id in [p.annotations['probe_id']] * p.get_electrode_count()]
+    df['contact_shape'] = [el_shape for p in probegroup.probes for el_shape in p.electrode_shapes]
+    df['x'] = [x for p in probegroup.probes for x in p.electrode_positions[:,0]]
+    df['y'] = [y for p in probegroup.probes for y in p.electrode_positions[:, 1]]
+    df['shank_id'] = [sh_id for p in probegroup.probes for sh_id in p.shank_ids]
+
+    channel_indices = []
+    for probe in probegroup.probes:
+        if probe.device_channel_indices:
+            channel_indices.extend(probe.device_channel_indices)
+        else:
+            channel_indices.extend([None]*probe.get_electrode_count())
+    df['device_channel_indices'] = channel_indices
+
+    df.fillna('n/a', inplace=True)
+    df.replace(to_replace='', value='n/a', inplace=True)
+    df.to_csv(file.joinpath('contacts.tsv'), sep='\t')
+
+
+
+
+""" BIDS CONTACTS.TSV columns
+contact_id:  REQUIRED - ID of the contact (expected to match channel.tsv)
+Probe_id: REQUIRED - Id of the probe the contact is on
+hemisphere:  RECOMMENDED - Which brain hemisphere was the contact located
+coordinateSystem:  RECOMMENDED - coordinate system used for x,y,z
+x: RECOMMENDED - recorded position along the x-axis. 
+y: RECOMMENDED - recorded position along the y-axis. 
+z: RECOMMENDED - recorded position along the z-axis. 
+impedance:  RECOMMENDED - Impedance of the contact in kOhm.
+ImpedanceUnit: RECOMMENDED - The unit of the impedance. If not specified it’s assumed to be in kOhm
+Shank_id: OPTIONAL - Id to specify which shank of the probe the contact is on
+contactSize: OPTIONAL - size of the contact, e.g. non-insulated surface area or length of non-insulated cable.
+contact_shape: OPTIONAL - description of the shape of the contact, e.g. square, circle,
+contact_size_unit: OPTIONAL - unit of the contact size. This is required if the contact size is specified.
+material: OPTIONAL - material of the contact surface, e.g. Tin, Ag/AgCl, Gold
+Location: RECOMMENDED - An indication on the location of the contact (e.g. cortical layer 3, CA1, etc)
+Insulation: RECOMMENDED- Material used for insulation around the contact
+"""
+
+
+
+
+
+
+
+
+    # for probe in probegroup.probes
+    # for
+    #
+    #     # create probe tsv
+    #
+    #     index = np.arange(probe.get_electrode_count(), dtype=int)
+    #     df = pd.DataFrame(index=index)
+    #     df['x'] = probe.electrode_positions[:, 0]
+    #     df['y'] = probe.electrode_positions[:, 1]
+    #     if probe.ndim == 3:
+    #         df['z'] = probe.electrode_positions[:, 2]
+    #     df['electrode_shapes'] = probe.electrode_shapes
+    #     for i, p in enumerate(probe.electrode_shape_params):
+    #         for k, v in p.items():
+    #             df.at[i, k] = v
+    #     df['device_channel_indices'] = probe.device_channel_indices
+    #     df['shank_ids'] = probe.shank_ids
+    #
+    # return df
+
+""" BIDS PROBES.TSV columns
+probeID: DeviceSerialNumber (expected to match contacts.tsv)
+type: REQUIRED - The type of the probe usage (acute/chronic)
+CoordinateSpace: RECOMMENDED - The name of the reference space used for the coordinate definition, e.g. chamber center, or anatomical stereotactic coordinates
+PlacementPicture: OPTIONAL - Path to a photograph showing the placement of the probe
+x: RECOMMENDED - recorded position along the x-axis. 
+y: RECOMMENDED - recorded position along the y-axis.
+z: RECOMMENDED - recorded position along the z-axis.
+XYZUnits: RECOMMENDED - units used for x,yz values
+roll: RECOMMENDED - rotation around the roll axis
+pitch: RECOMMENDED - rotation around the pitch axis
+yaw: RECOMMENDED - rotation around the yaw axis
+RPYUnits: RECOMMENDED - units used for roll, pitch and yaw angles
+Hemisphere: RECOMMENDED - Which brain hemisphere was the probe located
+Manufacturer: RECOMMENDED - Manufacturer of the probes system (e.g. "openephys”, “alphaomega",”blackrock”) 
+manufacturerSerialNumber: RECOMMENDED - the serial number of the probe as provided by the manufacturer.
+DeviceSerialNumber: RECOMMENDED - The serial number of the equipment (provided by the manufacturer). 
+ContactCount: OPTIONAL - Number of miscellaneous analog contacts for auxiliary signals (e.g. 2). 
+Depth: OPTIONAL - Physical depth of the probe, e.g. 0.3
+Width: OPTIONAL Physical width of the probe, e.g. 5
+Height: OPTIONAL - Physical width of the probe, e.g. 5
+DimensionUnits: OPTIONAL - Units of the physical dimensions  ‘depth’, ‘width’ and ‘height’ of the probe, e.g. ‘mm’
+CoordinateReferencePoint: RECOMMENDED - Point of the probe that is described by the probe coordinates
+Location: RECOMMENDED - An indication on the location of the contact (e.g brain region)
+
+"""
+
+
+
+    # d = OrderedDict()
+    # d['specification'] = 'probeinterface'
+    # d['version'] = version
+    # d['probes'] = []
+    # for probe_ind, probe in enumerate(probegroup.probes):
+    #     probe_dict = probe.to_dict(array_as_list=True)
+    #     d['probes'].append(probe_dict)
+    #
+    # with open(file, 'w', encoding='utf8') as f:
+    #     json.dump(d, f, indent=4)
+
+
 def read_prb(file):
     """
     Read a PRB file and return a ProbeGroup object.

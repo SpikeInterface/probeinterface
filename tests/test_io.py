@@ -1,4 +1,4 @@
-from probeinterface import write_probeinterface, read_probeinterface
+from probeinterface import write_probeinterface, read_probeinterface, write_BIDS_probe, read_BIDS_probe
 from probeinterface import read_prb, write_prb
 from probeinterface import read_spikeglx
 from probeinterface import generate_dummy_probe_group
@@ -38,6 +38,26 @@ def test_probeinterface_format():
     #~ plot_probe_group(probegroup, with_channel_index=True, same_axe=False)
     #~ plot_probe_group(probegroup2, with_channel_index=True, same_axe=False)
     #~ plt.show()
+
+
+def test_BIDS_format():
+    foldername = ''
+    probegroup = generate_dummy_probe_group()
+
+    # add custom probe type annotation to be
+    # compatible with BIDS specifications
+    for probe in probegroup.probes:
+        probe.annotate(type='laminar')
+
+    # add unique electrode ids to be compatible
+    # with BIDS specifications
+    for probe in probegroup.probes:
+        n_els = probe.get_electrode_count()
+        probe.set_electrode_ids(np.random.randint(1e4, 1e5, n_els))
+
+    write_BIDS_probe(foldername, probegroup)
+
+    # TODO: add testing functions here
 
     
 
