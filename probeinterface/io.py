@@ -100,7 +100,92 @@ def write_probeinterface(file, probe_or_probegroup):
 
 
 def read_BIDS_probe(folder):
-    raise NotImplementedError()
+    import pandas as pd
+    folder = Path(folder)
+    probes = {}
+    probegroup = ProbeGroup()
+
+    if not (folder.joinpath('probes.tsv').exists() and
+            folder.joinpath('contacts.tsv').exists()):
+        raise ValueError(f'Could not find probes.tsv or contacts.tsv file in '
+                         f'{folder}')
+
+    # Step 1: READING PROBES.TSV
+    df = pd.read_csv(folder.joinpath('probes.tsv'), sep='\t', header=0)
+
+    if 'probe_id' not in df:
+        raise ValueError('probes.tsv file does not contain probe_id column')
+    for row_idx, row in df.iterrows():
+        probe = Probe()
+        probe.annotate(**dict(row.items()))
+        probes[probe.annotations['probe_id']] = probe
+
+
+    # Step 2: READING CONTACTS.TSV
+    df = pd.read_csv(folder.joinpath('contacts.tsv'), sep='\t', header=0)
+
+    if 'probe_id' not in df:
+        raise ValueError('probes.tsv file does not contain probe_id column')
+    if 'contact_id' not in df:
+        raise ValueError('contacts.tsv file does not contain contact_id column')
+
+    for probe_id in df['probe_id'].unique():
+        df_probe = df[df['probe_id'] == probe_id]
+        probe = probes[probe_id]
+
+        probe.electrode_ids = df_probe['contact_id']
+        if 'contact_shape' in df_probe:
+            probe.electrode_shapes = df_probe['contact_shape']
+
+        dimensions = []
+        for dim in ['x', 'y', 'z']:
+            if dim in df_probe:
+                dimensions.append(dim)
+
+        coordinates = df_probe[dimensions]
+        probe.electrode_positions = coordinates
+        probe.ndim = len(dimensions)
+
+        # extract physical units used
+        if 'xyz_units' in df_probe:
+            if len(df['xyz_units'].unique()) == 1:
+                probe.si_units = df['xyz_units'][0]
+            else:
+                raise ValueError(f'Probe {probe_id} uses different units for '
+                                 f'contact coordinates. Can not be represented '
+                                 f'by probeinterface.')
+
+        if 'device_channel_indices' in df_probe:
+            channel_indices = df_probe['device_channel_indices']
+            if any([ind is not None for ind in channel_indices]):
+                probe.set_device_channel_indices(channel_indices)
+
+        used_columns = ['probe_id', 'contact_id', 'probe_shape',
+                        'x', 'y', 'z', 'xyz_units']
+        df_others = df_probe.drop(used_columns, axis=1, errors='ignore')
+        for col_name in df_others.columns:
+            probe.annotate(**dict(col_name=df_probe[col_name]))
+
+
+
+
+    # TODO: continue here
+    # Step 3: READING PROBES.JSON (optional)
+    # Step 4: READING CONTACTS.JSON (optional)
+
+
+        # to be extracted from json / position dimensions
+        # shape_params = d['electrode_shape_params']
+        # plane_axes = d['electrode_plane_axes'],
+        # d.get('probe_planar_contour', None)
+        # probe.annotate(**d['annotations'])
+
+    for probe in probes.values():
+        probegroup.add_probe(probe)
+
+    return probegroup
+
+
 
 def write_BIDS_probe(file, probe_or_probegroup):
     """
@@ -118,6 +203,8 @@ def write_BIDS_probe(file, probe_or_probegroup):
         If probe is given a probegroup is created anyway.
 
     """
+    import pandas as pd
+
     if isinstance(probe_or_probegroup, Probe):
         probe = probe_or_probegroup
         probegroup = ProbeGroup()
@@ -128,11 +215,11 @@ def write_BIDS_probe(file, probe_or_probegroup):
         raise ValueError('probe_or_probegroup has to be'
                          'of type Probe or ProbeGroup')
     file = Path(file)
+    probes = probegroup.probes
 
-    # GENERATION OF PROBE.TSV
-
+    # Step 1: GENERATION OF PROBE.TSV
     # ensure required keys (probeID, probe_type) are present
-    for probe in probegroup.probes:
+    for probe in probes:
         # create 8-digit identifier of probe
         if 'probe_id' not in probe.annotations:
             probe.annotate(probe_id=np.random.randint(1e+7, 1e+8))
@@ -141,46 +228,60 @@ def write_BIDS_probe(file, probe_or_probegroup):
                              'the probe type to be specified as an '
                              'annotation (type)')
 
-    annotation_keys = np.concatenate([list(p.annotations) for p in probegroup.probes])
-    annotation_keys = np.unique(annotation_keys)
+    # extract all used annotation keys
+    keys_by_probe = [list(p.annotations) for p in probes]
+    keys_concatenated = np.concatenate(keys_by_probe)
+    annotation_keys = np.unique(keys_concatenated)
 
-    # generate a tsv table capturing probe information (ID, type, custom annotations)
-    import pandas as pd
-    index = range(len([p.annotations['probe_id'] for p in probegroup.probes]))
+    # generate a tsv table capturing probe information
+    index = range(len([p.annotations['probe_id'] for p in probes]))
     df = pd.DataFrame(index=index)
     for annotation_key in annotation_keys:
-        df[annotation_key] = [p.annotations[annotation_key] for p in probegroup.probes]
-    df['n_shanks'] = [len(np.unique(p.shank_ids)) for p  in probegroup.probes]
+        df[annotation_key] = [p.annotations[annotation_key] for p in probes]
+    df['n_shanks'] = [len(np.unique(p.shank_ids)) for p in probes]
 
-    # in principle it would also be possible to add the probe width and depth here based
-    # on the probe contour information. However this would require an alignment of the
-    # probe within the coordinate system.
+    # Note: in principle it would also be possible to add the probe width and
+    # depth here based on the probe contour information. However this would
+    # require an alignment of the probe within the coordinate system.
 
+    # substitute empty values by BIDS default and create tsv file
     df.fillna('n/a', inplace=True)
     df.replace(to_replace='', value='n/a', inplace=True)
-    df.to_csv(file.joinpath('probes.tsv'), sep='\t')
+    df.to_csv(file.joinpath('probes.tsv'), sep='\t', index=False)
 
-    # TODO: probe contour information should be stored in probes.json
 
-    # GENERATION OF CONTACTS.TSV
+    # Step 2: GENERATION OF PROBE.JSON
+    probes_dict = {}
+    for probe in probes:
+        probe_id = probe.annotations['probe_id']
+        probes_dict[probe_id] = {'contour': probe.probe_planar_contour.tolist(),
+                 'units': probe.si_units}
 
-    for probe in probegroup.probes:
+    with open(file.joinpath('probes.json'), 'w', encoding='utf8') as f:
+        json.dump(probes_dict, f, indent=4)
+
+
+    # Step 3: GENERATION OF CONTACTS.TSV
+    # ensure required electrode identifiers are present
+    for probe in probes:
         if probe.electrode_ids is None:
             raise ValueError('Electrodes must have unique electrode ids '
                              'and not None for export to BIDS probe format')
 
-    index = range(sum([p.get_electrode_count() for p in probegroup.probes]))
+    index = range(sum([p.get_electrode_count() for p in probes]))
     df = pd.DataFrame(index=index)
 
-    df['contact_id'] = [el_id for p in probegroup.probes for el_id in p.electrode_ids]
-    df['probe_id'] = [p_id for p in probegroup.probes for p_id in [p.annotations['probe_id']] * p.get_electrode_count()]
-    df['contact_shape'] = [el_shape for p in probegroup.probes for el_shape in p.electrode_shapes]
-    df['x'] = [x for p in probegroup.probes for x in p.electrode_positions[:,0]]
-    df['y'] = [y for p in probegroup.probes for y in p.electrode_positions[:, 1]]
-    df['shank_id'] = [sh_id for p in probegroup.probes for sh_id in p.shank_ids]
+    df['contact_id'] = [el_id for p in probes for el_id in p.electrode_ids]
+    df['probe_id'] = [p.annotations['probe_id'] for p in probes for _ in p.electrode_ids]
+    df['contact_shape'] = [el_shape for p in probes for el_shape in p.electrode_shapes]
+    df['x'] = [x for p in probes for x in p.electrode_positions[:, 0]]
+    df['y'] = [y for p in probes for y in p.electrode_positions[:, 1]]
+    df['shank_id'] = [sh_id for p in probes for sh_id in p.shank_ids]
+    df['coordinate_system'] = ['relative cartesian'] * len(index)
+    df['xyz_units'] = [p.si_units for p in probes for _ in p.electrode_ids]
 
     channel_indices = []
-    for probe in probegroup.probes:
+    for probe in probes:
         if probe.device_channel_indices:
             channel_indices.extend(probe.device_channel_indices)
         else:
@@ -189,8 +290,19 @@ def write_BIDS_probe(file, probe_or_probegroup):
 
     df.fillna('n/a', inplace=True)
     df.replace(to_replace='', value='n/a', inplace=True)
-    df.to_csv(file.joinpath('contacts.tsv'), sep='\t')
+    df.to_csv(file.joinpath('contacts.tsv'), sep='\t', index=False)
 
+
+    # Step 4: GENERATING CONTACTS.JSON
+    contacts_dict = {}
+    for probe in probes:
+        for cidx, contact_id in enumerate(probe.electrode_ids):
+            cdict = {'contact_shape_params': probe.electrode_shape_params[cidx],
+                     'contact_shape_units': probe.si_units}
+            contacts_dict[contact_id] = cdict
+
+    with open(file.joinpath('contacts.json'), 'w', encoding='utf8') as f:
+        json.dump(contacts_dict, f, indent=4)
 
 
 

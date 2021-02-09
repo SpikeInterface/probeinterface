@@ -53,9 +53,14 @@ def test_BIDS_format():
     # with BIDS specifications
     for probe in probegroup.probes:
         n_els = probe.get_electrode_count()
-        probe.set_electrode_ids(np.random.randint(1e4, 1e5, n_els))
+        # using np.random.choice to ensure uniqueness of electrode ids
+        el_ids = np.random.choice(np.arange(1e4, 1e5, dtype='int'),
+                                  replace=False, size=n_els)
+        probe.set_electrode_ids(el_ids)
 
     write_BIDS_probe(foldername, probegroup)
+
+    probegroup = read_BIDS_probe(foldername)
 
     # TODO: add testing functions here
 
