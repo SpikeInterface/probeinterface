@@ -112,17 +112,21 @@ def read_BIDS_probe(folder):
 
     # Step 1: READING PROBES.TSV
     df = pd.read_csv(folder.joinpath('probes.tsv'), sep='\t', header=0)
+    df.replace(to_replace={'n/a': None}, inplace=True)
 
     if 'probe_id' not in df:
         raise ValueError('probes.tsv file does not contain probe_id column')
     for row_idx, row in df.iterrows():
         probe = Probe()
         probe.annotate(**dict(row.items()))
-        probes[probe.annotations['probe_id']] = probe
+        probes[str(probe.annotations['probe_id'])] = probe
 
 
     # Step 2: READING CONTACTS.TSV
-    df = pd.read_csv(folder.joinpath('contacts.tsv'), sep='\t', header=0)
+    df = pd.read_csv(folder.joinpath('contacts.tsv'), sep='\t', header=0,
+                     keep_default_na=False)
+    df.replace(to_replace={'n/a': None}, inplace=True)
+
 
     if 'probe_id' not in df:
         raise ValueError('probes.tsv file does not contain probe_id column')
@@ -131,7 +135,7 @@ def read_BIDS_probe(folder):
 
     for probe_id in df['probe_id'].unique():
         df_probe = df[df['probe_id'] == probe_id]
-        probe = probes[probe_id]
+        probe = probes[str(probe_id)]
 
         probe.electrode_ids = df_probe['contact_id']
         if 'contact_shape' in df_probe:
@@ -167,18 +171,59 @@ def read_BIDS_probe(folder):
             probe.annotate(**dict(col_name=df_probe[col_name]))
 
 
-
-
-    # TODO: continue here
     # Step 3: READING PROBES.JSON (optional)
+    probes_dict = {}
+    if folder.joinpath('probes.json').exists():
+        with open(folder.joinpath('probes.json'), 'r') as f:
+            probes_dict = json.load(f)
+
+    if 'probe_id' in probes_dict:
+        for probe_id, probe_info in probes_dict['probe_id'].items():
+            probe = probes[probe_id]
+            for probe_param, param_value in probe_info.items():
+                if probe_param == 'contour':
+                    probe.probe_planar_contour = param_value
+                else:
+                    probes[probe_id].annotate(**probe_info)
+
     # Step 4: READING CONTACTS.JSON (optional)
+    contacts_dict = {}
+    if folder.joinpath('contacts.json').exists():
+        with open(folder.joinpath('contacts.json'), 'r') as f:
+            contacts_dict = json.load(f)
 
+    if 'contact_id' in contacts_dict:
 
-        # to be extracted from json / position dimensions
-        # shape_params = d['electrode_shape_params']
-        # plane_axes = d['electrode_plane_axes'],
-        # d.get('probe_planar_contour', None)
-        # probe.annotate(**d['annotations'])
+        # collect all contact parameters used in this file
+        contact_params = [k for v in contacts_dict['contact_id'].values() for k
+                          in v.keys()]
+        contact_params = np.unique(contact_params)
+
+        # collect contact information for each probe_id
+        for probe in probes.values():
+            contact_ids = probe.electrode_ids
+            for contact_param in contact_params:
+                # collect parameters across contact id to add to probe
+                value_list = [
+                    contacts_dict['contact_id'][str(c)].get(contact_param, None)
+                    for c in contact_ids]
+
+                if contact_param == 'contact_shape_params':
+                    probe.electrode_shape_params = value_list
+                elif contact_param == 'contact_plane_axis':
+                    probe.electrode_plane_axes = value_list
+
+                # extract units if this was not extracted earlier already
+                elif contact_param == 'contact_shape_units' and \
+                        all(x == value_list[0] for x in value_list):
+                    if probe.si_units == None:
+                        probe.si_units = value_list[0]
+                    elif probe.si_units != value_list[0]:
+                        raise ValueError(f'Different units used for probe and '
+                                         f'contacts ({probe.si_units} != '
+                                         f'{value_list[0]})')
+                else:
+                    probe.annotate(**{contact_param: value_list})
 
     for probe in probes.values():
         probegroup.add_probe(probe)
@@ -258,7 +303,7 @@ def write_BIDS_probe(file, probe_or_probegroup):
                  'units': probe.si_units}
 
     with open(file.joinpath('probes.json'), 'w', encoding='utf8') as f:
-        json.dump(probes_dict, f, indent=4)
+        json.dump({'probe_id': probes_dict}, f, indent=4)
 
 
     # Step 3: GENERATION OF CONTACTS.TSV
@@ -302,7 +347,7 @@ def write_BIDS_probe(file, probe_or_probegroup):
             contacts_dict[contact_id] = cdict
 
     with open(file.joinpath('contacts.json'), 'w', encoding='utf8') as f:
-        json.dump(contacts_dict, f, indent=4)
+        json.dump({'contact_id': contacts_dict}, f, indent=4)
 
 
 
