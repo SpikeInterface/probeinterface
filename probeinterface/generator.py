@@ -32,7 +32,7 @@ def generate_dummy_probe(elec_shapes='circle'):
 
 def generate_dummy_probe_group():
     """
-    Generate a ProbeGroup with 2 probe.
+    Generate a ProbeGroup with 2 probes.
     Mainly used for testing and examples.
     """
     probe0 = generate_dummy_probe()

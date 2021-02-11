@@ -37,7 +37,7 @@ class Probe:
         # vertices for the shape of the probe
         self.probe_planar_contour = None
 
-        # This handle shankd ids
+        # This handles the shank id per electrode
         self.shank_ids = None
 
         # this handle the wiring to device : channel index on device side.
@@ -203,7 +203,7 @@ class Probe:
         """
         channel_indices = np.asarray(channel_indices)
         if channel_indices.size != self.get_electrode_count():
-            valueError('channel_indices have not the same size as electrode')
+            ValueError('channel_indices have not the same size as electrode')
         self.device_channel_indices = channel_indices
         if self._probe_group is not None:
             self._probe_group.check_global_device_wiring_and_ids()
@@ -266,7 +266,7 @@ class Probe:
         """
         assert self.shank_ids is not None
         shanks = []
-        for shank_id  in np.unique(self.shank_ids):
+        for shank_id in np.unique(self.shank_ids):
             shank = Shank(self, shank_id)
             shanks.append(shank)
         return shanks
@@ -454,7 +454,8 @@ class Probe:
     _dump_attr_names = ['ndim', 'si_units', 'annotations',
                         'electrode_positions', 'electrode_plane_axes',
                         'electrode_shapes', 'electrode_shape_params',
-                        'probe_planar_contour', 'device_channel_indices', 'electrode_ids',
+                        'probe_planar_contour', 'device_channel_indices',
+                        'electrode_ids',
                         'shank_ids']
 
     def to_dict(self, array_as_list=False):
@@ -511,7 +512,7 @@ class Probe:
         return df
     
     def to_image(self, values, pixel_size=0.5, num_pixel=None, method='linear', 
-                xlims=None, ylims=None):
+                 xlims=None, ylims=None):
         """
         Generated a 2d (image) from a values vector which an interpolation
         into a grid mesh.
@@ -520,7 +521,7 @@ class Probe:
         Parameters
         ----------
         values:
-            vector same size as electrode number to be color ploted
+            vector same size as electrode number to be color plotted
         pixel_size:
             size of one pixel in micrometers
         num_pixel:

@@ -65,7 +65,7 @@ def write_probeinterface(file, probe_or_probegroup):
     """
     Write to probeinterface own format JSON based.
     
-    The format handle several probes in one file.
+    The format handles several probes in one file.
     
     Parameters
     ----------
@@ -83,7 +83,7 @@ def write_probeinterface(file, probe_or_probegroup):
     elif isinstance(probe_or_probegroup, ProbeGroup):
         probegroup = probe_or_probegroup
     else:
-        raise valueError('Bad boy')
+        raise ValueError('Bad boy')
 
     file = Path(file)
 
@@ -128,9 +128,11 @@ def read_prb(file):
         probe = Probe(ndim=2, si_units='um')
 
         chans = np.array(group['channels'], dtype='int64')
-        positions = np.array([group['geometry'][c] for c in chans], dtype='float64')
+        positions = np.array([group['geometry'][c] for c in chans],
+                             dtype='float64')
 
-        probe.set_electrodes(positions=positions, shapes='circle', shape_params={'radius': 5})
+        probe.set_electrodes(positions=positions, shapes='circle',
+                             shape_params={'radius': 5})
         probe.create_auto_shape(probe_type='tip')
 
         probe.set_device_channel_indices(chans)
@@ -188,9 +190,10 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
     if 'mapping' in my_file.keys():
         mapping = my_file['mapping'][:]
     else:
-        mapping = my_file['wells'][well_name][rec_name]['settings']['mapping'][:]
+        mapping = my_file['wells'][well_name][rec_name]['settings']['mapping'][
+                  :]
 
-    prb = {'channel_groups' : {1 : {}}}
+    prb = {'channel_groups': {1: {}}}
 
     channels = list(mapping['channel'])
     x_pos = list(mapping['x'])
@@ -207,10 +210,14 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
     probe = Probe(ndim=2, si_units='um')
 
     chans = np.array(prb['channel_groups'][1]['channels'], dtype='int64')
-    positions = np.array([prb['channel_groups'][1]['geometry'][c] for c in chans], dtype='float64')
+    positions = np.array(
+        [prb['channel_groups'][1]['geometry'][c] for c in chans],
+        dtype='float64')
 
-    probe.set_electrodes(positions=positions, shapes='rect', shape_params={'width': 5.45, 'height' : 9.3})
-    probe.set_planar_contour(([-12.5, -12.5], [3845, -12.5], [3845, 2095], [-12.5, 2095]))
+    probe.set_electrodes(positions=positions, shapes='rect',
+                         shape_params={'width': 5.45, 'height': 9.3})
+    probe.set_planar_contour(
+        ([-12.5, -12.5], [3845, -12.5], [3845, 2095], [-12.5, 2095]))
 
     probe.set_device_channel_indices(chans)
 
@@ -241,7 +248,8 @@ def write_prb(file, probegroup):
 
     for probe in probegroup.probes:
         if probe.device_channel_indices is None:
-            raise ValueError('For PRB format device_channel_indices must be set')
+            raise ValueError(
+                'For PRB format device_channel_indices must be set')
 
     with open(file, 'w') as f:
         f.write('channel_groups = {\n')
@@ -316,7 +324,8 @@ def read_spikeglx(file, ):
     positions[:, 1] *= y_pitch
 
     probe = Probe(ndim=2, si_units='um')
-    probe.set_electrodes(positions=positions, shapes='square', shape_params={'width': 10})
+    probe.set_electrodes(positions=positions, shapes='square',
+                         shape_params={'width': 10})
     probe.create_auto_shape(probe_type='tip')
 
     return probe
