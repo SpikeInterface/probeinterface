@@ -111,7 +111,8 @@ def read_BIDS_probe(folder):
                          f'{folder}')
 
     # Step 1: READING PROBES.TSV
-    df = pd.read_csv(folder.joinpath('probes.tsv'), sep='\t', header=0)
+    df = pd.read_csv(folder.joinpath('probes.tsv'), sep='\t', header=0,
+                     keep_default_na=False, dtype=str)
     df.replace(to_replace={'n/a': None}, inplace=True)
 
     if 'probe_id' not in df:
@@ -119,14 +120,18 @@ def read_BIDS_probe(folder):
     for row_idx, row in df.iterrows():
         probe = Probe()
         probe.annotate(**dict(row.items()))
-        probes[str(probe.annotations['probe_id'])] = probe
 
+        # for string based annotations use '' instead of None as default
+        for string_annotation in ['name', 'manufacturer']:
+            if probe.annotations.get(string_annotation, None) is None:
+                probe.annotations[string_annotation] = ''
+
+        probes[str(probe.annotations['probe_id'])] = probe
 
     # Step 2: READING CONTACTS.TSV
     df = pd.read_csv(folder.joinpath('contacts.tsv'), sep='\t', header=0,
-                     keep_default_na=False)
+                     keep_default_na=False, dtype=str)
     df.replace(to_replace={'n/a': None}, inplace=True)
-
 
     if 'probe_id' not in df:
         raise ValueError('probes.tsv file does not contain probe_id column')
@@ -137,17 +142,17 @@ def read_BIDS_probe(folder):
         df_probe = df[df['probe_id'] == probe_id]
         probe = probes[str(probe_id)]
 
-        probe.electrode_ids = df_probe['contact_id']
+        probe.electrode_ids = df_probe['contact_id'].values.astype('U')
         if 'contact_shape' in df_probe:
-            probe.electrode_shapes = df_probe['contact_shape']
+            probe.electrode_shapes = df_probe['contact_shape'].values
 
         dimensions = []
         for dim in ['x', 'y', 'z']:
             if dim in df_probe:
                 dimensions.append(dim)
 
-        coordinates = df_probe[dimensions]
-        probe.electrode_positions = coordinates
+        coordinates = df_probe[dimensions].values
+        probe.electrode_positions = coordinates.astype(float)
         probe.ndim = len(dimensions)
 
         # extract physical units used
@@ -160,16 +165,20 @@ def read_BIDS_probe(folder):
                                  f'by probeinterface.')
 
         if 'device_channel_indices' in df_probe:
-            channel_indices = df_probe['device_channel_indices']
+            channel_indices = df_probe['device_channel_indices'].values
             if any([ind is not None for ind in channel_indices]):
                 probe.set_device_channel_indices(channel_indices)
 
-        used_columns = ['probe_id', 'contact_id', 'probe_shape',
-                        'x', 'y', 'z', 'xyz_units']
+        if 'shank_id' in df_probe:
+            shank_ids = df_probe['shank_id'].values
+            probe.set_shank_ids(shank_ids)
+
+        used_columns = ['probe_id', 'contact_id', 'contact_shape',
+                        'x', 'y', 'z', 'xyz_units', 'shank_id',
+                        'device_channel_indices']
         df_others = df_probe.drop(used_columns, axis=1, errors='ignore')
         for col_name in df_others.columns:
-            probe.annotate(**dict(col_name=df_probe[col_name]))
-
+            probe.annotate(**{col_name: df_probe[col_name].values})
 
     # Step 3: READING PROBES.JSON (optional)
     probes_dict = {}
@@ -181,10 +190,19 @@ def read_BIDS_probe(folder):
         for probe_id, probe_info in probes_dict['probe_id'].items():
             probe = probes[probe_id]
             for probe_param, param_value in probe_info.items():
+
                 if probe_param == 'contour':
-                    probe.probe_planar_contour = param_value
+                    probe.probe_planar_contour = np.array(param_value)
+
+                elif probe_param == 'units':
+                    if probe.si_units is None:
+                        probe.si_units = param_value
+                    elif probe.si_units != param_value:
+                        raise ValueError(f'Inconsistent si_units for probe '
+                                         f'{probe_id}')
+
                 else:
-                    probes[probe_id].annotate(**probe_info)
+                    probe.annotate(**{probe_param: param_value})
 
     # Step 4: READING CONTACTS.JSON (optional)
     contacts_dict = {}
@@ -210,8 +228,8 @@ def read_BIDS_probe(folder):
 
                 if contact_param == 'contact_shape_params':
                     probe.electrode_shape_params = value_list
-                elif contact_param == 'contact_plane_axis':
-                    probe.electrode_plane_axes = value_list
+                elif contact_param == 'contact_plane_axes':
+                    probe.electrode_plane_axes = np.array(value_list)
 
                 # extract units if this was not extracted earlier already
                 elif contact_param == 'contact_shape_units' and \
@@ -229,7 +247,6 @@ def read_BIDS_probe(folder):
         probegroup.add_probe(probe)
 
     return probegroup
-
 
 
 def write_BIDS_probe(file, probe_or_probegroup):
@@ -262,12 +279,29 @@ def write_BIDS_probe(file, probe_or_probegroup):
     file = Path(file)
     probes = probegroup.probes
 
+    def get_unique_ids(min, max, n, trials=20):
+        """Create n unique ids between min and max within a maximum number of
+        trials (attempts)"""
+        ids = np.random.randint(min, max, n)
+        i = 0
+
+        while len(np.unique(ids)) != len(ids) and i < trials:
+            ids = np.random.randint(min, max, n)
+
+        if len(np.unique(ids)) != len(ids):
+            raise ValueError(f'Can not generate {n} unique ids between {min} '
+                             f'and {max} in {trials} trials')
+        return ids
+
+
     # Step 1: GENERATION OF PROBE.TSV
     # ensure required keys (probeID, probe_type) are present
-    for probe in probes:
+    # creating unique probe ids in case probes do not have any yet
+    probe_ids = get_unique_ids(1e7, 1e8, len(probes)).astype(str)
+    for pid, probe in enumerate(probes):
         # create 8-digit identifier of probe
         if 'probe_id' not in probe.annotations:
-            probe.annotate(probe_id=np.random.randint(1e+7, 1e+8))
+            probe.annotate(probe_id=probe_ids[pid])
         if 'type' not in probe.annotations:
             raise ValueError('Export to BIDS probe format requires '
                              'the probe type to be specified as an '
@@ -294,17 +328,15 @@ def write_BIDS_probe(file, probe_or_probegroup):
     df.replace(to_replace='', value='n/a', inplace=True)
     df.to_csv(file.joinpath('probes.tsv'), sep='\t', index=False)
 
-
     # Step 2: GENERATION OF PROBE.JSON
     probes_dict = {}
     for probe in probes:
         probe_id = probe.annotations['probe_id']
         probes_dict[probe_id] = {'contour': probe.probe_planar_contour.tolist(),
-                 'units': probe.si_units}
+                                 'units': probe.si_units}
 
     with open(file.joinpath('probes.json'), 'w', encoding='utf8') as f:
         json.dump({'probe_id': probes_dict}, f, indent=4)
-
 
     # Step 3: GENERATION OF CONTACTS.TSV
     # ensure required electrode identifiers are present
@@ -317,8 +349,10 @@ def write_BIDS_probe(file, probe_or_probegroup):
     df = pd.DataFrame(index=index)
 
     df['contact_id'] = [el_id for p in probes for el_id in p.electrode_ids]
-    df['probe_id'] = [p.annotations['probe_id'] for p in probes for _ in p.electrode_ids]
-    df['contact_shape'] = [el_shape for p in probes for el_shape in p.electrode_shapes]
+    df['probe_id'] = [p.annotations['probe_id'] for p in probes for _ in
+                      p.electrode_ids]
+    df['contact_shape'] = [el_shape for p in probes for el_shape in
+                           p.electrode_shapes]
     df['x'] = [x for p in probes for x in p.electrode_positions[:, 0]]
     df['y'] = [y for p in probes for y in p.electrode_positions[:, 1]]
     df['shank_id'] = [sh_id for p in probes for sh_id in p.shank_ids]
@@ -330,112 +364,25 @@ def write_BIDS_probe(file, probe_or_probegroup):
         if probe.device_channel_indices:
             channel_indices.extend(probe.device_channel_indices)
         else:
-            channel_indices.extend([None]*probe.get_electrode_count())
+            channel_indices.extend([None] * probe.get_electrode_count())
     df['device_channel_indices'] = channel_indices
 
     df.fillna('n/a', inplace=True)
     df.replace(to_replace='', value='n/a', inplace=True)
     df.to_csv(file.joinpath('contacts.tsv'), sep='\t', index=False)
 
-
     # Step 4: GENERATING CONTACTS.JSON
     contacts_dict = {}
     for probe in probes:
         for cidx, contact_id in enumerate(probe.electrode_ids):
             cdict = {'contact_shape_params': probe.electrode_shape_params[cidx],
-                     'contact_shape_units': probe.si_units}
+                     'contact_shape_units': probe.si_units,
+                     'contact_plane_axes': probe.electrode_plane_axes[
+                         cidx].tolist()}
             contacts_dict[contact_id] = cdict
 
     with open(file.joinpath('contacts.json'), 'w', encoding='utf8') as f:
         json.dump({'contact_id': contacts_dict}, f, indent=4)
-
-
-
-""" BIDS CONTACTS.TSV columns
-contact_id:  REQUIRED - ID of the contact (expected to match channel.tsv)
-Probe_id: REQUIRED - Id of the probe the contact is on
-hemisphere:  RECOMMENDED - Which brain hemisphere was the contact located
-coordinateSystem:  RECOMMENDED - coordinate system used for x,y,z
-x: RECOMMENDED - recorded position along the x-axis. 
-y: RECOMMENDED - recorded position along the y-axis. 
-z: RECOMMENDED - recorded position along the z-axis. 
-impedance:  RECOMMENDED - Impedance of the contact in kOhm.
-ImpedanceUnit: RECOMMENDED - The unit of the impedance. If not specified it’s assumed to be in kOhm
-Shank_id: OPTIONAL - Id to specify which shank of the probe the contact is on
-contactSize: OPTIONAL - size of the contact, e.g. non-insulated surface area or length of non-insulated cable.
-contact_shape: OPTIONAL - description of the shape of the contact, e.g. square, circle,
-contact_size_unit: OPTIONAL - unit of the contact size. This is required if the contact size is specified.
-material: OPTIONAL - material of the contact surface, e.g. Tin, Ag/AgCl, Gold
-Location: RECOMMENDED - An indication on the location of the contact (e.g. cortical layer 3, CA1, etc)
-Insulation: RECOMMENDED- Material used for insulation around the contact
-"""
-
-
-
-
-
-
-
-
-    # for probe in probegroup.probes
-    # for
-    #
-    #     # create probe tsv
-    #
-    #     index = np.arange(probe.get_electrode_count(), dtype=int)
-    #     df = pd.DataFrame(index=index)
-    #     df['x'] = probe.electrode_positions[:, 0]
-    #     df['y'] = probe.electrode_positions[:, 1]
-    #     if probe.ndim == 3:
-    #         df['z'] = probe.electrode_positions[:, 2]
-    #     df['electrode_shapes'] = probe.electrode_shapes
-    #     for i, p in enumerate(probe.electrode_shape_params):
-    #         for k, v in p.items():
-    #             df.at[i, k] = v
-    #     df['device_channel_indices'] = probe.device_channel_indices
-    #     df['shank_ids'] = probe.shank_ids
-    #
-    # return df
-
-""" BIDS PROBES.TSV columns
-probeID: DeviceSerialNumber (expected to match contacts.tsv)
-type: REQUIRED - The type of the probe usage (acute/chronic)
-CoordinateSpace: RECOMMENDED - The name of the reference space used for the coordinate definition, e.g. chamber center, or anatomical stereotactic coordinates
-PlacementPicture: OPTIONAL - Path to a photograph showing the placement of the probe
-x: RECOMMENDED - recorded position along the x-axis. 
-y: RECOMMENDED - recorded position along the y-axis.
-z: RECOMMENDED - recorded position along the z-axis.
-XYZUnits: RECOMMENDED - units used for x,yz values
-roll: RECOMMENDED - rotation around the roll axis
-pitch: RECOMMENDED - rotation around the pitch axis
-yaw: RECOMMENDED - rotation around the yaw axis
-RPYUnits: RECOMMENDED - units used for roll, pitch and yaw angles
-Hemisphere: RECOMMENDED - Which brain hemisphere was the probe located
-Manufacturer: RECOMMENDED - Manufacturer of the probes system (e.g. "openephys”, “alphaomega",”blackrock”) 
-manufacturerSerialNumber: RECOMMENDED - the serial number of the probe as provided by the manufacturer.
-DeviceSerialNumber: RECOMMENDED - The serial number of the equipment (provided by the manufacturer). 
-ContactCount: OPTIONAL - Number of miscellaneous analog contacts for auxiliary signals (e.g. 2). 
-Depth: OPTIONAL - Physical depth of the probe, e.g. 0.3
-Width: OPTIONAL Physical width of the probe, e.g. 5
-Height: OPTIONAL - Physical width of the probe, e.g. 5
-DimensionUnits: OPTIONAL - Units of the physical dimensions  ‘depth’, ‘width’ and ‘height’ of the probe, e.g. ‘mm’
-CoordinateReferencePoint: RECOMMENDED - Point of the probe that is described by the probe coordinates
-Location: RECOMMENDED - An indication on the location of the contact (e.g brain region)
-
-"""
-
-
-
-    # d = OrderedDict()
-    # d['specification'] = 'probeinterface'
-    # d['version'] = version
-    # d['probes'] = []
-    # for probe_ind, probe in enumerate(probegroup.probes):
-    #     probe_dict = probe.to_dict(array_as_list=True)
-    #     d['probes'].append(probe_dict)
-    #
-    # with open(file, 'w', encoding='utf8') as f:
-    #     json.dump(d, f, indent=4)
 
 
 def read_prb(file):
@@ -522,7 +469,6 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
         import h5py
     except ImportError as error:
         print(error.__class__.__name__ + ": " + error.message)
-
 
     my_file = h5py.File(file, mode='r')
 

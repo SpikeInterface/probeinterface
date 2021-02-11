@@ -41,7 +41,8 @@ def test_probeinterface_format():
 
 
 def test_BIDS_format():
-    foldername = ''
+    folder = Path('test_BIDS')
+    folder.mkdir(exist_ok=True)
     probegroup = generate_dummy_probe_group()
 
     # add custom probe type annotation to be
@@ -51,18 +52,96 @@ def test_BIDS_format():
 
     # add unique electrode ids to be compatible
     # with BIDS specifications
+    n_els = sum([p.get_electrode_count() for p in probegroup.probes])
+    # using np.random.choice to ensure uniqueness of electrode ids
+    el_ids = np.random.choice(np.arange(1e4, 1e5, dtype='int'),
+                              replace=False, size=n_els).astype(str)
     for probe in probegroup.probes:
-        n_els = probe.get_electrode_count()
-        # using np.random.choice to ensure uniqueness of electrode ids
-        el_ids = np.random.choice(np.arange(1e4, 1e5, dtype='int'),
-                                  replace=False, size=n_els)
-        probe.set_electrode_ids(el_ids)
+        probe_el_ids, el_ids = np.split(el_ids, [probe.get_electrode_count()])
+        probe.set_electrode_ids(probe_el_ids)
 
-    write_BIDS_probe(foldername, probegroup)
+        # switch to more generic dtype for shank_ids
+        probe.set_shank_ids(probe.shank_ids.astype(str))
 
-    probegroup = read_BIDS_probe(foldername)
 
-    # TODO: add testing functions here
+    write_BIDS_probe(folder, probegroup)
+
+    probegroup_read = read_BIDS_probe(folder)
+
+    # compare written (original) and read probegroup
+    assert len(probegroup.probes) == len(probegroup_read.probes)
+    for probe_orig, probe_read in zip(probegroup.probes,
+                                      probegroup_read.probes):
+        # check that all attributes are preserved
+        # check all old annotations are still present
+        assert probe_orig.annotations.items() <= probe_read.annotations.items()
+        # check if the same attribute lists are present (independent of order)
+        assert len(probe_orig.electrode_ids) == len(probe_read.electrode_ids)
+        assert all(np.in1d(probe_orig.electrode_ids, probe_read.electrode_ids))
+
+        # the transformation of contact order between the two probes
+        t = np.array([list(probe_read.electrode_ids).index(elid)
+                              for elid in probe_orig.electrode_ids])
+
+        assert all(probe_orig.electrode_ids == probe_read.electrode_ids[t])
+
+        assert all(probe_orig.shank_ids == probe_read.shank_ids[t])
+        for i in range(len(probe_orig.probe_planar_contour)):
+            assert all(probe_orig.probe_planar_contour[i] ==
+                       probe_read.probe_planar_contour[i])
+        for sid, shape_params in enumerate(probe_orig.electrode_shape_params):
+            assert shape_params == probe_read.electrode_shape_params[t[sid]]
+        for i in range(len(probe_orig.electrode_positions)):
+            assert all(probe_orig.electrode_positions[i] ==
+                       probe_read.electrode_positions[t][i])
+        assert all(
+            probe_orig.electrode_shapes == probe_read.electrode_shapes[t])
+        assert probe_orig.ndim == probe_read.ndim
+        assert probe_orig.si_units == probe_read.si_units
+
+
+def test_BIDS_format_empty():
+    folder = Path('test_BIDS_minimal')
+    folder.mkdir(exist_ok=True)
+
+    # create empty BIDS probe and contact files
+    with open(folder.joinpath('probes.tsv'), 'w') as f:
+        f.write('probe_id\ttype')
+
+    with open(folder.joinpath('contacts.tsv'), 'w') as f:
+        f.write('contact_id\tprobe_id')
+
+    read_BIDS_probe(folder)
+
+
+def test_BIDS_format_minimal():
+    folder = Path('test_BIDS_minimal')
+    folder.mkdir(exist_ok=True)
+
+    # create minimal BIDS probe and contact files
+    with open(folder.joinpath('probes.tsv'), 'w') as f:
+        f.write('probe_id\ttype\n'
+                '0\tcustom\n'
+                '1\tgeneric')
+
+    with open(folder.joinpath('contacts.tsv'), 'w') as f:
+        f.write('contact_id\tprobe_id\n'
+                '01\t0\n'
+                '02\t0\n'
+                '11\t1\n'
+                '12\t1')
+
+    probegroup = read_BIDS_probe(folder)
+
+    assert len(probegroup.probes) == 2
+
+    for pid, probe in enumerate(probegroup.probes):
+        assert probe.get_electrode_count() == 2
+        assert probe.annotations['probe_id'] == str(pid)
+        assert probe.annotations['type'] == ['custom', 'generic'][pid]
+        assert all(probe.electrode_ids == [['01', '02'], ['11', '12']][pid])
+
+
 
     
 
