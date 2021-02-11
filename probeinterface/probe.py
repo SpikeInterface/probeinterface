@@ -256,8 +256,9 @@ class Probe:
         Set shank ids
         """
         shank_ids = np.asarray(shank_ids)
-        if self.shank_ids.size != self.get_electrode_count():
-            raise ValueError('shan_ids have wring size') 
+        if shank_ids.size != self.get_electrode_count():
+            raise ValueError(f'shank_ids have wrong size. Has to match number '
+                             f'of electrodes: {self.get_electrode_count()}')
         self.shank_ids = shank_ids
 
     def get_shanks(self):
