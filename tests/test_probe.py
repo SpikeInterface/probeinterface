@@ -105,7 +105,16 @@ def test_probe():
     #~ plot_probe(sliced_probe)
     #~ plt.show()
 
-    
+
+def test_set_shanks():
+    probe = Probe(ndim=2, si_units='um')
+    probe.electrode_positions = np.arange(20).reshape(10, 2)
+
+    # for simplicity each electrode is on separate shank
+    shank_ids = np.arange(10)
+    probe.set_shank_ids(shank_ids)
+
+    assert all(probe.shank_ids == shank_ids)
 
 
 if __name__ == '__main__':
