@@ -89,7 +89,7 @@ class ProbeGroup:
 
     def get_global_electrode_ids(self):
         """
-        get all electrode ids conctenated acroos probes
+        get all electrode ids concatenated across probes
         """
 
         all_ids = []
