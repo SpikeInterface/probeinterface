@@ -82,10 +82,15 @@ def test_probe():
         
     # get dict and df
     d = probe.to_dict()
+    other = Probe.from_dict(d)
+
     #~ print(d)
-    df = probe.to_dataframe()
-    print(df)
-    
+    df = probe.to_dataframe(complete=True)
+    other = Probe.from_dataframe(df)
+
+    df = probe.to_dataframe(complete=False)
+    other2 = Probe.from_dataframe(df)
+
     
     # slice handling
     selection = np.arange(0,18,2)
