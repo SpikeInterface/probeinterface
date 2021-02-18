@@ -38,6 +38,15 @@ def test_probegroup():
     assert len(positions) == 6
 
 
+    for p in probegroup.probes:
+        p.electrode_ids = None
+
+    probegroup.auto_generate_electrode_ids()
+    probegroup.auto_generate_probe_ids()
+    # print(probegroup.get_global_electrode_ids())
+
+
+
 def test_probegroup_3d():
     probegroup = ProbeGroup()
     

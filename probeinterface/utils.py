@@ -63,3 +63,34 @@ def combine_probes(probes, connect_shape=True):
         multi_shank.set_planar_contour(verts)
 
     return multi_shank
+
+def generate_unique_ids(min, max, n, trials=20):
+    """
+    Create n unique identifiers
+
+    Creates `n` unique integer identifiers between `min` and `max` within a
+    maximum number of `trials` attempts
+
+    Parameters
+    ----------
+    min (int): minimal value permitted for an identifier
+    max (int): maximal value permitted for an identifier
+    n (int): number of identifiers to create
+    trials (int): maximal number of attempts for generating the set of
+        identifiers
+
+    Return
+    ----------
+    A numpy array of `n` unique integer identifiers
+
+    """
+    ids = np.random.randint(min, max, n)
+    i = 0
+
+    while len(np.unique(ids)) != len(ids) and i < trials:
+        ids = np.random.randint(min, max, n)
+
+    if len(np.unique(ids)) != len(ids):
+        raise ValueError(f'Can not generate {n} unique ids between {min} '
+                         f'and {max} in {trials} trials')
+    return ids

@@ -279,29 +279,18 @@ def write_BIDS_probe(file, probe_or_probegroup):
     file = Path(file)
     probes = probegroup.probes
 
-    def get_unique_ids(min, max, n, trials=20):
-        """Create n unique ids between min and max within a maximum number of
-        trials (attempts)"""
-        ids = np.random.randint(min, max, n)
-        i = 0
-
-        while len(np.unique(ids)) != len(ids) and i < trials:
-            ids = np.random.randint(min, max, n)
-
-        if len(np.unique(ids)) != len(ids):
-            raise ValueError(f'Can not generate {n} unique ids between {min} '
-                             f'and {max} in {trials} trials')
-        return ids
-
-
     # Step 1: GENERATION OF PROBE.TSV
     # ensure required keys (probeID, probe_type) are present
-    # creating unique probe ids in case probes do not have any yet
-    probe_ids = get_unique_ids(1e7, 1e8, len(probes)).astype(str)
-    for pid, probe in enumerate(probes):
-        # create 8-digit identifier of probe
+
+    if any('probe_id' not in p.annotations for p in probes):
+        probegroup.auto_generate_probe_ids()
+
+    for probe in probes:
         if 'probe_id' not in probe.annotations:
-            probe.annotate(probe_id=probe_ids[pid])
+            raise ValueError('Export to BIDS probe format requires '
+                             'the probe id to be specified as an annotation '
+                             '(probe_id). You can do this via '
+                             '`probegroup.auto_generate_ids.')
         if 'type' not in probe.annotations:
             raise ValueError('Export to BIDS probe format requires '
                              'the probe type to be specified as an '
@@ -343,7 +332,8 @@ def write_BIDS_probe(file, probe_or_probegroup):
     for probe in probes:
         if probe.electrode_ids is None:
             raise ValueError('Electrodes must have unique electrode ids '
-                             'and not None for export to BIDS probe format')
+                             'and not None for export to BIDS probe format.'
+                             'Use `probegroup.auto_generate_electrode_ids`.')
 
     index = range(sum([p.get_electrode_count() for p in probes]))
     df = pd.DataFrame(index=index)
