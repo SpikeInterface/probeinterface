@@ -77,8 +77,9 @@ def test_probe():
 
     # get shanks
     for shank in probe.get_shanks():
-        print(shank)
-        print(shank.electrode_positions)
+        pass
+        # print(shank)
+        # print(shank.electrode_positions)
         
     # get dict and df
     d = probe.to_dict()
@@ -91,10 +92,14 @@ def test_probe():
     df = probe.to_dataframe(complete=False)
     other2 = Probe.from_dataframe(df)
 
-    
+    df = probe_3d.to_dataframe(complete=True)
+    other_3d = Probe.from_dataframe(df)
+    assert other_3d.ndim == 3
+
+
     # slice handling
     selection = np.arange(0,18,2)
-    print(selection.dtype.kind)
+    # print(selection.dtype.kind)
     sliced_probe = probe.get_slice(selection)
     
     #~ from probeinterface.plotting import plot_probe_group, plot_probe
