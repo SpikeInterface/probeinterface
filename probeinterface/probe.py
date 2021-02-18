@@ -495,7 +495,16 @@ class Probe:
 
         return probe
     
-    def to_dataframe(self):
+    def to_dataframe(self, complete=False):
+        """
+        Export the probe to a pandas dataframe
+
+        Parameters
+        ----------
+
+        complete (bool): If true export more information of the probe
+            including the probe plane axis.
+        """
         import pandas as pd
         index = np.arange(self.get_electrode_count(), dtype=int)
         df = pd.DataFrame(index=index)
@@ -507,10 +516,80 @@ class Probe:
         for i, p in enumerate(self.electrode_shape_params):
             for k, v in p.items():
                 df.at[i, k] = v
-        df['device_channel_indices'] = self.device_channel_indices
+
         df['shank_ids'] = self.shank_ids
-        
+        df['si_units'] = self.si_units
+
+        if complete:
+           #(num_electrodes, 2, ndim)
+           for i in range(self.ndim):
+               dim = ['x', 'y', 'z'][i]
+               df[f'plane_axis_{dim}_0'] = self.electrode_plane_axes[:, 0, i]
+               df[f'plane_axis_{dim}_1'] = self.electrode_plane_axes[:, 1, i]
+
+           if self.device_channel_indices is not None:
+               df['device_channel_indices'] = self.device_channel_indices
+
+           if self.electrode_ids is not None:
+               df['electrode_ids'] = self.electrode_ids
+
         return df
+
+    @staticmethod
+    def from_dataframe(df):
+        if 'z' in df.columns:
+            ndim = 3
+        else:
+            ndim = 2
+
+        assert 'x' in df.columns
+        assert 'y' in df.columns
+        assert np.unique(df['si_units']).size == 1
+
+        si_units = np.unique(df['si_units'])[0]
+        probe = Probe(ndim=ndim, si_units=si_units)
+        positions = df.loc[:, ['x', 'y', 'z'][:ndim]].values
+
+        shapes = df['electrode_shapes'].values
+        shape_params = []
+        for i, shape in enumerate(shapes):
+            if shape == 'circle':
+                p = {'radius': df.at[i, 'radius']}
+            elif shape == 'square':
+                p = {'width': df.at[i, 'width']}
+            elif shape == 'rect':
+                p = {'width': df.at[i, 'width'], 'height': df.at[i, 'height']}
+            else:
+                raise ValueError('you are in bad shape')
+            shape_params.append(p)
+
+        if 'plane_axis_x_0' in df.columns:
+            #(num_electrodes, 2, ndim)
+            plane_axes = np.zeros((df.shape[0], 2, ndim))
+            for i in range(ndim):
+                dim = ['x', 'y', 'z'][i]
+                plane_axes[:, 0, i] = df[f'plane_axis_{dim}_0']
+                plane_axes[:, 1, i] = df[f'plane_axis_{dim}_1']
+        else:
+            plane_axes = None
+
+        probe.set_electrodes(
+            positions=positions,
+            plane_axes=plane_axes,
+            shapes=shapes,
+            shape_params=shape_params)
+
+        if 'device_channel_indices' in df.columns:
+            probe.set_device_channel_indices(df['device_channel_indices'].values)
+        if 'shank_ids' in df.columns:
+            probe.set_shank_ids(df['shank_ids'].values)
+        if 'electrode_ids' in df.columns:
+            probe.set_electrode_ids(df['electrode_ids'].values)
+
+        return probe
+
+
+
     
     def to_image(self, values, pixel_size=0.5, num_pixel=None, method='linear', 
                  xlims=None, ylims=None):
