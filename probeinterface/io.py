@@ -10,6 +10,7 @@ Read/write some formats:
 
 
 """
+import os
 import csv
 from pathlib import Path
 import re
@@ -99,19 +100,25 @@ def write_probeinterface(file, probe_or_probegroup):
         json.dump(d, f, indent=4)
 
 
-def read_BIDS_probe(folder):
+def read_BIDS_probe(folder, prefix=None):
     import pandas as pd
     folder = Path(folder)
     probes = {}
     probegroup = ProbeGroup()
 
-    if not (folder.joinpath('probes.tsv').exists() and
-            folder.joinpath('contacts.tsv').exists()):
-        raise ValueError(f'Could not find probes.tsv or contacts.tsv file in '
-                         f'{folder}')
+    if prefix is None:
+        probes_files = [f for f in folder.iterdir() if f.name.endswith('probes.tsv')]
+        contacts_files = [f for f in folder.iterdir() if f.name.endswith('contacts.tsv')]
+        if len(probes_files) != 1 or len(contacts_files) != 1:
+            raise ValueError('Did not find one probes.tsv and one contacts.tsv '
+                             'file')
+        probe_file = probes_files[0]
+        contact_file = contacts_files[0]
+    else:
+        raise NotImplentedError
 
     # Step 1: READING PROBES.TSV
-    df = pd.read_csv(folder.joinpath('probes.tsv'), sep='\t', header=0,
+    df = pd.read_csv(probe_file, sep='\t', header=0,
                      keep_default_na=False, dtype=str)
     df.replace(to_replace={'n/a': None}, inplace=True)
 
@@ -129,7 +136,7 @@ def read_BIDS_probe(folder):
         probes[str(probe.annotations['probe_id'])] = probe
 
     # Step 2: READING CONTACTS.TSV
-    df = pd.read_csv(folder.joinpath('contacts.tsv'), sep='\t', header=0,
+    df = pd.read_csv(contact_file, sep='\t', header=0,
                      keep_default_na=False, dtype=str)
     df.replace(to_replace={'n/a': None}, inplace=True)
 
@@ -154,6 +161,21 @@ def read_BIDS_probe(folder):
         coordinates = df_probe[dimensions].values
         probe.electrode_positions = coordinates.astype(float)
         probe.ndim = len(dimensions)
+
+
+
+        if 'contact_shape' in df_probe:
+            shapes = df_probe['contact_shape'].values
+            shape_params = 
+        else:
+            shapes = 'circle'
+            shape_params = {'radius': 1}
+            print('There is no shape contact, a dummy cricle with 1um is created')
+
+        probe.set_electrodes(positions=dimensions, 
+                    shapes=shapes, shape_params=shape_params,
+                    plane_axes=None, shank_ids=None)
+
 
         # extract physical units used
         if 'xyz_units' in df_probe:
@@ -182,8 +204,9 @@ def read_BIDS_probe(folder):
 
     # Step 3: READING PROBES.JSON (optional)
     probes_dict = {}
-    if folder.joinpath('probes.json').exists():
-        with open(folder.joinpath('probes.json'), 'r') as f:
+    probe_json = probe_file.with_suffix('.json')
+    if probe_json.exists():
+        with open(probe_json, 'r') as f:
             probes_dict = json.load(f)
 
     if 'probe_id' in probes_dict:
@@ -206,8 +229,9 @@ def read_BIDS_probe(folder):
 
     # Step 4: READING CONTACTS.JSON (optional)
     contacts_dict = {}
-    if folder.joinpath('contacts.json').exists():
-        with open(folder.joinpath('contacts.json'), 'r') as f:
+    contact_json = contact_file.with_suffix('.json')
+    if contact_json.exists():
+        with open(contact_json, 'r') as f:
             contacts_dict = json.load(f)
 
     if 'contact_id' in contacts_dict:
