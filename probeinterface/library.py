@@ -46,6 +46,7 @@ def get_from_cache(manufacturer, probe_name):
     else:
         probegroup = read_probeinterface(localfile)
         probe = probegroup.probes[0]
+        probe._probe_group = None
         return probe
 
 
