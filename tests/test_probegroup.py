@@ -13,7 +13,7 @@ def test_probegroup():
     for i in range(3):
         probe = generate_dummy_probe()
         probe.move([i*100, i*80])
-        n = probe.get_electrode_count()
+        n = probe.get_contact_count()
         probe.set_device_channel_indices(np.arange(n)[::-1] + nchan)
         shank_ids = np.ones(n)
         shank_ids[:n//2] *= i * 2
@@ -26,10 +26,10 @@ def test_probegroup():
     
     indices = probegroup.get_global_device_channel_indices()
     
-    ids = probegroup.get_global_electrode_ids()
+    ids = probegroup.get_global_contact_ids()
     
     df = probegroup.to_dataframe()
-    #~ print(df['global_electrode_ids'])
+    #~ print(df['global_contact_ids'])
     
     positions, device_indices = probegroup.get_groups(group_mode='by_probe')
     assert len(positions) == 3

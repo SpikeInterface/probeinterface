@@ -47,7 +47,7 @@ probe.wiring_to_device('H32>RHD')
 print(probe.device_channel_indices)
 
 ##############################################################################
-# In this figure we have 2 numbers for each electrode:
+# In this figure we have 2 numbers for each contact:
 #    * the upper number "prbXX" is the Neuronexus index (one-based)
 #    * the lower "devXX" is the channel on the Intan device (zero-based)
 

@@ -8,10 +8,10 @@ Depending Probe.ndim the plotting is done in 2d or 3d
 import numpy as np
 
 
-def plot_probe(probe, ax=None, electrode_colors=None,
+def plot_probe(probe, ax=None, contacts_colors=None,
                 with_channel_index=False, first_index='auto',
-                electrode_values=None, cmap='viridis',
-                title=True, electrodes_kargs={}, probe_shape_kwargs={},
+                contacts_values=None, cmap='viridis',
+                title=True, contacts_kargs={}, probe_shape_kwargs={},
                 xlims=None, ylims=None, zlims=None):
     """
     plot one probe.
@@ -45,31 +45,31 @@ def plot_probe(probe, ax=None, electrode_colors=None,
     _probe_shape_kwargs = dict(facecolor='green', edgecolor='k', lw=0.5, alpha=0.3)
     _probe_shape_kwargs.update(probe_shape_kwargs)
 
-    _electrodes_kargs = dict(alpha=0.7, edgecolor=[0.3, 0.3, 0.3], lw=0.5)
-    _electrodes_kargs.update(electrodes_kargs)
+    _contacts_kargs = dict(alpha=0.7, edgecolor=[0.3, 0.3, 0.3], lw=0.5)
+    _contacts_kargs.update(contacts_kargs)
 
-    n = probe.get_electrode_count()
+    n = probe.get_contact_count()
 
-    if electrode_colors is None and electrode_values is None:
-        electrode_colors = ['orange'] * n
-    elif electrode_colors is not None:
-        electrode_colors = electrode_colors
-    elif electrode_values is not None:
-        electrode_colors = None
+    if contacts_colors is None and contacts_values is None:
+        contacts_colors = ['orange'] * n
+    elif contacts_colors is not None:
+        contacts_colors = contacts_colors
+    elif contacts_values is not None:
+        contacts_colors = None
 
-    # electrodes
-    positions = probe.electrode_positions
+    # contacts
+    positions = probe.contact_positions
 
-    vertices = probe.get_electrodes_vertices()
+    vertices = probe.get_contact_vertices()
     if probe.ndim == 2:
-        poly = PolyCollection(vertices, color=electrode_colors, **_electrodes_kargs)
+        poly = PolyCollection(vertices, color=contacts_colors, **_contacts_kargs)
         ax.add_collection(poly)
     elif probe.ndim == 3:
-        poly =  Poly3DCollection(vertices, color=electrode_colors, **_electrodes_kargs)
+        poly =  Poly3DCollection(vertices, color=contacts_colors, **_contacts_kargs)
         ax.add_collection3d(poly)
     
-    if electrode_values is not None:
-        poly.set_array(electrode_values)
+    if contacts_values is not None:
+        poly.set_array(contacts_values)
         poly.set_cmap(cmap)
         
 
@@ -91,7 +91,7 @@ def plot_probe(probe, ax=None, electrode_colors=None,
         if probe.ndim == 3:
             raise NotImplementedError('Channel index is 2d only')
         for i in range(n):
-            x, y = probe.electrode_positions[i]
+            x, y = probe.contact_positions[i]
             if probe.device_channel_indices is None:
                 txt = f'{i + first_index}'
             else:
@@ -174,7 +174,7 @@ def plot_probe_group(probegroup, same_axe=True, **kargs):
 
 
 def get_auto_lims(probe, margin=40):
-    positions = probe.electrode_positions
+    positions = probe.contact_positions
     planar_contour = probe.probe_planar_contour
     
 

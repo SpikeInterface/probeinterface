@@ -27,8 +27,8 @@ def test_probeinterface_format():
         probe0 = probegroup.probes[i]
         probe1 = probegroup2.probes[i]
         
-        assert probe0.get_electrode_count() == probe1.get_electrode_count()
-        assert np.allclose(probe0.electrode_positions,probe1.electrode_positions)
+        assert probe0.get_contact_count() == probe1.get_contact_count()
+        assert np.allclose(probe0.contact_positions,probe1.contact_positions)
         assert np.allclose(probe0.probe_planar_contour,probe1.probe_planar_contour)
         
         # TODO more test
@@ -72,7 +72,7 @@ def test_prb():
     
     two_tetrode = read_prb('two_tetrodes.prb')
     assert len(two_tetrode.probes) == 2
-    assert two_tetrode.probes[0].get_electrode_count() == 4
+    assert two_tetrode.probes[0].get_contact_count() == 4
     
     write_prb('two_tetrodes_written.prb', two_tetrode)
     two_tetrode_back = read_prb('two_tetrodes_written.prb')

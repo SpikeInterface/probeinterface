@@ -103,8 +103,8 @@ def read_prb(file):
     """
     Read a PRB file and return a ProbeGroup object.
     
-    Since PRB do not handle electrode shape then circle of 5um are put.
-    Same for electrode shape a dummy tip is put.
+    Since PRB do not handle contact shape then circle of 5um are put.
+    Same for contact shape a dummy tip is put.
     
     PRB format do not contain any information about the channel of the probe
     Only the channel index on device is given.
@@ -131,7 +131,7 @@ def read_prb(file):
         positions = np.array([group['geometry'][c] for c in chans],
                              dtype='float64')
 
-        probe.set_electrodes(positions=positions, shapes='circle',
+        probe.set_contacts(positions=positions, shapes='circle',
                              shape_params={'radius': 5})
         probe.create_auto_shape(probe_type='tip')
 
@@ -149,8 +149,8 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
     interest (well000 by default), and the recording session (since there can
     be several. Default is rec0000)
 
-    Since Maxwell do not handle electrode shape then circle of 5um are put.
-    Same for electrode shape a dummy tip is put.
+    Since Maxwell do not handle contact shape then circle of 5um are put.
+    Same for contact shape a dummy tip is put.
 
     Maxwell format do not contain any information about the channel of the probe
     Only the channel index on device is given. 
@@ -214,7 +214,7 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
         [prb['channel_groups'][1]['geometry'][c] for c in chans],
         dtype='float64')
 
-    probe.set_electrodes(positions=positions, shapes='rect',
+    probe.set_contacts(positions=positions, shapes='rect',
                          shape_params={'width': 5.45, 'height': 9.3})
     probe.set_planar_contour(
         ([-12.5, -12.5], [3845, -12.5], [3845, 2095], [-12.5, 2095]))
@@ -234,7 +234,7 @@ def write_prb(file, probegroup):
       * device_channel_indices with "channels "key
     
     Note: many information are lost in the PRB format:
-      * electrode shape
+      * contact shape
       * shape
       * channel index
     
@@ -264,10 +264,10 @@ def write_prb(file, probegroup):
             chans = list(channels[keep])
             f.write(f"           'channels': {chans},\n")
             f.write("           'geometry':  {\n")
-            for c in range(probe.get_electrode_count()):
+            for c in range(probe.get_contact_count()):
                 if not keep[c]:
                     continue
-                pos = list(probe.electrode_positions[c, :])
+                pos = list(probe.contact_positions[c, :])
                 f.write(f"               {channels[c]}: {pos},\n")
             f.write("           }\n")
             f.write("       },\n")
@@ -277,7 +277,7 @@ def write_prb(file, probegroup):
 
 def read_cvs(file):
     """
-    Return a 2 or 3 columns csv file with electrodes position
+    Return a 2 or 3 columns csv file with contacts position
     """
     raise NotImplementedError
 
@@ -355,7 +355,7 @@ def read_spikeglx(file):
     positions = np.array(positions)
 
     probe = Probe(ndim=2, si_units='um')
-    probe.set_electrodes(positions=positions, shapes='square',
+    probe.set_contacts(positions=positions, shapes='square',
                          shape_params={'width': 10})
     probe.create_auto_shape(probe_type='tip')
 
@@ -364,7 +364,7 @@ def read_spikeglx(file):
 
 def read_mearec(file):
     """
-    read probe position, and electrode shape from a mearec file
+    read probe position, and contact shape from a mearec file
     
     Alesio : this is for you
     """
@@ -402,9 +402,9 @@ def read_probeinterface(file):
                     if not path in f:
                         continue
                     v = f[path]
-                    if k == 'electrode_shapes':
+                    if k == 'contact_shapes':
                         v2 = np.array(v).astype('U')
-                    elif k == 'electrode_shape_params':
+                    elif k == 'contact_shape_params':
                         l = []
                         for e in v:
                             d = {}
@@ -445,9 +445,9 @@ def write_probeinterface(file, probe_or_probegroup):
         for probe_ind, probe in enumerate(probegroup.probes):
             d = probe.to_dict()
             for k, v in d.items():
-                if k == 'electrode_shapes':
+                if k == 'contact_shapes':
                     v2 = v.astype('S')
-                elif k == 'electrode_shape_params':
+                elif k == 'contact_shape_params':
                     v2 = np.array(['value=' + pformat(e) for e in v], dtype='S')
                 elif k == 'si_units':
                     v2 = np.array([v.encode('utf8')])

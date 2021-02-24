@@ -28,7 +28,7 @@ def test_get_from_cache():
 def test_get_probe():
     probe = get_probe(manufacturer, probe_name)
     assert isinstance(probe, Probe)
-    assert probe.get_electrode_count() == 32
+    assert probe.get_contact_count() == 32
 
 
 if __name__ == '__main__':

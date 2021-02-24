@@ -17,7 +17,7 @@ def wire_probe(probe, pathway, channel_offset=0):
     """
     assert pathway in pathways
     chan_indices = np.array(pathways[pathway], dtype='int64') + channel_offset
-    assert chan_indices.size == probe.get_electrode_count()
+    assert chan_indices.size == probe.get_contact_count()
     probe.set_device_channel_indices(chan_indices)
 
 

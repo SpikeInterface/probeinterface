@@ -32,8 +32,8 @@ probegroup = ProbeGroup()
 probegroup.add_probe(probe0)
 probegroup.add_probe(probe1)
 
-print('probe0.get_electrode_count()', probe0.get_electrode_count())
-print('probe1.get_electrode_count()', probe1.get_electrode_count())
+print('probe0.get_contact_count()', probe0.get_contact_count())
+print('probe1.get_contact_count()', probe1.get_contact_count())
 print('probegroup.get_channel_count()', probegroup.get_channel_count())
 
 ##############################################################################

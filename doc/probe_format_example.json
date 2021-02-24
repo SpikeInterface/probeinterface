@@ -9,7 +9,7 @@
                 "name": "2 shank tetrodes",
                 "manufacturer": "homemade"
             },
-            "electrode_positions": [
+            "contact_positions": [
                 [
                     25.0,
                     0.0
@@ -43,7 +43,7 @@
                     -25.0
                 ]
             ],
-            "electrode_plane_axes": [
+            "contact_plane_axes": [
                 [
                     [
                         1.0,
@@ -125,7 +125,7 @@
                     ]
                 ]
             ],
-            "electrode_shapes": [
+            "contact_shapes": [
                 "circle",
                 "circle",
                 "circle",
@@ -135,7 +135,7 @@
                 "circle",
                 "circle"
             ],
-            "electrode_shape_params": [
+            "contact_shape_params": [
                 {
                     "radius": 6
                 },

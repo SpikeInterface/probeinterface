@@ -2,7 +2,7 @@
 Probe generator
 ---------------
 
-`probeinterface` have also basic function to generate simple electrode layouts like:
+`probeinterface` have also basic function to generate simple contact layouts like:
 
   * tetrodes
   * linear probes
@@ -53,10 +53,10 @@ plot_probe(linear_probe, with_channel_index=True)
 from probeinterface import generate_multi_columns_probe
 
 multi_columns = generate_multi_columns_probe(num_columns=3,
-                                             num_elec_per_column=[10, 12, 10],
+                                             num_contact_per_column=[10, 12, 10],
                                              xpitch=22, ypitch=20,
                                              y_shift_per_column=[0, -10, 0],
-                                             electrode_shapes='square', electrode_shape_params={'width': 12})
+                                             contact_shapes='square', contact_shape_params={'width': 12})
 plot_probe(multi_columns, with_channel_index=True, )
 
 ##############################################################################
@@ -64,9 +64,9 @@ plot_probe(multi_columns, with_channel_index=True, )
 # 
 
 square_probe = generate_multi_columns_probe(num_columns=12,
-                                            num_elec_per_column=12,
+                                            num_contact_per_column=12,
                                             xpitch=10, ypitch=10,
-                                            electrode_shapes='square', electrode_shape_params={'width': 8})
+                                            contact_shapes='square', contact_shape_params={'width': 8})
 square_probe.create_auto_shape('rect')
 plot_probe(square_probe)
 

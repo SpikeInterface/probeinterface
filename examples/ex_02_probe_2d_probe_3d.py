@@ -15,7 +15,7 @@ from probeinterface import Probe
 from probeinterface.plotting import plot_probe
 
 ##############################################################################
-# First, let's create one 2d probe with 32 electrodes:
+# First, let's create one 2d probe with 32 contacts:
 
 n = 24
 positions = np.zeros((n, 2))
@@ -27,18 +27,18 @@ positions *= 20
 positions[8:16, 1] -= 10
 
 probe_2d = Probe(ndim=2, si_units='um')
-probe_2d.set_electrodes(positions=positions, shapes='circle', shape_params={'radius': 5})
+probe_2d.set_contacts(positions=positions, shapes='circle', shape_params={'radius': 5})
 probe_2d.create_auto_shape(probe_type='tip')
 
 ##############################################################################
 # Let's transform it into a 3d probe.
 # 
-# Here the plane is 'xz' so y will be 0 for all electrodes.
-# The shape of probe_3d.electrode_positions is now (n_elec, 3)
+# Here the plane is 'xz' so y will be 0 for all contacts.
+# The shape of probe_3d.contact_positions is now (n_elec, 3)
 
 probe_3d = probe_2d.to_3d(plane='xz')
-print(probe_2d.electrode_positions.shape)
-print(probe_3d.electrode_positions.shape)
+print(probe_2d.contact_positions.shape)
+print(probe_3d.contact_positions.shape)
 
 ##############################################################################
 #  Note that all **"y"** coordinates are 0

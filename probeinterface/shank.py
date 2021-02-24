@@ -16,24 +16,24 @@ class Shank:
         inds, = np.nonzero(self.probe.shank_ids == self.shank_id)
         return inds
         
-    def get_electrode_count(self):
+    def get_contact_count(self):
         return self.get_indices().size
 
     @property
-    def electrode_positions(self):
-        return self.probe.electrode_positions[self.get_indices()]
+    def contact_positions(self):
+        return self.probe.contact_positions[self.get_indices()]
 
     @property
-    def electrode_plane_axes(self):
-        return self.probe.electrode_plane_axes[self.get_indices()]
+    def contact_plane_axes(self):
+        return self.probe.contact_plane_axes[self.get_indices()]
 
     @property
-    def electrode_shapes(self):
-        return self.probe.electrode_shapes[self.get_indices()]
+    def contact_shapes(self):
+        return self.probe.contact_shapes[self.get_indices()]
 
     @property
-    def electrode_shape_params(self):
-        return self.probe.electrode_shape_params[self.get_indices()]
+    def contact_shape_params(self):
+        return self.probe.contact_shape_params[self.get_indices()]
     
     @property
     def device_channel_indices(self):

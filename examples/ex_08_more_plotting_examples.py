@@ -29,15 +29,15 @@ probe1 = generate_linear_probe(num_elec=9)
 probe1.rotate(theta=15)
 probe1.move([200, 0])
 plot_probe(probe1, ax=ax,
-           electrode_colors=['red', 'cyan', 'yellow'] * 3)
+           contacts_colors=['red', 'cyan', 'yellow'] * 3)
 
 # prepare yourself for carnival!
 probe2 = generate_linear_probe()
 probe2.rotate(theta=-35)
 probe2.move([400, 0])
-n = probe2.get_electrode_count()
+n = probe2.get_contact_count()
 rand_colors = np.random.rand(n, 3)
-plot_probe(probe2, ax=ax, electrode_colors=rand_colors,
+plot_probe(probe2, ax=ax, contacts_colors=rand_colors,
            probe_shape_kwargs={'facecolor': 'purple', 'edgecolor': 'k', 'lw': 0.5, 'alpha': 0.2})
 
 # and make some alien probes
@@ -45,12 +45,12 @@ probe3 = Probe()
 positions = [[0, 0], [0, 50], [25, 77], [45, 27]]
 shapes = ['circle', 'square', 'rect', 'circle']
 params = [{'radius': 10}, {'width': 30}, {'width': 20, 'height': 12}, {'radius': 13}]
-probe3.set_electrodes(positions=positions, shapes=shapes,
+probe3.set_contacts(positions=positions, shapes=shapes,
                       shape_params=params)
 probe3.create_auto_shape(probe_type='rect')
 probe3.rotate(theta=25)
 probe3.move([600, 0])
-plot_probe(probe3, ax=ax, electrode_colors=['b', 'c', 'g', 'y'])
+plot_probe(probe3, ax=ax, contacts_colors=['b', 'c', 'g', 'y'])
 
 ax.set_xlim(-100, 700)
 ax.set_ylim(-200, 350)
@@ -66,7 +66,7 @@ ax = fig.add_subplot(1, 1, 1, projection='3d')
 n = 8
 for i in range(n):
     probe = generate_multi_columns_probe(num_columns=3,
-                                         num_elec_per_column=[8, 9, 8],
+                                         num_contact_per_column=[8, 9, 8],
                                          xpitch=20, ypitch=20,
                                          y_shift_per_column=[0, -10, 0]).to_3d()
     probe.rotate(theta=35, center=[0, 0, 0], axis=[0, 1, 0])

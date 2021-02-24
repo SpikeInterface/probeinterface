@@ -5,7 +5,7 @@ Multi shank probes
 This example shows how to deal with multi-shank probes.
 
 In `probeinterface` this can be done with a `Probe` object, but internally
-each probe handles a `shank_ids` vector to carry information about which electrodes belong to which shanks.
+each probe handles a `shank_ids` vector to carry information about which contacts belong to which shanks.
 
 Optionally, a :py:class:`Probe` object can be rendered split into :py:class:`Shank`.
 """
@@ -25,7 +25,7 @@ from probeinterface.plotting import plot_probe
 # Let's use a generator to create a multi shank probe:
 
 
-multi_shank = generate_multi_shank(num_shank=3, num_columns=2, num_elec_per_column=6)
+multi_shank = generate_multi_shank(num_shank=3, num_columns=2, num_contact_per_column=6)
 plot_probe(multi_shank)
 
 ##############################################################################
@@ -42,13 +42,13 @@ df
 ##############################################################################
 #  We can iterate over a multi-shank probe and get :py:class:`Shank` objects.
 # A `Shank` is link to a `Probe` object and can also retrieve
-# positions, electrode shapes, etc.:
+# positions, contact shapes, etc.:
 
 for i, shank in enumerate(multi_shank.get_shanks()):
     print('shank', i)
     print(shank.__class__)
-    print(shank.get_electrode_count())
-    print(shank.electrode_positions.shape)
+    print(shank.get_contact_count())
+    print(shank.contact_positions.shape)
 
 ##############################################################################
 # Another option to create multi-shank probes is to create several `Shank`
@@ -56,8 +56,8 @@ for i, shank in enumerate(multi_shank.get_shanks()):
 
 # generate a 2 shanks linear
 probe0 = generate_linear_probe(num_elec=16, ypitch=20,
-                               electrode_shapes='square',
-                               electrode_shape_params={'width': 12})
+                               contact_shapes='square',
+                               contact_shape_params={'width': 12})
 probe1 = probe0.copy()
 probe1.move([100, 0])
 
