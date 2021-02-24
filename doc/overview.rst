@@ -7,7 +7,7 @@ Introduction
 ------------
 
 To record neural electrical signals, extracellular neural probes are inserted in the brain.
-Neural probes are (usually) multi-channel arrays able to record from multiple electrodes simultaneously, spanning from
+Neural probes are (usually) multi-channel arrays able to record from multiple contacts simultaneously, spanning from
 a few channels (e.g. tetrodes) to high-dense silicon probes (e.g. Neuropixels - with up to 384 recorded channels).
 
 These probes (especially silicon probes) generally have a complex layout (or geometry) and can be connected to the
@@ -15,10 +15,10 @@ recording system in multiple ways (wiring). To connect a neural probe to a recor
 Ripple, Plexon, Intan, Multi-channel System) a headstage is used that is connected to the main recording device.
 
 The complexity of the probe wiring and device wiring leads to the difficult task to directly link
-the **physical electrodes on the probe**  and the **logical channel index on the device**.
+the **physical contacts on the probe**  and the **logical channel index on the device**.
 
 Recent *spike sorting* (i.e. methods to extract single neurons' activity from the extracellular recordings) algorithms
-mainly strongly rely on the probe geometry to exploit the spatial distribution of the electrodes and improve their
+mainly strongly rely on the probe geometry to exploit the spatial distribution of the contacts and improve their
 performance.
 
 Therefore, there is a need to correctly handle probe geometry and the wiring to the device in an easy-to-use and
@@ -45,9 +45,9 @@ The scope of this project is to handle one (or several) Probe with three simple 
 - :py:class:`ProbeGroup`.
 
 These classes handle:
-  * probe geometry (2D or 3D electrode layout)
+  * probe geometry (2D or 3D contact layout)
   * probe planar contour (polygon)
-  * shape and size of the electrodes
+  * shape and size of the contacts
   * probe wiring to the recording device
   * combination of several probes: global geometry + global wiring
 
@@ -96,8 +96,8 @@ resources:
   * `SpyKING Circus probe library <https://github.com/spyking-circus/spyking-circus/tree/master/probes>`_ - PRB format
   * `Justin Kiggins did some script for neuronexus mapping <https://github.com/neuromusic/neuronexus-probe-data>`_
 
-All of these projects only describe the electrode positions. Furthermore there is a strong ambiguity for users
-between the **electrode index on the probe** and the **channel index on device**.
+All of these projects only describe the contact positions. Furthermore there is a strong ambiguity for users
+between the **contact index on the probe** and the **channel index on device**.
 This could lead to a wrong interpretation of the wiring.
 
 With :code:`probeinterface` we try to provide a unified framework for probe description, handling, and a comprehensive

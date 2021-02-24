@@ -31,7 +31,7 @@ print(probe)
 
 ##############################################################################
 # Files from the library also contain annotations specific to manufacturers.
-# We can see here that Neuronexus probes have electrode indices starting at "1" (one-based)
+# We can see here that Neuronexus probes have contact indices starting at "1" (one-based)
 
 pprint(probe.annotations)
 

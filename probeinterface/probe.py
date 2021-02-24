@@ -2,15 +2,16 @@ import numpy as np
 
 from .shank import Shank
 
-_possible_electrode_shapes = ['circle', 'square', 'rect']
+_possible_contact_shapes = ['circle', 'square', 'rect']
 
 
 class Probe:
     """
     Class to handle the geometry of one probe.
     
-    This class mainly handles electrode positions, in 2D or 3D. Optionally, it can also handle the shape of the
-    electrodes and the shape of the probe.
+    This class mainly handles contact positions, in 2D or 3D.
+    Optionally, it can also handle the shape of the
+    contacts and the shape of the probe.
     
     """
     def __init__(self, ndim=2, si_units='um'):
@@ -28,16 +29,16 @@ class Probe:
         self.ndim = int(ndim)
         self.si_units = str(si_units)
 
-        # electrode position and shape : handle with arrays
-        self.electrode_positions = None
-        self.electrode_plane_axes = None
-        self.electrode_shapes = None
-        self.electrode_shape_params = None
+        # contact position and shape : handle with arrays
+        self.contact_positions = None
+        self.contact_plane_axes = None
+        self.contact_shapes = None
+        self.contact_shape_params = None
 
         # vertices for the shape of the probe
         self.probe_planar_contour = None
 
-        # This handles the shank id per electrode
+        # This handles the shank id per contact
         self.shank_ids = None
 
         # this handle the wiring to device : channel index on device side.
@@ -47,7 +48,7 @@ class Probe:
 
         # Handle ids with str so it can be displayed like names
         #  This must be unique at Probe AND ProbeGroup level
-        self.electrode_ids = None
+        self.contact_ids = None
         
         # annotation:  a dict that contain all meta information about 
         # the probe (name, manufacturor, date of production, ...)
@@ -58,10 +59,10 @@ class Probe:
         self._probe_group = None
     
     def get_title(self):
-        if self.electrode_positions is None:
+        if self.contact_positions is None:
             txt = 'Undefined probe'
         else:
-            n = self.get_electrode_count()
+            n = self.get_contact_count()
             name = self.annotations.get('name', '')
             manufacturer = self.annotations.get('manufacturer', '')
             if len(name) >0 or len(manufacturer):
@@ -82,12 +83,12 @@ class Probe:
         if 'first_index' in d:
             assert d['first_index'] in (0, 1)
     
-    def get_electrode_count(self):
+    def get_contact_count(self):
         """
-        Return the number of electrodes on the probe.
+        Return the number of contacts on the probe.
         """
-        assert self.electrode_positions is not None
-        return len(self.electrode_positions)
+        assert self.contact_positions is not None
+        return len(self.contact_positions)
     
     def get_shank_count(self):
         """
@@ -97,24 +98,24 @@ class Probe:
         n = len(np.unique(self.shank_ids))
         return n
 
-    def set_electrodes(self, positions=None, 
+    def set_contacts(self, positions=None, 
                     shapes='circle', shape_params={'radius': 10},
                     plane_axes=None, shank_ids=None):
         """
         Parameters
         ----------
-        positions :array (num_electrodes, ndim)
-            Posisitions of electrodes.
+        positions :array (num_contacts, ndim)
+            Posisitions of contacts.
         
         shapes: scalar or array in 'circle'/'square'/'rect'
-            Shape for each electrodes.
+            Shape for each contacts.
         
         shape_params dict or list of dict
             Contain kargs for shapes ("radius" for circle, "width" for sqaure, "width/height" for rect)
-        plane_axes:  (num_electrodes, 2, ndim)
-            This defines the axes of the electrode plane (2d or 3d)
+        plane_axes:  (num_contacts, 2, ndim)
+            This defines the axes of the contact plane (2d or 3d)
         shank_ids: None or vector of int
-            This define the shank id for electrodes. If None then
+            This define the shank id for contacts. If None then
             there are assign to a unique Shank.
         """
         assert positions is not None
@@ -123,10 +124,10 @@ class Probe:
         if positions.shape[1] != self.ndim:
             raise ValueError('posistions.shape[1] and ndim do not match!')
 
-        self.electrode_positions = positions
+        self.contact_positions = positions
         n = positions.shape[0]
 
-        # This defines the electrod plane (2d or 3d) where the electrode lies.
+        # This defines the electrod plane (2d or 3d) where the contact lies.
         # For 2D we make auto
         if plane_axes is None:
             if self.ndim == 3:
@@ -136,7 +137,7 @@ class Probe:
                 plane_axes[:, 0, 0] = 1
                 plane_axes[:, 1, 1] = 1
         plane_axes = np.array(plane_axes)
-        self.electrode_plane_axes = plane_axes
+        self.contact_plane_axes = plane_axes
 
         if shank_ids is None:
             self.shank_ids = np.zeros(n, dtype='int64')
@@ -149,16 +150,16 @@ class Probe:
         if isinstance(shapes, str):
             shapes = [shapes] * n
         shapes = np.array(shapes)
-        if not np.all(np.in1d(shapes, _possible_electrode_shapes)):
-            raise ValueError(f'Electrodes shape must be in {_possible_electrode_shapes}')
+        if not np.all(np.in1d(shapes, _possible_contact_shapes)):
+            raise ValueError(f'contacts shape must be in {_possible_contact_shapes}')
         if shapes.shape[0] != n:
-            raise ValueError(f'Electrodes shape must have same length as posistions')
-        self.electrode_shapes = np.array(shapes)
+            raise ValueError(f'contacts shape must have same length as posistions')
+        self.contact_shapes = np.array(shapes)
 
         # shape params
         if isinstance(shape_params, dict):
             shape_params = [shape_params] * n
-        self.electrode_shape_params = np.array(shape_params)
+        self.contact_shape_params = np.array(shape_params)
 
     def set_planar_contour(self, contour_polygon):
         contour_polygon = np.asarray(contour_polygon)
@@ -170,13 +171,13 @@ class Probe:
         if self.ndim != 2:
             raise ValueError('Auto shape is supported only for 2d')
 
-        x0 = np.min(self.electrode_positions[:, 0])
-        x1 = np.max(self.electrode_positions[:, 0])
+        x0 = np.min(self.contact_positions[:, 0])
+        x1 = np.max(self.contact_positions[:, 0])
         x0 -= margin
         x1 += margin
 
-        y0 = np.min(self.electrode_positions[:, 1])
-        y1 = np.max(self.electrode_positions[:, 1])
+        y0 = np.min(self.contact_positions[:, 1])
+        y1 = np.max(self.contact_positions[:, 1])
         y0 -= margin
         y1 += margin
 
@@ -202,8 +203,8 @@ class Probe:
         
         """
         channel_indices = np.asarray(channel_indices)
-        if channel_indices.size != self.get_electrode_count():
-            ValueError('channel_indices have not the same size as electrode')
+        if channel_indices.size != self.get_contact_count():
+            ValueError('channel_indices have not the same size as contact')
         self.device_channel_indices = channel_indices
         if self._probe_group is not None:
             self._probe_group.check_global_device_wiring_and_ids()
@@ -228,9 +229,9 @@ class Probe:
         wire_probe(self, pathway, channel_offset=channel_offset)
 
     
-    def set_electrode_ids(self, elec_ids):
+    def set_contact_ids(self, elec_ids):
         """
-        Set electrode ids. This is handle with string.
+        Set contact ids. This is handle with string.
         It is like a name but must be **unique** for the Probe
         and also for the **ProbeGroup**
         
@@ -241,13 +242,13 @@ class Probe:
         """
         elec_ids = np.asarray(elec_ids)
 
-        if elec_ids.size != self.get_electrode_count():
-            ValueError('channel_indices have not the same size as electrode')
+        if elec_ids.size != self.get_contact_count():
+            ValueError('channel_indices have not the same size as contact')
 
         if elec_ids.dtype.kind != 'U':
             elec_ids = elec_ids.astype('U')
 
-        self.electrode_ids = elec_ids
+        self.contact_ids = elec_ids
         if self._probe_group is not None:
             self._probe_group.check_global_device_wiring_and_ids()
 
@@ -256,9 +257,9 @@ class Probe:
         Set shank ids
         """
         shank_ids = np.asarray(shank_ids)
-        if shank_ids.size != self.get_electrode_count():
+        if shank_ids.size != self.get_contact_count():
             raise ValueError(f'shank_ids have wrong size. Has to match number '
-                             f'of electrodes: {self.get_electrode_count()}')
+                             f'of contacts: {self.get_contact_count()}')
         self.shank_ids = shank_ids
 
     def get_shanks(self):
@@ -277,14 +278,14 @@ class Probe:
         Copy to another Probe instance.
         
         Note: device_channel_indices is not copied
-        and electrode_ids is not copied
+        and contact_ids is not copied
         """
         other = Probe()
-        other.set_electrodes(
-            positions=self.electrode_positions.copy(),
-            plane_axes=self.electrode_plane_axes.copy(),
-            shapes=self.electrode_shapes.copy(),
-            shape_params=self.electrode_shape_params.copy())
+        other.set_contacts(
+            positions=self.contact_positions.copy(),
+            plane_axes=self.contact_plane_axes.copy(),
+            shapes=self.contact_shapes.copy(),
+            shape_params=self.contact_shape_params.copy())
         if self.probe_planar_contour is not None:
             other.set_planar_contour(self.probe_planar_contour.copy())
         # channel_indices are not copied
@@ -306,16 +307,16 @@ class Probe:
 
         probe3d = Probe(ndim=3, si_units=self.si_units)
 
-        # electrodes
-        positions = _2d_to_3d(self.electrode_positions, plane)
-        plane0 = _2d_to_3d(self.electrode_plane_axes[:, 0, :], plane)
-        plane1 = _2d_to_3d(self.electrode_plane_axes[:, 1, :], plane)
+        # contacts
+        positions = _2d_to_3d(self.contact_positions, plane)
+        plane0 = _2d_to_3d(self.contact_plane_axes[:, 0, :], plane)
+        plane1 = _2d_to_3d(self.contact_plane_axes[:, 1, :], plane)
         plane_axes = np.concatenate([plane0[:, np.newaxis, :], plane1[:, np.newaxis, :]], axis=1)
-        probe3d.set_electrodes(
+        probe3d.set_contacts(
             positions=positions,
             plane_axes=plane_axes,
-            shapes=self.electrode_shapes.copy(),
-            shape_params=self.electrode_shape_params.copy())
+            shapes=self.contact_shapes.copy(),
+            shape_params=self.contact_shape_params.copy())
 
         # shape
         if self.probe_planar_contour is not None:
@@ -327,16 +328,16 @@ class Probe:
 
         return probe3d
 
-    def get_electrodes_vertices(self):
+    def get_contact_vertices(self):
         """
-        return a list of electrodes vertices.
+        return a list of contacts vertices.
         """
         vertices = []
-        for i in range(self.get_electrode_count()):
-            shape = self.electrode_shapes[i]
-            shape_param = self.electrode_shape_params[i]
-            plane_axe = self.electrode_plane_axes[i]
-            pos = self.electrode_positions[i]
+        for i in range(self.get_contact_count()):
+            shape = self.contact_shapes[i]
+            shape_param = self.contact_shape_params[i]
+            plane_axe = self.contact_plane_axes[i]
+            pos = self.contact_positions[i]
 
             if shape == 'circle':
                 r = shape_param['radius']
@@ -377,7 +378,7 @@ class Probe:
         translation_vetor = np.asarray(translation_vetor)
         assert translation_vetor.shape[0] == self.ndim
 
-        self.electrode_positions += translation_vetor
+        self.contact_positions += translation_vetor
 
         if self.probe_planar_contour is not None:
             self.probe_planar_contour += translation_vetor
@@ -397,7 +398,7 @@ class Probe:
         axis: None for 2d vector for 3d
         """
         if center is None:
-            center = np.mean(self.electrode_positions, axis=0)
+            center = np.mean(self.contact_positions, axis=0)
 
         center = np.asarray(center)
         assert center.size == self.ndim
@@ -412,35 +413,35 @@ class Probe:
         elif self.ndim == 3:
             R = _rotation_matrix_3d(axis, theta).T
 
-        new_positions = (self.electrode_positions - center) @ R + center
+        new_positions = (self.contact_positions - center) @ R + center
 
-        new_plane_axes = np.zeros_like(self.electrode_plane_axes)
+        new_plane_axes = np.zeros_like(self.contact_plane_axes)
         for i in range(2):
-            new_plane_axes[:, i, :] = (self.electrode_plane_axes[:, i,
-                                       :] - center + self.electrode_positions) @ R + center - new_positions
+            new_plane_axes[:, i, :] = (self.contact_plane_axes[:, i,
+                                       :] - center + self.contact_positions) @ R + center - new_positions
 
-        self.electrode_positions = new_positions
-        self.electrode_plane_axes = new_plane_axes
+        self.contact_positions = new_positions
+        self.contact_plane_axes = new_plane_axes
 
         if self.probe_planar_contour is not None:
             new_vertices = (self.probe_planar_contour - center) @ R + center
             self.probe_planar_contour = new_vertices
 
-    def rotate_electrodes(self, thetas, center=None, axis=None):
+    def rotate_contacts(self, thetas, center=None, axis=None):
         """
-        Rotate each electrodes.
-        Internaly modify the electrode_plane_axes.
+        Rotate each contacts.
+        Internaly modify the contact_plane_axes.
         
         Parameters
         ----------
         thetas: array of float
             rotation angle in degree.
-            If scalar then it is applied to all electrodes.
+            If scalar then it is applied to all contacts.
         """
         if self.ndim == 3:
-            raise ValueError('By electrode rotation is implemented only for 2d')
+            raise ValueError('By contact rotation is implemented only for 2d')
 
-        n = self.get_electrode_count()
+        n = self.get_contact_count()
 
         if isinstance(thetas, (int, float)):
             thetas = np.array([thetas] * n, dtype='float64')
@@ -450,13 +451,13 @@ class Probe:
         for e in range(n):
             R = _rotation_matrix_2d(thetas[e])
             for i in range(2):
-                self.electrode_plane_axes[e, i, :] = self.electrode_plane_axes[e, i, :] @ R
+                self.contact_plane_axes[e, i, :] = self.contact_plane_axes[e, i, :] @ R
 
     _dump_attr_names = ['ndim', 'si_units', 'annotations',
-                        'electrode_positions', 'electrode_plane_axes',
-                        'electrode_shapes', 'electrode_shape_params',
+                        'contact_positions', 'contact_plane_axes',
+                        'contact_shapes', 'contact_shape_params',
                         'probe_planar_contour', 'device_channel_indices',
-                        'electrode_ids',
+                        'contact_ids',
                         'shank_ids']
 
     def to_dict(self, array_as_list=False):
@@ -477,11 +478,11 @@ class Probe:
     def from_dict(d):
         probe = Probe(ndim=d['ndim'], si_units=d['si_units'])
 
-        probe.set_electrodes(
-            positions=d['electrode_positions'],
-            plane_axes=d['electrode_plane_axes'],
-            shapes=d['electrode_shapes'],
-            shape_params=d['electrode_shape_params'])
+        probe.set_contacts(
+            positions=d['contact_positions'],
+            plane_axes=d['contact_plane_axes'],
+            shapes=d['contact_shapes'],
+            shape_params=d['contact_shape_params'])
 
         v = d.get('probe_planar_contour', None)
         if v is not None:
@@ -506,14 +507,14 @@ class Probe:
             including the probe plane axis.
         """
         import pandas as pd
-        index = np.arange(self.get_electrode_count(), dtype=int)
+        index = np.arange(self.get_contact_count(), dtype=int)
         df = pd.DataFrame(index=index)
-        df['x'] = self.electrode_positions[:, 0]
-        df['y'] = self.electrode_positions[:, 1]
+        df['x'] = self.contact_positions[:, 0]
+        df['y'] = self.contact_positions[:, 1]
         if self.ndim == 3:
-            df['z'] = self.electrode_positions[:, 2]
-        df['electrode_shapes'] = self.electrode_shapes
-        for i, p in enumerate(self.electrode_shape_params):
+            df['z'] = self.contact_positions[:, 2]
+        df['contact_shapes'] = self.contact_shapes
+        for i, p in enumerate(self.contact_shape_params):
             for k, v in p.items():
                 df.at[i, k] = v
 
@@ -521,17 +522,17 @@ class Probe:
         df['si_units'] = self.si_units
 
         if complete:
-           #(num_electrodes, 2, ndim)
+           #(num_contacts, 2, ndim)
            for i in range(self.ndim):
                dim = ['x', 'y', 'z'][i]
-               df[f'plane_axis_{dim}_0'] = self.electrode_plane_axes[:, 0, i]
-               df[f'plane_axis_{dim}_1'] = self.electrode_plane_axes[:, 1, i]
+               df[f'plane_axis_{dim}_0'] = self.contact_plane_axes[:, 0, i]
+               df[f'plane_axis_{dim}_1'] = self.contact_plane_axes[:, 1, i]
 
            if self.device_channel_indices is not None:
                df['device_channel_indices'] = self.device_channel_indices
 
-           if self.electrode_ids is not None:
-               df['electrode_ids'] = self.electrode_ids
+           if self.contact_ids is not None:
+               df['contact_ids'] = self.contact_ids
 
         return df
 
@@ -550,7 +551,7 @@ class Probe:
         probe = Probe(ndim=ndim, si_units=si_units)
         positions = df.loc[:, ['x', 'y', 'z'][:ndim]].values
 
-        shapes = df['electrode_shapes'].values
+        shapes = df['contact_shapes'].values
         shape_params = []
         for i, shape in enumerate(shapes):
             if shape == 'circle':
@@ -564,7 +565,7 @@ class Probe:
             shape_params.append(p)
 
         if 'plane_axis_x_0' in df.columns:
-            #(num_electrodes, 2, ndim)
+            #(num_contacts, 2, ndim)
             plane_axes = np.zeros((df.shape[0], 2, ndim))
             for i in range(ndim):
                 dim = ['x', 'y', 'z'][i]
@@ -573,7 +574,7 @@ class Probe:
         else:
             plane_axes = None
 
-        probe.set_electrodes(
+        probe.set_contacts(
             positions=positions,
             plane_axes=plane_axes,
             shapes=shapes,
@@ -583,8 +584,8 @@ class Probe:
             probe.set_device_channel_indices(df['device_channel_indices'].values)
         if 'shank_ids' in df.columns:
             probe.set_shank_ids(df['shank_ids'].values)
-        if 'electrode_ids' in df.columns:
-            probe.set_electrode_ids(df['electrode_ids'].values)
+        if 'contact_ids' in df.columns:
+            probe.set_contact_ids(df['contact_ids'].values)
 
         return probe
 
@@ -601,7 +602,7 @@ class Probe:
         Parameters
         ----------
         values:
-            vector same size as electrode number to be color plotted
+            vector same size as contact number to be color plotted
         pixel_size:
             size of one pixel in micrometers
         num_pixel:
@@ -620,16 +621,16 @@ class Probe:
         """
         from scipy.interpolate import griddata
         assert self.ndim == 2
-        assert values.shape == (self.get_electrode_count(), ), 'Bad boy: values must have size equal electrode count'
+        assert values.shape == (self.get_contact_count(), ), 'Bad boy: values must have size equal contact count'
         
         if xlims is None:
-            x0 = np.min(self.electrode_positions[:, 0])
-            x1 = np.max(self.electrode_positions[:, 0])
+            x0 = np.min(self.contact_positions[:, 0])
+            x1 = np.max(self.contact_positions[:, 0])
             xlims = (x0, x1)
         
         if ylims is None:
-            y0 = np.min(self.electrode_positions[:, 1])
-            y1 = np.max(self.electrode_positions[:, 1])
+            y0 = np.min(self.contact_positions[:, 1])
+            y1 = np.max(self.contact_positions[:, 1])
             ylims = (y0, y1)
         
         x0, x1 = xlims
@@ -640,7 +641,7 @@ class Probe:
         
         
         grid_x, grid_y = np.meshgrid(np.arange(x0, x1, pixel_size), np.arange(y0, y1, pixel_size))
-        image = griddata(self.electrode_positions, values, (grid_x, grid_y), method=method)
+        image = griddata(self.contact_positions, values, (grid_x, grid_y), method=method)
         
         if method == 'nearest':
             # hack to force nan when nereast to avoid interpolation in the full rectangle
@@ -652,7 +653,7 @@ class Probe:
     
     def get_slice(self, selection):
         """
-        Get a copy of the Probe with a sub selection of electrodes.
+        Get a copy of the Probe with a sub selection of contacts.
         
         Selection can be boolean or by index
         
@@ -660,7 +661,7 @@ class Probe:
         ----------
         selection: np.array of bool or int (for index)
         """
-        n = self.get_electrode_count()
+        n = self.get_contact_count()
         
         selection = np.asarray(selection)
         if selection.dtype =='bool':

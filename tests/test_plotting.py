@@ -14,9 +14,9 @@ def test_plot_probe():
     plot_probe(probe, with_channel_index=True)
     
     # with color
-    n = probe.get_electrode_count()
-    electrode_colors = np.random.rand(n, 3)
-    plot_probe(probe, electrode_colors = electrode_colors)
+    n = probe.get_contact_count()
+    contacts_colors = np.random.rand(n, 3)
+    plot_probe(probe, contacts_colors = contacts_colors)
     
     # 3d
     probe_3d = probe.to_3d(plane='xz')

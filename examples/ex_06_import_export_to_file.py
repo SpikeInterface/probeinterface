@@ -64,7 +64,7 @@ print(txt[:600], '...')
 # The format is in fact a python script that describes a dictionary.
 # This format handles:
 #   * multiple groups (multi-shank or multi-probe)
-#   * electrode_positions with 'geometry'
+#   * contact_positions with 'geometry'
 #   * device_channel_indices with 'channels'
 #
 # Here an example .prb file with 2 channel groups of 4 channels each.

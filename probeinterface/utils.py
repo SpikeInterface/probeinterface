@@ -36,22 +36,22 @@ def combine_probes(probes, connect_shape=True):
     assert all(probes[0].ndim == p.ndim for p in probes)
     assert probes[0].ndim == 2
 
-    n = sum(p.get_electrode_count() for p in probes)
+    n = sum(p.get_contact_count() for p in probes)
 
     kwargs = {}
-    for k in ('electrode_positions', 'electrode_plane_axes',
-              'electrode_shapes', 'electrode_shape_params'):
+    for k in ('contact_positions', 'contact_plane_axes',
+              'contact_shapes', 'contact_shape_params'):
         v = np.concatenate([getattr(p, k) for p in probes], axis=0)
-        kwargs[k.replace('electrode_', '')] = v
+        kwargs[k.replace('contact_', '')] = v
 
-    shank_ids = np.concatenate([np.ones(p.get_electrode_count(), dtype='int64') * i
+    shank_ids = np.concatenate([np.ones(p.get_contact_count(), dtype='int64') * i
                                 for i, p in enumerate(probes)])
     kwargs['shank_ids'] = shank_ids
 
-    # TODO deal with electrode_ids/device_channel_indices
+    # TODO deal with contact_ids/device_channel_indices
 
     multi_shank = Probe(ndim=probes[0].ndim, si_units=probes[0].si_units)
-    multi_shank.set_electrodes(**kwargs)
+    multi_shank.set_contacts(**kwargs)
 
     # global shape
     have_shape = all(p.probe_planar_contour is not None for p in probes)

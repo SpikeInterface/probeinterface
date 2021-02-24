@@ -42,7 +42,7 @@ class ProbeGroup:
         """
         Total number of channel.
         """
-        n = sum(probe.get_electrode_count() for probe in self.probes)
+        n = sum(probe.get_contact_count() for probe in self.probes)
         return n
 
     def get_global_device_channel_indices(self):
@@ -59,7 +59,7 @@ class ProbeGroup:
 
         ind = 0
         for i, probe in enumerate(self.probes):
-            n = probe.get_electrode_count()
+            n = probe.get_contact_count()
             channels['probe_index'][ind:ind + n] = i
             if probe.device_channel_indices is not None:
                 channels['device_channel_index'][ind:ind + n] = probe.device_channel_indices
@@ -77,25 +77,25 @@ class ProbeGroup:
 
         # first reset previsous indices
         for i, probe in enumerate(self.probes):
-            n = probe.get_electrode_count()
+            n = probe.get_contact_count()
             probe.set_device_channel_indices([-1] * n)
 
         # then set new indices
         ind = 0
         for i, probe in enumerate(self.probes):
-            n = probe.get_electrode_count()
+            n = probe.get_contact_count()
             probe.set_device_channel_indices(channels[ind:ind + n])
             ind += n
 
-    def get_global_electrode_ids(self):
+    def get_global_contact_ids(self):
         """
-        get all electrode ids concatenated across probes
+        get all contact ids concatenated across probes
         """
 
         all_ids = []
         for i, probe in enumerate(self.probes):
-            n = probe.get_electrode_count()
-            ids = probe.electrode_ids
+            n = probe.get_contact_count()
+            ids = probe.contact_ids
             if ids is None:
                 ids = [''] * n
             all_ids.append(ids)
@@ -112,12 +112,12 @@ class ProbeGroup:
             raise ValueError('channel device index are not unique across probes')
 
         # check unique ids for != ''
-        all_ids = self.get_global_electrode_ids()
+        all_ids = self.get_global_contact_ids()
         keep = [e != '' for e in all_ids]
         valid_ids = all_ids[keep]
 
         if valid_ids.size != np.unique(valid_ids).size:
-            raise ValueError('electrode_ids are not unique across probes')
+            raise ValueError('contact_ids are not unique across probes')
     
     
     def to_dataframe(self):
@@ -131,13 +131,13 @@ class ProbeGroup:
             all_df.append(df)
         df = pd.concat(all_df, axis=0)
         
-        df['global_electrode_ids'] = self.get_global_electrode_ids()
+        df['global_contact_ids'] = self.get_global_contact_ids()
         
         return df
     
     def get_groups(self, group_mode='by_probe'):
         """
-        Get sub groups of channels  by electrodes or by shank.
+        Get sub groups of channels  by contacts or by shank.
         This used for spike sorting in spikeinterface.
         
         Parameters
@@ -155,12 +155,12 @@ class ProbeGroup:
         device_indices = []
         if group_mode == 'by_probe':
             for probe in self.probes:
-                positions.append(probe.electrode_positions)
+                positions.append(probe.contact_positions)
                 device_indices.append(probe.device_channel_indices)
         elif group_mode == 'by_shank':
             for probe in self.probes:
                 for shank in probe.get_shanks():
-                    positions.append(shank.electrode_positions)
+                    positions.append(shank.contact_positions)
                     device_indices.append(shank.device_channel_indices)
         
         return positions, device_indices

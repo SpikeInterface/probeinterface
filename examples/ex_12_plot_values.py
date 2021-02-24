@@ -33,8 +33,8 @@ values = np.random.randn(32)
 # plot with value
 
 fig, ax = plt.subplots()
-poly, poly_contour = plot_probe(probe, electrode_values=values,
-            cmap='jet', ax=ax, electrodes_kargs={'alpha' : 1},  title=False)
+poly, poly_contour = plot_probe(probe, contacts_values=values,
+            cmap='jet', ax=ax, contacts_kargs={'alpha' : 1},  title=False)
 poly.set_clim(-2, 2)
 fig.colorbar(poly)
 

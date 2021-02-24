@@ -44,7 +44,7 @@ Then each probe will be a sub-dictionary in the :code:`probes` list::
                 "name": "2 shank tetrodes",
                 "manufacturer": "homemade"
             },
-            "electrode_positions": [
+            "contact_positions": [
         ...
 
 The probe dictionary contains all necessary fields and optional fields.
@@ -53,12 +53,12 @@ Necessary:
   * ndim
   * si_units
   * annotations
-  * electrode_positions
-  * electrode_shapes
-  * electrode_shape_params
+  * contact_positions
+  * contact_shapes
+  * contact_shape_params
 
 Optional:
-  * electrode_plane_axes
+  * contact_plane_axes
   * probe_planar_contour
   * device_channel_indices
   * shank_ids

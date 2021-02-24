@@ -20,11 +20,11 @@ def test_probe():
     positions = _dummy_position()
     
     probe = Probe(ndim=2, si_units='um')
-    probe.set_electrodes(positions=positions, shapes='circle', shape_params={'radius': 5})
-    probe.set_electrodes(positions=positions, shapes='square', shape_params={'width': 5})
-    probe.set_electrodes(positions=positions, shapes='rect', shape_params={'width': 8, 'height':5 })
+    probe.set_contacts(positions=positions, shapes='circle', shape_params={'radius': 5})
+    probe.set_contacts(positions=positions, shapes='square', shape_params={'width': 5})
+    probe.set_contacts(positions=positions, shapes='rect', shape_params={'width': 8, 'height':5 })
 
-    assert probe.get_electrode_count() == 24
+    assert probe.get_contact_count() == 24
 
     # shape of the probe
     vertices = [(-20, -30), (20, -110), (60, -30), (60, 190), (-20, 190)]
@@ -38,11 +38,11 @@ def test_probe():
     np.random.shuffle(chans)
     probe.set_device_channel_indices(chans)
     
-    # electrode_ids int or str
+    # contact_ids int or str
     elec_ids = np.arange(24)
-    probe.set_electrode_ids(elec_ids)
+    probe.set_contact_ids(elec_ids)
     elec_ids = [f'elec #{e}' for e in range(24)]
-    probe.set_electrode_ids(elec_ids)
+    probe.set_contact_ids(elec_ids)
     
     # copy
     probe2 = probe.copy()
@@ -79,7 +79,7 @@ def test_probe():
     for shank in probe.get_shanks():
         pass
         # print(shank)
-        # print(shank.electrode_positions)
+        # print(shank.contact_positions)
         
     # get dict and df
     d = probe.to_dict()
@@ -118,9 +118,9 @@ def test_probe():
 
 def test_set_shanks():
     probe = Probe(ndim=2, si_units='um')
-    probe.electrode_positions = np.arange(20).reshape(10, 2)
+    probe.contact_positions = np.arange(20).reshape(10, 2)
 
-    # for simplicity each electrode is on separate shank
+    # for simplicity each contact is on separate shank
     shank_ids = np.arange(10)
     probe.set_shank_ids(shank_ids)
 

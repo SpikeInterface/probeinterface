@@ -19,9 +19,9 @@ probe1.move([150, 0])
 
 probe = combine_probes([probe0, probe1])
 
-pos = probe.electrode_positions
+pos = probe.contact_positions
 pos[np.abs(pos)<0.0001] = 0
-probe.electrode_positions = pos
+probe.contact_positions = pos
 
 # do not include wiring in example : too complicated
 #  probe.set_device_channel_indices([3,2,1,0, 7, 6, 5, 4])

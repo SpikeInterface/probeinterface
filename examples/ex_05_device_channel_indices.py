@@ -2,9 +2,9 @@
 Handle channel indices
 ----------------------
 
-Probes can have a complex electrodes indexing system due to the probe layout.
+Probes can have a complex contacts indexing system due to the probe layout.
 When they are plugged into a recording device like an Open Ephys with an Intan headstage,
-the channel order can be mixed again. So the physical electrode channel index
+the channel order can be mixed again. So the physical contact channel index
 is rarely the channel index on the device.
 
 This is why the `Probe` object can handle separate `device_channel_indices`.
@@ -22,12 +22,12 @@ from probeinterface import generate_multi_columns_probe
 
 ##############################################################################
 # Let's first generate a probe. By default, the wiring is not complicated:
-# each column increments the electrode index from the bottom to the top of the probe:
+# each column increments the contact index from the bottom to the top of the probe:
 
 probe = generate_multi_columns_probe(num_columns=3,
-                                     num_elec_per_column=[5, 6, 5],
+                                     num_contact_per_column=[5, 6, 5],
                                      xpitch=75, ypitch=75, y_shift_per_column=[0, -37.5, 0],
-                                     electrode_shapes='circle', electrode_shape_params={'radius': 12})
+                                     contact_shapes='circle', contact_shape_params={'radius': 12})
 
 plot_probe(probe, with_channel_index=True)
 
@@ -48,7 +48,7 @@ print(probe.device_channel_indices)
 ##############################################################################
 #  We can visualize the two sets of indices:
 #  
-#  * the prbXX is the electrode index ordered from 0 to N
+#  * the prbXX is the contact index ordered from 0 to N
 #  * the devXX is the channel index on the device (with the second half reversed)
 
 plot_probe(probe, with_channel_index=True)
@@ -59,9 +59,9 @@ plot_probe(probe, with_channel_index=True)
 # `ProbeGroup.get_global_device_channel_indices()` gives an overview of the device wiring.
 
 probe0 = generate_multi_columns_probe(num_columns=3,
-                                      num_elec_per_column=[5, 6, 5],
+                                      num_contact_per_column=[5, 6, 5],
                                       xpitch=75, ypitch=75, y_shift_per_column=[0, -37.5, 0],
-                                      electrode_shapes='circle', electrode_shape_params={'radius': 12})
+                                      contact_shapes='circle', contact_shape_params={'radius': 12})
 probe1 = probe0.copy()
 
 probe1.move([350, 200])
