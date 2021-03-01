@@ -53,7 +53,7 @@ class Probe:
 
         # Handle ids with str so it can be displayed like names
         #  This must be unique at Probe AND ProbeGroup level
-        self.contact_ids = None
+        self._contact_ids = None
         
         # annotation:  a dict that contain all meta information about 
         # the probe (name, manufacturor, date of production, ...)
@@ -78,6 +78,10 @@ class Probe:
     @property
     def contact_shape_params(self):
             return self._contact_shape_params
+
+    @property
+    def contact_ids(self):
+            return self._contact_ids
 
     @property
     def shank_ids(self):
@@ -254,7 +258,7 @@ class Probe:
         wire_probe(self, pathway, channel_offset=channel_offset)
 
     
-    def set_contact_ids(self, elec_ids):
+    def set_contact_ids(self, contact_ids):
         """
         Set contact ids. This is handle with string.
         It is like a name but must be **unique** for the Probe
@@ -262,18 +266,18 @@ class Probe:
         
         Parameters
         ----------
-        elec_ids: array of str
-            If elec_ids is int or float then convert to str
+        contact_ids: array of str
+            If contact_ids is int or float then convert to str
         """
-        elec_ids = np.asarray(elec_ids)
+        contact_ids = np.asarray(contact_ids)
 
-        if elec_ids.size != self.get_contact_count():
+        if contact_ids.size != self.get_contact_count():
             ValueError('channel_indices have not the same size as contact')
 
-        if elec_ids.dtype.kind != 'U':
-            elec_ids = elec_ids.astype('U')
+        if contact_ids.dtype.kind != 'U':
+            contact_ids = contact_ids.astype('U')
 
-        self.contact_ids = elec_ids
+        self._contact_ids = contact_ids
         if self._probe_group is not None:
             self._probe_group.check_global_device_wiring_and_ids()
 
@@ -479,11 +483,10 @@ class Probe:
                 self.contact_plane_axes[e, i, :] = self.contact_plane_axes[e, i, :] @ R
 
     _dump_attr_names = ['ndim', 'si_units', 'annotations',
-                        'contact_positions', 'contact_plane_axes',
-                        'contact_shapes', 'contact_shape_params',
+                        '_contact_positions', '_contact_plane_axes',
+                        '_contact_shapes', '_contact_shape_params',
                         'probe_planar_contour', 'device_channel_indices',
-                        'contact_ids',
-                        'shank_ids']
+                        '_contact_ids', '_shank_ids']
 
     def to_dict(self, array_as_list=False):
         """
@@ -496,7 +499,10 @@ class Probe:
             if array_as_list and v is not None and isinstance(v, np.ndarray): 
                 v = v.tolist()
             if v is not None:
-                d[k] = v
+                if k.startswith('_'):
+                    d[k[1:]] = v
+                else:
+                    d[k] = v
         return d
 
     @staticmethod
@@ -516,6 +522,14 @@ class Probe:
         v = d.get('device_channel_indices', None)
         if v is not None:
             probe.set_device_channel_indices(v)
+        
+        v = d.get('shank_ids', None)
+        if v is not None:
+            probe.set_shank_ids(v)
+
+        v = d.get('contact_ids', None)
+        if v is not None:
+            probe.set_contact_ids(v)
         
         probe.annotate(**d['annotations'])
 
