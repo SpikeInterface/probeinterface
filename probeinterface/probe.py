@@ -17,6 +17,10 @@ class Probe:
     def __init__(self, ndim=2, si_units='um'):
         """
         
+        Some attributes are protected and have to be set with setters:
+          *  set_contacts(...)
+          * set_shank_ids
+        
         Parameters
         ----------
         ndim: 2 or 3
@@ -30,16 +34,17 @@ class Probe:
         self.si_units = str(si_units)
 
         # contact position and shape : handle with arrays
-        self.contact_positions = None
-        self.contact_plane_axes = None
-        self.contact_shapes = None
-        self.contact_shape_params = None
+        
+        self._contact_positions = None
+        self._contact_plane_axes = None
+        self._contact_shapes = None
+        self._contact_shape_params = None
 
         # vertices for the shape of the probe
         self.probe_planar_contour = None
 
         # This handles the shank id per contact
-        self.shank_ids = None
+        self._shank_ids = None
 
         # this handle the wiring to device : channel index on device side.
         # this is due to complex routing
@@ -48,7 +53,7 @@ class Probe:
 
         # Handle ids with str so it can be displayed like names
         #  This must be unique at Probe AND ProbeGroup level
-        self.contact_ids = None
+        self._contact_ids = None
         
         # annotation:  a dict that contain all meta information about 
         # the probe (name, manufacturor, date of production, ...)
@@ -57,6 +62,30 @@ class Probe:
 
         # the Probe can belong to a ProbeGroup
         self._probe_group = None
+    
+    @property
+    def contact_positions(self):
+            return self._contact_positions
+
+    @property
+    def contact_plane_axes(self):
+            return self._contact_plane_axes
+
+    @property
+    def contact_shapes(self):
+            return self._contact_shapes
+
+    @property
+    def contact_shape_params(self):
+            return self._contact_shape_params
+
+    @property
+    def contact_ids(self):
+            return self._contact_ids
+
+    @property
+    def shank_ids(self):
+            return self._shank_ids
     
     def get_title(self):
         if self.contact_positions is None:
@@ -124,7 +153,7 @@ class Probe:
         if positions.shape[1] != self.ndim:
             raise ValueError('posistions.shape[1] and ndim do not match!')
 
-        self.contact_positions = positions
+        self._contact_positions = positions
         n = positions.shape[0]
 
         # This defines the electrod plane (2d or 3d) where the contact lies.
@@ -137,12 +166,12 @@ class Probe:
                 plane_axes[:, 0, 0] = 1
                 plane_axes[:, 1, 1] = 1
         plane_axes = np.array(plane_axes)
-        self.contact_plane_axes = plane_axes
+        self._contact_plane_axes = plane_axes
 
         if shank_ids is None:
-            self.shank_ids = np.zeros(n, dtype='int64')
+            self._shank_ids = np.zeros(n, dtype='int64')
         else:
-            self.shank_ids = np.asarray(shank_ids)
+            self._shank_ids = np.asarray(shank_ids)
             if self.shank_ids.size != n:
                 raise ValueError('shan_ids have wring size') 
 
@@ -154,12 +183,12 @@ class Probe:
             raise ValueError(f'contacts shape must be in {_possible_contact_shapes}')
         if shapes.shape[0] != n:
             raise ValueError(f'contacts shape must have same length as posistions')
-        self.contact_shapes = np.array(shapes)
+        self._contact_shapes = np.array(shapes)
 
         # shape params
         if isinstance(shape_params, dict):
             shape_params = [shape_params] * n
-        self.contact_shape_params = np.array(shape_params)
+        self._contact_shape_params = np.array(shape_params)
 
     def set_planar_contour(self, contour_polygon):
         contour_polygon = np.asarray(contour_polygon)
@@ -229,7 +258,7 @@ class Probe:
         wire_probe(self, pathway, channel_offset=channel_offset)
 
     
-    def set_contact_ids(self, elec_ids):
+    def set_contact_ids(self, contact_ids):
         """
         Set contact ids. This is handle with string.
         It is like a name but must be **unique** for the Probe
@@ -237,18 +266,18 @@ class Probe:
         
         Parameters
         ----------
-        elec_ids: array of str
-            If elec_ids is int or float then convert to str
+        contact_ids: array of str
+            If contact_ids is int or float then convert to str
         """
-        elec_ids = np.asarray(elec_ids)
+        contact_ids = np.asarray(contact_ids)
 
-        if elec_ids.size != self.get_contact_count():
+        if contact_ids.size != self.get_contact_count():
             ValueError('channel_indices have not the same size as contact')
 
-        if elec_ids.dtype.kind != 'U':
-            elec_ids = elec_ids.astype('U')
+        if contact_ids.dtype.kind != 'U':
+            contact_ids = contact_ids.astype('U')
 
-        self.contact_ids = elec_ids
+        self._contact_ids = contact_ids
         if self._probe_group is not None:
             self._probe_group.check_global_device_wiring_and_ids()
 
@@ -260,7 +289,7 @@ class Probe:
         if shank_ids.size != self.get_contact_count():
             raise ValueError(f'shank_ids have wrong size. Has to match number '
                              f'of contacts: {self.get_contact_count()}')
-        self.shank_ids = shank_ids
+        self._shank_ids = shank_ids
 
     def get_shanks(self):
         """
@@ -378,7 +407,7 @@ class Probe:
         translation_vetor = np.asarray(translation_vetor)
         assert translation_vetor.shape[0] == self.ndim
 
-        self.contact_positions += translation_vetor
+        self._contact_positions += translation_vetor
 
         if self.probe_planar_contour is not None:
             self.probe_planar_contour += translation_vetor
@@ -420,8 +449,8 @@ class Probe:
             new_plane_axes[:, i, :] = (self.contact_plane_axes[:, i,
                                        :] - center + self.contact_positions) @ R + center - new_positions
 
-        self.contact_positions = new_positions
-        self.contact_plane_axes = new_plane_axes
+        self._contact_positions = new_positions
+        self._contact_plane_axes = new_plane_axes
 
         if self.probe_planar_contour is not None:
             new_vertices = (self.probe_planar_contour - center) @ R + center
@@ -454,11 +483,10 @@ class Probe:
                 self.contact_plane_axes[e, i, :] = self.contact_plane_axes[e, i, :] @ R
 
     _dump_attr_names = ['ndim', 'si_units', 'annotations',
-                        'contact_positions', 'contact_plane_axes',
-                        'contact_shapes', 'contact_shape_params',
+                        '_contact_positions', '_contact_plane_axes',
+                        '_contact_shapes', '_contact_shape_params',
                         'probe_planar_contour', 'device_channel_indices',
-                        'contact_ids',
-                        'shank_ids']
+                        '_contact_ids', '_shank_ids']
 
     def to_dict(self, array_as_list=False):
         """
@@ -471,7 +499,10 @@ class Probe:
             if array_as_list and v is not None and isinstance(v, np.ndarray): 
                 v = v.tolist()
             if v is not None:
-                d[k] = v
+                if k.startswith('_'):
+                    d[k[1:]] = v
+                else:
+                    d[k] = v
         return d
 
     @staticmethod
@@ -491,6 +522,14 @@ class Probe:
         v = d.get('device_channel_indices', None)
         if v is not None:
             probe.set_device_channel_indices(v)
+        
+        v = d.get('shank_ids', None)
+        if v is not None:
+            probe.set_shank_ids(v)
+
+        v = d.get('contact_ids', None)
+        if v is not None:
+            probe.set_contact_ids(v)
         
         probe.annotate(**d['annotations'])
 
