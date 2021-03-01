@@ -118,7 +118,11 @@ def test_probe():
 
 def test_set_shanks():
     probe = Probe(ndim=2, si_units='um')
-    probe.contact_positions = np.arange(20).reshape(10, 2)
+    probe.set_contacts(
+            positions= np.arange(20).reshape(10, 2),
+            shapes='circle',
+            shape_params={'radius' : 5})
+    
 
     # for simplicity each contact is on separate shank
     shank_ids = np.arange(10)
@@ -128,4 +132,7 @@ def test_set_shanks():
 
 
 if __name__ == '__main__':
-    test_probe()
+    #~ test_probe()
+    
+    test_set_shanks()
+
