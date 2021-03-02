@@ -175,11 +175,8 @@ class ProbeGroup:
         *args: will be forwarded to `probeinterface.utils.generate_unique_ids`
         **kwargs: will be forwarded to
             `probeinterface.utils.generate_unique_ids`
-
-        Returns
-        -----
-
         """
+        
         if any('probe_id' in p.annotations for p in self.probes):
             raise ValueError('Probe does already have a `probe_id` annotation.')
 
@@ -202,18 +199,12 @@ class ProbeGroup:
         *args: will be forwarded to `probeinterface.utils.generate_unique_ids`
         **kwargs: will be forwarded to
             `probeinterface.utils.generate_unique_ids`
-
-        Returns
-        -----
-
         """
 
         if any(p.electrode_ids is not None for p in self.probes):
             raise ValueError('Some electrode already have electrode ids '
                              'assigned.')
-
-
-
+        
         if not args:
             args = 1e7, 1e8
         # 3rd argument has to be the number of probes

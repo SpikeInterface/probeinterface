@@ -37,15 +37,15 @@ def test_probegroup():
     positions, device_indices = probegroup.get_groups(group_mode='by_shank')
     assert len(positions) == 6
 
-
+    # checking automatic generation of ids
     for p in probegroup.probes:
         p.electrode_ids = None
-
     probegroup.auto_generate_electrode_ids()
     probegroup.auto_generate_probe_ids()
-    # print(probegroup.get_global_electrode_ids())
 
-
+    for p in probegroup.probes:
+        assert p.electrode_ids is not None
+        assert 'probe_id' in p.annotations
 
 def test_probegroup_3d():
     probegroup = ProbeGroup()
@@ -57,8 +57,7 @@ def test_probegroup_3d():
 
     assert probegroup.ndim == 3
     
-    
-    
+
 if __name__ == '__main__':
     test_probegroup()
     test_probegroup_3d()
