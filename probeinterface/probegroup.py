@@ -121,18 +121,16 @@ class ProbeGroup:
             raise ValueError('contact_ids are not unique across probes')
     
     
-    def to_dataframe(self):
+    def to_dataframe(self, complete=False):
         import pandas as pd
         
         all_df =[]
         for i, probe in enumerate(self.probes):
-            df = probe.to_dataframe()
+            df = probe.to_dataframe(complete=complete)
             df['probe_num'] = i
             df.index = [(i, ind) for ind in df.index]
             all_df.append(df)
         df = pd.concat(all_df, axis=0)
-        
-        df['global_contact_ids'] = self.get_global_contact_ids()
         
         return df
     
