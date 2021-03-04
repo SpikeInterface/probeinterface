@@ -39,12 +39,12 @@ def test_probegroup():
 
     # checking automatic generation of ids
     for p in probegroup.probes:
-        p.electrode_ids = None
-    probegroup.auto_generate_electrode_ids()
+        p.contact_ids = None
+    probegroup.auto_generate_contact_ids()
     probegroup.auto_generate_probe_ids()
 
     for p in probegroup.probes:
-        assert p.electrode_ids is not None
+        assert p.contact_ids is not None
         assert 'probe_id' in p.annotations
 
 def test_probegroup_3d():

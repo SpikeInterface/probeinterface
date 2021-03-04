@@ -133,10 +133,8 @@ def read_BIDS_probe(folder, prefix=None):
             if probe.annotations.get(string_annotation, None) is None:
                 probe.annotations[string_annotation] = ''
 
-        probes[str(probe.annotations['probe_id'])] = probe
-
-    # Step 2: READING CONTACTS.TSV
-    df = pd.read_csv(contact_file, sep='\t', header=0,
+    # Step 1: READING CONTACTS.TSV
+    df = pd.read_csv(contacts_file, sep='\t', header=0,
                      keep_default_na=False, dtype=str)
     df.replace(to_replace={'n/a': None}, inplace=True)
 
@@ -204,7 +202,7 @@ def read_BIDS_probe(folder, prefix=None):
 
     # Step 3: READING PROBES.JSON (optional)
     probes_dict = {}
-    probe_json = probe_file.with_suffix('.json')
+    probe_json = probes_file.with_suffix('.json')
     if probe_json.exists():
         with open(probe_json, 'r') as f:
             probes_dict = json.load(f)
@@ -229,13 +227,12 @@ def read_BIDS_probe(folder, prefix=None):
 
     # Step 4: READING CONTACTS.JSON (optional)
     contacts_dict = {}
-    contact_json = contact_file.with_suffix('.json')
+    contact_json = contacts_file.with_suffix('.json')
     if contact_json.exists():
         with open(contact_json, 'r') as f:
             contacts_dict = json.load(f)
 
     if 'contact_id' in contacts_dict:
-
         # collect all contact parameters used in this file
         contact_params = [k for v in contacts_dict['contact_id'].values() for k
                           in v.keys()]
@@ -243,9 +240,9 @@ def read_BIDS_probe(folder, prefix=None):
 
         # collect contact information for each probe_id
         for probe in probes.values():
-            contact_ids = probe.electrode_ids
+            contact_ids = probe.contact_ids
             for contact_param in contact_params:
-                # collect parameters across contact id to add to probe
+                # collect parameters across contact ids to add to probe
                 value_list = [
                     contacts_dict['contact_id'][str(c)].get(contact_param, None)
                     for c in contact_ids]
@@ -273,7 +270,7 @@ def read_BIDS_probe(folder, prefix=None):
     return probegroup
 
 
-def write_BIDS_probe(file, probe_or_probegroup):
+def write_BIDS_probe(folder, probe_or_probegroup, prefix=''):
     """
     Write to probe and contact formats as proposed
     for ephy BIDS extension (tsv & json based).
@@ -282,11 +279,14 @@ def write_BIDS_probe(file, probe_or_probegroup):
 
     Parameters
     ----------
-    file: Path or str
+    folder: Path or str
         The folder name.
 
     probe_or_probegroup : Probe or ProbeGroup
         If probe is given a probegroup is created anyway.
+
+    prefix: str
+        A prefix to be added to the filenames
 
     """
     import pandas as pd
@@ -300,7 +300,12 @@ def write_BIDS_probe(file, probe_or_probegroup):
     else:
         raise ValueError('probe_or_probegroup has to be'
                          'of type Probe or ProbeGroup')
-    file = Path(file)
+    folder = Path(folder)
+
+    # ensure that prefix and file type indicator are separated by an underscore
+    if prefix != '' and prefix[-1] != '_':
+        prefix = prefix + '_'
+
     probes = probegroup.probes
 
     # Step 1: GENERATION OF PROBE.TSV
@@ -339,7 +344,7 @@ def write_BIDS_probe(file, probe_or_probegroup):
     # substitute empty values by BIDS default and create tsv file
     df.fillna('n/a', inplace=True)
     df.replace(to_replace='', value='n/a', inplace=True)
-    df.to_csv(file.joinpath('probes.tsv'), sep='\t', index=False)
+    df.to_csv(folder.joinpath(prefix + 'probes.tsv'), sep='\t', index=False)
 
     # Step 2: GENERATION OF PROBE.JSON
     probes_dict = {}
@@ -348,54 +353,46 @@ def write_BIDS_probe(file, probe_or_probegroup):
         probes_dict[probe_id] = {'contour': probe.probe_planar_contour.tolist(),
                                  'units': probe.si_units}
 
-    with open(file.joinpath('probes.json'), 'w', encoding='utf8') as f:
+    with open(folder.joinpath(prefix + 'probes.json'), 'w',
+              encoding='utf8') as f:
         json.dump({'probe_id': probes_dict}, f, indent=4)
 
     # Step 3: GENERATION OF CONTACTS.TSV
-    # ensure required electrode identifiers are present
+    # ensure required contact identifiers are present
     for probe in probes:
-        if probe.electrode_ids is None:
-            raise ValueError('Electrodes must have unique electrode ids '
+        if probe.contact_ids is None:
+            raise ValueError('Contacts must have unique contact ids '
                              'and not None for export to BIDS probe format.'
-                             'Use `probegroup.auto_generate_electrode_ids`.')
+                             'Use `probegroup.auto_generate_contact_ids`.')
 
-    index = range(sum([p.get_electrode_count() for p in probes]))
-    df = pd.DataFrame(index=index)
+    df = probegroup.to_dataframe()
+    index = range(sum([p.get_contact_count() for p in probes]))
+    df.rename(columns=label_map_to_BIDS, inplace=True)
 
-    df['contact_id'] = [el_id for p in probes for el_id in p.electrode_ids]
     df['probe_id'] = [p.annotations['probe_id'] for p in probes for _ in
-                      p.electrode_ids]
-    df['contact_shape'] = [el_shape for p in probes for el_shape in
-                           p.electrode_shapes]
-    df['x'] = [x for p in probes for x in p.electrode_positions[:, 0]]
-    df['y'] = [y for p in probes for y in p.electrode_positions[:, 1]]
-    df['shank_id'] = [sh_id for p in probes for sh_id in p.shank_ids]
+                      p.contact_ids]
     df['coordinate_system'] = ['relative cartesian'] * len(index)
-    df['xyz_units'] = [p.si_units for p in probes for _ in p.electrode_ids]
 
     channel_indices = []
     for probe in probes:
         if probe.device_channel_indices:
             channel_indices.extend(probe.device_channel_indices)
         else:
-            channel_indices.extend([None] * probe.get_electrode_count())
+            channel_indices.extend([None] * probe.get_contact_count())
     df['device_channel_indices'] = channel_indices
 
     df.fillna('n/a', inplace=True)
     df.replace(to_replace='', value='n/a', inplace=True)
-    df.to_csv(file.joinpath('contacts.tsv'), sep='\t', index=False)
+    df.to_csv(folder.joinpath(prefix + 'contacts.tsv'), sep='\t', index=False)
 
     # Step 4: GENERATING CONTACTS.JSON
     contacts_dict = {}
     for probe in probes:
-        for cidx, contact_id in enumerate(probe.electrode_ids):
-            cdict = {'contact_shape_params': probe.electrode_shape_params[cidx],
-                     'contact_shape_units': probe.si_units,
-                     'contact_plane_axes': probe.electrode_plane_axes[
-                         cidx].tolist()}
+        for cidx, contact_id in enumerate(probe.contact_ids):
+            cdict = {'contact_plane_axes': probe.contact_plane_axes[cidx].tolist()}
             contacts_dict[contact_id] = cdict
 
-    with open(file.joinpath('contacts.json'), 'w', encoding='utf8') as f:
+    with open(folder.joinpath(prefix + 'contacts.json'), 'w', encoding='utf8') as f:
         json.dump({'contact_id': contacts_dict}, f, indent=4)
 
 
