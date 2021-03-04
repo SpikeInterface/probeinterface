@@ -190,9 +190,9 @@ class ProbeGroup:
         for pid, probe in enumerate(self.probes):
             probe.annotate(probe_id=probe_ids[pid])
 
-    def auto_generate_electrode_ids(self, *args, **kwargs):
+    def auto_generate_contact_ids(self, *args, **kwargs):
         """
-        Annotate all electrodes with unique electrode_id values.
+        Annotate all contacts with unique contact_id values.
 
         Parameters
         ----------
@@ -201,8 +201,8 @@ class ProbeGroup:
             `probeinterface.utils.generate_unique_ids`
         """
 
-        if any(p.electrode_ids is not None for p in self.probes):
-            raise ValueError('Some electrode already have electrode ids '
+        if any(p.contact_ids is not None for p in self.probes):
+            raise ValueError('Some contacts already have contact ids '
                              'assigned.')
         
         if not args:
@@ -210,10 +210,10 @@ class ProbeGroup:
         # 3rd argument has to be the number of probes
         args = args[:2] + (self.get_channel_count(),)
 
-        electrode_ids = generate_unique_ids(*args, **kwargs).astype(str)
+        contact_ids = generate_unique_ids(*args, **kwargs).astype(str)
 
         for probe in self.probes:
-            el_ids, electrode_ids = np.split(electrode_ids,
-                                             [probe.get_electrode_count()])
-            probe.set_electrode_ids(el_ids)
+            el_ids, contact_ids = np.split(contact_ids,
+                                             [probe.get_contact_count()])
+            probe.set_contact_ids(el_ids)
 

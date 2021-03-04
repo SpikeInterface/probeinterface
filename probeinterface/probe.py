@@ -156,7 +156,7 @@ class Probe:
         self._contact_positions = positions
         n = positions.shape[0]
 
-        # This defines the electrod plane (2d or 3d) where the contact lies.
+        # This defines the contact plane (2d or 3d) where the contact lies.
         # For 2D we make auto
         if plane_axes is None:
             if self.ndim == 3:
@@ -600,7 +600,7 @@ class Probe:
             elif shape == 'rect':
                 p = {'width': df.at[i, 'width'], 'height': df.at[i, 'height']}
             else:
-                raise ValueError('you are in bad shape')
+                raise ValueError('You are in bad shape')
             shape_params.append(p)
 
         if 'plane_axis_x_0' in df.columns:
@@ -620,7 +620,8 @@ class Probe:
             shape_params=shape_params)
 
         if 'device_channel_indices' in df.columns:
-            probe.set_device_channel_indices(df['device_channel_indices'].values)
+            dev_channel_indices = df['device_channel_indices'].replace('', '-1')
+            probe.set_device_channel_indices(dev_channel_indices.values)
         if 'shank_ids' in df.columns:
             probe.set_shank_ids(df['shank_ids'].values)
         if 'contact_ids' in df.columns:
