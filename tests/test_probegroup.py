@@ -37,9 +37,10 @@ def test_probegroup():
     positions, device_indices = probegroup.get_groups(group_mode='by_shank')
     assert len(positions) == 6
 
-    # checking automatic generation of ids
-    for p in probegroup.probes:
-        p.contact_ids = None
+    # checking automatic generation of ids with new dummy probes
+    probegroup.probes = []
+    for i in range(3):
+        probegroup.add_probe(generate_dummy_probe())
     probegroup.auto_generate_contact_ids()
     probegroup.auto_generate_probe_ids()
 
