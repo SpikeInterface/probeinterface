@@ -159,7 +159,7 @@ def read_BIDS_probe(folder, prefix=None):
         raise ValueError('contacts.tsv file does not contain contact_id column')
 
     for probe_id in df['probe_ids'].unique():
-        df_probe = df[df['probe_ids'] == probe_id]
+        df_probe = df[df['probe_ids'] == probe_id].copy()
 
         # adding default values required by probeinterface if not present in
         # source files
