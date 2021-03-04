@@ -100,105 +100,127 @@ def write_probeinterface(file, probe_or_probegroup):
         json.dump(d, f, indent=4)
 
 
+label_map_to_BIDS= {'contact_ids': 'contact_id',
+                    'probe_ids': 'probe_id',
+                    'contact_shapes': 'contact_shape',
+                    'shank_ids': 'shank_id',
+                    'si_units': 'xyz_units'}
+label_map_to_probeinterface = {v: k for k, v in label_map_to_BIDS.items()}
+
+
 def read_BIDS_probe(folder, prefix=None):
+    """
+    Read to BIDS probe format.
+
+    This requires a probes.tsv and a contacts.tsv file
+    and potential corresponding sidecar files in json format.
+
+    Parameters
+    ----------
+    folder: Path or str
+        The folder to scan for probes and contacts files.
+
+    prefix : None or str
+        Prefix of the probes and contacts files.
+
+    """
     import pandas as pd
     folder = Path(folder)
     probes = {}
     probegroup = ProbeGroup()
 
+    # Identify source files for probes and contacts information
     if prefix is None:
-        probes_files = [f for f in folder.iterdir() if f.name.endswith('probes.tsv')]
-        contacts_files = [f for f in folder.iterdir() if f.name.endswith('contacts.tsv')]
+        probes_files = [f for f in folder.iterdir() if
+                        f.name.endswith('probes.tsv')]
+        contacts_files = [f for f in folder.iterdir() if
+                          f.name.endswith('contacts.tsv')]
         if len(probes_files) != 1 or len(contacts_files) != 1:
-            raise ValueError('Did not find one probes.tsv and one contacts.tsv '
-                             'file')
-        probe_file = probes_files[0]
-        contact_file = contacts_files[0]
+            raise ValueError(
+                'Did not find one probes.tsv and one contacts.tsv file')
+        probes_file = probes_files[0]
+        contacts_file = contacts_files[0]
     else:
-        raise NotImplentedError
+        probes_file = folder / prefix + '_probes.tsv'
+        contacts_file = folder / prefix + '_contacts.tsv'
+        for file in [probes_file, contacts_file]:
+            if not file.exists():
+                raise ValueError(f'Source file does not exist ({file})')
 
-    # Step 1: READING PROBES.TSV
-    df = pd.read_csv(probe_file, sep='\t', header=0,
+    # Step 1: READING CONTACTS.TSV
+    df = pd.read_csv(contacts_file, sep='\t', header=0,
                      keep_default_na=False, dtype=str)
-    df.replace(to_replace={'n/a': None}, inplace=True)
+    df.replace(to_replace={'n/a': ''}, inplace=True)
+    df.rename(columns=label_map_to_probeinterface, inplace=True)
+
+    if 'probe_ids' not in df:
+        raise ValueError('probes.tsv file does not contain probe_id column')
+    if 'contact_ids' not in df:
+        raise ValueError('contacts.tsv file does not contain contact_id column')
+
+    for probe_id in df['probe_ids'].unique():
+        df_probe = df[df['probe_ids'] == probe_id]
+
+        # adding default values required by probeinterface if not present in
+        # source files
+        if 'contact_shapes' not in df_probe:
+            df_probe['contact_shapes'] = 'circle'
+            df_probe['radius'] = 1
+            print(f'There is no contact shape provided for probe {probe_id}, a '
+                  f'dummy circle with 1um is created')
+
+        if 'x' not in df_probe:
+            df_probe['x'] = np.arange(len(df_probe.index), dtype=float)
+            print(f'There is no x coordinate provided for probe {probe_id}, a '
+                  f'dummy linear x coordinate is created.')
+
+        if 'y' not in df_probe:
+            df_probe['y'] = 0.0
+            print(f'There is no y coordinate provided for probe {probe_id}, a '
+                  f'dummy constant y coordinate is created.')
+
+        if 'si_units' not in df_probe:
+            df_probe['si_units'] = 'um'
+            print(f'There is no SI units provided for probe {probe_id}, a '
+                  f'dummy SI unit (um) is created.')
+
+        # create probe object and register with probegroup
+        probe = Probe.from_dataframe(df=df_probe)
+        probe.annotate(probe_id=probe_id)
+
+        probes[str(probe_id)] = probe
+        probegroup.add_probe(probe)
+
+        ignore_annotations = ['probe_ids', 'contact_ids', 'contact_shapes', 'x',
+                              'y', 'z', 'shank_ids', 'si_units',
+                              'device_channel_indices', 'radius', 'width',
+                              'height', 'probe_num', 'device_channel_indices']
+        df_others = df_probe.drop(ignore_annotations, axis=1, errors='ignore')
+        for col_name in df_others.columns:
+            probe.annotate(**{col_name: df_probe[col_name].values})
+
+    # Step 2: READING PROBES.TSV
+    df = pd.read_csv(probes_file, sep='\t', header=0,
+                     keep_default_na=False, dtype=str)
+    df.replace(to_replace={'n/a': ''}, inplace=True)
 
     if 'probe_id' not in df:
-        raise ValueError('probes.tsv file does not contain probe_id column')
+        raise ValueError(f'{probes_file} file does not contain probe_id column')
+
     for row_idx, row in df.iterrows():
-        probe = Probe()
+        probe_id = row['probe_id']
+        if probe_id not in probes:
+            print(f'Probe with id {probe_id} is present in probes.tsv but not '
+                  f'in contacts.tsv file. Ignoring entry in probes.tsv.')
+            continue
+
+        probe = probes[probe_id]
         probe.annotate(**dict(row.items()))
 
         # for string based annotations use '' instead of None as default
         for string_annotation in ['name', 'manufacturer']:
             if probe.annotations.get(string_annotation, None) is None:
                 probe.annotations[string_annotation] = ''
-
-    # Step 1: READING CONTACTS.TSV
-    df = pd.read_csv(contacts_file, sep='\t', header=0,
-                     keep_default_na=False, dtype=str)
-    df.replace(to_replace={'n/a': None}, inplace=True)
-
-    if 'probe_id' not in df:
-        raise ValueError('probes.tsv file does not contain probe_id column')
-    if 'contact_id' not in df:
-        raise ValueError('contacts.tsv file does not contain contact_id column')
-
-    for probe_id in df['probe_id'].unique():
-        df_probe = df[df['probe_id'] == probe_id]
-        probe = probes[str(probe_id)]
-
-        probe.electrode_ids = df_probe['contact_id'].values.astype('U')
-        if 'contact_shape' in df_probe:
-            probe.electrode_shapes = df_probe['contact_shape'].values
-
-        dimensions = []
-        for dim in ['x', 'y', 'z']:
-            if dim in df_probe:
-                dimensions.append(dim)
-
-        coordinates = df_probe[dimensions].values
-        probe.electrode_positions = coordinates.astype(float)
-        probe.ndim = len(dimensions)
-
-
-
-        if 'contact_shape' in df_probe:
-            shapes = df_probe['contact_shape'].values
-            shape_params = 
-        else:
-            shapes = 'circle'
-            shape_params = {'radius': 1}
-            print('There is no shape contact, a dummy cricle with 1um is created')
-
-        probe.set_electrodes(positions=dimensions, 
-                    shapes=shapes, shape_params=shape_params,
-                    plane_axes=None, shank_ids=None)
-
-
-        # extract physical units used
-        if 'xyz_units' in df_probe:
-            if len(df['xyz_units'].unique()) == 1:
-                probe.si_units = df['xyz_units'][0]
-            else:
-                raise ValueError(f'Probe {probe_id} uses different units for '
-                                 f'contact coordinates. Can not be represented '
-                                 f'by probeinterface.')
-
-        if 'device_channel_indices' in df_probe:
-            channel_indices = df_probe['device_channel_indices'].values
-            if any([ind is not None for ind in channel_indices]):
-                probe.set_device_channel_indices(channel_indices)
-
-        if 'shank_id' in df_probe:
-            shank_ids = df_probe['shank_id'].values
-            probe.set_shank_ids(shank_ids)
-
-        used_columns = ['probe_id', 'contact_id', 'contact_shape',
-                        'x', 'y', 'z', 'xyz_units', 'shank_id',
-                        'device_channel_indices']
-        df_others = df_probe.drop(used_columns, axis=1, errors='ignore')
-        for col_name in df_others.columns:
-            probe.annotate(**{col_name: df_probe[col_name].values})
 
     # Step 3: READING PROBES.JSON (optional)
     probes_dict = {}
@@ -221,7 +243,6 @@ def read_BIDS_probe(folder, prefix=None):
                     elif probe.si_units != param_value:
                         raise ValueError(f'Inconsistent si_units for probe '
                                          f'{probe_id}')
-
                 else:
                     probe.annotate(**{probe_param: param_value})
 
@@ -247,25 +268,7 @@ def read_BIDS_probe(folder, prefix=None):
                     contacts_dict['contact_id'][str(c)].get(contact_param, None)
                     for c in contact_ids]
 
-                if contact_param == 'contact_shape_params':
-                    probe.electrode_shape_params = value_list
-                elif contact_param == 'contact_plane_axes':
-                    probe.electrode_plane_axes = np.array(value_list)
-
-                # extract units if this was not extracted earlier already
-                elif contact_param == 'contact_shape_units' and \
-                        all(x == value_list[0] for x in value_list):
-                    if probe.si_units == None:
-                        probe.si_units = value_list[0]
-                    elif probe.si_units != value_list[0]:
-                        raise ValueError(f'Different units used for probe and '
-                                         f'contacts ({probe.si_units} != '
-                                         f'{value_list[0]})')
-                else:
-                    probe.annotate(**{contact_param: value_list})
-
-    for probe in probes.values():
-        probegroup.add_probe(probe)
+                probe.annotate(**{contact_param: value_list})
 
     return probegroup
 
@@ -352,6 +355,7 @@ def write_BIDS_probe(folder, probe_or_probegroup, prefix=''):
         probe_id = probe.annotations['probe_id']
         probes_dict[probe_id] = {'contour': probe.probe_planar_contour.tolist(),
                                  'units': probe.si_units}
+        probes_dict[probe_id].update(probe.annotations)
 
     with open(folder.joinpath(prefix + 'probes.json'), 'w',
               encoding='utf8') as f:
