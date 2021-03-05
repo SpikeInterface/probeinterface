@@ -231,7 +231,7 @@ class Probe:
         channel_indices: array of int
         
         """
-        channel_indices = np.asarray(channel_indices)
+        channel_indices = np.asarray(channel_indices, dtype=int)
         if channel_indices.size != self.get_contact_count():
             ValueError('channel_indices have not the same size as contact')
         self.device_channel_indices = channel_indices
