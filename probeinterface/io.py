@@ -10,6 +10,7 @@ Read/write some formats:
 
 
 """
+import os
 import csv
 from pathlib import Path
 import re
@@ -99,6 +100,306 @@ def write_probeinterface(file, probe_or_probegroup):
         json.dump(d, f, indent=4)
 
 
+label_map_to_BIDS= {'contact_ids': 'contact_id',
+                    'probe_ids': 'probe_id',
+                    'contact_shapes': 'contact_shape',
+                    'shank_ids': 'shank_id',
+                    'si_units': 'xyz_units'}
+label_map_to_probeinterface = {v: k for k, v in label_map_to_BIDS.items()}
+
+
+def read_BIDS_probe(folder, prefix=None):
+    """
+    Read to BIDS probe format.
+
+    This requires a probes.tsv and a contacts.tsv file
+    and potential corresponding sidecar files in json format.
+
+    Parameters
+    ----------
+    folder: Path or str
+        The folder to scan for probes and contacts files.
+
+    prefix : None or str
+        Prefix of the probes and contacts files.
+
+    """
+    import pandas as pd
+    folder = Path(folder)
+    probes = {}
+    probegroup = ProbeGroup()
+
+    # Identify source files for probes and contacts information
+    if prefix is None:
+        probes_files = [f for f in folder.iterdir() if
+                        f.name.endswith('probes.tsv')]
+        contacts_files = [f for f in folder.iterdir() if
+                          f.name.endswith('contacts.tsv')]
+        if len(probes_files) != 1 or len(contacts_files) != 1:
+            raise ValueError(
+                'Did not find one probes.tsv and one contacts.tsv file')
+        probes_file = probes_files[0]
+        contacts_file = contacts_files[0]
+    else:
+        probes_file = folder / prefix + '_probes.tsv'
+        contacts_file = folder / prefix + '_contacts.tsv'
+        for file in [probes_file, contacts_file]:
+            if not file.exists():
+                raise ValueError(f'Source file does not exist ({file})')
+
+    # Step 1: READING CONTACTS.TSV
+    df = pd.read_csv(contacts_file, sep='\t', header=0,
+                     keep_default_na=False, dtype=str)
+    df.replace(to_replace={'n/a': ''}, inplace=True)
+    df.rename(columns=label_map_to_probeinterface, inplace=True)
+
+    if 'probe_ids' not in df:
+        raise ValueError('probes.tsv file does not contain probe_id column')
+    if 'contact_ids' not in df:
+        raise ValueError('contacts.tsv file does not contain contact_id column')
+
+    for probe_id in df['probe_ids'].unique():
+        df_probe = df[df['probe_ids'] == probe_id].copy()
+
+        # adding default values required by probeinterface if not present in
+        # source files
+        if 'contact_shapes' not in df_probe:
+            df_probe['contact_shapes'] = 'circle'
+            df_probe['radius'] = 1
+            print(f'There is no contact shape provided for probe {probe_id}, a '
+                  f'dummy circle with 1um is created')
+
+        if 'x' not in df_probe:
+            df_probe['x'] = np.arange(len(df_probe.index), dtype=float)
+            print(f'There is no x coordinate provided for probe {probe_id}, a '
+                  f'dummy linear x coordinate is created.')
+
+        if 'y' not in df_probe:
+            df_probe['y'] = 0.0
+            print(f'There is no y coordinate provided for probe {probe_id}, a '
+                  f'dummy constant y coordinate is created.')
+
+        if 'si_units' not in df_probe:
+            df_probe['si_units'] = 'um'
+            print(f'There is no SI units provided for probe {probe_id}, a '
+                  f'dummy SI unit (um) is created.')
+
+        # create probe object and register with probegroup
+        probe = Probe.from_dataframe(df=df_probe)
+        probe.annotate(probe_id=probe_id)
+
+        probes[str(probe_id)] = probe
+        probegroup.add_probe(probe)
+
+        ignore_annotations = ['probe_ids', 'contact_ids', 'contact_shapes', 'x',
+                              'y', 'z', 'shank_ids', 'si_units',
+                              'device_channel_indices', 'radius', 'width',
+                              'height', 'probe_num', 'device_channel_indices']
+        df_others = df_probe.drop(ignore_annotations, axis=1, errors='ignore')
+        for col_name in df_others.columns:
+            probe.annotate(**{col_name: df_probe[col_name].values})
+
+    # Step 2: READING PROBES.TSV
+    df = pd.read_csv(probes_file, sep='\t', header=0,
+                     keep_default_na=False, dtype=str)
+    df.replace(to_replace={'n/a': ''}, inplace=True)
+
+    if 'probe_id' not in df:
+        raise ValueError(f'{probes_file} file does not contain probe_id column')
+
+    for row_idx, row in df.iterrows():
+        probe_id = row['probe_id']
+        if probe_id not in probes:
+            print(f'Probe with id {probe_id} is present in probes.tsv but not '
+                  f'in contacts.tsv file. Ignoring entry in probes.tsv.')
+            continue
+
+        probe = probes[probe_id]
+        probe.annotate(**dict(row.items()))
+
+        # for string based annotations use '' instead of None as default
+        for string_annotation in ['name', 'manufacturer']:
+            if probe.annotations.get(string_annotation, None) is None:
+                probe.annotations[string_annotation] = ''
+
+    # Step 3: READING PROBES.JSON (optional)
+    probes_dict = {}
+    probe_json = probes_file.with_suffix('.json')
+    if probe_json.exists():
+        with open(probe_json, 'r') as f:
+            probes_dict = json.load(f)
+
+    if 'probe_id' in probes_dict:
+        for probe_id, probe_info in probes_dict['probe_id'].items():
+            probe = probes[probe_id]
+            for probe_param, param_value in probe_info.items():
+
+                if probe_param == 'contour':
+                    probe.probe_planar_contour = np.array(param_value)
+
+                elif probe_param == 'units':
+                    if probe.si_units is None:
+                        probe.si_units = param_value
+                    elif probe.si_units != param_value:
+                        raise ValueError(f'Inconsistent si_units for probe '
+                                         f'{probe_id}')
+                else:
+                    probe.annotate(**{probe_param: param_value})
+
+    # Step 4: READING CONTACTS.JSON (optional)
+    contacts_dict = {}
+    contact_json = contacts_file.with_suffix('.json')
+    if contact_json.exists():
+        with open(contact_json, 'r') as f:
+            contacts_dict = json.load(f)
+
+    if 'contact_id' in contacts_dict:
+        # collect all contact parameters used in this file
+        contact_params = [k for v in contacts_dict['contact_id'].values() for k
+                          in v.keys()]
+        contact_params = np.unique(contact_params)
+
+        # collect contact information for each probe_id
+        for probe in probes.values():
+            contact_ids = probe.contact_ids
+            for contact_param in contact_params:
+                # collect parameters across contact ids to add to probe
+                value_list = [
+                    contacts_dict['contact_id'][str(c)].get(contact_param, None)
+                    for c in contact_ids]
+
+                probe.annotate(**{contact_param: value_list})
+
+    return probegroup
+
+
+def write_BIDS_probe(folder, probe_or_probegroup, prefix=''):
+    """
+    Write to probe and contact formats as proposed
+    for ephy BIDS extension (tsv & json based).
+
+    The format handles several probes in one file.
+
+    Parameters
+    ----------
+    folder: Path or str
+        The folder name.
+
+    probe_or_probegroup : Probe or ProbeGroup
+        If probe is given a probegroup is created anyway.
+
+    prefix: str
+        A prefix to be added to the filenames
+
+    """
+    import pandas as pd
+
+    if isinstance(probe_or_probegroup, Probe):
+        probe = probe_or_probegroup
+        probegroup = ProbeGroup()
+        probegroup.add_probe(probe)
+    elif isinstance(probe_or_probegroup, ProbeGroup):
+        probegroup = probe_or_probegroup
+    else:
+        raise ValueError('probe_or_probegroup has to be'
+                         'of type Probe or ProbeGroup')
+    folder = Path(folder)
+
+    # ensure that prefix and file type indicator are separated by an underscore
+    if prefix != '' and prefix[-1] != '_':
+        prefix = prefix + '_'
+
+    probes = probegroup.probes
+
+    # Step 1: GENERATION OF PROBE.TSV
+    # ensure required keys (probeID, probe_type) are present
+
+    if any('probe_id' not in p.annotations for p in probes):
+        probegroup.auto_generate_probe_ids()
+
+    for probe in probes:
+        if 'probe_id' not in probe.annotations:
+            raise ValueError('Export to BIDS probe format requires '
+                             'the probe id to be specified as an annotation '
+                             '(probe_id). You can do this via '
+                             '`probegroup.auto_generate_ids.')
+        if 'type' not in probe.annotations:
+            raise ValueError('Export to BIDS probe format requires '
+                             'the probe type to be specified as an '
+                             'annotation (type)')
+
+    # extract all used annotation keys
+    keys_by_probe = [list(p.annotations) for p in probes]
+    keys_concatenated = np.concatenate(keys_by_probe)
+    annotation_keys = np.unique(keys_concatenated)
+
+    # generate a tsv table capturing probe information
+    index = range(len([p.annotations['probe_id'] for p in probes]))
+    df = pd.DataFrame(index=index)
+    for annotation_key in annotation_keys:
+        df[annotation_key] = [p.annotations[annotation_key] for p in probes]
+    df['n_shanks'] = [len(np.unique(p.shank_ids)) for p in probes]
+
+    # Note: in principle it would also be possible to add the probe width and
+    # depth here based on the probe contour information. However this would
+    # require an alignment of the probe within the coordinate system.
+
+    # substitute empty values by BIDS default and create tsv file
+    df.fillna('n/a', inplace=True)
+    df.replace(to_replace='', value='n/a', inplace=True)
+    df.to_csv(folder.joinpath(prefix + 'probes.tsv'), sep='\t', index=False)
+
+    # Step 2: GENERATION OF PROBE.JSON
+    probes_dict = {}
+    for probe in probes:
+        probe_id = probe.annotations['probe_id']
+        probes_dict[probe_id] = {'contour': probe.probe_planar_contour.tolist(),
+                                 'units': probe.si_units}
+        probes_dict[probe_id].update(probe.annotations)
+
+    with open(folder.joinpath(prefix + 'probes.json'), 'w',
+              encoding='utf8') as f:
+        json.dump({'probe_id': probes_dict}, f, indent=4)
+
+    # Step 3: GENERATION OF CONTACTS.TSV
+    # ensure required contact identifiers are present
+    for probe in probes:
+        if probe.contact_ids is None:
+            raise ValueError('Contacts must have unique contact ids '
+                             'and not None for export to BIDS probe format.'
+                             'Use `probegroup.auto_generate_contact_ids`.')
+
+    df = probegroup.to_dataframe()
+    index = range(sum([p.get_contact_count() for p in probes]))
+    df.rename(columns=label_map_to_BIDS, inplace=True)
+
+    df['probe_id'] = [p.annotations['probe_id'] for p in probes for _ in
+                      p.contact_ids]
+    df['coordinate_system'] = ['relative cartesian'] * len(index)
+
+    channel_indices = []
+    for probe in probes:
+        if probe.device_channel_indices:
+            channel_indices.extend(probe.device_channel_indices)
+        else:
+            channel_indices.extend([None] * probe.get_contact_count())
+    df['device_channel_indices'] = channel_indices
+
+    df.fillna('n/a', inplace=True)
+    df.replace(to_replace='', value='n/a', inplace=True)
+    df.to_csv(folder.joinpath(prefix + 'contacts.tsv'), sep='\t', index=False)
+
+    # Step 4: GENERATING CONTACTS.JSON
+    contacts_dict = {}
+    for probe in probes:
+        for cidx, contact_id in enumerate(probe.contact_ids):
+            cdict = {'contact_plane_axes': probe.contact_plane_axes[cidx].tolist()}
+            contacts_dict[contact_id] = cdict
+
+    with open(folder.joinpath(prefix + 'contacts.json'), 'w', encoding='utf8') as f:
+        json.dump({'contact_id': contacts_dict}, f, indent=4)
+
+
 def read_prb(file):
     """
     Read a PRB file and return a ProbeGroup object.
@@ -183,7 +484,6 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
         import h5py
     except ImportError as error:
         print(error.__class__.__name__ + ": " + error.message)
-
 
     my_file = h5py.File(file, mode='r')
 

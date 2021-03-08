@@ -1,4 +1,5 @@
 import numpy as np
+from .utils import generate_unique_ids
 
 
 class ProbeGroup:
@@ -120,18 +121,16 @@ class ProbeGroup:
             raise ValueError('contact_ids are not unique across probes')
     
     
-    def to_dataframe(self):
+    def to_dataframe(self, complete=False):
         import pandas as pd
         
         all_df =[]
         for i, probe in enumerate(self.probes):
-            df = probe.to_dataframe()
+            df = probe.to_dataframe(complete=complete)
             df['probe_num'] = i
             df.index = [(i, ind) for ind in df.index]
             all_df.append(df)
         df = pd.concat(all_df, axis=0)
-        
-        df['global_contact_ids'] = self.get_global_contact_ids()
         
         return df
     
@@ -164,3 +163,55 @@ class ProbeGroup:
                     device_indices.append(shank.device_channel_indices)
         
         return positions, device_indices
+
+    def auto_generate_probe_ids(self, *args, **kwargs):
+        """
+        Annotate all probes with unique probe_id values.
+
+        Parameters
+        ----------
+        *args: will be forwarded to `probeinterface.utils.generate_unique_ids`
+        **kwargs: will be forwarded to
+            `probeinterface.utils.generate_unique_ids`
+        """
+        
+        if any('probe_id' in p.annotations for p in self.probes):
+            raise ValueError('Probe does already have a `probe_id` annotation.')
+
+        if not args:
+            args = 1e7, 1e8
+        # 3rd argument has to be the number of probes
+        args = args[:2] + (len(self.probes),)
+
+        # creating unique probe ids in case probes do not have any yet
+        probe_ids = generate_unique_ids(*args, **kwargs).astype(str)
+        for pid, probe in enumerate(self.probes):
+            probe.annotate(probe_id=probe_ids[pid])
+
+    def auto_generate_contact_ids(self, *args, **kwargs):
+        """
+        Annotate all contacts with unique contact_id values.
+
+        Parameters
+        ----------
+        *args: will be forwarded to `probeinterface.utils.generate_unique_ids`
+        **kwargs: will be forwarded to
+            `probeinterface.utils.generate_unique_ids`
+        """
+
+        if any(p.contact_ids is not None for p in self.probes):
+            raise ValueError('Some contacts already have contact ids '
+                             'assigned.')
+        
+        if not args:
+            args = 1e7, 1e8
+        # 3rd argument has to be the number of probes
+        args = args[:2] + (self.get_channel_count(),)
+
+        contact_ids = generate_unique_ids(*args, **kwargs).astype(str)
+
+        for probe in self.probes:
+            el_ids, contact_ids = np.split(contact_ids,
+                                             [probe.get_contact_count()])
+            probe.set_contact_ids(el_ids)
+

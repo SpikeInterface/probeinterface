@@ -156,7 +156,7 @@ class Probe:
         self._contact_positions = positions
         n = positions.shape[0]
 
-        # This defines the electrod plane (2d or 3d) where the contact lies.
+        # This defines the contact plane (2d or 3d) where the contact lies.
         # For 2D we make auto
         if plane_axes is None:
             if self.ndim == 3:
@@ -231,7 +231,7 @@ class Probe:
         channel_indices: array of int
         
         """
-        channel_indices = np.asarray(channel_indices)
+        channel_indices = np.asarray(channel_indices, dtype=int)
         if channel_indices.size != self.get_contact_count():
             ValueError('channel_indices have not the same size as contact')
         self.device_channel_indices = channel_indices
@@ -560,6 +560,11 @@ class Probe:
         df['shank_ids'] = self.shank_ids
         df['si_units'] = self.si_units
 
+        if self.contact_ids is None:
+            df['contact_ids'] = [''] * self.get_contact_count()
+        else:
+            df['contact_ids'] = self.contact_ids
+
         if complete:
            #(num_contacts, 2, ndim)
            for i in range(self.ndim):
@@ -569,9 +574,6 @@ class Probe:
 
            if self.device_channel_indices is not None:
                df['device_channel_indices'] = self.device_channel_indices
-
-           if self.contact_ids is not None:
-               df['contact_ids'] = self.contact_ids
 
         return df
 
@@ -588,19 +590,20 @@ class Probe:
 
         si_units = np.unique(df['si_units'])[0]
         probe = Probe(ndim=ndim, si_units=si_units)
-        positions = df.loc[:, ['x', 'y', 'z'][:ndim]].values
+        positions = df.loc[:, ['x', 'y', 'z'][:ndim]].values.astype(float)
 
         shapes = df['contact_shapes'].values
         shape_params = []
         for i, shape in enumerate(shapes):
             if shape == 'circle':
-                p = {'radius': df.at[i, 'radius']}
+                p = {'radius': float(df['radius'].iat[i])}
             elif shape == 'square':
-                p = {'width': df.at[i, 'width']}
+                p = {'width': float(df['width'].iat[i])}
             elif shape == 'rect':
-                p = {'width': df.at[i, 'width'], 'height': df.at[i, 'height']}
+                p = {'width': float(df['width'].iat[i]),
+                     'height': float(df['height'].iat[i])}
             else:
-                raise ValueError('you are in bad shape')
+                raise ValueError('You are in bad shape')
             shape_params.append(p)
 
         if 'plane_axis_x_0' in df.columns:
@@ -620,7 +623,8 @@ class Probe:
             shape_params=shape_params)
 
         if 'device_channel_indices' in df.columns:
-            probe.set_device_channel_indices(df['device_channel_indices'].values)
+            dev_channel_indices = df['device_channel_indices'].replace('', '-1')
+            probe.set_device_channel_indices(dev_channel_indices.values)
         if 'shank_ids' in df.columns:
             probe.set_shank_ids(df['shank_ids'].values)
         if 'contact_ids' in df.columns:

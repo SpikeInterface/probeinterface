@@ -1,4 +1,4 @@
-from probeinterface import write_probeinterface, read_probeinterface
+from probeinterface import write_probeinterface, read_probeinterface, write_BIDS_probe, read_BIDS_probe
 from probeinterface import read_prb, write_prb
 from probeinterface import read_spikeglx
 from probeinterface import generate_dummy_probe_group
@@ -38,6 +38,113 @@ def test_probeinterface_format():
     #~ plot_probe_group(probegroup, with_channel_index=True, same_axe=False)
     #~ plot_probe_group(probegroup2, with_channel_index=True, same_axe=False)
     #~ plt.show()
+
+
+def test_BIDS_format():
+    folder = Path('test_BIDS')
+    folder.mkdir(exist_ok=True)
+    probegroup = generate_dummy_probe_group()
+
+    # add custom probe type annotation to be
+    # compatible with BIDS specifications
+    for probe in probegroup.probes:
+        probe.annotate(type='laminar')
+
+    # add unique contact ids to be compatible
+    # with BIDS specifications
+    n_els = sum([p.get_contact_count() for p in probegroup.probes])
+    # using np.random.choice to ensure uniqueness of contact ids
+    el_ids = np.random.choice(np.arange(1e4, 1e5, dtype='int'),
+                              replace=False, size=n_els).astype(str)
+    for probe in probegroup.probes:
+        probe_el_ids, el_ids = np.split(el_ids, [probe.get_contact_count()])
+        probe.set_contact_ids(probe_el_ids)
+
+        # switch to more generic dtype for shank_ids
+        probe.set_shank_ids(probe.shank_ids.astype(str))
+
+
+    write_BIDS_probe(folder, probegroup)
+
+    probegroup_read = read_BIDS_probe(folder)
+
+    # compare written (original) and read probegroup
+    assert len(probegroup.probes) == len(probegroup_read.probes)
+    for probe_orig, probe_read in zip(probegroup.probes,
+                                      probegroup_read.probes):
+        # check that all attributes are preserved
+        # check all old annotations are still present
+        assert probe_orig.annotations.items() <= probe_read.annotations.items()
+        # check if the same attribute lists are present (independent of order)
+        assert len(probe_orig.contact_ids) == len(probe_read.contact_ids)
+        assert all(np.in1d(probe_orig.contact_ids, probe_read.contact_ids))
+
+        # the transformation of contact order between the two probes
+        t = np.array([list(probe_read.contact_ids).index(elid)
+                              for elid in probe_orig.contact_ids])
+
+        assert all(probe_orig.contact_ids == probe_read.contact_ids[t])
+        assert all(probe_orig.shank_ids == probe_read.shank_ids[t])
+        assert all(probe_orig.contact_shapes == probe_read.contact_shapes[t])
+        assert probe_orig.ndim == probe_read.ndim
+        assert probe_orig.si_units == probe_read.si_units
+
+        for i in range(len(probe_orig.probe_planar_contour)):
+            assert all(probe_orig.probe_planar_contour[i] ==
+                       probe_read.probe_planar_contour[i])
+        for sid, shape_params in enumerate(probe_orig.contact_shape_params):
+            assert shape_params == probe_read.contact_shape_params[t][sid]
+        for i in range(len(probe_orig.contact_positions)):
+            assert all(probe_orig.contact_positions[i] ==
+                       probe_read.contact_positions[t][i])
+        for i in range(len(probe.contact_plane_axes)):
+            for dim in range(len(probe.contact_plane_axes[i])):
+                assert all(probe_orig.contact_plane_axes[i][dim] ==
+                           probe_read.contact_plane_axes[t][i][dim])
+
+
+def test_BIDS_format_empty():
+    folder = Path('test_BIDS_minimal')
+    folder.mkdir(exist_ok=True)
+
+    # create empty BIDS probe and contact files
+    with open(folder.joinpath('probes.tsv'), 'w') as f:
+        f.write('probe_id\ttype')
+
+    with open(folder.joinpath('contacts.tsv'), 'w') as f:
+        f.write('contact_id\tprobe_id')
+
+    read_BIDS_probe(folder)
+
+
+def test_BIDS_format_minimal():
+    folder = Path('test_BIDS_minimal')
+    folder.mkdir(exist_ok=True)
+
+    # create minimal BIDS probe and contact files
+    with open(folder.joinpath('probes.tsv'), 'w') as f:
+        f.write('probe_id\ttype\n'
+                '0\tcustom\n'
+                '1\tgeneric')
+
+    with open(folder.joinpath('contacts.tsv'), 'w') as f:
+        f.write('contact_id\tprobe_id\n'
+                '01\t0\n'
+                '02\t0\n'
+                '11\t1\n'
+                '12\t1')
+
+    probegroup = read_BIDS_probe(folder)
+
+    assert len(probegroup.probes) == 2
+
+    for pid, probe in enumerate(probegroup.probes):
+        assert probe.get_contact_count() == 2
+        assert probe.annotations['probe_id'] == str(pid)
+        assert probe.annotations['type'] == ['custom', 'generic'][pid]
+        assert all(probe.contact_ids == [['01', '02'], ['11', '12']][pid])
+
+
 
     
 
