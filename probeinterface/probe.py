@@ -535,6 +535,42 @@ class Probe:
 
         return probe
     
+    def to_numpy(self):
+        """
+        Export to a numpy struct array.
+        Equivalent of to_dataframe but no pandas dependency.
+        """
+        dtype = [('x', 'float64'), ('y', 'float64')]
+        if self.ndim == 3:
+            dtype += [('z', 'float64')]
+        dtype += [('contact_shapes', 'U64')]
+        param_shape = []
+        for i, p in enumerate(self.contact_shape_params):
+            for k, v in p.items():
+                if k not in param_shape:
+                    param_shape.append(k)
+        for k in param_shape:
+            dtype += [(k, 'U64')]
+        dtype += [('shank_ids', 'int64')]
+        print(dtype)
+        arr = np.zeros(self.get_contact_count(), dtype=dtype)
+        arr['x'] = self.contact_positions[:, 0]
+        arr['y'] = self.contact_positions[:, 1]
+        if self.ndim == 3:
+            arr['z'] = self.contact_positions[:, 2]
+        arr['contact_shapes'] = self.contact_shapes
+        for i, p in enumerate(self.contact_shape_params):
+            for k, v in p.items():
+                arr[k][i] = v
+        
+        arr['shank_ids'] = self.shank_ids
+        
+        return arr
+
+    @staticmethod
+    def from_dataframe(arr):
+        raise NotImplementedError
+    
     def to_dataframe(self, complete=False):
         """
         Export the probe to a pandas dataframe
@@ -545,6 +581,7 @@ class Probe:
         complete (bool): If true export more information of the probe
             including the probe plane axis.
         """
+        # TODO use to_numpy instead of duplicating
         import pandas as pd
         index = np.arange(self.get_contact_count(), dtype=int)
         df = pd.DataFrame(index=index)

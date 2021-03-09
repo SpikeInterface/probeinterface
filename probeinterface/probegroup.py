@@ -136,7 +136,7 @@ class ProbeGroup:
     
     def get_groups(self, group_mode='by_probe'):
         """
-        Get sub groups of channels  by contacts or by shank.
+        Get sub groups of channels  "by_probe" or "by_shank".
         This used for spike sorting in spikeinterface.
         
         Parameters
@@ -149,20 +149,24 @@ class ProbeGroup:
         
         """
         assert group_mode in ('by_probe', 'by_shank')
-
+        
+        probe_indices = []
+        shank_ids = []
         positions = []
         device_indices = []
         if group_mode == 'by_probe':
-            for probe in self.probes:
+            for probe_index, probe in enumerate(self.probes):
+                probe_indices.append(probe_index)
                 positions.append(probe.contact_positions)
                 device_indices.append(probe.device_channel_indices)
         elif group_mode == 'by_shank':
-            for probe in self.probes:
+            for probe_index, probe in enumerate(self.probes):
                 for shank in probe.get_shanks():
+                    probe_indices.append(probe_index)
                     positions.append(shank.contact_positions)
                     device_indices.append(shank.device_channel_indices)
         
-        return positions, device_indices
+        return probe_indices, positions, device_indices
 
     def auto_generate_probe_ids(self, *args, **kwargs):
         """

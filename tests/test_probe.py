@@ -84,7 +84,9 @@ def test_probe():
     # get dict and df
     d = probe.to_dict()
     other = Probe.from_dict(d)
-
+    
+    arr = probe.to_numpy()
+    
     #~ print(d)
     df = probe.to_dataframe(complete=True)
     other = Probe.from_dataframe(df)
@@ -132,7 +134,7 @@ def test_set_shanks():
 
 
 if __name__ == '__main__':
-    #~ test_probe()
+    test_probe()
     
-    test_set_shanks()
+    #~ test_set_shanks()
 
