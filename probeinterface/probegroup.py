@@ -45,6 +45,36 @@ class ProbeGroup:
         """
         n = sum(probe.get_contact_count() for probe in self.probes)
         return n
+    
+    def to_numpy(self, complete=False):
+        """
+        Export all probe into a numpy array.
+        """
+        pg_arr = []
+        probe_dtype = self.probes[0].to_numpy(complete=complete).dtype
+        dtype = [('probe_index', 'int64')] + [(field, dt) for field, (dt, _) in probe_dtype.fields.items()]
+        
+        for probe_index, probe in enumerate(self.probes):
+            arr = probe.to_numpy(complete=complete)
+            arr_ext = np.zeros(probe.get_contact_count(), dtype=dtype)
+            arr_ext['probe_index'] = probe_index
+            for field in probe_dtype.fields:
+                arr_ext[field] = arr[field]
+            pg_arr.append(arr_ext)
+
+        pg_arr = np.concatenate(pg_arr, axis=0)
+        return pg_arr
+
+    @staticmethod
+    def from_numpy(arr):
+        from .probe import Probe
+        probes_indices = np.unique(arr['probe_index'])
+        probegroup = ProbeGroup()
+        for probe_index in probes_indices:
+            mask = arr['probe_index'] == probe_index
+            probe = Probe.from_numpy(arr[mask])
+            probegroup.add_probe(probe)
+        return probegroup
 
     def get_global_device_channel_indices(self):
         """

@@ -85,22 +85,23 @@ def test_probe():
     d = probe.to_dict()
     other = Probe.from_dict(d)
     
+    # export to/from numpy
     arr = probe.to_numpy(complete=False)
+    other = Probe.from_numpy(arr)
     arr = probe.to_numpy(complete=True)
-    print(arr)
+    other2 = Probe.from_numpy(arr)
+    arr = probe_3d.to_numpy(complete=True)
+    other_3d = Probe.from_numpy(arr)
     
-    
-    #~ print(d)
+    # export to/from DataFrame
     df = probe.to_dataframe(complete=True)
     other = Probe.from_dataframe(df)
-
     df = probe.to_dataframe(complete=False)
     other2 = Probe.from_dataframe(df)
-
     df = probe_3d.to_dataframe(complete=True)
+    print(df.index)
     other_3d = Probe.from_dataframe(df)
     assert other_3d.ndim == 3
-
 
     # slice handling
     selection = np.arange(0,18,2)

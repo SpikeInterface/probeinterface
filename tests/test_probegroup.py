@@ -31,6 +31,18 @@ def test_probegroup():
     df = probegroup.to_dataframe()
     #~ print(df['global_contact_ids'])
     
+    arr = probegroup.to_numpy(complete=False)
+    other = ProbeGroup.from_numpy(arr)
+    arr = probegroup.to_numpy(complete=True)
+    other = ProbeGroup.from_numpy(arr)
+
+    #~ from probeinterface.plotting import plot_probe_group, plot_probe
+    #~ import matplotlib.pyplot as plt
+    #~ plot_probe_group(probegroup)
+    #~ plot_probe_group(other)
+    #~ plt.show()
+    
+    
     groups = probegroup.get_groups(group_mode='by_probe')
     assert len(groups) == 3
     

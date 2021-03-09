@@ -537,8 +537,23 @@ class Probe:
     
     def to_numpy(self, complete=False):
         """
-        Export to a numpy struct array.
-        Equivalent of to_dataframe but no pandas dependency.
+        Export to a numpy vector (struct array).
+        This vector handle all contact attributes.
+        
+        Equivalent of to_dataframe but without pandas dependency.
+        
+        Very usefull to export/slice/attache to a recording.
+
+        Parameters
+        ----------
+
+        complete (bool): If true export more information of the probe
+            including : contact_plane_axes/si_units/device_channel_indices
+        
+        returns
+        ---------
+        arr: numpy.array
+            With complex dtype
         """
         dtype = [('x', 'float64'), ('y', 'float64')]
         if self.ndim == 3:
@@ -551,14 +566,16 @@ class Probe:
                     param_shape.append(k)
         for k in param_shape:
             dtype += [(k, 'float64')]
-        dtype += [('shank_ids', 'int64')]
+        dtype += [('shank_ids', 'int64'), ('contact_ids', 'U64')]
         
         if complete:
             dtype += [('device_channel_indices', 'int64')]
-        
-        print(dtype)
-        
-        
+            dtype += [('si_units', 'U64')]
+            for i in range(self.ndim):
+                dim = ['x', 'y', 'z'][i]
+                dtype += [(f'plane_axis_{dim}_0', 'float64')]
+                dtype += [(f'plane_axis_{dim}_1', 'float64')]
+
         arr = np.zeros(self.get_contact_count(), dtype=dtype)
         arr['x'] = self.contact_positions[:, 0]
         arr['y'] = self.contact_positions[:, 1]
@@ -570,19 +587,94 @@ class Probe:
                 arr[k][i] = v
         
         arr['shank_ids'] = self.shank_ids
+
+        if self.contact_ids is None:
+            arr['contact_ids'] = [''] * self.get_contact_count()
+        else:
+            arr['contact_ids'] = self.contact_ids        
+        
         if complete:
+            arr['si_units'] = self.si_units
+
+            #(num_contacts, 2, ndim)
+            for i in range(self.ndim):
+                dim = ['x', 'y', 'z'][i]
+                arr[f'plane_axis_{dim}_0'] = self.contact_plane_axes[:, 0, i]
+                arr[f'plane_axis_{dim}_1'] = self.contact_plane_axes[:, 1, i]
+
             if self.device_channel_indices is None:
                arr['device_channel_indices'] = -1
             else:
                 arr['device_channel_indices'] = self.device_channel_indices
-                
         
         return arr
 
     @staticmethod
-    def from_dataframe(arr):
-        raise NotImplementedError
-    
+    def from_numpy(arr):
+        """
+        Create Probe from complex numpy array
+        see Probe.to_numpy()
+        """
+        fields = list(arr.dtype.fields)
+        
+        if 'z' in fields:
+            ndim = 3
+        else:
+            ndim = 2
+
+        assert 'x' in fields
+        assert 'y' in fields
+        if 'si_units' in fields:
+            assert np.unique(arr['si_units']).size == 1
+            si_units = np.unique(arr['si_units'])[0]
+        else:
+            si_units = 'um'
+        probe = Probe(ndim=ndim, si_units=si_units)
+        
+        # contacts
+        positions = np.zeros((arr.size, ndim), dtype='float64')
+        for i, dim in enumerate(['x', 'y', 'z'][:ndim]):
+            positions[:, i] = arr[dim]
+        shapes = arr['contact_shapes']
+        shape_params = []
+        for i, shape in enumerate(shapes):
+            if shape == 'circle':
+                p = {'radius': float(arr['radius'][i])}
+            elif shape == 'square':
+                p = {'width': float(arr['width'][i])}
+            elif shape == 'rect':
+                p = {'width': float(arr['width'][i]),
+                     'height': float(arr['height'][i])}
+            else:
+                raise ValueError('You are in bad shape')
+            shape_params.append(p)
+
+        if 'plane_axis_x_0' in fields:
+            #(num_contacts, 2, ndim)
+            plane_axes = np.zeros((arr.size, 2, ndim))
+            for i in range(ndim):
+                dim = ['x', 'y', 'z'][i]
+                plane_axes[:, 0, i] = arr[f'plane_axis_{dim}_0']
+                plane_axes[:, 1, i] = arr[f'plane_axis_{dim}_1']
+        else:
+            plane_axes = None
+
+        probe.set_contacts(
+            positions=positions,
+            plane_axes=plane_axes,
+            shapes=shapes,
+            shape_params=shape_params)
+
+        if 'device_channel_indices' in fields:
+            dev_channel_indices = arr['device_channel_indices']
+            probe.set_device_channel_indices(dev_channel_indices)
+        if 'shank_ids' in fields:
+            probe.set_shank_ids(arr['shank_ids'])
+        if 'contact_ids' in fields:
+            probe.set_contact_ids(arr['contact_ids'])
+
+        return probe
+
     def to_dataframe(self, complete=False):
         """
         Export the probe to a pandas dataframe
@@ -593,97 +685,16 @@ class Probe:
         complete (bool): If true export more information of the probe
             including the probe plane axis.
         """
-        # TODO use to_numpy instead of duplicating
         import pandas as pd
-        index = np.arange(self.get_contact_count(), dtype=int)
-        df = pd.DataFrame(index=index)
-        df['x'] = self.contact_positions[:, 0]
-        df['y'] = self.contact_positions[:, 1]
-        if self.ndim == 3:
-            df['z'] = self.contact_positions[:, 2]
-        df['contact_shapes'] = self.contact_shapes
-        for i, p in enumerate(self.contact_shape_params):
-            for k, v in p.items():
-                df.at[i, k] = v
-
-        df['shank_ids'] = self.shank_ids
-        df['si_units'] = self.si_units
-
-        if self.contact_ids is None:
-            df['contact_ids'] = [''] * self.get_contact_count()
-        else:
-            df['contact_ids'] = self.contact_ids
-
-        if complete:
-           #(num_contacts, 2, ndim)
-           for i in range(self.ndim):
-               dim = ['x', 'y', 'z'][i]
-               df[f'plane_axis_{dim}_0'] = self.contact_plane_axes[:, 0, i]
-               df[f'plane_axis_{dim}_1'] = self.contact_plane_axes[:, 1, i]
-
-           if self.device_channel_indices is not None:
-               df['device_channel_indices'] = self.device_channel_indices
-
+        df = pd.DataFrame(self.to_numpy(complete=complete))
+        df.index = np.arange(df.shape[0], dtype='int64')
         return df
 
     @staticmethod
     def from_dataframe(df):
-        if 'z' in df.columns:
-            ndim = 3
-        else:
-            ndim = 2
+        arr = df.to_records(index=False)
+        return Probe.from_numpy(arr)
 
-        assert 'x' in df.columns
-        assert 'y' in df.columns
-        assert np.unique(df['si_units']).size == 1
-
-        si_units = np.unique(df['si_units'])[0]
-        probe = Probe(ndim=ndim, si_units=si_units)
-        positions = df.loc[:, ['x', 'y', 'z'][:ndim]].values.astype(float)
-
-        shapes = df['contact_shapes'].values
-        shape_params = []
-        for i, shape in enumerate(shapes):
-            if shape == 'circle':
-                p = {'radius': float(df['radius'].iat[i])}
-            elif shape == 'square':
-                p = {'width': float(df['width'].iat[i])}
-            elif shape == 'rect':
-                p = {'width': float(df['width'].iat[i]),
-                     'height': float(df['height'].iat[i])}
-            else:
-                raise ValueError('You are in bad shape')
-            shape_params.append(p)
-
-        if 'plane_axis_x_0' in df.columns:
-            #(num_contacts, 2, ndim)
-            plane_axes = np.zeros((df.shape[0], 2, ndim))
-            for i in range(ndim):
-                dim = ['x', 'y', 'z'][i]
-                plane_axes[:, 0, i] = df[f'plane_axis_{dim}_0']
-                plane_axes[:, 1, i] = df[f'plane_axis_{dim}_1']
-        else:
-            plane_axes = None
-
-        probe.set_contacts(
-            positions=positions,
-            plane_axes=plane_axes,
-            shapes=shapes,
-            shape_params=shape_params)
-
-        if 'device_channel_indices' in df.columns:
-            dev_channel_indices = df['device_channel_indices'].replace('', '-1')
-            probe.set_device_channel_indices(dev_channel_indices.values)
-        if 'shank_ids' in df.columns:
-            probe.set_shank_ids(df['shank_ids'].values)
-        if 'contact_ids' in df.columns:
-            probe.set_contact_ids(df['contact_ids'].values)
-
-        return probe
-
-
-
-    
     def to_image(self, values, pixel_size=0.5, num_pixel=None, method='linear', 
                  xlims=None, ylims=None):
         """
