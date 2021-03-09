@@ -382,7 +382,7 @@ def write_BIDS_probe(folder, probe_or_probegroup, prefix=''):
         if probe.device_channel_indices:
             channel_indices.extend(probe.device_channel_indices)
         else:
-            channel_indices.extend([None] * probe.get_contact_count())
+            channel_indices.extend([-1] * probe.get_contact_count())
     df['device_channel_indices'] = channel_indices
 
     df.fillna('n/a', inplace=True)
@@ -677,84 +677,3 @@ def read_nwb(file):
     """
     raise NotImplementedError
 
-
-# OLD hdf5 implementation
-'''
-
-def read_probeinterface(file):
-    """
-    Read probeinterface own format hdf5 based.
-    
-    Implementation is naive but ot works.
-    """
-    import h5py
-
-    probegroup = ProbeGroup()
-
-    file = Path(file)
-    with h5py.File(file, 'r') as f:
-        for key in f.keys():
-            if key.startswith('probe_'):
-                probe_ind = int(key.split('_')[1])
-                probe_dict = {}
-                for k in Probe._dump_attr_names:
-                    path = f'/{key}/{k}'
-                    if not path in f:
-                        continue
-                    v = f[path]
-                    if k == 'contact_shapes':
-                        v2 = np.array(v).astype('U')
-                    elif k == 'contact_shape_params':
-                        l = []
-                        for e in v:
-                            d = {}
-                            exec(e.decode(), None, d)
-                            l.append(d['value'])
-                        v2 = np.array(l, dtype='O')
-                    elif k == 'si_units':
-                        v2 = str(v[0])
-                    elif k == 'ndim':
-                        v2 = int(v[0])
-                    else:
-                        v2 = np.array(v)
-                    probe_dict[k] = v2
-
-                probe = Probe.from_dict(probe_dict)
-                probegroup.add_probe(probe)
-    return probegroup
-
-
-def write_probeinterface(file, probe_or_probegroup):
-    """
-    Write to probeinterface own format hdf5 based.
-    
-    Implementation is naive but ot works.
-    """
-    import h5py
-    if isinstance(probe_or_probegroup, Probe):
-        probegroup = ProbeGroup()
-        probegroup.add_probe(probe)
-    elif isinstance(probe_or_probegroup, ProbeGroup):
-        probegroup = probe_or_probegroup
-    else:
-        raise valueError('Bad boy')
-
-    file = Path(file)
-
-    with h5py.File(file, 'w') as f:
-        for probe_ind, probe in enumerate(probegroup.probes):
-            d = probe.to_dict()
-            for k, v in d.items():
-                if k == 'contact_shapes':
-                    v2 = v.astype('S')
-                elif k == 'contact_shape_params':
-                    v2 = np.array(['value=' + pformat(e) for e in v], dtype='S')
-                elif k == 'si_units':
-                    v2 = np.array([v.encode('utf8')])
-                elif k == 'ndim':
-                    v2 = np.array([v])
-                else:
-                    v2 = v
-                path = f'/probe_{probe_ind}/{k}'
-                f.create_dataset(path, data=v2)
-'''
