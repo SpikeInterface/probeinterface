@@ -85,7 +85,10 @@ def test_probe():
     d = probe.to_dict()
     other = Probe.from_dict(d)
     
-    arr = probe.to_numpy()
+    arr = probe.to_numpy(complete=False)
+    arr = probe.to_numpy(complete=True)
+    print(arr)
+    
     
     #~ print(d)
     df = probe.to_dataframe(complete=True)

@@ -149,24 +149,21 @@ class ProbeGroup:
         
         """
         assert group_mode in ('by_probe', 'by_shank')
-        
-        probe_indices = []
-        shank_ids = []
-        positions = []
-        device_indices = []
+
+        groups = []
         if group_mode == 'by_probe':
             for probe_index, probe in enumerate(self.probes):
-                probe_indices.append(probe_index)
-                positions.append(probe.contact_positions)
-                device_indices.append(probe.device_channel_indices)
+                probe_array = probe.to_numpy(complete=True)
+                groups.append((probe_index, probe_array))
+                
         elif group_mode == 'by_shank':
             for probe_index, probe in enumerate(self.probes):
+                probe_array = probe.to_numpy(complete=True)
                 for shank in probe.get_shanks():
-                    probe_indices.append(probe_index)
-                    positions.append(shank.contact_positions)
-                    device_indices.append(shank.device_channel_indices)
-        
-        return probe_indices, positions, device_indices
+                    mask = probe.shank_ids == shank.shank_id
+                    sub_probe_array = probe_array
+                    groups.append((probe_index, sub_probe_array))
+        return groups
 
     def auto_generate_probe_ids(self, *args, **kwargs):
         """

@@ -535,7 +535,7 @@ class Probe:
 
         return probe
     
-    def to_numpy(self):
+    def to_numpy(self, complete=False):
         """
         Export to a numpy struct array.
         Equivalent of to_dataframe but no pandas dependency.
@@ -550,9 +550,15 @@ class Probe:
                 if k not in param_shape:
                     param_shape.append(k)
         for k in param_shape:
-            dtype += [(k, 'U64')]
+            dtype += [(k, 'float64')]
         dtype += [('shank_ids', 'int64')]
+        
+        if complete:
+            dtype += [('device_channel_indices', 'int64')]
+        
         print(dtype)
+        
+        
         arr = np.zeros(self.get_contact_count(), dtype=dtype)
         arr['x'] = self.contact_positions[:, 0]
         arr['y'] = self.contact_positions[:, 1]
@@ -564,6 +570,12 @@ class Probe:
                 arr[k][i] = v
         
         arr['shank_ids'] = self.shank_ids
+        if complete:
+            if self.device_channel_indices is None:
+               arr['device_channel_indices'] = -1
+            else:
+                arr['device_channel_indices'] = self.device_channel_indices
+                
         
         return arr
 
