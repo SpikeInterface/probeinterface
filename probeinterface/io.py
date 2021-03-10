@@ -525,7 +525,9 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
     return probe
 
 
-def write_prb(file, probegroup):
+def write_prb(file, probegroup,
+            total_nb_channels=None,
+            radius=None):
     """
     Write ProbeGroup into a prb file.
     
@@ -540,9 +542,15 @@ def write_prb(file, probegroup):
       * channel index
     
     Note:
-      * "total_nb_channels" is not handle because it is a non sens key
+      * "total_nb_channels" is a total none sens here
+                but needed by spyking-circus
+      * "radius" is a total none sens here.
+                but needed by spyking-circus
       * "graph" is not handle because it is useless
-      * "radius" is not handle. It was only for early version of spyking-cicus
+      
+    
+    
+      
     """
     if len(probegroup.probes) == 0:
         raise ValueError('Bad boy')
@@ -553,6 +561,11 @@ def write_prb(file, probegroup):
                 'For PRB format device_channel_indices must be set')
 
     with open(file, 'w') as f:
+        if total_nb_channels is not None:
+            f.write(f'total_nb_channels = {total_nb_channels}\n')
+        if radius is not None:
+            f.write(f'radius = {radius}\n')
+        
         f.write('channel_groups = {\n')
 
         for probe_ind, probe in enumerate(probegroup.probes):
