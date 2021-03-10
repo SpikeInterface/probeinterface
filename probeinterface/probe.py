@@ -686,7 +686,8 @@ class Probe:
             including the probe plane axis.
         """
         import pandas as pd
-        df = pd.DataFrame(self.to_numpy(complete=complete))
+        arr = self.to_numpy(complete=complete)
+        df = pd.DataFrame.from_records(arr)
         df.index = np.arange(df.shape[0], dtype='int64')
         return df
 

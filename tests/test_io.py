@@ -65,6 +65,7 @@ def test_BIDS_format():
 
 
     write_BIDS_probe(folder, probegroup)
+    
 
     probegroup_read = read_BIDS_probe(folder)
 
@@ -212,8 +213,8 @@ def test_readspikeglx():
 if __name__ == '__main__':
     #~ test_probeinterface_format()
     test_BIDS_format()
-    test_BIDS_format_empty()
-    test_BIDS_format_minimal()
+    #~ test_BIDS_format_empty()
+    #~ test_BIDS_format_minimal()
     
     #~ test_prb()
     #~ test_readspikeglx()

@@ -155,38 +155,6 @@ class ProbeGroup:
         if valid_ids.size != np.unique(valid_ids).size:
             raise ValueError('contact_ids are not unique across probes')
     
-    
-    def get_groups(self, group_mode='by_probe'):
-        """
-        Get sub groups of channels  "by_probe" or "by_shank".
-        This used for spike sorting in spikeinterface.
-        
-        Parameters
-        ----------
-        group_mode: 'by_probe' or ''by_shank'
-        
-        Returns
-        -----
-        
-        
-        """
-        assert group_mode in ('by_probe', 'by_shank')
-
-        groups = []
-        if group_mode == 'by_probe':
-            for probe_index, probe in enumerate(self.probes):
-                probe_array = probe.to_numpy(complete=True)
-                groups.append((probe_index, probe_array))
-                
-        elif group_mode == 'by_shank':
-            for probe_index, probe in enumerate(self.probes):
-                probe_array = probe.to_numpy(complete=True)
-                for shank in probe.get_shanks():
-                    mask = probe.shank_ids == shank.shank_id
-                    sub_probe_array = probe_array
-                    groups.append((probe_index, sub_probe_array))
-        return groups
-
     def auto_generate_probe_ids(self, *args, **kwargs):
         """
         Annotate all probes with unique probe_id values.

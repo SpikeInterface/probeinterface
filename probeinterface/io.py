@@ -152,6 +152,7 @@ def read_BIDS_probe(folder, prefix=None):
                      keep_default_na=False, dtype=str)
     df.replace(to_replace={'n/a': ''}, inplace=True)
     df.rename(columns=label_map_to_probeinterface, inplace=True)
+    # TODO here force dtypes
 
     if 'probe_ids' not in df:
         raise ValueError('probes.tsv file does not contain probe_id column')
