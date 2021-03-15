@@ -17,6 +17,7 @@ import re
 from pprint import pformat, pprint
 import json
 from collections import OrderedDict
+from copy import copy, deepcopy
 
 import numpy as np
 
@@ -678,11 +679,71 @@ def read_spikeglx(file):
 
 def read_mearec(file):
     """
-    read probe position, and contact shape from a mearec file
-    
-    Alesio : this is for you
+    Read probe position, and contact shape from a MEArec file.
+
+    See https://mearec.readthedocs.io/en/latest/ and https://doi.org/10.1007/s12021-020-09467-7 for implementation.
+
+    Returns probe object.
     """
-    raise NotImplementedError
+    file = Path(file).absolute()
+    assert file.is_file()
+
+    try:
+        import h5py
+    except ImportError as error:
+        print(error.__class__.__name__ + ": " + error.message)
+
+    f =  h5py.File(file, "r")
+    positions = f["channel_positions"][()]
+    elinfo = f["info"]["electrodes"]
+
+    mearec_description = elinfo["description"][()]
+    mearec_name = elinfo["electrode_name"][()]
+
+    probe = Probe(ndim=2, si_units='um')
+
+    if elinfo["plane"] == "xy":
+        positions_2d = positions[()][:, :2]
+    elif elinfo["plane"] == "xz":
+        positions_2d = positions[()][:, [0, 2]]
+    else:
+        positions_2d = positions[()][:, 1:]
+
+    shape = None
+    if "shape" in elinfo:
+        shape = elinfo["shape"][()]
+
+    size = None
+    if "shape" in elinfo:
+        size = elinfo["size"][()]
+
+    shape_params = {}
+    if shape is not None:
+        if shape == "circle":
+            shape_params = {"radius": size}
+        elif shape == "square":
+            shape_params = {"width": 2 * size}
+        elif shape == "rect":
+            shape_params = {{'width': 2 * size[0], 'height': 2 * size[1]}}
+
+    # create contacts
+    probe.set_contacts(positions_2d, shapes=shape, shape_params=shape_params)
+
+    # add MEArec annotations
+    probe.annotate(mearec_name=mearec_name)
+    probe.annotate(mearec_description=mearec_description)
+
+    # set device indices
+    if elinfo["sortlist"][()] != "null":
+        channel_indices = elinfo["sortlist"][()]
+        print(channel_indices)
+        probe.set_device_channel_indices(channel_indices)
+
+    # create auto shape
+    probe.create_auto_shape(probe_type='tip')
+
+    return probe
+
 
 
 def read_nwb(file):
