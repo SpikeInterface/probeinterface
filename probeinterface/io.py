@@ -44,7 +44,7 @@ def read_probeinterface(file):
         The file name.
     
     Returns
-    --------
+    --------qs
     
     a ProbeGroup
     """
@@ -149,11 +149,17 @@ def read_BIDS_probe(folder, prefix=None):
                 raise ValueError(f'Source file does not exist ({file})')
 
     # Step 1: READING CONTACTS.TSV
+    converters = {
+        'x': float, 'y':float, 'z' : float, 
+        'contact_shapes': str,
+        'probe_index': int,
+        'probe_id': str, 'shank_id': str, 'contact_id': str,
+        'radius': float, 'width': float, 'height': float,
+    }
     df = pd.read_csv(contacts_file, sep='\t', header=0,
-                     keep_default_na=False, dtype=str)
+                     keep_default_na=False, converters=converters) # dtype=str, 
     df.replace(to_replace={'n/a': ''}, inplace=True)
     df.rename(columns=label_map_to_probeinterface, inplace=True)
-    # TODO here force dtypes
 
     if 'probe_ids' not in df:
         raise ValueError('probes.tsv file does not contain probe_id column')

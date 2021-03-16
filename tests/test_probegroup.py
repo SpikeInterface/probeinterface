@@ -42,13 +42,6 @@ def test_probegroup():
     #~ plot_probe_group(other)
     #~ plt.show()
     
-    
-    groups = probegroup.get_groups(group_mode='by_probe')
-    assert len(groups) == 3
-    
-    groups = probegroup.get_groups(group_mode='by_shank')
-    assert len(groups) == 6
-
     # checking automatic generation of ids with new dummy probes
     probegroup.probes = []
     for i in range(3):

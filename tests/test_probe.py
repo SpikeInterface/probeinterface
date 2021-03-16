@@ -134,11 +134,11 @@ def test_set_shanks():
     shank_ids = np.arange(10)
     probe.set_shank_ids(shank_ids)
 
-    assert all(probe.shank_ids == shank_ids)
+    assert all(probe.shank_ids == shank_ids.astype(str))
 
 
 if __name__ == '__main__':
-    test_probe()
+    #~ test_probe()
     
-    #~ test_set_shanks()
+    test_set_shanks()
 

@@ -145,8 +145,6 @@ def test_BIDS_format_minimal():
         assert probe.annotations['type'] == ['custom', 'generic'][pid]
         assert all(probe.contact_ids == [['01', '02'], ['11', '12']][pid])
 
-
-
     
 
 prb_two_tetrodes = """
@@ -212,9 +210,9 @@ def test_readspikeglx():
 
 if __name__ == '__main__':
     #~ test_probeinterface_format()
-    test_BIDS_format()
+    #~ test_BIDS_format()
     #~ test_BIDS_format_empty()
-    #~ test_BIDS_format_minimal()
+    test_BIDS_format_minimal()
     
     #~ test_prb()
     #~ test_readspikeglx()
