@@ -45,27 +45,70 @@ class ProbeGroup:
         """
         n = sum(probe.get_contact_count() for probe in self.probes)
         return n
+    
+    def to_numpy(self, complete=False):
+        """
+        Export all probe into a numpy array.
+        """
+        
+        fields = []
+        probe_arr = []
+        
+        # loop over probes to get all fields
+        dtype = [('probe_index', 'int64')]
+        fields = []
+        for probe_index, probe in enumerate(self.probes):
+            arr = probe.to_numpy(complete=complete)
+            probe_arr.append(arr)
+            for k in arr.dtype.fields:
+                if k not in fields:
+                    fields.append(k)
+                    dtype += [(k, arr.dtype.fields[k][0])]
+        
+        pg_arr = []
+        for probe_index, probe in enumerate(self.probes):
+            arr = probe_arr[probe_index]
+            arr_ext = np.zeros(probe.get_contact_count(), dtype=dtype)
+            arr_ext['probe_index'] = probe_index
+            for k  in fields:
+                if k in arr.dtype.fields:
+                    arr_ext[k] = arr[k]
+            pg_arr.append(arr_ext)
+
+        pg_arr = np.concatenate(pg_arr, axis=0)
+        return pg_arr
+
+    @staticmethod
+    def from_numpy(arr):
+        from .probe import Probe
+        probes_indices = np.unique(arr['probe_index'])
+        probegroup = ProbeGroup()
+        for probe_index in probes_indices:
+            mask = arr['probe_index'] == probe_index
+            probe = Probe.from_numpy(arr[mask])
+            probegroup.add_probe(probe)
+        return probegroup
+
+    def to_dataframe(self, complete=False):
+        import pandas as pd
+        df = pd.DataFrame(self.to_numpy(complete=complete))
+        df.index = np.arange(df.shape[0], dtype='int64')
+        return df
+   
 
     def get_global_device_channel_indices(self):
         """
         return a numpy array vector with 2 columns
-        (probe_index, device_channel_index)
+        (probe_index, device_channel_indices)
         
         Note:
             channel -1 means not connected
         """
         total_chan = self.get_channel_count()
-        channels = np.zeros(total_chan, dtype=[('probe_index', 'int64'), ('device_channel_index', 'int64')])
-        channels['device_channel_index'] = -1
-
-        ind = 0
-        for i, probe in enumerate(self.probes):
-            n = probe.get_contact_count()
-            channels['probe_index'][ind:ind + n] = i
-            if probe.device_channel_indices is not None:
-                channels['device_channel_index'][ind:ind + n] = probe.device_channel_indices
-            ind += n
-
+        channels = np.zeros(total_chan, dtype=[('probe_index', 'int64'), ('device_channel_indices', 'int64')])
+        arr = self.to_numpy(complete=True)
+        channels['probe_index'] = arr['probe_index']
+        channels['device_channel_indices'] = arr['device_channel_indices']
         return channels
 
     def set_global_device_channel_indices(self, channels):
@@ -92,22 +135,14 @@ class ProbeGroup:
         """
         get all contact ids concatenated across probes
         """
-
-        all_ids = []
-        for i, probe in enumerate(self.probes):
-            n = probe.get_contact_count()
-            ids = probe.contact_ids
-            if ids is None:
-                ids = [''] * n
-            all_ids.append(ids)
-        all_ids = np.concatenate(all_ids)
-        return all_ids
+        contact_ids = self.to_numpy(complete=True)['contact_ids']
+        return contact_ids
 
     def check_global_device_wiring_and_ids(self):
         # check unique device_channel_indices for !=-1
         chans = self.get_global_device_channel_indices()
-        keep = chans['device_channel_index'] >= 0
-        valid_chans = chans[keep]['device_channel_index']
+        keep = chans['device_channel_indices'] >= 0
+        valid_chans = chans[keep]['device_channel_indices']
 
         if valid_chans.size != np.unique(valid_chans).size:
             raise ValueError('channel device index are not unique across probes')
@@ -120,50 +155,6 @@ class ProbeGroup:
         if valid_ids.size != np.unique(valid_ids).size:
             raise ValueError('contact_ids are not unique across probes')
     
-    
-    def to_dataframe(self, complete=False):
-        import pandas as pd
-        
-        all_df =[]
-        for i, probe in enumerate(self.probes):
-            df = probe.to_dataframe(complete=complete)
-            df['probe_num'] = i
-            df.index = [(i, ind) for ind in df.index]
-            all_df.append(df)
-        df = pd.concat(all_df, axis=0)
-        
-        return df
-    
-    def get_groups(self, group_mode='by_probe'):
-        """
-        Get sub groups of channels  by contacts or by shank.
-        This used for spike sorting in spikeinterface.
-        
-        Parameters
-        ----------
-        group_mode: 'by_probe' or ''by_shank'
-        
-        Returns
-        -----
-        
-        
-        """
-        assert group_mode in ('by_probe', 'by_shank')
-
-        positions = []
-        device_indices = []
-        if group_mode == 'by_probe':
-            for probe in self.probes:
-                positions.append(probe.contact_positions)
-                device_indices.append(probe.device_channel_indices)
-        elif group_mode == 'by_shank':
-            for probe in self.probes:
-                for shank in probe.get_shanks():
-                    positions.append(shank.contact_positions)
-                    device_indices.append(shank.device_channel_indices)
-        
-        return positions, device_indices
-
     def auto_generate_probe_ids(self, *args, **kwargs):
         """
         Annotate all probes with unique probe_id values.

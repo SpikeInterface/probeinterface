@@ -44,7 +44,7 @@ def read_probeinterface(file):
         The file name.
     
     Returns
-    --------
+    --------qs
     
     a ProbeGroup
     """
@@ -149,8 +149,15 @@ def read_BIDS_probe(folder, prefix=None):
                 raise ValueError(f'Source file does not exist ({file})')
 
     # Step 1: READING CONTACTS.TSV
+    converters = {
+        'x': float, 'y':float, 'z' : float, 
+        'contact_shapes': str,
+        'probe_index': int,
+        'probe_id': str, 'shank_id': str, 'contact_id': str,
+        'radius': float, 'width': float, 'height': float,
+    }
     df = pd.read_csv(contacts_file, sep='\t', header=0,
-                     keep_default_na=False, dtype=str)
+                     keep_default_na=False, converters=converters) # dtype=str, 
     df.replace(to_replace={'n/a': ''}, inplace=True)
     df.rename(columns=label_map_to_probeinterface, inplace=True)
 
@@ -383,7 +390,7 @@ def write_BIDS_probe(folder, probe_or_probegroup, prefix=''):
         if probe.device_channel_indices:
             channel_indices.extend(probe.device_channel_indices)
         else:
-            channel_indices.extend([None] * probe.get_contact_count())
+            channel_indices.extend([-1] * probe.get_contact_count())
     df['device_channel_indices'] = channel_indices
 
     df.fillna('n/a', inplace=True)
@@ -525,7 +532,9 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
     return probe
 
 
-def write_prb(file, probegroup):
+def write_prb(file, probegroup,
+            total_nb_channels=None,
+            radius=None):
     """
     Write ProbeGroup into a prb file.
     
@@ -540,9 +549,15 @@ def write_prb(file, probegroup):
       * channel index
     
     Note:
-      * "total_nb_channels" is not handle because it is a non sens key
+      * "total_nb_channels" is a total none sens here
+                but needed by spyking-circus
+      * "radius" is a total none sens here.
+                but needed by spyking-circus
       * "graph" is not handle because it is useless
-      * "radius" is not handle. It was only for early version of spyking-cicus
+      
+    
+    
+      
     """
     if len(probegroup.probes) == 0:
         raise ValueError('Bad boy')
@@ -553,6 +568,11 @@ def write_prb(file, probegroup):
                 'For PRB format device_channel_indices must be set')
 
     with open(file, 'w') as f:
+        if total_nb_channels is not None:
+            f.write(f'total_nb_channels = {total_nb_channels}\n')
+        if radius is not None:
+            f.write(f'radius = {radius}\n')
+        
         f.write('channel_groups = {\n')
 
         for probe_ind, probe in enumerate(probegroup.probes):
@@ -749,84 +769,3 @@ def read_nwb(file):
     """
     raise NotImplementedError
 
-
-# OLD hdf5 implementation
-'''
-
-def read_probeinterface(file):
-    """
-    Read probeinterface own format hdf5 based.
-    
-    Implementation is naive but ot works.
-    """
-    import h5py
-
-    probegroup = ProbeGroup()
-
-    file = Path(file)
-    with h5py.File(file, 'r') as f:
-        for key in f.keys():
-            if key.startswith('probe_'):
-                probe_ind = int(key.split('_')[1])
-                probe_dict = {}
-                for k in Probe._dump_attr_names:
-                    path = f'/{key}/{k}'
-                    if not path in f:
-                        continue
-                    v = f[path]
-                    if k == 'contact_shapes':
-                        v2 = np.array(v).astype('U')
-                    elif k == 'contact_shape_params':
-                        l = []
-                        for e in v:
-                            d = {}
-                            exec(e.decode(), None, d)
-                            l.append(d['value'])
-                        v2 = np.array(l, dtype='O')
-                    elif k == 'si_units':
-                        v2 = str(v[0])
-                    elif k == 'ndim':
-                        v2 = int(v[0])
-                    else:
-                        v2 = np.array(v)
-                    probe_dict[k] = v2
-
-                probe = Probe.from_dict(probe_dict)
-                probegroup.add_probe(probe)
-    return probegroup
-
-
-def write_probeinterface(file, probe_or_probegroup):
-    """
-    Write to probeinterface own format hdf5 based.
-    
-    Implementation is naive but ot works.
-    """
-    import h5py
-    if isinstance(probe_or_probegroup, Probe):
-        probegroup = ProbeGroup()
-        probegroup.add_probe(probe)
-    elif isinstance(probe_or_probegroup, ProbeGroup):
-        probegroup = probe_or_probegroup
-    else:
-        raise valueError('Bad boy')
-
-    file = Path(file)
-
-    with h5py.File(file, 'w') as f:
-        for probe_ind, probe in enumerate(probegroup.probes):
-            d = probe.to_dict()
-            for k, v in d.items():
-                if k == 'contact_shapes':
-                    v2 = v.astype('S')
-                elif k == 'contact_shape_params':
-                    v2 = np.array(['value=' + pformat(e) for e in v], dtype='S')
-                elif k == 'si_units':
-                    v2 = np.array([v.encode('utf8')])
-                elif k == 'ndim':
-                    v2 = np.array([v])
-                else:
-                    v2 = v
-                path = f'/probe_{probe_ind}/{k}'
-                f.create_dataset(path, data=v2)
-'''
