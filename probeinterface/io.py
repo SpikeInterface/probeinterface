@@ -754,7 +754,9 @@ def read_mearec(file):
     # set device indices
     if elinfo["sortlist"][()] != "null":
         channel_indices = elinfo["sortlist"][()]
-        probe.set_device_channel_indices(channel_indices)
+    else:
+        channel_indices = np.arange(positions.shape[0], dtype='int64')
+    probe.set_device_channel_indices(channel_indices)
 
     # create auto shape
     probe.create_auto_shape(probe_type='tip')
