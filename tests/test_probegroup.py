@@ -31,12 +31,17 @@ def test_probegroup():
     df = probegroup.to_dataframe()
     #~ print(df['global_contact_ids'])
     
-    positions, device_indices = probegroup.get_groups(group_mode='by_probe')
-    assert len(positions) == 3
-    
-    positions, device_indices = probegroup.get_groups(group_mode='by_shank')
-    assert len(positions) == 6
+    arr = probegroup.to_numpy(complete=False)
+    other = ProbeGroup.from_numpy(arr)
+    arr = probegroup.to_numpy(complete=True)
+    other = ProbeGroup.from_numpy(arr)
 
+    #~ from probeinterface.plotting import plot_probe_group, plot_probe
+    #~ import matplotlib.pyplot as plt
+    #~ plot_probe_group(probegroup)
+    #~ plot_probe_group(other)
+    #~ plt.show()
+    
     # checking automatic generation of ids with new dummy probes
     probegroup.probes = []
     for i in range(3):
@@ -61,4 +66,4 @@ def test_probegroup_3d():
 
 if __name__ == '__main__':
     test_probegroup()
-    test_probegroup_3d()
+    #~ test_probegroup_3d()
