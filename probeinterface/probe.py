@@ -143,7 +143,7 @@ class Probe:
             Contain kargs for shapes ("radius" for circle, "width" for sqaure, "width/height" for rect)
         plane_axes:  (num_contacts, 2, ndim)
             This defines the axes of the contact plane (2d or 3d)
-        shank_ids: None or vector of int
+        shank_ids: None or vector of str
             This define the shank id for contacts. If None then
             there are assign to a unique Shank.
         """
@@ -169,9 +169,9 @@ class Probe:
         self._contact_plane_axes = plane_axes
 
         if shank_ids is None:
-            self._shank_ids = np.zeros(n, dtype='int64')
+            self._shank_ids = np.zeros(n, dtype=str)
         else:
-            self._shank_ids = np.asarray(shank_ids)
+            self._shank_ids = np.asarray(shank_ids).astype(str)
             if self.shank_ids.size != n:
                 raise ValueError('shan_ids have wring size') 
 
@@ -285,7 +285,7 @@ class Probe:
         """
         Set shank ids
         """
-        shank_ids = np.asarray(shank_ids)
+        shank_ids = np.asarray(shank_ids).astype(str)
         if shank_ids.size != self.get_contact_count():
             raise ValueError(f'shank_ids have wrong size. Has to match number '
                              f'of contacts: {self.get_contact_count()}')
@@ -566,7 +566,7 @@ class Probe:
                     param_shape.append(k)
         for k in param_shape:
             dtype += [(k, 'float64')]
-        dtype += [('shank_ids', 'int64'), ('contact_ids', 'U64')]
+        dtype += [('shank_ids', 'U64'), ('contact_ids', 'U64')]
         
         if complete:
             dtype += [('device_channel_indices', 'int64')]

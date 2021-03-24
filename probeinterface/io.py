@@ -44,7 +44,7 @@ def read_probeinterface(file):
         The file name.
     
     Returns
-    --------
+    --------qs
     
     a ProbeGroup
     """
@@ -149,11 +149,17 @@ def read_BIDS_probe(folder, prefix=None):
                 raise ValueError(f'Source file does not exist ({file})')
 
     # Step 1: READING CONTACTS.TSV
+    converters = {
+        'x': float, 'y':float, 'z' : float, 
+        'contact_shapes': str,
+        'probe_index': int,
+        'probe_id': str, 'shank_id': str, 'contact_id': str,
+        'radius': float, 'width': float, 'height': float,
+    }
     df = pd.read_csv(contacts_file, sep='\t', header=0,
-                     keep_default_na=False, dtype=str)
+                     keep_default_na=False, converters=converters) # dtype=str, 
     df.replace(to_replace={'n/a': ''}, inplace=True)
     df.rename(columns=label_map_to_probeinterface, inplace=True)
-    # TODO here force dtypes
 
     if 'probe_ids' not in df:
         raise ValueError('probes.tsv file does not contain probe_id column')
@@ -696,25 +702,35 @@ def read_mearec(file):
     f =  h5py.File(file, "r")
     positions = f["channel_positions"][()]
     elinfo = f["info"]["electrodes"]
+    elinfo_keys = elinfo.keys()
 
-    mearec_description = elinfo["description"][()]
-    mearec_name = elinfo["electrode_name"][()]
+    mearec_description = None
+    mearec_name = None
+    if "description" in elinfo_keys:
+        mearec_description = elinfo["description"][()]
+    if "electrode_name" in elinfo_keys:
+        mearec_name = elinfo["electrode_name"][()]
 
     probe = Probe(ndim=2, si_units='um')
 
-    if elinfo["plane"] == "xy":
+    if "plane" in elinfo_keys:
+        plane = elinfo["plane"]
+    else:
+        plane = "yz"  # default
+
+    if plane == "xy":
         positions_2d = positions[()][:, :2]
-    elif elinfo["plane"] == "xz":
+    elif plane == "xz":
         positions_2d = positions[()][:, [0, 2]]
     else:
         positions_2d = positions[()][:, 1:]
 
     shape = None
-    if "shape" in elinfo:
+    if "shape" in elinfo_keys:
         shape = elinfo["shape"][()]
 
     size = None
-    if "shape" in elinfo:
+    if "shape" in elinfo_keys:
         size = elinfo["size"][()]
 
     shape_params = {}
@@ -730,13 +746,14 @@ def read_mearec(file):
     probe.set_contacts(positions_2d, shapes=shape, shape_params=shape_params)
 
     # add MEArec annotations
-    probe.annotate(mearec_name=mearec_name)
-    probe.annotate(mearec_description=mearec_description)
+    if mearec_name is not None:
+        probe.annotate(mearec_name=mearec_name)
+    if mearec_description is not None:
+        probe.annotate(mearec_description=mearec_description)
 
     # set device indices
     if elinfo["sortlist"][()] != "null":
         channel_indices = elinfo["sortlist"][()]
-        print(channel_indices)
         probe.set_device_channel_indices(channel_indices)
 
     # create auto shape
