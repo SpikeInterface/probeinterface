@@ -534,7 +534,9 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
 
 def write_prb(file, probegroup,
             total_nb_channels=None,
-            radius=None):
+            radius=None,
+            group_mode='by_probe'
+            ):
     """
     Write ProbeGroup into a prb file.
     
@@ -554,11 +556,10 @@ def write_prb(file, probegroup,
       * "radius" is a total none sens here.
                 but needed by spyking-circus
       * "graph" is not handle because it is useless
-      
-    
-    
-      
     """
+    assert group_mode in ('by_probe', 'by_shank')
+    
+    
     if len(probegroup.probes) == 0:
         raise ValueError('Bad boy')
 
@@ -574,21 +575,29 @@ def write_prb(file, probegroup,
             f.write(f'radius = {radius}\n')
         
         f.write('channel_groups = {\n')
-
-        for probe_ind, probe in enumerate(probegroup.probes):
-            f.write(f"    {probe_ind}:\n")
+        
+        if group_mode == 'by_probe':
+            loop = enumerate(probegroup.probes)
+        elif group_mode == 'by_shank':
+            shanks = []
+            for probe in probegroup.probes:
+                shanks.extend(probe.get_shanks())
+            loop = enumerate(shanks)
+        
+        for group_ind, probe_or_shank in loop:
+            f.write(f"    {group_ind}:\n")
             f.write("        {\n")
-            channels = probe.device_channel_indices
+            channels = probe_or_shank.device_channel_indices
             keep = channels >= 0
             #  channels -1 are not wired
 
             chans = list(channels[keep])
             f.write(f"           'channels': {chans},\n")
             f.write("           'geometry':  {\n")
-            for c in range(probe.get_contact_count()):
+            for c in range(probe_or_shank.get_contact_count()):
                 if not keep[c]:
                     continue
-                pos = list(probe.contact_positions[c, :])
+                pos = list(probe_or_shank.contact_positions[c, :])
                 f.write(f"               {channels[c]}: {pos},\n")
             f.write("           }\n")
             f.write("       },\n")
