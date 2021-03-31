@@ -688,6 +688,9 @@ def read_spikeglx(file):
     probe.set_contacts(positions=positions, shapes='square',
                          shape_params={'width': 10})
     probe.create_auto_shape(probe_type='tip')
+    
+    print(positions.shape[0])
+    probe.set_device_channel_indices(np.arange(positions.shape[0]))
 
     return probe
 
