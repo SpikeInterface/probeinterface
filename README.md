@@ -18,7 +18,7 @@ Make a lightweight package to handle:
 
 Bonus :
 
-  * optional ploting (based on `matplotlib`)
+  * optional plotting (based on `matplotlib`)
   * load/save geometry using common formats (PRB, CSV, NWB, ...)
   * handle SI length units correctly um/mm/...
 
