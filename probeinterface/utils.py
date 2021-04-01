@@ -13,7 +13,7 @@ def combine_probes(probes, connect_shape=True):
 
     This works only when ndim=2
 
-    This will have strange behavrior if:
+    This will have strange behavior if:
       * probes have been rotated
       * one of the probes has NOT been moved from its original location
        (results in probes overlapping in space )
@@ -80,8 +80,8 @@ def generate_unique_ids(min, max, n, trials=20):
     trials (int): maximal number of attempts for generating the set of
         identifiers
 
-    Return
-    ----------
+    Returns
+    -------
     A numpy array of `n` unique integer identifiers
 
     """
