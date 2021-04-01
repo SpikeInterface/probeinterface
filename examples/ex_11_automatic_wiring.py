@@ -43,7 +43,7 @@ probe.set_device_channel_indices(device_channel_indices)
 # In order to ease this process, `probeinterface` also includes some commonly
 # used wiring based on standard connectors. In our case, we can simply use:
 
-probe.wiring_to_device('H32>RHD')
+probe.wiring_to_device('H32>RHD2132')
 print(probe.device_channel_indices)
 
 ##############################################################################
