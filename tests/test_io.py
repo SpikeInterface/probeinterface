@@ -212,9 +212,9 @@ if __name__ == '__main__':
     #~ test_probeinterface_format()
     #~ test_BIDS_format()
     #~ test_BIDS_format_empty()
-    test_BIDS_format_minimal()
+    #~ test_BIDS_format_minimal()
     
-    #~ test_prb()
+    test_prb()
     #~ test_readspikeglx()
     
     
