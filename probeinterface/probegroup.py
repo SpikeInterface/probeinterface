@@ -4,8 +4,8 @@ from .utils import generate_unique_ids
 
 class ProbeGroup:
     """
-    Class to handlesa group of Probe objects and the wiring to a device.
-    
+    Class to handle a group of Probe objects and the global wiring to a device.
+
     Optionally, it can handle the location of different probes.
 
     """
@@ -15,7 +15,7 @@ class ProbeGroup:
 
     def add_probe(self, probe):
         """
-        
+
         """
         if len(self.probes) > 0:
             self._check_compatible(probe)
@@ -41,19 +41,19 @@ class ProbeGroup:
 
     def get_channel_count(self):
         """
-        Total number of channel.
+        Total number of channels.
         """
         n = sum(probe.get_contact_count() for probe in self.probes)
         return n
-    
+
     def to_numpy(self, complete=False):
         """
-        Export all probe into a numpy array.
+        Export all probes into a numpy array.
         """
-        
+
         fields = []
         probe_arr = []
-        
+
         # loop over probes to get all fields
         dtype = [('probe_index', 'int64')]
         fields = []
@@ -64,7 +64,7 @@ class ProbeGroup:
                 if k not in fields:
                     fields.append(k)
                     dtype += [(k, arr.dtype.fields[k][0])]
-        
+
         pg_arr = []
         for probe_index, probe in enumerate(self.probes):
             arr = probe_arr[probe_index]
@@ -94,13 +94,13 @@ class ProbeGroup:
         df = pd.DataFrame(self.to_numpy(complete=complete))
         df.index = np.arange(df.shape[0], dtype='int64')
         return df
-   
+
 
     def get_global_device_channel_indices(self):
         """
         return a numpy array vector with 2 columns
         (probe_index, device_channel_indices)
-        
+
         Note:
             channel -1 means not connected
         """
@@ -154,7 +154,7 @@ class ProbeGroup:
 
         if valid_ids.size != np.unique(valid_ids).size:
             raise ValueError('contact_ids are not unique across probes')
-    
+
     def auto_generate_probe_ids(self, *args, **kwargs):
         """
         Annotate all probes with unique probe_id values.
@@ -165,7 +165,7 @@ class ProbeGroup:
         **kwargs: will be forwarded to
             `probeinterface.utils.generate_unique_ids`
         """
-        
+
         if any('probe_id' in p.annotations for p in self.probes):
             raise ValueError('Probe does already have a `probe_id` annotation.')
 
@@ -193,7 +193,7 @@ class ProbeGroup:
         if any(p.contact_ids is not None for p in self.probes):
             raise ValueError('Some contacts already have contact ids '
                              'assigned.')
-        
+
         if not args:
             args = 1e7, 1e8
         # 3rd argument has to be the number of probes

@@ -1,5 +1,5 @@
 """
-This module give some utils function to generate probes.
+This module contains useful helper functions for generating probes.
 
 """
 
@@ -12,9 +12,12 @@ from .utils import combine_probes
 
 def generate_dummy_probe(elec_shapes='circle'):
     """
-    Generate a 3 columns 32 channels contact.
+    Generate a probe with 3 columns and 32 contacts.
+
     Mainly used for testing and examples.
+
     """
+
     if elec_shapes == 'circle':
         contact_shape_params = {'radius': 6}
     elif elec_shapes == 'square':
@@ -33,8 +36,11 @@ def generate_dummy_probe(elec_shapes='circle'):
 def generate_dummy_probe_group():
     """
     Generate a ProbeGroup with 2 probes.
+
     Mainly used for testing and examples.
+
     """
+
     probe0 = generate_dummy_probe()
     probe1 = generate_dummy_probe(elec_shapes='rect')
     probe1.move([150, -50])
@@ -49,9 +55,8 @@ def generate_dummy_probe_group():
 
 def generate_tetrode(r=10):
     """
-    Generate tetrode Probe
-    
-    
+    Generate a tetrode Probe
+
     """
     probe = Probe(ndim=2, si_units='um')
     phi = np.arange(0, np.pi * 2, np.pi / 2)[:, None]
@@ -65,6 +70,7 @@ def generate_multi_columns_probe(num_columns=3, num_contact_per_column=10,
                                  contact_shapes='circle', contact_shape_params={'radius': 6}):
     """
     Generate a Probe with several columns
+
     """
 
     if isinstance(num_contact_per_column, int):
@@ -91,7 +97,8 @@ def generate_multi_columns_probe(num_columns=3, num_contact_per_column=10,
 def generate_linear_probe(num_elec=16, ypitch=20,
                           contact_shapes='circle', contact_shape_params={'radius': 6}):
     """
-    Generate a linear Probe (one columns)
+    Generate a one-column linear probe
+
     """
 
     probe = generate_multi_columns_probe(num_columns=1, num_contact_per_column=num_elec,
@@ -102,10 +109,12 @@ def generate_linear_probe(num_elec=16, ypitch=20,
 
 def generate_multi_shank(num_shank=2, shank_pitch=[150, 0], **kargs):
     """
-    Generate a multi shank probe.
-    Internally do a call to generate_multi_columns_probe
-    and use combine_probes.
+    Generate a multi-shank probe.
+
+    Internally, calls generate_multi_columns_probe and combine_probes.
+
     """
+
     shank_pitch = np.asarray(shank_pitch)
 
     probes = []

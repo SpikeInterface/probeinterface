@@ -1,5 +1,5 @@
 """
-Here a module set automatically the `Probe.device_channel_indices` field.
+Automatically set the `Probe.device_channel_indices` field.
 """
 import numpy as np
 
