@@ -15,9 +15,10 @@ def plot_probe(probe, ax=None, contacts_colors=None,
                 xlims=None, ylims=None, zlims=None):
     """
     plot one probe.
-    switch to 2D or 3D, depending the Probe.ndim
+    switch to 2D or 3D, depending on Probe.ndim
 
     """
+
     import matplotlib.pyplot as plt
     if probe.ndim == 2:
         from matplotlib.collections import PolyCollection
@@ -121,16 +122,18 @@ def plot_probe(probe, ax=None, contacts_colors=None,
 
     return poly, poly_contour
 
-def plot_probe_group(probegroup, same_axe=True, **kargs):
+def plot_probe_group(probegroup, same_axis=True, **kargs):
     """
     Plot all probes from a ProbeGroup
 
     Can be in the same axis or separate axes.
+
     """
+
     import matplotlib.pyplot as plt
     n = len(probegroup.probes)
 
-    if same_axe:
+    if same_axis:
         if 'ax' in kargs:
             ax = kargs.pop('ax')
         else:
@@ -142,7 +145,7 @@ def plot_probe_group(probegroup, same_axe=True, **kargs):
         axs = [ax] * n
     else:
         if 'ax' in kargs:
-            raise valueError('with same_axe=False do not provide ax')
+            raise valueError('when same_axis=False, an axis object cannot be passed into this function.')
         if probegroup.ndim == 2:
             fig, axs = plt.subplots(ncols=n, nrows=1)
             if n == 1:
@@ -150,7 +153,7 @@ def plot_probe_group(probegroup, same_axe=True, **kargs):
         else:
             raise NotImplementedError
 
-    if same_axe:
+    if same_axis:
         # global lims
         xlims, ylims, zlims = get_auto_lims(probegroup.probes[0])
         for i, probe in enumerate(probegroup.probes):
