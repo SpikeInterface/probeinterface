@@ -13,8 +13,16 @@ def test_wire_probe():
     probe_name = 'A1x32-Poly3-10mm-50-177'
     probe = get_probe(manufacturer, probe_name)
     
-    probe.wiring_to_device('H32>RHD')
+    probe.wiring_to_device('H32>RHD2132')
     
+    plot_probe(probe, with_channel_index=True)
+
+    manufacturer = 'cambridgeneurotech'
+    probe_name = 'ASSY-156-P-1'
+    probe = get_probe(manufacturer, probe_name)
+
+    probe.wiring_to_device('ASSY-156>RHD2164')
+
     plot_probe(probe, with_channel_index=True)
 
 
