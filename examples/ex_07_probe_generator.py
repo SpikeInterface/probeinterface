@@ -35,7 +35,7 @@ probegroup.set_global_device_channel_indices(np.arange(16))
 df = probegroup.to_dataframe()
 df
 
-plot_probe_group(probegroup, with_channel_index=True, same_axe=True)
+plot_probe_group(probegroup, with_channel_index=True, same_axes=True)
 
 ##############################################################################
 # Generate a linear probe:
