@@ -1,9 +1,20 @@
 probeinterface.egg-info/*
+
 tests/*.prb
+tests/*.json
+tests/*/*.prb
+
+*.json
+*.prb
+tests/*/*.json
+tests/*/*.tsv
 tests/*.h5
+
 examples/*.prb
 examples/*.h5
 
+ressources/*/*
+build/*
 
 *.pyc
 dist/*
