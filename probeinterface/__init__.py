@@ -13,3 +13,4 @@ from .generator import (generate_dummy_probe, generate_dummy_probe_group,
             generate_tetrode, generate_linear_probe,
             generate_multi_columns_probe, generate_multi_shank)
 from .library import get_probe
+from .wiring import get_available_pathways
