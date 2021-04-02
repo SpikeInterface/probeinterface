@@ -12,12 +12,12 @@ def test_plot_probe():
     probe = generate_dummy_probe()
     plot_probe(probe)
     plot_probe(probe, with_channel_index=True)
-    
+
     # with color
     n = probe.get_contact_count()
     contacts_colors = np.random.rand(n, 3)
     plot_probe(probe, contacts_colors = contacts_colors)
-    
+
     # 3d
     probe_3d = probe.to_3d(plane='xz')
     plot_probe(probe_3d)
@@ -26,16 +26,16 @@ def test_plot_probe():
 def test_plot_probe_group():
     probegroup  = generate_dummy_probe_group()
 
-    plot_probe_group(probegroup, same_axe=True, with_channel_index=True)
-    plot_probe_group(probegroup, same_axe=False)
-    
+    plot_probe_group(probegroup, same_axes=True, with_channel_index=True)
+    plot_probe_group(probegroup, same_axes=False)
+
     # 3d
     probegroup_3d = ProbeGroup()
     for probe in probegroup.probes:
         probegroup_3d.add_probe(probe.to_3d())
     probegroup_3d.probes[-1].move([0,150, -50])
-    plot_probe_group(probegroup_3d, same_axe=True)
-    
+    plot_probe_group(probegroup_3d, same_axes=True)
+
 
 
 if __name__ == '__main__':
