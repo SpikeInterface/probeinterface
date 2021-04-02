@@ -12,6 +12,8 @@ def test_plot_probe():
     probe = generate_dummy_probe()
     plot_probe(probe)
     plot_probe(probe, with_channel_index=True)
+    plot_probe(probe, with_contact_id=True)
+    plot_probe(probe, with_device_index=True)
 
     # with color
     n = probe.get_contact_count()

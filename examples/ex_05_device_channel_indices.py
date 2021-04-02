@@ -51,7 +51,7 @@ print(probe.device_channel_indices)
 #  * the prbXX is the contact index ordered from 0 to N
 #  * the devXX is the channel index on the device (with the second half reversed)
 
-plot_probe(probe, with_channel_index=True)
+plot_probe(probe, with_channel_index=True, with_device_index=True)
 
 ##############################################################################
 # Very often we have several probes on the device and this can lead to even

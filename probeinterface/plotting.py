@@ -9,7 +9,9 @@ import numpy as np
 
 
 def plot_probe(probe, ax=None, contacts_colors=None,
-                with_channel_index=False, first_index='auto',
+                with_channel_index=False, with_contact_id=False, 
+                with_device_index=False,
+                first_index='auto',
                 contacts_values=None, cmap='viridis',
                 title=True, contacts_kargs={}, probe_shape_kwargs={},
                 xlims=None, ylims=None, zlims=None):
@@ -83,24 +85,27 @@ def plot_probe(probe, ax=None, contacts_colors=None,
         elif probe.ndim == 3:
             poly_contour = Poly3DCollection([planar_contour], **_probe_shape_kwargs)
             ax.add_collection3d(poly_contour)
-
-
     else:
         poly_contour = None
 
-    if with_channel_index:
+
+    if with_channel_index or with_contact_id or  with_device_index:
         if probe.ndim == 3:
             raise NotImplementedError('Channel index is 2d only')
         for i in range(n):
-            x, y = probe.contact_positions[i]
-            if probe.device_channel_indices is None:
-                txt = f'{i + first_index}'
-            else:
+            txt = []
+            if with_channel_index:
+                txt.append(f'{i + first_index}')
+            if with_contact_id and probe.contact_ids is not None:
+                contact_id = probe.contact_ids[i]
+                txt.append(f'id{contact_id}')
+            if with_device_index and probe.device_channel_indices is not None:
                 chan_ind = probe.device_channel_indices[i]
-                txt = f'prb{i + first_index}\ndev{chan_ind}'
+                txt.append(f'dev{chan_ind}')
+            # txt = ':'.join(txt)
+            txt = '\n'.join(txt)
+            x, y = probe.contact_positions[i]
             ax.text(x, y, txt, ha='center', va='center')
-
-
 
     if xlims is None or ylims is None or (zlims is None and probe.ndim == 3):
         xlims, ylims, zlims = get_auto_lims(probe)
