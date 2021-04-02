@@ -9,7 +9,7 @@ Documentation : https://probeinterface.readthedocs.io/
 
 Make a lightweight package to handle:
 
-  * probe site geometry (both 2D and 3D layouts)
+  * probe contact geometry (both 2D and 3D layouts)
   * probe shape (contour of the probe, shape of channel contact, ...)
   * probe wiring to device (the physical layout often doesn't match the channel ordering)
   * combining several probes into a device with global geometry + global wiring
