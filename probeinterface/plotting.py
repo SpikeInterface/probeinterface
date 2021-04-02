@@ -1,8 +1,8 @@
 """
-A simple implementation of ploting Probe and ProbeGroup
+A simple implementation for plotting a Probe or ProbeGroup
 using matplotlib.
 
-Depending Probe.ndim the plotting is done in 2d or 3d
+Depending on Probe.ndim, the plotting is done in 2D or 3D
 """
 
 import numpy as np
@@ -15,9 +15,10 @@ def plot_probe(probe, ax=None, contacts_colors=None,
                 xlims=None, ylims=None, zlims=None):
     """
     plot one probe.
-    switch 2d 3d depending the Probe.ndim
-    
+    switch to 2D or 3D, depending on Probe.ndim
+
     """
+
     import matplotlib.pyplot as plt
     if probe.ndim == 2:
         from matplotlib.collections import PolyCollection
@@ -67,11 +68,11 @@ def plot_probe(probe, ax=None, contacts_colors=None,
     elif probe.ndim == 3:
         poly =  Poly3DCollection(vertices, color=contacts_colors, **_contacts_kargs)
         ax.add_collection3d(poly)
-    
+
     if contacts_values is not None:
         poly.set_array(contacts_values)
         poly.set_cmap(cmap)
-        
+
 
     # probe shape
     planar_contour = probe.probe_planar_contour
@@ -86,7 +87,7 @@ def plot_probe(probe, ax=None, contacts_colors=None,
 
     else:
         poly_contour = None
-    
+
     if with_channel_index:
         if probe.ndim == 3:
             raise NotImplementedError('Channel index is 2d only')
@@ -99,11 +100,11 @@ def plot_probe(probe, ax=None, contacts_colors=None,
                 txt = f'prb{i + first_index}\ndev{chan_ind}'
             ax.text(x, y, txt, ha='center', va='center')
 
-    
-    
+
+
     if xlims is None or ylims is None or (zlims is None and probe.ndim == 3):
         xlims, ylims, zlims = get_auto_lims(probe)
-    
+
     ax.set_xlim(*xlims)
     ax.set_ylim(*ylims)
     ax.set_xlabel('x')
@@ -118,19 +119,21 @@ def plot_probe(probe, ax=None, contacts_colors=None,
 
     if title:
         ax.set_title(probe.get_title())
-    
+
     return poly, poly_contour
 
-def plot_probe_group(probegroup, same_axe=True, **kargs):
+def plot_probe_group(probegroup, same_axes=True, **kargs):
     """
-    Plot all prbe from a ProbeGroup
-    
-    Can be in the same axe or separated axes.
+    Plot all probes from a ProbeGroup
+
+    Can be in an existing set of axes or separate axes.
+
     """
+
     import matplotlib.pyplot as plt
     n = len(probegroup.probes)
 
-    if same_axe:
+    if same_axes:
         if 'ax' in kargs:
             ax = kargs.pop('ax')
         else:
@@ -142,15 +145,15 @@ def plot_probe_group(probegroup, same_axe=True, **kargs):
         axs = [ax] * n
     else:
         if 'ax' in kargs:
-            raise valueError('with same_axe=False do not provide ax')
+            raise valueError('when same_axes=False, an axes object cannot be passed into this function.')
         if probegroup.ndim == 2:
             fig, axs = plt.subplots(ncols=n, nrows=1)
             if n == 1:
                 axs = [axs]
         else:
             raise NotImplementedError
-    
-    if same_axe:
+
+    if same_axes:
         # global lims
         xlims, ylims, zlims = get_auto_lims(probegroup.probes[0])
         for i, probe in enumerate(probegroup.probes):
@@ -167,7 +170,7 @@ def plot_probe_group(probegroup, same_axe=True, **kargs):
         kargs['xlims'] = None
         kargs['ylims'] = None
         kargs['zlims'] = None
-    
+
     kargs['title'] = False
     for i, probe in enumerate(probegroup.probes):
         plot_probe(probe, ax=axs[i], **kargs)
@@ -176,23 +179,23 @@ def plot_probe_group(probegroup, same_axe=True, **kargs):
 def get_auto_lims(probe, margin=40):
     positions = probe.contact_positions
     planar_contour = probe.probe_planar_contour
-    
+
 
     xlims = np.min(positions[:, 0]), np.max(positions[:, 0])
     ylims = np.min(positions[:, 1]), np.max(positions[:, 1])
     zlims = None
-    
+
     if probe.ndim == 3:
         zlims = np.min(positions[:, 2]), np.max(positions[:, 2])
-    
+
     if planar_contour is not None:
-        
+
         xlims2 = np.min(planar_contour[:, 0]), np.max(planar_contour[:, 0])
         xlims = min(xlims[0], xlims2[0]), max(xlims[1], xlims2[1])
 
         ylims2 = np.min(planar_contour[:, 1]), np.max(planar_contour[:, 1])
         ylims = min(ylims[0], ylims2[0]), max(ylims[1], ylims2[1])
-        
+
         if probe.ndim == 3:
             zlims2 = np.min(planar_contour[:, 2]), np.max(planar_contour[:, 2])
             zlims = min(zlims[0], zlims2[0]), max(zlims[1], zlims2[1])
@@ -203,11 +206,11 @@ def get_auto_lims(probe, margin=40):
     if probe.ndim == 3:
         zlims = zlims[0] - margin, zlims[1] + margin
 
-        # to keep equal ascpect in 3d
+        # to keep equal aspect in 3d
         # all axes have the same limits
         lims = min(xlims[0], ylims[0], zlims[0]), max(xlims[1], ylims[1], zlims[1])
         xlims, ylims, zlims =  lims, lims, lims
 
-    
+
     return xlims, ylims, zlims
-    
+

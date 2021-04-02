@@ -8,28 +8,29 @@ from .probe import Probe
 
 def combine_probes(probes, connect_shape=True):
     """
-    Combinate several Probe object into a unique
-    Probe object multi multi shank.
-    
-    This work only for ndim=2
+    Combine several Probe objects into a unique
+    multi-shank Probe object
 
-    This will have strange behavrior if:
+    This works only when ndim=2
+
+    This will have strange behavior if:
       * probes have been rotated
-      * probes NOT have been moved (probe overlap in space )
-    
-    
+      * one of the probes has NOT been moved from its original location
+       (results in probes overlapping in space )
+
+
     Parameters
     ----------
-    probes: list of Probe
-    
-    connect_shape: bool (default True)
-        Connect all shape togother.
-        This can lead to strange probe shape....
+    probes : list of Probe
+
+    connect_shape : bool (default True)
+        Connect all shapes togother.
+        Be careful, as this can lead to strange probe shape....
 
     Return
     ----------
-    A multi-shank probe object.
-    
+    multi_shank : a multi-shank Probe object
+
     """
 
     # check ndim
@@ -73,17 +74,18 @@ def generate_unique_ids(min, max, n, trials=20):
 
     Parameters
     ----------
-    min (int): minimal value permitted for an identifier
-    max (int): maximal value permitted for an identifier
-    n (int): number of identifiers to create
+    min (int) : minimal value permitted for an identifier
+    max (int) : maximal value permitted for an identifier
+    n (int) : number of identifiers to create
     trials (int): maximal number of attempts for generating the set of
         identifiers
 
-    Return
-    ----------
+    Returns
+    -------
     A numpy array of `n` unique integer identifiers
 
     """
+
     ids = np.random.randint(min, max, n)
     i = 0
 

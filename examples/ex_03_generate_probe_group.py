@@ -39,11 +39,11 @@ print('probegroup.get_channel_count()', probegroup.get_channel_count())
 ##############################################################################
 #  We can now plot all probes in the same axis:
 
-plot_probe_group(probegroup, same_axe=True)
+plot_probe_group(probegroup, same_axes=True)
 
 ##############################################################################
 #  or in separate axes:
 
-plot_probe_group(probegroup, same_axe=False, with_channel_index=True)
+plot_probe_group(probegroup, same_axes=False, with_channel_index=True)
 
 plt.show()

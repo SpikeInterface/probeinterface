@@ -85,6 +85,6 @@ print(probegroup.get_global_device_channel_indices())
 # The indices of the probe group can also be plotted:
 
 fig, ax = plt.subplots()
-plot_probe_group(probegroup, with_channel_index=True, same_axe=True, ax=ax)
+plot_probe_group(probegroup, with_channel_index=True, same_axes=True, ax=ax)
 
 plt.show()

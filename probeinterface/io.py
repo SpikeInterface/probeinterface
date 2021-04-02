@@ -1,13 +1,12 @@
 """
-Read/write some formats:
-  * probeinterface h5
+Read/write probe info using a variety of formats:
+  * probeinterface (.json)
   * PRB (.prb)
-  * CVS (.csv)
+  * CSV (.csv)
   * mearec (.h5)
   * spikeglx (.meta)
   * ironclust/jrclust (.mat)
-  * NWB
-
+  * Neurodata Without Borders (.nwb)
 
 """
 import os
@@ -28,26 +27,27 @@ from .probegroup import ProbeGroup
 
 def _probeinterface_format_check_version(d):
     """
-    Check here format version for future version
+    Check format version of probeinterface JSON file
     """
+
     pass
 
 
 def read_probeinterface(file):
     """
-    Read probeinterface JSON-baesd format.
+    Read probeinterface JSON-based format.
 
     Parameters
     ----------
-    
     file: Path or str
         The file name.
-    
+
     Returns
-    --------qs
-    
-    a ProbeGroup
+    --------
+    probegroup : ProbeGroup object
+
     """
+
     file = Path(file)
     with open(file, 'r', encoding='utf8') as f:
         d = json.load(f)
@@ -65,19 +65,20 @@ def read_probeinterface(file):
 
 def write_probeinterface(file, probe_or_probegroup):
     """
-    Write to probeinterface own format JSON based.
-    
+    Write a probeinterface JSON file.
+
     The format handles several probes in one file.
-    
+
     Parameters
     ----------
-    file: Path or str
+    file : Path or str
         The file name.
-    
-    probe_or_probegroup : Probe or ProbeGroup
+
+    probe_or_probegroup : Probe or ProbeGroup object
         If probe is given a probegroup is created anyway.
-        
+
     """
+
     if isinstance(probe_or_probegroup, Probe):
         probe = probe_or_probegroup
         probegroup = ProbeGroup()
@@ -114,7 +115,7 @@ def read_BIDS_probe(folder, prefix=None):
     Read to BIDS probe format.
 
     This requires a probes.tsv and a contacts.tsv file
-    and potential corresponding sidecar files in json format.
+    and potentially corresponding files in JSON format.
 
     Parameters
     ----------
@@ -125,6 +126,7 @@ def read_BIDS_probe(folder, prefix=None):
         Prefix of the probes and contacts files.
 
     """
+
     import pandas as pd
     folder = Path(folder)
     probes = {}
@@ -150,14 +152,14 @@ def read_BIDS_probe(folder, prefix=None):
 
     # Step 1: READING CONTACTS.TSV
     converters = {
-        'x': float, 'y':float, 'z' : float, 
+        'x': float, 'y':float, 'z' : float,
         'contact_shapes': str,
         'probe_index': int,
         'probe_id': str, 'shank_id': str, 'contact_id': str,
         'radius': float, 'width': float, 'height': float,
     }
     df = pd.read_csv(contacts_file, sep='\t', header=0,
-                     keep_default_na=False, converters=converters) # dtype=str, 
+                     keep_default_na=False, converters=converters) # dtype=str,
     df.replace(to_replace={'n/a': ''}, inplace=True)
     df.rename(columns=label_map_to_probeinterface, inplace=True)
 
@@ -290,16 +292,17 @@ def write_BIDS_probe(folder, probe_or_probegroup, prefix=''):
 
     Parameters
     ----------
-    folder: Path or str
+    folder : Path or str
         The folder name.
 
     probe_or_probegroup : Probe or ProbeGroup
         If probe is given a probegroup is created anyway.
 
-    prefix: str
+    prefix : str
         A prefix to be added to the filenames
 
     """
+
     import pandas as pd
 
     if isinstance(probe_or_probegroup, Probe):
@@ -411,13 +414,13 @@ def write_BIDS_probe(folder, probe_or_probegroup, prefix=''):
 def read_prb(file):
     """
     Read a PRB file and return a ProbeGroup object.
-    
+
     Since PRB do not handle contact shape then circle of 5um are put.
     Same for contact shape a dummy tip is put.
-    
+
     PRB format do not contain any information about the channel of the probe
     Only the channel index on device is given.
-    
+
     """
 
     file = Path(file).absolute()
@@ -454,7 +457,7 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
     """
     Read a maxwell file and return a Probe object. Maxwell file format can be
     either Maxone (and thus just the file name is needed), or MaxTwo. In case
-    of the latter, you need to explicitly specify what is the well number of 
+    of the latter, you need to explicitly specify what is the well number of
     interest (well000 by default), and the recording session (since there can
     be several. Default is rec0000)
 
@@ -462,26 +465,24 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
     Same for contact shape a dummy tip is put.
 
     Maxwell format do not contain any information about the channel of the probe
-    Only the channel index on device is given. 
+    Only the channel index on device is given.
 
     Parameters
     ----------
-    
-    file: Path or str
+    file : Path or str
         The file name.
 
-    well_name: str
+    well_name : str
         If MaxTwo file format, the well_name to extract the mapping from
         (default is well000)
 
-    rec_name: str
+    rec_name : str
         If MaxTwo file format, the recording session to extract the mapping
         from (default is rec0000)
-    
+
     Returns
     --------
-    
-    a Probe
+    probe : Probe object
 
     """
 
@@ -539,27 +540,28 @@ def write_prb(file, probegroup,
             ):
     """
     Write ProbeGroup into a prb file.
-    
+
     This format handle:
       * multi Probe with channel group index key
       * channel positions with "geometry"
       * device_channel_indices with "channels "key
-    
-    Note: many information are lost in the PRB format:
+
+    Note: much information is lost in the PRB format:
       * contact shape
       * shape
       * channel index
-    
+
     Note:
       * "total_nb_channels" is a total none sens here
                 but needed by spyking-circus
       * "radius" is a total none sens here.
                 but needed by spyking-circus
       * "graph" is not handle because it is useless
+
     """
     assert group_mode in ('by_probe', 'by_shank')
     
-    
+
     if len(probegroup.probes) == 0:
         raise ValueError('Bad boy')
 
@@ -573,7 +575,7 @@ def write_prb(file, probegroup,
             f.write(f'total_nb_channels = {total_nb_channels}\n')
         if radius is not None:
             f.write(f'radius = {radius}\n')
-        
+
         f.write('channel_groups = {\n')
         
         if group_mode == 'by_probe':
@@ -605,34 +607,40 @@ def write_prb(file, probegroup,
         f.write("}\n")
 
 
-def read_cvs(file):
+def read_csv(file):
     """
-    Return a 2 or 3 columns csv file with contacts position
+    Return a 2 or 3 columns csv file with contact positions
     """
+
     raise NotImplementedError
 
 
-def write_cvs(file, probe):
+def write_csv(file, probe):
     """
-    Write probe postions into a 2 or 3 columns csv file
+    Write contact postions into a 2 or 3 columns csv file
     """
+
     raise NotImplementedError
 
 
 def read_spikeglx(file):
     """
-    read probe position for the meta file generated by spikeglx
-    
+    Read probe position for the meta file generated by SpikeGLX
+
     See http://billkarsh.github.io/SpikeGLX/#metadata-guides for implementation.
-    
-    The x_pitch/y_pitch/width are settle automatically depending the NP version
-    
+
+    The x_pitch/y_pitch/width are set automatically depending the NP version
+
     The shape is a dummy one for the moment.
-    
+
     Now read NP1.0 (=phase3B2)
-    
-    Return Probe object
+
+    Returns
+    -------
+    probe - Probe object
+
     """
+
     meta_file = Path(file)
     assert meta_file.suffix == ".meta", "'meta_file' should point to the .meta SpikeGLX file"
     with meta_file.open(mode='r') as f:
@@ -648,15 +656,15 @@ def read_spikeglx(file):
         meta[k] = v
     #~ from pprint import pprint
     #~ pprint(meta)
-    
+
     # given this
     # https://github.com/billkarsh/SpikeGLX/blob/gh-pages/Support/Metadata_30.md#channel-entries-by-type
     # imDatPrb_type=0/21/24
     # This is the probe type {0=NP1.0, 21=NP2.0(1-shank), 24=NP2.0(4-shank)}.
-    
+
     # older file don't have this field
     imDatPrb_type = int(meta.get('imDatPrb_type', 0))
-    
+
     # the x_pitch/y_pitch depend on NP version
     if imDatPrb_type == 0:
         # NP1.0
@@ -672,8 +680,8 @@ def read_spikeglx(file):
     else:
         #NP unknown
         raise NotImplementedError
-    
-    
+
+
     positions = []
     for e in meta['snsShankMap']:
         x_idx = int(e.split(':')[1])
@@ -701,8 +709,12 @@ def read_mearec(file):
 
     See https://mearec.readthedocs.io/en/latest/ and https://doi.org/10.1007/s12021-020-09467-7 for implementation.
 
-    Returns probe object.
+    Returns
+    -------
+    probe : Probe object
+
     """
+
     file = Path(file).absolute()
     assert file.is_file()
 
@@ -779,7 +791,9 @@ def read_mearec(file):
 
 def read_nwb(file):
     """
-    read probe position from the NWB format
+    Read probe position from an NWB file
+
     """
+
     raise NotImplementedError
 

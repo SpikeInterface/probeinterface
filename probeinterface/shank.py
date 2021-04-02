@@ -3,9 +3,9 @@ import numpy as np
 
 class Shank:
     """
-    Class to handle a shank in probe.
+    Class to handle one shank within a probe.
 
-    A Shank object is a sub-part of a Probe object.
+    A Shank object is a sub-component of a Probe object.
 
     """
     def __init__(self, probe, shank_id):
@@ -15,7 +15,7 @@ class Shank:
     def get_indices(self):
         inds, = np.nonzero(self.probe.shank_ids == self.shank_id)
         return inds
-        
+
     def get_contact_count(self):
         return self.get_indices().size
 
@@ -34,7 +34,7 @@ class Shank:
     @property
     def contact_shape_params(self):
         return self.probe.contact_shape_params[self.get_indices()]
-    
+
     @property
     def device_channel_indices(self):
         return self.probe.device_channel_indices[self.get_indices()]
