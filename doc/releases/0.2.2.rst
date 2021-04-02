@@ -1,0 +1,10 @@
+probeinterface 0.2.1
+--------------------
+
+April, 4 2021
+
+* better plot_probe with index
+* write_prb handle group_mode
+* add wriring RDH2164
+* doc improvement
+

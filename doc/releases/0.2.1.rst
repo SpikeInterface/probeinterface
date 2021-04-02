@@ -1,0 +1,10 @@
+probeinterface 0.2.1
+--------------------
+
+March, 24 2021
+
+* read/write to BIDS proposal.
+* to_numpy()/from_numpy()
+* to_dataframe()/from_dataframe()
+* read_mearec
+
