@@ -52,7 +52,7 @@ print(probe.device_channel_indices)
 #    * the lower "devXX" is the channel on the Intan device (zero-based)
 
 fig, ax = plt.subplots(figsize=(5, 15))
-plot_probe(probe, with_channel_index=True, ax=ax)
+plot_probe(probe, with_channel_index=True, with_device_index=True, ax=ax)
 
 
 plt.show()
