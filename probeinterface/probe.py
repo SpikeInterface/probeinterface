@@ -137,9 +137,9 @@ class Probe:
         positions : array (num_contacts, ndim)
             Positions of contacts.
         shapes : scalar or array in 'circle'/'square'/'rect'
-            Shape for each contacts.
+            Shape of each contact.
         shape_params : dict or list of dict
-            Contain kwargs for shapes ("radius" for circle, "width" for square, "width/height" for rect)
+            Contains kwargs for shapes ("radius" for circle, "width" for square, "width/height" for rect)
         plane_axes : (num_contacts, 2, ndim)
             This defines the axes of the contact plane (2d or 3d)
         shank_ids : None or vector of str
@@ -410,7 +410,7 @@ class Probe:
 
         """
 
-        translation_vetor = np.asarray(translation_vector)
+        translation_vector = np.asarray(translation_vector)
         assert translation_vector.shape[0] == self.ndim
 
         self._contact_positions += translation_vector
