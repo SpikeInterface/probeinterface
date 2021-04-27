@@ -6,6 +6,7 @@ Depending on Probe.ndim, the plotting is done in 2D or 3D
 """
 
 import numpy as np
+from matplotlib import path as mpl_path
 
 
 def plot_probe(probe, ax=None, contacts_colors=None,
@@ -14,7 +15,8 @@ def plot_probe(probe, ax=None, contacts_colors=None,
                 first_index='auto',
                 contacts_values=None, cmap='viridis',
                 title=True, contacts_kargs={}, probe_shape_kwargs={},
-                xlims=None, ylims=None, zlims=None):
+                xlims=None, ylims=None, zlims=None,
+                show_channel_on_click=False):
     """
     plot one probe.
     switch to 2D or 3D, depending on Probe.ndim
@@ -75,6 +77,11 @@ def plot_probe(probe, ax=None, contacts_colors=None,
         poly.set_array(contacts_values)
         poly.set_cmap(cmap)
 
+    if show_channel_on_click:
+        assert probe.ndim == 2, 'show_channel_on_click works only for ndim=2'
+        on_press = lambda event: _on_press(probe, event)
+        fig.canvas.mpl_connect('button_press_event', on_press)
+        fig.canvas.mpl_connect('button_release_event', on_release)
 
     # probe shape
     planar_contour = probe.probe_planar_contour
@@ -124,7 +131,7 @@ def plot_probe(probe, ax=None, contacts_colors=None,
 
     if title:
         ax.set_title(probe.get_title())
-
+    
     return poly, poly_contour
 
 def plot_probe_group(probegroup, same_axes=True, **kargs):
@@ -180,6 +187,31 @@ def plot_probe_group(probegroup, same_axes=True, **kargs):
     for i, probe in enumerate(probegroup.probes):
         plot_probe(probe, ax=axs[i], **kargs)
 
+def _on_press(probe, event):
+    ax = event.inaxes
+    x, y = event.xdata, event.ydata
+    nearest_ind = np.argmin(np.sum((probe.contact_positions - np.array([[x, y]]))**2, axis=1))
+    x_contact, y_contact = probe.contact_positions[nearest_ind, :]
+    vertice = probe.get_contact_vertices()[nearest_ind]
+    is_inside = mpl_path.Path(vertice).contains_points(np.array([[x, y]]))[0]
+    if is_inside:
+        txt = f'index {nearest_ind}'
+        if probe.contact_ids is not None:
+            txt += f'\n id{probe.contact_ids[nearest_ind]}'
+        if probe.device_channel_indices is not None:
+            txt += f'\n dev{probe.device_channel_indices[nearest_ind]}'
+        t = ax.text(x_contact, y_contact, txt, color='black')
+        event.canvas.draw()
+        ax.contact_text = t
+    
+def on_release(event):
+    ax = event.inaxes
+    if hasattr(ax, 'contact_text'):
+        t = ax.contact_text
+        t.remove()
+        del ax.contact_text
+        event.canvas.draw()
+    
 
 def get_auto_lims(probe, margin=40):
     positions = probe.contact_positions
