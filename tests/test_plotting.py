@@ -23,6 +23,10 @@ def test_plot_probe():
     # 3d
     probe_3d = probe.to_3d(plane='xz')
     plot_probe(probe_3d)
+    
+    # on click
+    probe.set_device_channel_indices(np.arange(probe.get_contact_count())[::-1])
+    plot_probe(probe, show_channel_on_click=True)
 
 
 def test_plot_probe_group():
@@ -42,5 +46,5 @@ def test_plot_probe_group():
 
 if __name__ == '__main__':
     test_plot_probe()
-    test_plot_probe_group()
+    #~ test_plot_probe_group()
     plt.show()
