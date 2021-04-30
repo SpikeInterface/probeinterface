@@ -648,7 +648,13 @@ def read_spikeglx(file):
 
     meta = {}
     for line in lines:
-        k, v = line.split('=')
+        if '=' not in line:
+            continue
+        splited = line.split('=')
+        if len(splited) != 2:
+            # strange lines
+            continue
+        k, v = splited
         if k.startswith('~'):
             # replace by the list
             k = k[1:]
