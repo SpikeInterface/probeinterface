@@ -752,6 +752,8 @@ def read_mearec(file):
     shape = None
     if "shape" in elinfo_keys:
         shape = elinfo["shape"][()]
+        if isinstance(shape, bytes):
+            shape = shape.decode()
 
     size = None
     if "shape" in elinfo_keys:
@@ -776,8 +778,9 @@ def read_mearec(file):
         probe.annotate(mearec_description=mearec_description)
 
     # set device indices
-    if elinfo["sortlist"][()] != "null":
+    if elinfo["sortlist"][()] not in (b'null', 'null'):
         channel_indices = elinfo["sortlist"][()]
+        print(channel_indices)
     else:
         channel_indices = np.arange(positions.shape[0], dtype='int64')
     probe.set_device_channel_indices(channel_indices)
