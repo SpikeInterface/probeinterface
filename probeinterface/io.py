@@ -780,7 +780,6 @@ def read_mearec(file):
     # set device indices
     if elinfo["sortlist"][()] not in (b'null', 'null'):
         channel_indices = elinfo["sortlist"][()]
-        print(channel_indices)
     else:
         channel_indices = np.arange(positions.shape[0], dtype='int64')
     probe.set_device_channel_indices(channel_indices)
