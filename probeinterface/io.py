@@ -524,11 +524,11 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
         dtype='float64')
 
     probe.set_contacts(positions=positions, shapes='rect',
-                         shape_params={'width': 5.45, 'height': 9.3})
+                       shape_params={'width': 5.45, 'height': 9.3})
     probe.set_planar_contour(
         ([-12.5, -12.5], [3845, -12.5], [3845, 2095], [-12.5, 2095]))
 
-    probe.set_device_channel_indices(chans)
+    probe.set_device_channel_indices(np.arange(positions.shape[0]))
 
     return probe
 
