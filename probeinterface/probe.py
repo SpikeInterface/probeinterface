@@ -820,6 +820,13 @@ class Probe:
             if isinstance(v, np.ndarray):
                 assert v.shape[0] == n
                 d[k] = v[selection].copy()
+            
+            if k == 'contact_annotations':
+                print(type(v))
+                for kk, vv in v.items():
+                    print(type(vv))
+                    print(vv.shape, selection.shape, selection.dtype, n)
+                    d[k][kk] = vv[selection].copy()
 
         sliced_probe = Probe.from_dict(d)
 

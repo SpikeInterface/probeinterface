@@ -109,10 +109,13 @@ def test_probe():
     other_3d = Probe.from_dataframe(df)
     assert other_3d.ndim == 3
 
+    print('ici', probe.contact_annotations['impedance'].shape)
     # slice handling
     selection = np.arange(0,18,2)
     # print(selection.dtype.kind)
     sliced_probe = probe.get_slice(selection)
+    print('lai', probe.contact_annotations['impedance'].shape)
+    print('yep', sliced_probe.contact_annotations['impedance'].shape)
     
     #~ from probeinterface.plotting import plot_probe_group, plot_probe
     #~ import matplotlib.pyplot as plt
@@ -147,4 +150,5 @@ if __name__ == '__main__':
     test_probe()
     
     test_set_shanks()
+
 
