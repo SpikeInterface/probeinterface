@@ -109,13 +109,12 @@ def test_probe():
     other_3d = Probe.from_dataframe(df)
     assert other_3d.ndim == 3
 
-    print('ici', probe.contact_annotations['impedance'].shape)
     # slice handling
     selection = np.arange(0,18,2)
     # print(selection.dtype.kind)
     sliced_probe = probe.get_slice(selection)
-    print('lai', probe.contact_annotations['impedance'].shape)
-    print('yep', sliced_probe.contact_annotations['impedance'].shape)
+    assert sliced_probe.get_contact_count() == 9
+    assert sliced_probe.contact_annotations['impedance'].shape == (9, )
     
     #~ from probeinterface.plotting import plot_probe_group, plot_probe
     #~ import matplotlib.pyplot as plt
@@ -125,6 +124,8 @@ def test_probe():
     selection = np.ones(24, dtype='bool')
     selection[::2] = False
     sliced_probe = probe.get_slice(selection)
+    assert sliced_probe.get_contact_count() == 12
+    assert sliced_probe.contact_annotations['impedance'].shape == (12, )
     
     #~ plot_probe(probe)
     #~ plot_probe(sliced_probe)

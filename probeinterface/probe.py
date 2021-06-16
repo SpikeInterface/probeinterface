@@ -509,7 +509,7 @@ class Probe:
     def to_dict(self, array_as_list=False):
         """
         Create a dict of all necessary attributes.
-        Useful for dumping or saving to hdf5.
+        Useful for dumping and saving to JSON.
         """
 
         d = {}
@@ -822,10 +822,8 @@ class Probe:
                 d[k] = v[selection].copy()
             
             if k == 'contact_annotations':
-                print(type(v))
+                d[k] = {}
                 for kk, vv in v.items():
-                    print(type(vv))
-                    print(vv.shape, selection.shape, selection.dtype, n)
                     d[k][kk] = vv[selection].copy()
 
         sliced_probe = Probe.from_dict(d)
