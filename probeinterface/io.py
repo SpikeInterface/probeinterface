@@ -102,12 +102,12 @@ def write_probeinterface(file, probe_or_probegroup):
         json.dump(d, f, indent=4)
 
 
-label_map_to_BIDS= {'contact_ids': 'contact_id',
+tsv_label_map_to_BIDS= {'contact_ids': 'contact_id',
                     'probe_ids': 'probe_id',
                     'contact_shapes': 'contact_shape',
                     'shank_ids': 'shank_id',
                     'si_units': 'xyz_units'}
-label_map_to_probeinterface = {v: k for k, v in label_map_to_BIDS.items()}
+tsv_label_map_to_probeinterface = {v: k for k, v in tsv_label_map_to_BIDS.items()}
 
 
 def read_BIDS_probe(folder, prefix=None):
@@ -152,7 +152,7 @@ def read_BIDS_probe(folder, prefix=None):
 
     # Step 1: READING CONTACTS.TSV
     converters = {
-        'x': float, 'y':float, 'z' : float,
+        'x': float, 'y': float, 'z': float,
         'contact_shapes': str,
         'probe_index': int,
         'probe_id': str, 'shank_id': str, 'contact_id': str,
@@ -161,7 +161,7 @@ def read_BIDS_probe(folder, prefix=None):
     df = pd.read_csv(contacts_file, sep='\t', header=0,
                      keep_default_na=False, converters=converters) # dtype=str,
     df.replace(to_replace={'n/a': ''}, inplace=True)
-    df.rename(columns=label_map_to_probeinterface, inplace=True)
+    df.rename(columns=tsv_label_map_to_probeinterface, inplace=True)
 
     if 'probe_ids' not in df:
         raise ValueError('probes.tsv file does not contain probe_id column')
@@ -239,8 +239,8 @@ def read_BIDS_probe(folder, prefix=None):
         with open(probe_json, 'r') as f:
             probes_dict = json.load(f)
 
-    if 'probe_id' in probes_dict:
-        for probe_id, probe_info in probes_dict['probe_id'].items():
+    if 'ProbeId' in probes_dict:
+        for probe_id, probe_info in probes_dict['ProbeId'].items():
             probe = probes[probe_id]
             for probe_param, param_value in probe_info.items():
 
@@ -263,9 +263,9 @@ def read_BIDS_probe(folder, prefix=None):
         with open(contact_json, 'r') as f:
             contacts_dict = json.load(f)
 
-    if 'contact_id' in contacts_dict:
+    if 'ContactId' in contacts_dict:
         # collect all contact parameters used in this file
-        contact_params = [k for v in contacts_dict['contact_id'].values() for k
+        contact_params = [k for v in contacts_dict['ContactId'].values() for k
                           in v.keys()]
         contact_params = np.unique(contact_params)
 
@@ -275,7 +275,7 @@ def read_BIDS_probe(folder, prefix=None):
             for contact_param in contact_params:
                 # collect parameters across contact ids to add to probe
                 value_list = [
-                    contacts_dict['contact_id'][str(c)].get(contact_param, None)
+                    contacts_dict['ContactId'][str(c)].get(contact_param, None)
                     for c in contact_ids]
 
                 probe.annotate(**{contact_param: value_list})
@@ -323,7 +323,7 @@ def write_BIDS_probe(folder, probe_or_probegroup, prefix=''):
     probes = probegroup.probes
 
     # Step 1: GENERATION OF PROBE.TSV
-    # ensure required keys (probeID, probe_type) are present
+    # ensure required keys (probe_id, probe_type) are present
 
     if any('probe_id' not in p.annotations for p in probes):
         probegroup.auto_generate_probe_ids()
@@ -370,7 +370,7 @@ def write_BIDS_probe(folder, probe_or_probegroup, prefix=''):
 
     with open(folder.joinpath(prefix + 'probes.json'), 'w',
               encoding='utf8') as f:
-        json.dump({'probe_id': probes_dict}, f, indent=4)
+        json.dump({'ProbeId': probes_dict}, f, indent=4)
 
     # Step 3: GENERATION OF CONTACTS.TSV
     # ensure required contact identifiers are present
@@ -382,7 +382,7 @@ def write_BIDS_probe(folder, probe_or_probegroup, prefix=''):
 
     df = probegroup.to_dataframe()
     index = range(sum([p.get_contact_count() for p in probes]))
-    df.rename(columns=label_map_to_BIDS, inplace=True)
+    df.rename(columns=tsv_label_map_to_BIDS, inplace=True)
 
     df['probe_id'] = [p.annotations['probe_id'] for p in probes for _ in
                       p.contact_ids]
@@ -408,7 +408,7 @@ def write_BIDS_probe(folder, probe_or_probegroup, prefix=''):
             contacts_dict[contact_id] = cdict
 
     with open(folder.joinpath(prefix + 'contacts.json'), 'w', encoding='utf8') as f:
-        json.dump({'contact_id': contacts_dict}, f, indent=4)
+        json.dump({'ContactId': contacts_dict}, f, indent=4)
 
 
 def read_prb(file):
