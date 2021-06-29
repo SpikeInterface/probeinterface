@@ -97,7 +97,7 @@ def write_probeinterface(file, probe_or_probegroup):
     for probe_ind, probe in enumerate(probegroup.probes):
         probe_dict = probe.to_dict(array_as_list=True)
         d['probes'].append(probe_dict)
-
+    
     with open(file, 'w', encoding='utf8') as f:
         json.dump(d, f, indent=4)
 

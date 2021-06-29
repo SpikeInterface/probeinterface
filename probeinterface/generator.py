@@ -29,7 +29,10 @@ def generate_dummy_probe(elec_shapes='circle'):
                                          num_contact_per_column=[10, 12, 10],
                                          xpitch=25, ypitch=25, y_shift_per_column=[0, -12.5, 0],
                                          contact_shapes=elec_shapes, contact_shape_params=contact_shape_params)
-
+    
+    probe.annotate(manufacturer='me')
+    probe.annotate_contacts(quality=np.ones(32) * 1000.)
+    
     return probe
 
 

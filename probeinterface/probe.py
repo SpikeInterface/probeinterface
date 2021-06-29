@@ -58,8 +58,9 @@ class Probe:
 
         # annotation:  a dict that contains all meta information about
         # the probe (name, manufacturor, date of production, ...)
-        # See
         self.annotations = dict(name='')
+        # same idea but handle in vector way for contacts
+        self.contact_annotations = dict()
 
         # the Probe can belong to a ProbeGroup
         self._probe_group = None
@@ -107,6 +108,13 @@ class Probe:
     def annotate(self, **kwargs):
         self.annotations.update(kwargs)
         self.check_annotations()
+    
+    def annotate_contacts(self, **kwargs):
+        n = self.get_contact_count()
+        for k, values in kwargs.items():
+            assert len(values) == n, 'annotate_contacts need list or array as values'
+            values = np.asarray(values)
+            self.contact_annotations[k] = values
 
     def check_annotations(self):
         d = self.annotations
@@ -492,7 +500,7 @@ class Probe:
             for i in range(2):
                 self.contact_plane_axes[e, i, :] = self.contact_plane_axes[e, i, :] @ R
 
-    _dump_attr_names = ['ndim', 'si_units', 'annotations',
+    _dump_attr_names = ['ndim', 'si_units', 'annotations', 'contact_annotations',
                         '_contact_positions', '_contact_plane_axes',
                         '_contact_shapes', '_contact_shape_params',
                         'probe_planar_contour', 'device_channel_indices',
@@ -501,12 +509,16 @@ class Probe:
     def to_dict(self, array_as_list=False):
         """
         Create a dict of all necessary attributes.
-        Useful for dumping or saving to hdf5.
+        Useful for dumping and saving to JSON.
         """
 
         d = {}
         for k in self._dump_attr_names:
             v = getattr(self, k, None)
+            if array_as_list and isinstance(v, dict):
+                for kk, vv in v.items():
+                    if isinstance(vv, np.ndarray):
+                        v[kk] = vv.tolist()
             if array_as_list and v is not None and isinstance(v, np.ndarray):
                 v = v.tolist()
             if v is not None:
@@ -541,8 +553,11 @@ class Probe:
         v = d.get('contact_ids', None)
         if v is not None:
             probe.set_contact_ids(v)
-
-        probe.annotate(**d['annotations'])
+        
+        if 'annotations' in d:
+            probe.annotate(**d['annotations'])
+        if 'contact_annotations' in d:
+            probe.annotate_contacts(**d['contact_annotations'])
 
         return probe
 
@@ -805,6 +820,11 @@ class Probe:
             if isinstance(v, np.ndarray):
                 assert v.shape[0] == n
                 d[k] = v[selection].copy()
+            
+            if k == 'contact_annotations':
+                d[k] = {}
+                for kk, vv in v.items():
+                    d[k][kk] = vv[selection].copy()
 
         sliced_probe = Probe.from_dict(d)
 
