@@ -63,9 +63,7 @@ def test_BIDS_format():
         # switch to more generic dtype for shank_ids
         probe.set_shank_ids(probe.shank_ids.astype(str))
 
-
     write_BIDS_probe(folder, probegroup)
-    
 
     probegroup_read = read_BIDS_probe(folder)
 
