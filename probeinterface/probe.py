@@ -603,6 +603,8 @@ class Probe:
                 dim = ['x', 'y', 'z'][i]
                 dtype += [(f'plane_axis_{dim}_0', 'float64')]
                 dtype += [(f'plane_axis_{dim}_1', 'float64')]
+            for k, v in self.contact_annotations.items():
+                dtype += [(f'{k}', np.dtype(v[0]))]
 
         arr = np.zeros(self.get_contact_count(), dtype=dtype)
         arr['x'] = self.contact_positions[:, 0]
@@ -634,6 +636,9 @@ class Probe:
                arr['device_channel_indices'] = -1
             else:
                 arr['device_channel_indices'] = self.device_channel_indices
+
+            for k, v in self.contact_annotations.items():
+                arr[k] = v
 
         return arr
 

@@ -505,6 +505,7 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
     prb = {'channel_groups': {1: {}}}
 
     channels = list(mapping['channel'])
+    electrodes = list(mapping['electrode'])
     x_pos = list(mapping['x'])
     y_pos = list(mapping['y'])
     geometry = {}
@@ -525,6 +526,7 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
 
     probe.set_contacts(positions=positions, shapes='rect',
                        shape_params={'width': 5.45, 'height': 9.3})
+    probe.annotate_contacts(electrode=electrodes)
     probe.set_planar_contour(
         ([-12.5, -12.5], [3845, -12.5], [3845, 2095], [-12.5, 2095]))
 
