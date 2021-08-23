@@ -70,7 +70,7 @@ class ProbeGroup:
             arr = probe_arr[probe_index]
             arr_ext = np.zeros(probe.get_contact_count(), dtype=dtype)
             arr_ext['probe_index'] = probe_index
-            for k  in fields:
+            for k in fields:
                 if k in arr.dtype.fields:
                     arr_ext[k] = arr[k]
             pg_arr.append(arr_ext)
