@@ -32,9 +32,9 @@ Import/export to formats
     
     .. autofunction:: write_prb
     
-    .. autofunction:: read_cvs
+    .. autofunction:: read_csv
     
-    .. autofunction:: write_cvs
+    .. autofunction:: write_csv
     
     .. autofunction:: read_spikeglx
     
