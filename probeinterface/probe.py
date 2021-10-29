@@ -100,6 +100,9 @@ class Probe:
                 txt = f'{manufacturer} - {name} - {n}ch'
             else:
                 txt = f'Probe - {n}ch'
+            if self.shank_ids is not None:
+                num_shank = self.get_shank_count()
+                txt += f' - {num_shank}shanks'
         return txt
 
     def __repr__(self):

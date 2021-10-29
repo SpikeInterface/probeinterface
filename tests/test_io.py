@@ -192,7 +192,12 @@ def test_prb():
 
 
 def test_readspikeglx():
+    # NP1
     probe = read_spikeglx(folder / 'Noise_g0_t0.imec0.ap.meta')
+    
+    # NP2 4 shanks
+    probe = read_spikeglx(folder / 'TEST_20210920_0_g0_t0.imec0.ap.meta')
+    
     
     # probe = read_spikeglx(folder / '0002_dEXA_g0_t0.imec.ap.meta')
     # probe = read_spikeglx(folder / 'towersTask_g0_t0.imec0.ap.meta')
