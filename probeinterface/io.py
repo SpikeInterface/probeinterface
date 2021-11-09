@@ -678,6 +678,7 @@ def read_spikeglx(file):
     positions = np.zeros((num_contact, 2), dtype='float64')
     
     
+    
     # the x_pitch/y_pitch depend on NP version
     if imDatPrb_type == 0:
         # NP1.0
@@ -719,13 +720,20 @@ def read_spikeglx(file):
     else:
         #NP unknown
         raise NotImplementedError('This neuropixel is not implemented in probeinterface')
-
+    
+    contact_ids = []
+    for i in range(num_contact):
+        contact_id = meta['snsChanMap'][i].split(';')[0]
+        contact_ids.append(contact_id)
+     #~ = np.arraye(contact_ids)
+    
 
 
     probe = Probe(ndim=2, si_units='um')
     probe.set_contacts(positions=positions, shapes='square',
                          shank_ids=shank_ids,
                          shape_params={'width': 10})
+    probe.set_contact_ids(contact_ids)
     probe.create_auto_shape(probe_type='tip')
     
     probe.set_device_channel_indices(np.arange(positions.shape[0]))

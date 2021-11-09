@@ -196,16 +196,16 @@ def test_readspikeglx():
     probe = read_spikeglx(folder / 'Noise_g0_t0.imec0.ap.meta')
     
     # NP2 4 shanks
-    #~ probe = read_spikeglx(folder / 'TEST_20210920_0_g0_t0.imec0.ap.meta')
+    probe = read_spikeglx(folder / 'TEST_20210920_0_g0_t0.imec0.ap.meta')
     
     
     # probe = read_spikeglx(folder / '0002_dEXA_g0_t0.imec.ap.meta')
     # probe = read_spikeglx(folder / 'towersTask_g0_t0.imec0.ap.meta')
     
-    from probeinterface.plotting import plot_probe_group, plot_probe
-    import matplotlib.pyplot as plt
-    plot_probe(probe)
-    plt.show()
+    #~ from probeinterface.plotting import plot_probe_group, plot_probe
+    #~ import matplotlib.pyplot as plt
+    #~ plot_probe(probe, with_contact_id=True)
+    #~ plt.show()
     
     
     
