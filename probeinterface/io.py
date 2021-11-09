@@ -725,9 +725,6 @@ def read_spikeglx(file):
     for i in range(num_contact):
         contact_id = meta['snsChanMap'][i].split(';')[0]
         contact_ids.append(contact_id)
-     #~ = np.arraye(contact_ids)
-    
-
 
     probe = Probe(ndim=2, si_units='um')
     probe.set_contacts(positions=positions, shapes='square',
