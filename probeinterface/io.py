@@ -662,8 +662,6 @@ def read_spikeglx(file):
             k = k[1:]
             v = v[1:-1].split(')(')[1:]
         meta[k] = v
-    #~ from pprint import pprint
-    #~ pprint(meta)
 
     # given this
     # https://github.com/billkarsh/SpikeGLX/blob/gh-pages/Support/Metadata_30.md#channel-entries-by-type
@@ -676,19 +674,9 @@ def read_spikeglx(file):
     # older file don't have this field
     imDatPrb_type = int(meta.get('imDatPrb_type', 0))
     
-    #~ for e in meta['snsShankMap']:
-        #~ x_idx = int(e.split(':')[1])
-        #~ y_idx = int(e.split(':')[2])
-        #~ print(x_idx, y_idx)
+    num_contact = len(meta['snsShankMap'])
+    positions = np.zeros((num_contact, 2), dtype='float64')
     
-    #~ exit()
-    
-    #~ print(len(meta['snsChanMap']))
-    #~ print(len(meta['snsShankMap']))
-    #~ print(len(meta['imroTbl']))
-    #~ exit()
-    
-    #~ print(meta['snsChanMap'])
     
     # the x_pitch/y_pitch depend on NP version
     if imDatPrb_type == 0:
@@ -697,12 +685,21 @@ def read_spikeglx(file):
         y_pitch=20
         width=12
         shank_ids = None
+
+        for i, e in enumerate(meta['snsShankMap']):
+            x_idx = int(e.split(':')[1])
+            y_idx = int(e.split(':')[2])
+            stagger = np.mod(y_idx + 1, 2) * x_pitch / 2
+            x_pos = x_idx * x_pitch + stagger
+            y_pos = y_idx * y_pitch
+            positions[i, :] = [x_pos, y_pos]
+        
     elif imDatPrb_type == 21:
         #21=NP2.0(1-shank)
         raise NotImplementedError('NP2.0(1-shank) is not implemenetd yet')
+
     elif imDatPrb_type == 24:
         # NP2.0(4-shank)
-        #~ raise NotImplementedError('NP2.0(4-shank) is not implemenetd yet')
         x_pitch=32
         y_pitch=20
         width=12
@@ -711,25 +708,19 @@ def read_spikeglx(file):
         for e in meta['imroTbl']:
             shank_id = e.split(' ')[1]
             shank_ids.append(shank_id)
-        #~ print(shank_ids)
-        #~ print(len(shank_ids))
+
+        for i, e in enumerate(meta['snsShankMap']):
+            x_idx = int(e.split(':')[1])
+            y_idx = int(e.split(':')[2])
+            x_pos = x_idx * x_pitch + int(shank_ids[i]) * 250
+            y_pos = y_idx * y_pitch
+            positions[i, :] = [x_pos, y_pos]
+
     else:
         #NP unknown
         raise NotImplementedError('This neuropixel is not implemented in probeinterface')
 
-    positions = []
-    for e in meta['snsShankMap']:
-        x_idx = int(e.split(':')[1])
-        y_idx = int(e.split(':')[2])
-        stagger = np.mod(y_idx + 1, 2) * x_pitch / 2
-        x_pos = x_idx * x_pitch + stagger
-        y_pos = y_idx * y_pitch
-        positions.append([x_pos, y_pos])
-    positions = np.array(positions)
-    
-    #~ if imDatPrb_type == 24:
-        
-    
+
 
     probe = Probe(ndim=2, si_units='um')
     probe.set_contacts(positions=positions, shapes='square',
@@ -737,7 +728,6 @@ def read_spikeglx(file):
                          shape_params={'width': 10})
     probe.create_auto_shape(probe_type='tip')
     
-    print(positions.shape[0])
     probe.set_device_channel_indices(np.arange(positions.shape[0]))
 
     return probe
