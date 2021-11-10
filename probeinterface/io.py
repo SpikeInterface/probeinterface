@@ -686,8 +686,8 @@ def read_spikeglx(file):
     # the x_pitch/y_pitch depend on NP version
     if imDatPrb_type == 0:
         # NP1.0
-        x_pitch=32
-        y_pitch=20
+        x_pitch = 32
+        y_pitch = 20
         contact_width=12
         shank_ids = None
 
@@ -700,14 +700,24 @@ def read_spikeglx(file):
             positions[i, :] = [x_pos, y_pos]
         
     elif imDatPrb_type == 21:
-        #21=NP2.0(1-shank)
-        raise NotImplementedError('NP2.0(1-shank) is not implemenetd yet')
+        x_pitch = 32
+        y_pitch = 15
+        contact_width = 12
+        shank_ids = None
+
+        for i, e in enumerate(meta['snsShankMap']):
+            x_idx = int(e.split(':')[1])
+            y_idx = int(e.split(':')[2])
+            x_pos = x_idx * x_pitch
+            y_pos = y_idx * y_pitch
+            positions[i, :] = [x_pos, y_pos]
 
     elif imDatPrb_type == 24:
         # NP2.0(4-shank)
-        x_pitch=32
-        y_pitch=15
-        contact_width=12
+        x_pitch = 32
+        y_pitch = 15
+        contact_width = 12
+        shank_pitch = 250
         
         shank_ids = []
         for e in meta['imroTbl']:
@@ -717,13 +727,14 @@ def read_spikeglx(file):
         for i, e in enumerate(meta['snsShankMap']):
             x_idx = int(e.split(':')[1])
             y_idx = int(e.split(':')[2])
-            x_pos = x_idx * x_pitch + int(shank_ids[i]) * 250
+            x_pos = x_idx * x_pitch + int(shank_ids[i]) * shank_pitch
             y_pos = y_idx * y_pitch
             positions[i, :] = [x_pos, y_pos]
 
     else:
         #NP unknown
         raise NotImplementedError('This neuropixel is not implemented in probeinterface')
+    
     
     contact_ids = []
     for i in range(num_contact):
@@ -736,9 +747,23 @@ def read_spikeglx(file):
                          shape_params={'width': contact_width})
     probe.set_contact_ids(contact_ids)
     
-    # this is a dummy contour
-    # TODO implement the true contour
-    probe.create_auto_shape(probe_type='tip')
+    # planar contour
+    one_polygon = [(0, 10000), (0, 0), (35, -175), (70, 0), (70, 10000), ]
+    if shank_ids is None:
+        contour = one_polygon
+    else:
+        contour = []
+        for i, shank_id in enumerate(np.unique(shank_ids)):
+            contour += list(np.array(one_polygon) + [shank_pitch * i, 0])
+    # shift 
+    contour = np.array(contour) - [11, 11]
+    probe.set_planar_contour(contour)
+
+
+        
+    
+    #~ polygon += [(x0, y1), (x0, y0), (x1, y0), (x1, y1), ]
+    
     
     probe.set_device_channel_indices(np.arange(positions.shape[0]))
 
