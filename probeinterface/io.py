@@ -691,6 +691,13 @@ def read_spikeglx(file):
         contact_width=12
         shank_ids = None
 
+        contact_ids = []
+        for e in meta['imroTbl']:
+            # here no elec_id is avaliable we take the chan_id instead
+            chan_id = e.split(' ')[0]
+            contact_ids.append(f'e{chan_id}')
+
+
         for i, e in enumerate(meta['snsShankMap']):
             x_idx = int(e.split(':')[1])
             y_idx = int(e.split(':')[2])
@@ -704,6 +711,11 @@ def read_spikeglx(file):
         y_pitch = 15
         contact_width = 12
         shank_ids = None
+
+        contact_ids = []
+        for e in meta['imroTbl']:
+            elec_id = e.split(' ')[3]
+            contact_ids.append(f'e{elec_id}')
 
         for i, e in enumerate(meta['snsShankMap']):
             x_idx = int(e.split(':')[1])
@@ -720,9 +732,12 @@ def read_spikeglx(file):
         shank_pitch = 250
         
         shank_ids = []
+        contact_ids = []
         for e in meta['imroTbl']:
             shank_id = e.split(' ')[1]
             shank_ids.append(shank_id)
+            elec_id = e.split(' ')[4]
+            contact_ids.append(f's{shank_id}:e{elec_id}')
 
         for i, e in enumerate(meta['snsShankMap']):
             x_idx = int(e.split(':')[1])
@@ -736,10 +751,6 @@ def read_spikeglx(file):
         raise NotImplementedError('This neuropixel is not implemented in probeinterface')
     
     
-    contact_ids = []
-    for i in range(num_contact):
-        contact_id = meta['snsChanMap'][i].split(';')[0]
-        contact_ids.append(contact_id)
 
     probe = Probe(ndim=2, si_units='um')
     probe.set_contacts(positions=positions, shapes='square',
@@ -759,12 +770,7 @@ def read_spikeglx(file):
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
 
-
-        
-    
-    #~ polygon += [(x0, y1), (x0, y0), (x1, y0), (x1, y1), ]
-    
-    
+    # wire it
     probe.set_device_channel_indices(np.arange(positions.shape[0]))
 
     return probe
