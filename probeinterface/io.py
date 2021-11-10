@@ -635,7 +635,9 @@ def read_spikeglx(file):
 
     The shape is a dummy one for the moment.
 
-    Now read NP1.0 (=phase3B2)
+    Now read:
+      * NP1.0 (=phase3B2)
+      * NP2.0 with 4 shank
 
     Returns
     -------
@@ -670,6 +672,8 @@ def read_spikeglx(file):
 
     # See also this # https://billkarsh.github.io/SpikeGLX/help/imroTables/
     
+    # See also https://github.com/cortex-lab/neuropixels/wiki
+    
 
     # older file don't have this field
     imDatPrb_type = int(meta.get('imDatPrb_type', 0))
@@ -684,7 +688,7 @@ def read_spikeglx(file):
         # NP1.0
         x_pitch=32
         y_pitch=20
-        width=12
+        contact_width=12
         shank_ids = None
 
         for i, e in enumerate(meta['snsShankMap']):
@@ -702,8 +706,8 @@ def read_spikeglx(file):
     elif imDatPrb_type == 24:
         # NP2.0(4-shank)
         x_pitch=32
-        y_pitch=20
-        width=12
+        y_pitch=15
+        contact_width=12
         
         shank_ids = []
         for e in meta['imroTbl']:
@@ -729,8 +733,11 @@ def read_spikeglx(file):
     probe = Probe(ndim=2, si_units='um')
     probe.set_contacts(positions=positions, shapes='square',
                          shank_ids=shank_ids,
-                         shape_params={'width': 10})
+                         shape_params={'width': contact_width})
     probe.set_contact_ids(contact_ids)
+    
+    # this is a dummy contour
+    # TODO implement the true contour
     probe.create_auto_shape(probe_type='tip')
     
     probe.set_device_channel_indices(np.arange(positions.shape[0]))

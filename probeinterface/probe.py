@@ -226,8 +226,8 @@ class Probe:
             x0 -= margin
             x1 += margin
 
-            y0 = np.min(self.contact_positions[mask, 1])
-            y1 = np.max(self.contact_positions[mask, 1])
+            y0 = np.min(self.contact_positions[:, 1])
+            y1 = np.max(self.contact_positions[:, 1])
             y0 -= margin
             y1 += margin
 
