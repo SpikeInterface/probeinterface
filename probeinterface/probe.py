@@ -100,6 +100,9 @@ class Probe:
                 txt = f'{manufacturer} - {name} - {n}ch'
             else:
                 txt = f'Probe - {n}ch'
+            if self.shank_ids is not None:
+                num_shank = self.get_shank_count()
+                txt += f' - {num_shank}shanks'
         return txt
 
     def __repr__(self):
@@ -207,24 +210,35 @@ class Probe:
     def create_auto_shape(self, probe_type='tip', margin=20):
         if self.ndim != 2:
             raise ValueError('Auto shape is supported only for 2d')
-
-        x0 = np.min(self.contact_positions[:, 0])
-        x1 = np.max(self.contact_positions[:, 0])
-        x0 -= margin
-        x1 += margin
-
-        y0 = np.min(self.contact_positions[:, 1])
-        y1 = np.max(self.contact_positions[:, 1])
-        y0 -= margin
-        y1 += margin
-
-        if probe_type == 'rect':
-            polygon = [(x0, y1), (x0, y0), (x1, y0), (x1, y1), ]
-        elif probe_type == 'tip':
-            tip = ((x0 + x1) * 0.5, y0 - margin * 4)
-            polygon = [(x0, y1), (x0, y0), tip, (x1, y0), (x1, y1), ]
+        
+        if self._shank_ids is None:
+            shank_ids = np.zeros((get_contact_count), dtype='int64')
         else:
-            raise ValueError()
+            shank_ids = self._shank_ids
+        
+        polygon = []
+        
+        for i, shank_id in enumerate(np.unique(shank_ids)):
+            mask = shank_ids == shank_id
+            
+            x0 = np.min(self.contact_positions[mask, 0])
+            x1 = np.max(self.contact_positions[mask, 0])
+            x0 -= margin
+            x1 += margin
+
+            y0 = np.min(self.contact_positions[:, 1])
+            y1 = np.max(self.contact_positions[:, 1])
+            y0 -= margin
+            y1 += margin
+
+            if probe_type == 'rect':
+                polygon += [(x0, y1), (x0, y0), (x1, y0), (x1, y1), ]
+            elif probe_type == 'tip':
+                tip = ((x0 + x1) * 0.5, y0 - margin * 4)
+                polygon += [(x0, y1), (x0, y0), tip, (x1, y0), (x1, y1), ]
+            else:
+                raise ValueError()
+
         self.set_planar_contour(polygon)
 
     def set_device_channel_indices(self, channel_indices):
