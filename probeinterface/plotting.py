@@ -38,7 +38,7 @@ def plot_probe(probe, ax=None, contacts_colors=None,
             ax = fig.add_subplot(1, 1, 1, projection='3d')
     else:
         fig = ax.get_figure()
-        
+
     if first_index == 'auto':
         if 'first_index' in probe.annotations:
             first_index = probe.annotations['first_index']
