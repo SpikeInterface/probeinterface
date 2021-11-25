@@ -33,6 +33,12 @@ def test_probe():
     # auto shape
     probe.create_auto_shape()
     
+    # annotation
+    probe.annotate(manufacturer='me')
+    assert 'manufacturer' in probe.annotations
+    probe.annotate_contacts(impedance=np.random.rand(24)*1000)
+    assert 'impedance' in probe.contact_annotations
+    
     # device channel
     chans = np.arange(0, 24, dtype='int')
     np.random.shuffle(chans)
@@ -99,7 +105,7 @@ def test_probe():
     df = probe.to_dataframe(complete=False)
     other2 = Probe.from_dataframe(df)
     df = probe_3d.to_dataframe(complete=True)
-    print(df.index)
+    # print(df.index)
     other_3d = Probe.from_dataframe(df)
     assert other_3d.ndim == 3
 
@@ -107,6 +113,8 @@ def test_probe():
     selection = np.arange(0,18,2)
     # print(selection.dtype.kind)
     sliced_probe = probe.get_slice(selection)
+    assert sliced_probe.get_contact_count() == 9
+    assert sliced_probe.contact_annotations['impedance'].shape == (9, )
     
     #~ from probeinterface.plotting import plot_probe_group, plot_probe
     #~ import matplotlib.pyplot as plt
@@ -116,6 +124,8 @@ def test_probe():
     selection = np.ones(24, dtype='bool')
     selection[::2] = False
     sliced_probe = probe.get_slice(selection)
+    assert sliced_probe.get_contact_count() == 12
+    assert sliced_probe.contact_annotations['impedance'].shape == (12, )
     
     #~ plot_probe(probe)
     #~ plot_probe(sliced_probe)
@@ -138,7 +148,8 @@ def test_set_shanks():
 
 
 if __name__ == '__main__':
-    #~ test_probe()
+    test_probe()
     
     test_set_shanks()
+
 

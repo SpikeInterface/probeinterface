@@ -1,0 +1,10 @@
+probeinterface 0.2.3
+--------------------
+
+May, 21 2021
+
+* add a pathway
+* show_channel_on_click
+* debug read_mearec()
+
+

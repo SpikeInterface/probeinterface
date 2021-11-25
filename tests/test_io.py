@@ -63,9 +63,7 @@ def test_BIDS_format():
         # switch to more generic dtype for shank_ids
         probe.set_shank_ids(probe.shank_ids.astype(str))
 
-
     write_BIDS_probe(folder, probegroup)
-    
 
     probegroup_read = read_BIDS_probe(folder)
 
@@ -194,15 +192,22 @@ def test_prb():
 
 
 def test_readspikeglx():
+    # NP1
     probe = read_spikeglx(folder / 'Noise_g0_t0.imec0.ap.meta')
     
-    # probe = read_spikeglx(folder / '0002_dEXA_g0_t0.imec.ap.meta')
-    # probe = read_spikeglx(folder / 'towersTask_g0_t0.imec0.ap.meta')
+    # NP2 4 shanks
+    probe = read_spikeglx(folder / 'TEST_20210920_0_g0_t0.imec0.ap.meta')
     
-    #~ from probeinterface.plotting import plot_probe_group, plot_probe
-    #~ import matplotlib.pyplot as plt
-    #~ plot_probe(probe)
-    #~ plt.show()
+    probe = read_spikeglx(folder / 'TS05_20210923_0_g0_t0.imec0.ap.meta')
+    
+    # NP2 1 shanks
+    probe = read_spikeglx(folder / 'p2_g0_t0.imec0.ap.meta')
+    
+    
+    from probeinterface.plotting import plot_probe_group, plot_probe
+    import matplotlib.pyplot as plt
+    plot_probe(probe, with_contact_id=True)
+    plt.show()
     
     
     
@@ -214,7 +219,7 @@ if __name__ == '__main__':
     #~ test_BIDS_format_empty()
     #~ test_BIDS_format_minimal()
     
-    test_prb()
-    #~ test_readspikeglx()
+    #~ test_prb()
+    test_readspikeglx()
     
     

@@ -25,12 +25,27 @@ pathways = {
 
 
 def get_available_pathways():
+    """Return available pathways
+
+    Returns
+    -------
+    pathway : list
+        The list of available pathways
+    """
     return list(pathways.keys())
 
 
 def wire_probe(probe, pathway, channel_offset=0):
-    """
-    Inplace wiring for a Probe.
+    """Inplace wiring for a Probe using a pathway
+
+    Parameters
+    ----------
+    probe : Probe
+        The probe to wire
+    pathway : str
+        The pathway to use
+    channel_offset : int, optional
+        An optional offset to add to the device_channel_indices, by default 0
     """
     assert pathway in pathways
     chan_indices = np.array(pathways[pathway], dtype='int64') + channel_offset

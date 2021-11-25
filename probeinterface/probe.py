@@ -57,8 +57,9 @@ class Probe:
 
         # annotation:  a dict that contains all meta information about
         # the probe (name, manufacturor, date of production, ...)
-        # See
         self.annotations = dict(name='')
+        # same idea but handle in vector way for contacts
+        self.contact_annotations = dict()
 
         # the Probe can belong to a ProbeGroup
         self._probe_group = None
@@ -98,6 +99,9 @@ class Probe:
                 txt = f'{manufacturer} - {name} - {n}ch'
             else:
                 txt = f'Probe - {n}ch'
+            if self.shank_ids is not None:
+                num_shank = self.get_shank_count()
+                txt += f' - {num_shank}shanks'
         return txt
 
     def __repr__(self):
@@ -112,6 +116,13 @@ class Probe:
         """
         self.annotations.update(kwargs)
         self.check_annotations()
+    
+    def annotate_contacts(self, **kwargs):
+        n = self.get_contact_count()
+        for k, values in kwargs.items():
+            assert len(values) == n, 'annotate_contacts need list or array as values'
+            values = np.asarray(values)
+            self.contact_annotations[k] = values
 
     def check_annotations(self):
         d = self.annotations
@@ -218,25 +229,36 @@ class Probe:
 
         """
         if self.ndim != 2:
-            raise ValueError('Auto shape is supported only for 2D')
+            raise ValueError('Auto shape is supported only for 2d')
 
-        x0 = np.min(self.contact_positions[:, 0])
-        x1 = np.max(self.contact_positions[:, 0])
-        x0 -= margin
-        x1 += margin
-
-        y0 = np.min(self.contact_positions[:, 1])
-        y1 = np.max(self.contact_positions[:, 1])
-        y0 -= margin
-        y1 += margin
-
-        if probe_type == 'rect':
-            polygon = [(x0, y1), (x0, y0), (x1, y0), (x1, y1), ]
-        elif probe_type == 'tip':
-            tip = ((x0 + x1) * 0.5, y0 - margin * 4)
-            polygon = [(x0, y1), (x0, y0), tip, (x1, y0), (x1, y1), ]
+        if self._shank_ids is None:
+            shank_ids = np.zeros((self.get_contact_count()), dtype='int64')
         else:
-            raise ValueError()
+            shank_ids = self._shank_ids
+
+        polygon = []
+
+        for i, shank_id in enumerate(np.unique(shank_ids)):
+            mask = shank_ids == shank_id
+
+            x0 = np.min(self.contact_positions[mask, 0])
+            x1 = np.max(self.contact_positions[mask, 0])
+            x0 -= margin
+            x1 += margin
+
+            y0 = np.min(self.contact_positions[:, 1])
+            y1 = np.max(self.contact_positions[:, 1])
+            y0 -= margin
+            y1 += margin
+
+            if probe_type == 'rect':
+                polygon += [(x0, y1), (x0, y0), (x1, y0), (x1, y1), ]
+            elif probe_type == 'tip':
+                tip = ((x0 + x1) * 0.5, y0 - margin * 4)
+                polygon += [(x0, y1), (x0, y0), tip, (x1, y0), (x1, y1), ]
+            else:
+                raise ValueError()
+
         self.set_planar_contour(polygon)
 
     def set_device_channel_indices(self, channel_indices):
@@ -508,7 +530,7 @@ class Probe:
             for i in range(2):
                 self.contact_plane_axes[e, i, :] = self.contact_plane_axes[e, i, :] @ R
 
-    _dump_attr_names = ['ndim', 'si_units', 'annotations',
+    _dump_attr_names = ['ndim', 'si_units', 'annotations', 'contact_annotations',
                         '_contact_positions', '_contact_plane_axes',
                         '_contact_shapes', '_contact_shape_params',
                         'probe_planar_contour', 'device_channel_indices',
@@ -516,7 +538,7 @@ class Probe:
 
     def to_dict(self, array_as_list=False):
         """Create a dictionary of all necessary attributes.
-        Useful for dumping or saving to hdf5.
+        Useful for dumping and saving to json.
 
         Parameters
         ----------
@@ -531,6 +553,10 @@ class Probe:
         d = {}
         for k in self._dump_attr_names:
             v = getattr(self, k, None)
+            if array_as_list and isinstance(v, dict):
+                for kk, vv in v.items():
+                    if isinstance(vv, np.ndarray):
+                        v[kk] = vv.tolist()
             if array_as_list and v is not None and isinstance(v, np.ndarray):
                 v = v.tolist()
             if v is not None:
@@ -577,8 +603,11 @@ class Probe:
         v = d.get('contact_ids', None)
         if v is not None:
             probe.set_contact_ids(v)
-
-        probe.annotate(**d['annotations'])
+        
+        if 'annotations' in d:
+            probe.annotate(**d['annotations'])
+        if 'contact_annotations' in d:
+            probe.annotate_contacts(**d['contact_annotations'])
 
         return probe
 
@@ -623,6 +652,8 @@ class Probe:
                 dim = ['x', 'y', 'z'][i]
                 dtype += [(f'plane_axis_{dim}_0', 'float64')]
                 dtype += [(f'plane_axis_{dim}_1', 'float64')]
+            for k, v in self.contact_annotations.items():
+                dtype += [(f'{k}', np.dtype(v[0]))]
 
         arr = np.zeros(self.get_contact_count(), dtype=dtype)
         arr['x'] = self.contact_positions[:, 0]
@@ -654,6 +685,9 @@ class Probe:
                 arr['device_channel_indices'] = -1
             else:
                 arr['device_channel_indices'] = self.device_channel_indices
+
+            for k, v in self.contact_annotations.items():
+                arr[k] = v
 
         return arr
 
@@ -867,6 +901,11 @@ class Probe:
             if isinstance(v, np.ndarray):
                 assert v.shape[0] == n
                 d[k] = v[selection].copy()
+            
+            if k == 'contact_annotations':
+                d[k] = {}
+                for kk, vv in v.items():
+                    d[k][kk] = vv[selection].copy()
 
         sliced_probe = Probe.from_dict(d)
 
