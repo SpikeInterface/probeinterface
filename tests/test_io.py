@@ -198,8 +198,6 @@ def test_readspikeglx():
     # NP2 4 shanks
     probe = read_spikeglx(folder / 'TEST_20210920_0_g0_t0.imec0.ap.meta')
     
-    probe = read_spikeglx(folder / 'TS05_20210923_0_g0_t0.imec0.ap.meta')
-    
     # NP2 1 shanks
     probe = read_spikeglx(folder / 'p2_g0_t0.imec0.ap.meta')
     
