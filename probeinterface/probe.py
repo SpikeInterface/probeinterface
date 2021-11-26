@@ -321,7 +321,7 @@ class Probe:
     def set_shank_ids(self, shank_ids):
         """
         Set shank ids.
-        
+
         Parameters
         ----------
         shank_ids : list or array
@@ -603,7 +603,7 @@ class Probe:
         v = d.get('contact_ids', None)
         if v is not None:
             probe.set_contact_ids(v)
-        
+
         if 'annotations' in d:
             probe.annotate(**d['annotations'])
         if 'contact_annotations' in d:
@@ -699,7 +699,7 @@ class Probe:
 
         Parameters
         ----------
-        arr : np.array 
+        arr : np.array
             The structured np.array representation of the probe
 
         Returns
@@ -839,7 +839,10 @@ class Probe:
             The y limits
 
         """
-        from scipy.interpolate import griddata
+        try:
+            from scipy.interpolate import griddata
+        except ImportError:
+            raise ImportError("to_image() requires the scipy package")
         assert self.ndim == 2
         assert values.shape == (self.get_contact_count(), ), 'Bad boy: values must have size equal contact count'
 
@@ -901,7 +904,7 @@ class Probe:
             if isinstance(v, np.ndarray):
                 assert v.shape[0] == n
                 d[k] = v[selection].copy()
-            
+
             if k == 'contact_annotations':
                 d[k] = {}
                 for kk, vv in v.items():
