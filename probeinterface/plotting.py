@@ -153,15 +153,20 @@ def plot_probe(probe, ax=None, contacts_colors=None,
                 txt.append(f'dev{chan_ind}')
             txt = '\n'.join(txt)
             x, y = probe.contact_positions[i]
-            ax.text(x, y, txt, ha='center', va='center')
+            ax.text(x, y, txt, ha='center', va='center', clip_on=True)
 
     if xlims is None or ylims is None or (zlims is None and probe.ndim == 3):
         xlims, ylims, zlims = get_auto_lims(probe)
 
     ax.set_xlim(*xlims)
     ax.set_ylim(*ylims)
-    ax.set_xlabel('x')
-    ax.set_ylabel('y')
+
+    if probe.si_units == "um":
+        unit_str = "($\mu m$)"
+    else:
+        unit_str = f"({probe.si_units})"
+    ax.set_xlabel(f'x {unit_str}', fontsize=15)
+    ax.set_ylabel(f'y {unit_str}', fontsize=15)
 
     if probe.ndim == 3:
         ax.set_zlim(zlims)
