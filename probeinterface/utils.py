@@ -9,20 +9,19 @@ from .probe import Probe
 def combine_probes(probes, connect_shape=True):
     """
     Combine several Probe objects into a unique
-    multi-shank Probe object
-
+    multi-shank Probe object.
     This works only when ndim=2
 
     This will have strange behavior if:
       * probes have been rotated
       * one of the probes has NOT been moved from its original location
-       (results in probes overlapping in space )
+        (results in probes overlapping in space )
 
 
     Parameters
     ----------
-    probes : list of Probe
-
+    probes : list
+        List of Probe objects
     connect_shape : bool (default True)
         Connect all shapes togother.
         Be careful, as this can lead to strange probe shape....
@@ -36,8 +35,6 @@ def combine_probes(probes, connect_shape=True):
     # check ndim
     assert all(probes[0].ndim == p.ndim for p in probes)
     assert probes[0].ndim == 2
-
-    n = sum(p.get_contact_count() for p in probes)
 
     kwargs = {}
     for k in ('contact_positions', 'contact_plane_axes',
@@ -65,24 +62,28 @@ def combine_probes(probes, connect_shape=True):
 
     return multi_shank
 
+
 def generate_unique_ids(min, max, n, trials=20):
     """
-    Create n unique identifiers
-
+    Create n unique identifiers.
     Creates `n` unique integer identifiers between `min` and `max` within a
-    maximum number of `trials` attempts
+    maximum number of `trials` attempts.
 
     Parameters
     ----------
-    min (int) : minimal value permitted for an identifier
-    max (int) : maximal value permitted for an identifier
-    n (int) : number of identifiers to create
-    trials (int): maximal number of attempts for generating the set of
-        identifiers
+    min : int 
+        Minimun value permitted for an identifier
+    max : int
+        Maximum value permitted for an identifier
+    n : int 
+        Number of identifiers to create
+    trials : int
+        Maximal number of attempts for generating
+        the set of identifiers
 
     Returns
     -------
-    A numpy array of `n` unique integer identifiers
+    ids : A numpy array of `n` unique integer identifiers
 
     """
 

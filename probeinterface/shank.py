@@ -38,4 +38,3 @@ class Shank:
     @property
     def device_channel_indices(self):
         return self.probe.device_channel_indices[self.get_indices()]
-

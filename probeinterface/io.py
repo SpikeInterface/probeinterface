@@ -9,14 +9,10 @@ Read/write probe info using a variety of formats:
   * Neurodata Without Borders (.nwb)
 
 """
-import os
-import csv
 from pathlib import Path
 import re
-from pprint import pformat, pprint
 import json
 from collections import OrderedDict
-from copy import copy, deepcopy
 
 import numpy as np
 
@@ -40,7 +36,7 @@ def read_probeinterface(file):
     Parameters
     ----------
     file: Path or str
-        The file name.
+        The file path
 
     Returns
     --------
@@ -72,10 +68,9 @@ def write_probeinterface(file, probe_or_probegroup):
     Parameters
     ----------
     file : Path or str
-        The file name.
-
+        The file path
     probe_or_probegroup : Probe or ProbeGroup object
-        If probe is given a probegroup is created anyway.
+        If probe is given a probegroup is created anyway
 
     """
 
@@ -97,17 +92,18 @@ def write_probeinterface(file, probe_or_probegroup):
     for probe_ind, probe in enumerate(probegroup.probes):
         probe_dict = probe.to_dict(array_as_list=True)
         d['probes'].append(probe_dict)
-    
+
     with open(file, 'w', encoding='utf8') as f:
         json.dump(d, f, indent=4)
 
 
-tsv_label_map_to_BIDS= {'contact_ids': 'contact_id',
-                    'probe_ids': 'probe_id',
-                    'contact_shapes': 'contact_shape',
-                    'shank_ids': 'shank_id',
-                    'si_units': 'xyz_units'}
-tsv_label_map_to_probeinterface = {v: k for k, v in tsv_label_map_to_BIDS.items()}
+tsv_label_map_to_BIDS = {'contact_ids': 'contact_id',
+                         'probe_ids': 'probe_id',
+                         'contact_shapes': 'contact_shape',
+                         'shank_ids': 'shank_id',
+                         'si_units': 'xyz_units'}
+tsv_label_map_to_probeinterface = {
+    v: k for k, v in tsv_label_map_to_BIDS.items()}
 
 
 def read_BIDS_probe(folder, prefix=None):
@@ -120,10 +116,13 @@ def read_BIDS_probe(folder, prefix=None):
     Parameters
     ----------
     folder: Path or str
-        The folder to scan for probes and contacts files.
-
+        The folder to scan for probes and contacts files
     prefix : None or str
-        Prefix of the probes and contacts files.
+        Prefix of the probes and contacts files
+
+    Returns
+    --------
+    probegroup : ProbeGroup object
 
     """
 
@@ -159,14 +158,15 @@ def read_BIDS_probe(folder, prefix=None):
         'radius': float, 'width': float, 'height': float,
     }
     df = pd.read_csv(contacts_file, sep='\t', header=0,
-                     keep_default_na=False, converters=converters) # dtype=str,
+                     keep_default_na=False, converters=converters)  #  dtype=str,
     df.replace(to_replace={'n/a': ''}, inplace=True)
     df.rename(columns=tsv_label_map_to_probeinterface, inplace=True)
 
     if 'probe_ids' not in df:
         raise ValueError('probes.tsv file does not contain probe_id column')
     if 'contact_ids' not in df:
-        raise ValueError('contacts.tsv file does not contain contact_id column')
+        raise ValueError(
+            'contacts.tsv file does not contain contact_id column')
 
     for probe_id in df['probe_ids'].unique():
         df_probe = df[df['probe_ids'] == probe_id].copy()
@@ -215,7 +215,8 @@ def read_BIDS_probe(folder, prefix=None):
     df.replace(to_replace={'n/a': ''}, inplace=True)
 
     if 'probe_id' not in df:
-        raise ValueError(f'{probes_file} file does not contain probe_id column')
+        raise ValueError(
+            f'{probes_file} file does not contain probe_id column')
 
     for row_idx, row in df.iterrows():
         probe_id = row['probe_id']
@@ -294,10 +295,8 @@ def write_BIDS_probe(folder, probe_or_probegroup, prefix=''):
     ----------
     folder : Path or str
         The folder name.
-
     probe_or_probegroup : Probe or ProbeGroup
         If probe is given a probegroup is created anyway.
-
     prefix : str
         A prefix to be added to the filenames
 
@@ -404,7 +403,8 @@ def write_BIDS_probe(folder, probe_or_probegroup, prefix=''):
     contacts_dict = {}
     for probe in probes:
         for cidx, contact_id in enumerate(probe.contact_ids):
-            cdict = {'contact_plane_axes': probe.contact_plane_axes[cidx].tolist()}
+            cdict = {
+                'contact_plane_axes': probe.contact_plane_axes[cidx].tolist()}
             contacts_dict[contact_id] = cdict
 
     with open(folder.joinpath(prefix + 'contacts.json'), 'w', encoding='utf8') as f:
@@ -415,12 +415,20 @@ def read_prb(file):
     """
     Read a PRB file and return a ProbeGroup object.
 
-    Since PRB do not handle contact shape then circle of 5um are put.
-    Same for contact shape a dummy tip is put.
+    Since PRB does not handle contact shapes, contacts are set to be circle of 5um radius.
+    Same for the probe shape, where an auto shape is created.
 
-    PRB format do not contain any information about the channel of the probe
+    PRB format does not contain any information about the channel of the probe
     Only the channel index on device is given.
 
+    Parameters
+    ----------
+    file : Path or str
+        The file path
+        
+    Returns
+    --------
+    probegroup : ProbeGroup object
     """
 
     file = Path(file).absolute()
@@ -444,7 +452,7 @@ def read_prb(file):
                              dtype='float64')
 
         probe.set_contacts(positions=positions, shapes='circle',
-                             shape_params={'radius': 5})
+                           shape_params={'radius': 5})
         probe.create_auto_shape(probe_type='tip')
 
         probe.set_device_channel_indices(chans)
@@ -455,22 +463,16 @@ def read_prb(file):
 
 def read_maxwell(file, well_name='well000', rec_name='rec0000'):
     """
-    Read a maxwell file and return a Probe object. Maxwell file format can be
+    Read a maxwell file and return a Probe object. The Maxwell file format can be
     either Maxone (and thus just the file name is needed), or MaxTwo. In case
     of the latter, you need to explicitly specify what is the well number of
     interest (well000 by default), and the recording session (since there can
     be several. Default is rec0000)
 
-    Since Maxwell do not handle contact shape then circle of 5um are put.
-    Same for contact shape a dummy tip is put.
-
-    Maxwell format do not contain any information about the channel of the probe
-    Only the channel index on device is given.
-
     Parameters
     ----------
     file : Path or str
-        The file name.
+        The file name
 
     well_name : str
         If MaxTwo file format, the well_name to extract the mapping from
@@ -500,7 +502,7 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
         mapping = my_file['mapping'][:]
     else:
         mapping = my_file['wells'][well_name][rec_name]['settings']['mapping'][
-                  :]
+            :]
 
     prb = {'channel_groups': {1: {}}}
 
@@ -536,14 +538,14 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
 
 
 def write_prb(file, probegroup,
-            total_nb_channels=None,
-            radius=None,
-            group_mode='by_probe'
-            ):
+              total_nb_channels=None,
+              radius=None,
+              group_mode='by_probe'
+              ):
     """
     Write ProbeGroup into a prb file.
 
-    This format handle:
+    This format handles:
       * multi Probe with channel group index key
       * channel positions with "geometry"
       * device_channel_indices with "channels "key
@@ -554,15 +556,12 @@ def write_prb(file, probegroup,
       * channel index
 
     Note:
-      * "total_nb_channels" is a total none sens here
-                but needed by spyking-circus
-      * "radius" is a total none sens here.
-                but needed by spyking-circus
-      * "graph" is not handle because it is useless
+      * "total_nb_channels" is needed by spyking-circus
+      * "radius" is needed by spyking-circus
+      * "graph" is not handled
 
     """
     assert group_mode in ('by_probe', 'by_shank')
-    
 
     if len(probegroup.probes) == 0:
         raise ValueError('Bad boy')
@@ -579,7 +578,7 @@ def write_prb(file, probegroup,
             f.write(f'radius = {radius}\n')
 
         f.write('channel_groups = {\n')
-        
+
         if group_mode == 'by_probe':
             loop = enumerate(probegroup.probes)
         elif group_mode == 'by_shank':
@@ -587,7 +586,7 @@ def write_prb(file, probegroup,
             for probe in probegroup.probes:
                 shanks.extend(probe.get_shanks())
             loop = enumerate(shanks)
-        
+
         for group_ind, probe_or_shank in loop:
             f.write(f"    {group_ind}:\n")
             f.write("        {\n")
@@ -631,17 +630,22 @@ def read_spikeglx(file):
 
     See http://billkarsh.github.io/SpikeGLX/#metadata-guides for implementation.
 
-    The x_pitch/y_pitch/width are set automatically depending the NP version
+    The x_pitch/y_pitch/width are set automatically depending the NP version.
 
-    The shape is a dummy one for the moment.
+    The shape is auto generated as a shank.
 
     Now read:
       * NP1.0 (=phase3B2)
       * NP2.0 with 4 shank
 
+    Parameters
+    ----------
+    file : Path or str
+        The .meta file path
+
     Returns
     -------
-    probe - Probe object
+    probe : Probe object
 
     """
 
@@ -669,26 +673,21 @@ def read_spikeglx(file):
     # https://github.com/billkarsh/SpikeGLX/blob/gh-pages/Support/Metadata_30.md#channel-entries-by-type
     # imDatPrb_type=0/21/24
     # This is the probe type {0=NP1.0, 21=NP2.0(1-shank), 24=NP2.0(4-shank)}.
-
     # See also this # https://billkarsh.github.io/SpikeGLX/help/imroTables/
-    
     # See also https://github.com/cortex-lab/neuropixels/wiki
-    
 
     # older file don't have this field
     imDatPrb_type = int(meta.get('imDatPrb_type', 0))
-    
+
     num_contact = len(meta['snsShankMap'])
     positions = np.zeros((num_contact, 2), dtype='float64')
-    
-    
-    
+
     # the x_pitch/y_pitch depend on NP version
     if imDatPrb_type == 0:
         # NP1.0
         x_pitch = 32
         y_pitch = 20
-        contact_width=12
+        contact_width = 12
         shank_ids = None
 
         contact_ids = []
@@ -697,7 +696,6 @@ def read_spikeglx(file):
             chan_id = e.split(' ')[0]
             contact_ids.append(f'e{chan_id}')
 
-
         for i, e in enumerate(meta['snsShankMap']):
             x_idx = int(e.split(':')[1])
             y_idx = int(e.split(':')[2])
@@ -705,7 +703,7 @@ def read_spikeglx(file):
             x_pos = x_idx * x_pitch + stagger
             y_pos = y_idx * y_pitch
             positions[i, :] = [x_pos, y_pos]
-        
+
     elif imDatPrb_type == 21:
         x_pitch = 32
         y_pitch = 15
@@ -730,7 +728,7 @@ def read_spikeglx(file):
         y_pitch = 15
         contact_width = 12
         shank_pitch = 250
-        
+
         shank_ids = []
         contact_ids = []
         for e in meta['imroTbl']:
@@ -747,17 +745,16 @@ def read_spikeglx(file):
             positions[i, :] = [x_pos, y_pos]
 
     else:
-        #NP unknown
-        raise NotImplementedError('This neuropixel is not implemented in probeinterface')
-    
-    
+        # NP unknown
+        raise NotImplementedError(
+            'This neuropixel is not implemented in probeinterface')
 
     probe = Probe(ndim=2, si_units='um')
     probe.set_contacts(positions=positions, shapes='square',
-                         shank_ids=shank_ids,
-                         shape_params={'width': contact_width})
+                       shank_ids=shank_ids,
+                       shape_params={'width': contact_width})
     probe.set_contact_ids(contact_ids)
-    
+
     # planar contour
     one_polygon = [(0, 10000), (0, 0), (35, -175), (70, 0), (70, 10000), ]
     if shank_ids is None:
@@ -766,7 +763,7 @@ def read_spikeglx(file):
         contour = []
         for i, shank_id in enumerate(np.unique(shank_ids)):
             contour += list(np.array(one_polygon) + [shank_pitch * i, 0])
-    # shift 
+    # shift
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
 
@@ -781,7 +778,12 @@ def read_mearec(file):
     Read probe position, and contact shape from a MEArec file.
 
     See https://mearec.readthedocs.io/en/latest/ and https://doi.org/10.1007/s12021-020-09467-7 for implementation.
-
+    
+    Parameters
+    ----------
+    file : Path or str
+        The file path
+        
     Returns
     -------
     probe : Probe object
@@ -796,7 +798,7 @@ def read_mearec(file):
     except ImportError as error:
         print(error.__class__.__name__ + ": " + error.message)
 
-    f =  h5py.File(file, "r")
+    f = h5py.File(file, "r")
     positions = f["channel_positions"][()]
     elinfo = f["info"]["electrodes"]
     elinfo_keys = elinfo.keys()
@@ -863,7 +865,6 @@ def read_mearec(file):
     return probe
 
 
-
 def read_nwb(file):
     """
     Read probe position from an NWB file
@@ -871,4 +872,3 @@ def read_nwb(file):
     """
 
     raise NotImplementedError
-
