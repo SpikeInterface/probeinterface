@@ -1,0 +1,10 @@
+probeinterface 0.2.6
+--------------------
+
+November, 26 2021
+
+* documention improvement
+* spikeglx neuropixel2 integration
+* plotting improvement
+
+
