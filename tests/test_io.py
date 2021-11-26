@@ -202,10 +202,10 @@ def test_readspikeglx():
     probe = read_spikeglx(folder / 'p2_g0_t0.imec0.ap.meta')
     
     
-    from probeinterface.plotting import plot_probe_group, plot_probe
-    import matplotlib.pyplot as plt
-    plot_probe(probe, with_contact_id=True)
-    plt.show()
+    # from probeinterface.plotting import plot_probe_group, plot_probe
+    # import matplotlib.pyplot as plt
+    # plot_probe(probe, with_contact_id=True)
+    # plt.show()
     
     
     
