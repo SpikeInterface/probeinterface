@@ -409,7 +409,6 @@ class Probe:
             shape_param = self.contact_shape_params[i]
             plane_axe = self.contact_plane_axes[i]
             pos = self.contact_positions[i]
-
             if shape == 'circle':
                 r = shape_param['radius']
                 theta = np.linspace(0, 2 * np.pi, 360)
@@ -423,6 +422,7 @@ class Probe:
                     pos + w / 2 * plane_axe[0] + w / 2 * plane_axe[1],
                     pos + w / 2 * plane_axe[0] - w / 2 * plane_axe[1],
                 ]
+                one_vertice = np.array(one_vertice)
             elif shape == 'rect':
                 w = shape_param['width']
                 h = shape_param['height']
@@ -432,6 +432,7 @@ class Probe:
                     pos + w / 2 * plane_axe[0] + h / 2 * plane_axe[1],
                     pos + w / 2 * plane_axe[0] - h / 2 * plane_axe[1],
                 ]
+                one_vertice = np.array(one_vertice)
             else:
                 raise ValueError
             vertices.append(one_vertice)
