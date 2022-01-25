@@ -8,7 +8,7 @@ from .io import (
     read_csv, write_csv,
     read_BIDS_probe, write_BIDS_probe,
     read_spikeglx, read_mearec, read_nwb,
-    read_maxwell)
+    read_maxwell, read_3brain)
 from .utils import combine_probes
 from .generator import (generate_dummy_probe, generate_dummy_probe_group,
             generate_tetrode, generate_linear_probe,

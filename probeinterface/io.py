@@ -425,7 +425,7 @@ def read_prb(file):
     ----------
     file : Path or str
         The file path
-        
+
     Returns
     --------
     probegroup : ProbeGroup object
@@ -532,6 +532,54 @@ def read_maxwell(file, well_name='well000', rec_name='rec0000'):
     probe.set_planar_contour(
         ([-12.5, -12.5], [3845, -12.5], [3845, 2095], [-12.5, 2095]))
 
+    probe.set_device_channel_indices(np.arange(positions.shape[0]))
+
+    return probe
+
+
+def read_3brain(file, mea_pitch=42, electrode_width=21):
+    """
+    Read a 3brain file and return a Probe object. The 3brain file format can be
+    either an .h5 file or a .brw
+
+    Parameters
+    ----------
+    file : Path or str
+        The file name
+
+    mea_pitch : float
+        The inter-electrode distance (pitch) between electrodes
+        
+    electrode_width : float
+        Width of the electrodes in um
+
+    Returns
+    --------
+    probe : Probe object
+
+    """
+    file = Path(file).absolute()
+    assert file.is_file()
+
+    try:
+        import h5py
+    except ImportError as error:
+        print(error.__class__.__name__ + ": " + error.message)
+
+    rf = h5py.File(file, 'r')
+
+    # get channel positions
+    channels = rf['3BRecInfo/3BMeaStreams/Raw/Chs'][:]
+    rows = channels['Row'] - 1
+    cols = channels['Col'] - 1
+    positions = np.vstack((rows, cols)).T * mea_pitch
+
+    probe = Probe(ndim=2, si_units='um')
+    probe.set_contacts(positions=positions, shapes='square',
+                       shape_params={'width': electrode_width})
+    probe.annotate_contacts(row=rows)
+    probe.annotate_contacts(col=cols)
+    probe.create_auto_shape(probe_type='rect', margin=mea_pitch)
     probe.set_device_channel_indices(np.arange(positions.shape[0]))
 
     return probe
@@ -778,12 +826,12 @@ def read_mearec(file):
     Read probe position, and contact shape from a MEArec file.
 
     See https://mearec.readthedocs.io/en/latest/ and https://doi.org/10.1007/s12021-020-09467-7 for implementation.
-    
+
     Parameters
     ----------
     file : Path or str
         The file path
-        
+
     Returns
     -------
     probe : Probe object
