@@ -721,10 +721,8 @@ def read_spikeglx(file):
     # https://github.com/billkarsh/SpikeGLX/blob/gh-pages/Support/Metadata_30.md#channel-entries-by-type
     # imDatPrb_type=0/21/24
     # This is the probe type {0=NP1.0, 21=NP2.0(1-shank), 24=NP2.0(4-shank)}.
-    # See also this # https://billkarsh.github.io/SpikeGLX/help/imroTables/
-    # See also https://github.com/cortex-lab/neuropixels/wiki
-
-    # older file don't have this field
+    # See also this # https://billkarsh.github.io/SpikeGLX/help/imroTables/
+    # See also https://github.com/cortex-lab/neuropixels/wiki
     imDatPrb_type = int(meta.get('imDatPrb_type', 0))
 
     num_contact = len(meta['snsShankMap'])
@@ -802,8 +800,9 @@ def read_spikeglx(file):
                        shank_ids=shank_ids,
                        shape_params={'width': contact_width})
     probe.set_contact_ids(contact_ids)
+    probe.annotate(imDatPrb_type=imDatPrb_type)
 
-    # planar contour
+    # planar contour
     one_polygon = [(0, 10000), (0, 0), (35, -175), (70, 0), (70, 10000), ]
     if shank_ids is None:
         contour = one_polygon
