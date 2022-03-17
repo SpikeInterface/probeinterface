@@ -985,19 +985,19 @@ def select_dimensions(data, dimensions='xy'):
     data3d
         shape (n, 3)
     """
-    assert len(np.unique(dimensions)) == len(dimensions), 'select_dimensions : dimensions must be unique.'
+    assert np.all([dimensions.count(dim) == 1 for dim in dimensions]), 'select_dimensions : dimensions must be unique.'
     dims = np.array(['xyz'.index(d) for d in dimensions])
     assert data.shape[1] >= max(dims), "Inconsistent shapes between positions and dimensions"
     return data[:, dims]
 
 
-def _3d_to_2d(data3d, plane='xy'):
+def _3d_to_2d(data3d, dimensions='xy'):
     """
-    Reduce 3d array to 2d array on a given plane.
+    Reduce 3d array to 2d array on given dimensions.
     """
     assert data3d.shape[1] == 3
-    assert len(plane) == 2
-    return select_dimensions(data3d, plane=plane)
+    assert len(dimensions) == 2
+    return select_dimensions(data3d, dimensions=dimensions)
 
 
 def _rotation_matrix_2d(theta):
