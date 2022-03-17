@@ -925,7 +925,7 @@ def data_2d_to_3d(data2d, plane):
     data2d: np.array
         shape (n, 2)
     plane: str
-        'xy', 'yz' or 'xz'
+        The plane where electrodes lie on. E.g. 'xy', 'yz' or 'xz'
     Returns
     -------
     data3d
