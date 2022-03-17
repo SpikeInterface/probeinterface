@@ -35,6 +35,9 @@ def test_probegroup():
     other = ProbeGroup.from_numpy(arr)
     arr = probegroup.to_numpy(complete=True)
     other = ProbeGroup.from_numpy(arr)
+    
+    d = probegroup.to_dict()
+    other = ProbeGroup.from_dict(d)
 
     #~ from probeinterface.plotting import plot_probe_group, plot_probe
     #~ import matplotlib.pyplot as plt

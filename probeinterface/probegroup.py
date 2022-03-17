@@ -1,5 +1,6 @@
 import numpy as np
 from .utils import generate_unique_ids
+from .probe import Probe
 
 
 class ProbeGroup:
@@ -95,6 +96,45 @@ class ProbeGroup:
         df.index = np.arange(df.shape[0], dtype='int64')
         return df
 
+    def to_dict(self, array_as_list=False):
+        """Create a dictionary of all necessary attributes.
+
+        Parameters
+        ----------
+        array_as_list : bool, optional
+            If True, arrays are converted to lists, by default False
+
+        Returns
+        -------
+        d : dict
+            The dictionary representation of the probegroup
+        """
+        d = {}
+        d['probes'] = []
+        for probe_ind, probe in enumerate(self.probes):
+            probe_dict = probe.to_dict(array_as_list=array_as_list)
+            d['probes'].append(probe_dict)
+        return d
+
+    @staticmethod
+    def from_dict(d):
+        """Instantiate a ProbeGroup from a dictionary
+
+        Parameters
+        ----------
+        d : dict
+            The dictionary representation of the probegroup
+
+        Returns
+        -------
+        probegroup : ProbeGroup
+            The instantiated ProbeGroup object
+        """
+        probegroup = ProbeGroup()
+        for probe_dict in d['probes']:
+            probe = Probe.from_dict(probe_dict)
+            probegroup.add_probe(probe)
+        return probegroup
 
     def get_global_device_channel_indices(self):
         """
