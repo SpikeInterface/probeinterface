@@ -378,9 +378,9 @@ class Probe:
         probe3d = Probe(ndim=3, si_units=self.si_units)
 
         # contacts
-        positions = data_2d_to_3d(self.contact_positions, plane)
-        plane0 = data_2d_to_3d(self.contact_plane_axes[:, 0, :], plane)
-        plane1 = data_2d_to_3d(self.contact_plane_axes[:, 1, :], plane)
+        positions = _2d_to_3d(self.contact_positions, plane)
+        plane0 = _2d_to_3d(self.contact_plane_axes[:, 0, :], plane)
+        plane1 = _2d_to_3d(self.contact_plane_axes[:, 1, :], plane)
         plane_axes = np.concatenate([plane0[:, np.newaxis, :], plane1[:, np.newaxis, :]], axis=1)
         probe3d.set_contacts(
             positions=positions,
@@ -390,7 +390,7 @@ class Probe:
 
         # shape
         if self.probe_planar_contour is not None:
-            vertices3d = data_2d_to_3d(self.probe_planar_contour, plane)
+            vertices3d = _2d_to_3d(self.probe_planar_contour, plane)
             probe3d.set_planar_contour(vertices3d)
 
         if self.device_channel_indices is not None:
@@ -916,7 +916,7 @@ class Probe:
         return sliced_probe
 
 
-def data_2d_to_3d(data2d, plane):
+def _2d_to_3d(data2d, plane):
     """
     add a third dimension
     
@@ -933,11 +933,11 @@ def data_2d_to_3d(data2d, plane):
     """
     data3d = np.zeros((data2d.shape[0], 3), dtype=data2d.dtype)
     dims = np.array(['xyz'.index(d) for d in plane])
-    assert len(plane) == 2, 'data_2d_to_3d: bad plane'
+    assert len(plane) == 2, '_2d_to_3d: bad plane'
     data3d[:, dims] = data2d
     return data3d
 
-def data_select_dimensions(data, dimensions='xy'):
+def select_dimensions(data, dimensions='xy'):
     """
     Select dimensions in a 3d or 2d array.
     
@@ -952,19 +952,19 @@ def data_select_dimensions(data, dimensions='xy'):
     data3d
         shape (n, 3)
     """
-    assert len(np.unique(dimensions)) == len(dimensions), 'data_select_dimensions : dimensions must be unique.'
+    assert len(np.unique(dimensions)) == len(dimensions), 'select_dimensions : dimensions must be unique.'
     dims = np.array(['xyz'.index(d) for d in plane])
     assert data.shape[1] >= max(dims), "Inconsistent shapes between positions and dimensions"
     return data[:, dims]
 
 
-def data_3d_to_2d(data3d, plane='xy'):
+def _3d_to_2d(data3d, plane='xy'):
     """
     Reduce 3d array to 2d array on a given plane.
     """
     assert data3d.shape[1] == 3
     assert len(plane) == 2
-    return data_select_dimensions(data3d, plane=plane)
+    return select_dimensions(data3d, plane=plane)
 
 
 def _rotation_matrix_2d(theta):
