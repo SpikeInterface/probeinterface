@@ -1,6 +1,6 @@
 from .version import version as __version__
 
-from .probe import Probe
+from .probe import Probe, select_dimensions
 from .probegroup import ProbeGroup
 from .io import (
     write_probeinterface, read_probeinterface,
