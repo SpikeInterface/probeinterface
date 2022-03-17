@@ -971,7 +971,7 @@ def data_3d_to_2d(data3d, plane='xy'):
     """
     assert data3d.shape[1] == 3
     assert len(plane) == 2
-    return data_select_dimenssions(data3d, plane=plane)
+    return data_select_dimensions(data3d, plane=plane)
 
 
 def _rotation_matrix_2d(theta):
