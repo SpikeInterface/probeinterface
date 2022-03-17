@@ -917,19 +917,54 @@ class Probe:
 
 
 def _2d_to_3d(data2d, plane):
+    """
+    add a third dimension
+    
+    Parameters
+    ----------
+    data2d: np.array
+        shape (n, 2)
+    plane: str
+        The plane where electrodes lie on. E.g. 'xy', 'yz' or 'xz'
+    Returns
+    -------
+    data3d
+        shape (n, 3)
+    """
     data3d = np.zeros((data2d.shape[0], 3), dtype=data2d.dtype)
-    if plane == 'xy':
-        data3d[:, 0] = data2d[:, 0]
-        data3d[:, 1] = data2d[:, 1]
-    elif plane == 'yz':
-        data3d[:, 1] = data2d[:, 0]
-        data3d[:, 2] = data2d[:, 1]
-    elif plane == 'xz':
-        data3d[:, 0] = data2d[:, 0]
-        data3d[:, 2] = data2d[:, 1]
-    else:
-        raise ValueError('Bad plane')
+    dims = np.array(['xyz'.index(d) for d in plane])
+    assert len(plane) == 2, '_2d_to_3d: bad plane'
+    data3d[:, dims] = data2d
     return data3d
+
+def select_dimensions(data, dimensions='xy'):
+    """
+    Select dimensions in a 3d or 2d array.
+    
+    Parameters
+    ----------
+    data: np.array
+        shape (n, 2) or (n, 3)
+    plane: str
+        'xy', 'yz' 'xz' or 'xyz'
+    Returns
+    -------
+    data3d
+        shape (n, 3)
+    """
+    assert len(np.unique(dimensions)) == len(dimensions), 'select_dimensions : dimensions must be unique.'
+    dims = np.array(['xyz'.index(d) for d in plane])
+    assert data.shape[1] >= max(dims), "Inconsistent shapes between positions and dimensions"
+    return data[:, dims]
+
+
+def _3d_to_2d(data3d, plane='xy'):
+    """
+    Reduce 3d array to 2d array on a given plane.
+    """
+    assert data3d.shape[1] == 3
+    assert len(plane) == 2
+    return select_dimensions(data3d, plane=plane)
 
 
 def _rotation_matrix_2d(theta):
