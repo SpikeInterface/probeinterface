@@ -109,14 +109,14 @@ class Probe:
 
     def annotate(self, **kwargs):
         """Annotates the probe object.
-        
+
         Parameter
         ---------
         **kwargs : list of kwyword arguments to add to the annotations
         """
         self.annotations.update(kwargs)
         self.check_annotations()
-    
+
     def annotate_contacts(self, **kwargs):
         n = self.get_contact_count()
         for k, values in kwargs.items():
@@ -397,6 +397,38 @@ class Probe:
             probe3d.device_channel_indices = self.device_channel_indices
 
         return probe3d
+
+    def to_2d(self, dimensions='xy'):
+        """
+        Transform 3d probe to 2d probe.
+
+        Note: device_channel_indices is not copied.
+
+        Parameters
+        ----------
+        plane : str
+            The plane on which the 2D probe is defined. 'xy', 'yz' ', xz'
+        """
+        assert self.ndim == 3
+
+        probe2d = Probe(ndim=2, si_units=self.si_units)
+
+        # contacts
+        positions = _3d_to_2d(self.contact_positions, dimensions)
+        probe2d.set_contacts(
+            positions=positions,
+            shapes=self.contact_shapes.copy(),
+            shape_params=self.contact_shape_params.copy())
+
+        # shape
+        if self.probe_planar_contour is not None:
+            vertices3d = _3d_to_2d(self.probe_planar_contour, dimensions)
+            probe2d.set_planar_contour(vertices3d)
+
+        if self.device_channel_indices is not None:
+            probe2d.device_channel_indices = self.device_channel_indices
+
+        return probe2d
 
     def get_contact_vertices(self):
         """
@@ -918,8 +950,8 @@ class Probe:
 
 def _2d_to_3d(data2d, plane):
     """
-    add a third dimension
-    
+    Add a third dimension
+
     Parameters
     ----------
     data2d: np.array
@@ -937,15 +969,16 @@ def _2d_to_3d(data2d, plane):
     data3d[:, dims] = data2d
     return data3d
 
+
 def select_dimensions(data, dimensions='xy'):
     """
     Select dimensions in a 3d or 2d array.
-    
+
     Parameters
     ----------
     data: np.array
         shape (n, 2) or (n, 3)
-    plane: str
+    dimensions: str
         'xy', 'yz' 'xz' or 'xyz'
     Returns
     -------
@@ -953,7 +986,7 @@ def select_dimensions(data, dimensions='xy'):
         shape (n, 3)
     """
     assert len(np.unique(dimensions)) == len(dimensions), 'select_dimensions : dimensions must be unique.'
-    dims = np.array(['xyz'.index(d) for d in plane])
+    dims = np.array(['xyz'.index(d) for d in dimensions])
     assert data.shape[1] >= max(dims), "Inconsistent shapes between positions and dimensions"
     return data[:, dims]
 
