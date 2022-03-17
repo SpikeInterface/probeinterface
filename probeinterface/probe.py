@@ -932,17 +932,9 @@ def data_2d_to_3d(data2d, plane):
         shape (n, 3)
     """
     data3d = np.zeros((data2d.shape[0], 3), dtype=data2d.dtype)
-    if plane == 'xy':
-        data3d[:, 0] = data2d[:, 0]
-        data3d[:, 1] = data2d[:, 1]
-    elif plane == 'yz':
-        data3d[:, 1] = data2d[:, 0]
-        data3d[:, 2] = data2d[:, 1]
-    elif plane == 'xz':
-        data3d[:, 0] = data2d[:, 0]
-        data3d[:, 2] = data2d[:, 1]
-    else:
-        raise ValueError('Bad plane')
+    dims = np.array(['xyz'.index(d) for d in plane])
+    assert len(plane) == 2, 'data_2d_to_3d: bad plane'
+    data3d[:, dims] = data2d
     return data3d
 
 def data_select_dimensions(data, dimensions='xy'):
@@ -960,6 +952,7 @@ def data_select_dimensions(data, dimensions='xy'):
     data3d
         shape (n, 3)
     """
+    assert len(np.unique(dimensions)) == len(dimensions), 'data_select_dimensions : dimensions must be unique.'
     dims = np.array(['xyz'.index(d) for d in plane])
     assert data.shape[1] >= max(dims), "Inconsistent shapes between positions and dimensions"
     return data[:, dims]
