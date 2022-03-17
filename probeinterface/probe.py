@@ -945,7 +945,7 @@ def data_2d_to_3d(data2d, plane):
         raise ValueError('Bad plane')
     return data3d
 
-def data_select_dimensions(data, plane='xy'):
+def data_select_dimensions(data, dimensions='xy'):
     """
     Select dimensions in a 3d or 2d array.
     
