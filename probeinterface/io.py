@@ -51,12 +51,8 @@ def read_probeinterface(file):
     # check version
     _probeinterface_format_check_version(d)
 
-    # create probegroup
-    probegroup = ProbeGroup()
-    for probe_dict in d['probes']:
-        probe = Probe.from_dict(probe_dict)
-        probegroup.add_probe(probe)
-    return probegroup
+    # create probegroup from dict
+    return ProbeGroup.from_dict(d)
 
 
 def write_probeinterface(file, probe_or_probegroup):
@@ -81,17 +77,14 @@ def write_probeinterface(file, probe_or_probegroup):
     elif isinstance(probe_or_probegroup, ProbeGroup):
         probegroup = probe_or_probegroup
     else:
-        raise ValueError('Bad boy')
+        raise ValueError('write_probeinterface : need probe or probegroup')
 
     file = Path(file)
-
+    
     d = OrderedDict()
     d['specification'] = 'probeinterface'
     d['version'] = version
-    d['probes'] = []
-    for probe_ind, probe in enumerate(probegroup.probes):
-        probe_dict = probe.to_dict(array_as_list=True)
-        d['probes'].append(probe_dict)
+    d.update(probegroup.to_dict(array_as_list=True))
 
     with open(file, 'w', encoding='utf8') as f:
         json.dump(d, f, indent=4)
