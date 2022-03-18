@@ -18,19 +18,19 @@ def test_plot_probe():
     # with color
     n = probe.get_contact_count()
     contacts_colors = np.random.rand(n, 3)
-    plot_probe(probe, contacts_colors = contacts_colors)
+    plot_probe(probe, contacts_colors=contacts_colors)
 
     # 3d
-    probe_3d = probe.to_3d(plane='xz')
+    probe_3d = probe.to_3d(axes='xz')
     plot_probe(probe_3d)
-    
+
     # on click
     probe.set_device_channel_indices(np.arange(probe.get_contact_count())[::-1])
     plot_probe(probe, show_channel_on_click=True)
 
 
 def test_plot_probe_group():
-    probegroup  = generate_dummy_probe_group()
+    probegroup = generate_dummy_probe_group()
 
     plot_probe_group(probegroup, same_axes=True, with_channel_index=True)
     plot_probe_group(probegroup, same_axes=False)
@@ -39,12 +39,11 @@ def test_plot_probe_group():
     probegroup_3d = ProbeGroup()
     for probe in probegroup.probes:
         probegroup_3d.add_probe(probe.to_3d())
-    probegroup_3d.probes[-1].move([0,150, -50])
+    probegroup_3d.probes[-1].move([0, 150, -50])
     plot_probe_group(probegroup_3d, same_axes=True)
-
 
 
 if __name__ == '__main__':
     test_plot_probe()
-    #~ test_plot_probe_group()
+    # test_plot_probe_group()
     plt.show()
