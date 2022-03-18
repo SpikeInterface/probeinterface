@@ -11,7 +11,7 @@ from matplotlib import path as mpl_path
 
 def plot_probe(probe, ax=None, contacts_colors=None,
                with_channel_index=False, with_contact_id=False,
-               with_device_index=False,
+               with_device_index=False, text_on_contact=None,
                first_index='auto',
                contacts_values=None, cmap='viridis',
                title=True, contacts_kargs={}, probe_shape_kwargs={},
@@ -34,6 +34,8 @@ def plot_probe(probe, ax=None, contacts_colors=None,
         If True, channel ids are displayed on top of the channels, by default False
     with_device_index : bool, optional
         If True, device channel indices are displayed on top of the channels, by default False
+    text_on_contact: None or list or numpy.array
+        Addintional text to plot on each contact
     first_index : str, optional
         The first index of the contacts, by default 'auto' (taken from channel ids)
     contacts_values : np.array, optional
@@ -137,8 +139,13 @@ def plot_probe(probe, ax=None, contacts_colors=None,
             ax.add_collection3d(poly_contour)
     else:
         poly_contour = None
-
-    if with_channel_index or with_contact_id or with_device_index:
+    
+    if text_on_contact is not None:
+        text_on_contact = np.asarray(text_on_contact)
+        assert text_on_contact.size == probe.get_contact_count()
+        
+    
+    if with_channel_index or with_contact_id or with_device_index or text_on_contact is not None:
         if probe.ndim == 3:
             raise NotImplementedError('Channel index is 2d only')
         for i in range(n):
@@ -151,6 +158,9 @@ def plot_probe(probe, ax=None, contacts_colors=None,
             if with_device_index and probe.device_channel_indices is not None:
                 chan_ind = probe.device_channel_indices[i]
                 txt.append(f'dev{chan_ind}')
+            if text_on_contact is not None:
+                txt.append(f'{text_on_contact[i]}')
+            
             txt = '\n'.join(txt)
             x, y = probe.contact_positions[i]
             ax.text(x, y, txt, ha='center', va='center', clip_on=True)
