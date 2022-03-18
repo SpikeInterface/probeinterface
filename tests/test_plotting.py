@@ -14,6 +14,7 @@ def test_plot_probe():
     plot_probe(probe, with_channel_index=True)
     plot_probe(probe, with_contact_id=True)
     plot_probe(probe, with_device_index=True)
+    plot_probe(probe, text_on_contact=['abcde'[i%5] for i in range(probe.get_contact_count())])
 
     # with color
     n = probe.get_contact_count()
