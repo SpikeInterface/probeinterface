@@ -948,7 +948,7 @@ class Probe:
         return sliced_probe
 
 
-def _2d_to_3d(data2d, plane):
+def _2d_to_3d(data2d, axes):
     """
     Add a third dimension
 
@@ -956,16 +956,16 @@ def _2d_to_3d(data2d, plane):
     ----------
     data2d: np.array
         shape (n, 2)
-    plane: str
-        The plane where electrodes lie on. E.g. 'xy', 'yz' or 'xz'
+    axes: str
+        The axes that define the plane where electrodes lie on. E.g. 'xy', 'yz' or 'xz'
     Returns
     -------
     data3d
         shape (n, 3)
     """
     data3d = np.zeros((data2d.shape[0], 3), dtype=data2d.dtype)
-    dims = np.array(['xyz'.index(d) for d in plane])
-    assert len(plane) == 2, '_2d_to_3d: bad plane'
+    dims = np.array(['xyz'.index(axis) for axis in axes])
+    assert len(axes) == 2, '_2d_to_3d: bad axes'
     data3d[:, dims] = data2d
     return data3d
 
