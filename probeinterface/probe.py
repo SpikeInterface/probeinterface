@@ -362,7 +362,7 @@ class Probe:
         # channel_indices are not copied
         return other
 
-    def to_3d(self, plane='xz'):
+    def to_3d(self, axes='xz'):
         """
         Transform 2d probe to 3d probe.
 
@@ -370,17 +370,17 @@ class Probe:
 
         Parameters
         ----------
-        plane : str
-            The plane on which the 2D probe is defined. 'xy', 'yz' ', xz'
+        axes : str
+            The axes that define the plane on which the 2D probe is defined. 'xy', 'yz' ', xz'
         """
         assert self.ndim == 2
 
         probe3d = Probe(ndim=3, si_units=self.si_units)
 
         # contacts
-        positions = _2d_to_3d(self.contact_positions, plane)
-        plane0 = _2d_to_3d(self.contact_plane_axes[:, 0, :], plane)
-        plane1 = _2d_to_3d(self.contact_plane_axes[:, 1, :], plane)
+        positions = _2d_to_3d(self.contact_positions, axes)
+        plane0 = _2d_to_3d(self.contact_plane_axes[:, 0, :], axes)
+        plane1 = _2d_to_3d(self.contact_plane_axes[:, 1, :], axes)
         plane_axes = np.concatenate([plane0[:, np.newaxis, :], plane1[:, np.newaxis, :]], axis=1)
         probe3d.set_contacts(
             positions=positions,
@@ -390,7 +390,7 @@ class Probe:
 
         # shape
         if self.probe_planar_contour is not None:
-            vertices3d = _2d_to_3d(self.probe_planar_contour, plane)
+            vertices3d = _2d_to_3d(self.probe_planar_contour, axes)
             probe3d.set_planar_contour(vertices3d)
 
         if self.device_channel_indices is not None:
@@ -398,7 +398,7 @@ class Probe:
 
         return probe3d
 
-    def to_2d(self, dimensions='xy'):
+    def to_2d(self, axes='xy'):
         """
         Transform 3d probe to 2d probe.
 
@@ -414,7 +414,7 @@ class Probe:
         probe2d = Probe(ndim=2, si_units=self.si_units)
 
         # contacts
-        positions = _3d_to_2d(self.contact_positions, dimensions)
+        positions = _3d_to_2d(self.contact_positions, axes)
         probe2d.set_contacts(
             positions=positions,
             shapes=self.contact_shapes.copy(),
@@ -422,7 +422,7 @@ class Probe:
 
         # shape
         if self.probe_planar_contour is not None:
-            vertices3d = _3d_to_2d(self.probe_planar_contour, dimensions)
+            vertices3d = _3d_to_2d(self.probe_planar_contour, axes)
             probe2d.set_planar_contour(vertices3d)
 
         if self.device_channel_indices is not None:
@@ -970,34 +970,34 @@ def _2d_to_3d(data2d, plane):
     return data3d
 
 
-def select_dimensions(data, dimensions='xy'):
+def select_axes(data, axes='xy'):
     """
-    Select dimensions in a 3d or 2d array.
+    Select axes in a 3d or 2d array.
 
     Parameters
     ----------
     data: np.array
         shape (n, 2) or (n, 3)
-    dimensions: str
+    axes: str
         'xy', 'yz' 'xz' or 'xyz'
     Returns
     -------
     data3d
         shape (n, 3)
     """
-    assert np.all([dimensions.count(dim) == 1 for dim in dimensions]), 'select_dimensions : dimensions must be unique.'
-    dims = np.array(['xyz'.index(d) for d in dimensions])
-    assert data.shape[1] >= max(dims), "Inconsistent shapes between positions and dimensions"
+    assert np.all([axes.count(axis) == 1 for axis in axes]), 'select_axes : axes must be unique.'
+    dims = np.array(['xyz'.index(axis) for axis in axes])
+    assert data.shape[1] >= max(dims), "Inconsistent shapes between positions and axes"
     return data[:, dims]
 
 
-def _3d_to_2d(data3d, dimensions='xy'):
+def _3d_to_2d(data3d, axes='xy'):
     """
-    Reduce 3d array to 2d array on given dimensions.
+    Reduce 3d array to 2d array on given axes.
     """
     assert data3d.shape[1] == 3
-    assert len(dimensions) == 2
-    return select_dimensions(data3d, dimensions=dimensions)
+    assert len(axes) == 2
+    return select_axes(data3d, axes=axes)
 
 
 def _rotation_matrix_2d(theta):
