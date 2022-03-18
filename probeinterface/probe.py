@@ -965,7 +965,7 @@ def _2d_to_3d(data2d, axes):
     """
     data3d = np.zeros((data2d.shape[0], 3), dtype=data2d.dtype)
     dims = np.array(['xyz'.index(axis) for axis in axes])
-    assert len(axes) == 2, '_2d_to_3d: bad axes'
+    assert len(axes) == 2, '_2d_to_3d: axes should contain 2 dimensions!'
     data3d[:, dims] = data2d
     return data3d
 
