@@ -74,7 +74,12 @@ def test_probe():
     
     # 3d
     probe_3d = probe.to_3d()
-    probe_3d.rotate(theta=60, center=[0, 0, 0], axis=[0,1,0])
+    probe_3d.rotate(theta=60, center=[0, 0, 0], axis=[0, 1, 0])
+    
+    # 3d-2d
+    probe_3d = probe.to_3d()
+    probe_2d = probe_3d.to_2d(axes="xz")
+    assert np.allclose(probe_2d.contact_positions, probe_3d.contact_positions[:, [0, 2]])
 
     #~ from probeinterface.plotting import plot_probe_group, plot_probe
     #~ import matplotlib.pyplot as plt
