@@ -13,6 +13,7 @@ from pathlib import Path
 import re
 import json
 from collections import OrderedDict
+from packaging.version import Version, parse
 
 import numpy as np
 
@@ -80,7 +81,7 @@ def write_probeinterface(file, probe_or_probegroup):
         raise ValueError('write_probeinterface : need probe or probegroup')
 
     file = Path(file)
-    
+
     d = OrderedDict()
     d['specification'] = 'probeinterface'
     d['version'] = version
@@ -813,6 +814,112 @@ def read_spikeglx(file):
     return probe
 
 
+def read_openephys(folder, settings_file=None):
+    """
+    Read probe positions from Open Ephys folder.
+
+    Parameters
+    ----------
+    folder : Path or str
+        The path to the Open Ephys folder
+
+    Note
+    ----
+    The electrode positions are only available when recording using the Neuropix-PXI plugin from OE verion 0.5
+
+    Returns
+    -------
+    probe : Probe object
+
+    """
+    import xml.etree.ElementTree as ET
+
+    folder = Path(folder).absolute()
+    assert folder.is_dir()
+
+    # find settings
+    settings_files = [p for p in folder.iterdir() if p.suffix == ".xml" and "setting" in p.name]
+    if len(settings_files) > 1:
+        assert settings_file is not None
+    elif len(settings_files) == 0:
+        raise FileNotFoundError("Cannot find settings.xml file!")
+    else:
+        settings_file = settings_files[0]
+
+    # parse xml
+    tree = ET.parse(str(settings_file))
+    root = tree.getroot()
+
+    npix = None
+    for child in root:
+        if "SIGNALCHAIN" in child.tag:
+            for proc in child:
+                if "PROCESSOR" == proc.tag:
+                    name = proc.attrib["name"]
+                    if name == "Neuropix-PXI":
+                        npix = proc
+                        break
+    assert npix is not None, "Open Ephys can only be read when the Neuropix-PXI plugin is used"
+    assert parse(npix.attrib["libraryVersion"]) >= parse("0.3.3"), ("Electrode locations are available from "
+                                                                    "Neuropix-PXI version 0.3.3 ")
+    for child in npix:
+        if child.tag == "EDITOR":
+            for child2 in child:
+                if child2.tag == "NP_PROBE":
+                    probe_name = child2.attrib["probe_name"]
+                    probe_serial_number = child2.attrib["probe_serial_number"]
+                    probe_part_number = child2.attrib["probe_part_number"]
+                    np_probe = child2
+                    break
+    assert np_probe is not None, "Can't find 'NP_PROBE' information. Positions not available"
+
+    # read channels
+    for child in np_probe:
+        if child.tag == "CHANNELS":
+            channels = np.array(list(child.attrib.keys()))
+    # read positions
+    for child in np_probe:
+        if child.tag == "ELECTRODE_XPOS":
+            xpos = [float(child.attrib[ch]) for ch in channels]
+        if child.tag == "ELECTRODE_YPOS":
+            ypos = [float(child.attrib[ch]) for ch in channels]
+    positions = np.array([xpos, ypos]).T
+
+    # NP geometry constants
+    contact_width = 12
+    shank_pitch = 250
+
+    # TODO get example of multishank for parsing
+    shank_ids = None
+
+    probe = Probe(ndim=2, si_units='um')
+    probe.set_contacts(positions=positions, shapes='square',
+                       shank_ids=shank_ids,
+                       shape_params={'width': contact_width})
+    probe.set_contact_ids(channels)
+    probe.annotate(probe_name=probe_name, 
+                   probe_part_number=probe_part_number,
+                   probe_serial_number=probe_serial_number)
+
+    # planar contour
+    one_polygon = [(0, 10000), (0, 0), (35, -175), (70, 0), (70, 10000), ]
+    if shank_ids is None:
+        contour = one_polygon
+    else:
+        contour = []
+        for i, shank_id in enumerate(np.unique(shank_ids)):
+            contour += list(np.array(one_polygon) + [shank_pitch * i, 0])
+
+    # shift
+    contour = np.array(contour) - [11, 11]
+    probe.set_planar_contour(contour)
+
+    # wire it
+    probe.set_device_channel_indices(np.arange(positions.shape[0]))
+
+    return probe
+
+    
 def read_mearec(file):
     """
     Read probe position, and contact shape from a MEArec file.
