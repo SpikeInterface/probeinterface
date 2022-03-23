@@ -33,10 +33,10 @@ probe_2d.create_auto_shape(probe_type='tip')
 ##############################################################################
 # Let's transform it into a 3d probe.
 # 
-# Here the plane is 'xz' so y will be 0 for all contacts.
+# Here the axes are 'xz' so y will be 0 for all contacts.
 # The shape of probe_3d.contact_positions is now (n_elec, 3)
 
-probe_3d = probe_2d.to_3d(plane='xz')
+probe_3d = probe_2d.to_3d(axes='xz')
 print(probe_2d.contact_positions.shape)
 print(probe_3d.contact_positions.shape)
 
@@ -55,7 +55,7 @@ plot_probe(probe_3d)
 # We can create another probe lying on another plane:
 
 
-other_3d = probe_2d.to_3d(plane='yz')
+other_3d = probe_2d.to_3d(axes='yz')
 plot_probe(other_3d)
 
 ##############################################################################

@@ -60,10 +60,10 @@ df
 plot_probe(probe)
 
 ##############################################################################
-# A 2d `Probe` can be transformed to a 3d `Probe` by indicating the `plane`
+# A 2d `Probe` can be transformed to a 3d `Probe` by indicating the `axes`
 # on which contacts will lie (Here the 'y' coordinate will be 0 for all contacts):
 
-probe_3d = probe.to_3d(plane='xz')
+probe_3d = probe.to_3d(axes='xz')
 plot_probe(probe_3d)
 
 plt.show()
