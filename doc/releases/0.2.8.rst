@@ -1,0 +1,14 @@
+probeinterface 0.2.8
+--------------------
+
+
+March, 23rd 2022
+
+* wiring CambridgeNeurotec mini-amp-64
+* expose function select_dimensions (2d>3d and 3d>2d)
+* add to_dict/from_dict in ProbeGroup
+* Add "text_on_contact" in plot_probe()
+* Add read_openephys function for Neuropux-PXI plugin 
+
+
+
