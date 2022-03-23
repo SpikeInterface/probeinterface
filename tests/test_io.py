@@ -1,6 +1,6 @@
 from probeinterface import write_probeinterface, read_probeinterface, write_BIDS_probe, read_BIDS_probe
 from probeinterface import read_prb, write_prb
-from probeinterface import read_spikeglx
+from probeinterface import read_spikeglx, read_openephys
 from probeinterface import generate_dummy_probe_group
 
 
@@ -207,17 +207,25 @@ def test_readspikeglx():
     # plot_probe(probe, with_contact_id=True)
     # plt.show()
     
-    
+
+def test_readopenephys():
+    # NP1
+    probe = read_openephys(folder / "OE_Neuropix-PXI")
+
+    from probeinterface.plotting import plot_probe_group, plot_probe
+    import matplotlib.pyplot as plt
+    plot_probe(probe, with_contact_id=True)
+    plt.show()
     
 
 
 if __name__ == '__main__':
-    test_probeinterface_format()
-    #~ test_BIDS_format()
-    #~ test_BIDS_format_empty()
-    #~ test_BIDS_format_minimal()
+    # test_probeinterface_format()
+    # test_BIDS_format()
+    # test_BIDS_format_empty()
+    # test_BIDS_format_minimal()
     
-    #~ test_prb()
-    #~ test_readspikeglx()
-    
+    # test_prb()
+    # test_readspikeglx()
+    test_readopenephys()
     
