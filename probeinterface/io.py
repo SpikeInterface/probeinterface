@@ -814,9 +814,10 @@ def read_spikeglx(file):
     return probe
 
 
-def read_openephys(folder, settings_file=None):
+def read_openephys(folder, settings_file=None,
+                   raise_error=True):
     """
-    Read probe positions from Open Ephys folder.
+    Read probe positions from Open Ephys folder when using the Neuropix-PXI plugin.
 
     Parameters
     ----------
@@ -825,7 +826,7 @@ def read_openephys(folder, settings_file=None):
 
     Note
     ----
-    The electrode positions are only available when recording using the Neuropix-PXI plugin from OE verion 0.5
+    The electrode positions are only available when recording using the Neuropix-PXI plugin version >= 0.3.3
 
     Returns
     -------
@@ -840,7 +841,8 @@ def read_openephys(folder, settings_file=None):
     # find settings
     settings_files = [p for p in folder.iterdir() if p.suffix == ".xml" and "setting" in p.name]
     if len(settings_files) > 1:
-        assert settings_file is not None
+        assert settings_file is not None, ("More than one settings file found. Specify a settings "
+                                           "file with the 'settings_file' argument")
     elif len(settings_files) == 0:
         raise FileNotFoundError("Cannot find settings.xml file!")
     else:
@@ -859,9 +861,16 @@ def read_openephys(folder, settings_file=None):
                     if name == "Neuropix-PXI":
                         npix = proc
                         break
-    assert npix is not None, "Open Ephys can only be read when the Neuropix-PXI plugin is used"
-    assert parse(npix.attrib["libraryVersion"]) >= parse("0.3.3"), ("Electrode locations are available from "
-                                                                    "Neuropix-PXI version 0.3.3 ")
+    if npix is None:
+        if raise_error:
+            raise Exception("Open Ephys can only be read when the Neuropix-PXI plugin is used")
+        return None
+    
+    if parse(npix.attrib["libraryVersion"]) < parse("0.3.3"):
+        if raise_error:
+            raise Exception("Electrode locations are available from Neuropix-PXI version 0.3.3")
+        return None
+
     for child in npix:
         if child.tag == "EDITOR":
             for child2 in child:
@@ -871,7 +880,10 @@ def read_openephys(folder, settings_file=None):
                     probe_part_number = child2.attrib["probe_part_number"]
                     np_probe = child2
                     break
-    assert np_probe is not None, "Can't find 'NP_PROBE' information. Positions not available"
+    if np_probe is None: 
+        if raise_error:
+            raise Exception("Can't find 'NP_PROBE' information. Positions not available")
+        return None
 
     # read channels
     for child in np_probe:
