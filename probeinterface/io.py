@@ -844,7 +844,9 @@ def read_openephys(folder, settings_file=None,
         assert settings_file is not None, ("More than one settings file found. Specify a settings "
                                            "file with the 'settings_file' argument")
     elif len(settings_files) == 0:
-        raise FileNotFoundError("Cannot find settings.xml file!")
+        if raise_error:
+            raise FileNotFoundError("Cannot find settings.xml file!")
+        return None
     else:
         settings_file = settings_files[0]
 
