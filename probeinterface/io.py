@@ -839,7 +839,8 @@ def read_openephys(folder, settings_file=None,
     assert folder.is_dir()
 
     # find settings
-    settings_files = [p for p in folder.iterdir() if p.suffix == ".xml" and "setting" in p.name]
+    # settings_files = [p for p in folder.iterdir() if p.suffix == ".xml" and "setting" in p.name]
+    settings_files = [p for p in folder.glob("**/*.xml") if "setting" in p.name]
     if len(settings_files) > 1:
         assert settings_file is not None, ("More than one settings file found. Specify a settings "
                                            "file with the 'settings_file' argument")
@@ -905,6 +906,13 @@ def read_openephys(folder, settings_file=None,
 
     # TODO get example of multishank for parsing
     shank_ids = None
+    
+    # x offset
+    if "2.0" in probe_name:
+        x_shift = -8
+    else:
+        x_shift = -11
+    positions[:, 0] += x_shift
 
     probe = Probe(ndim=2, si_units='um')
     probe.set_contacts(positions=positions, shapes='square',
