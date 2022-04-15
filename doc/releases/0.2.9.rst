@@ -1,0 +1,8 @@
+probeinterface 0.2.9
+--------------------
+
+
+April, 15th 2022
+
+* openephys neuropixel
+* fix examples
