@@ -842,8 +842,12 @@ def read_openephys(folder, settings_file=None,
     # settings_files = [p for p in folder.iterdir() if p.suffix == ".xml" and "setting" in p.name]
     settings_files = [p for p in folder.glob("**/*.xml") if "setting" in p.name]
     if len(settings_files) > 1:
-        assert settings_file is not None, ("More than one settings file found. Specify a settings "
-                                           "file with the 'settings_file' argument")
+        if settings_file is None:
+            if raise_error:
+                raise FileNotFoundError("More than one settings file found. Specify a settings "
+                                           "file with the 'settings_file' argument")    
+            else:
+                return None
     elif len(settings_files) == 0:
         if raise_error:
             raise FileNotFoundError("Cannot find settings.xml file!")

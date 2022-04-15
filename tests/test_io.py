@@ -212,10 +212,10 @@ def test_readopenephys():
     # NP1
     probe = read_openephys(folder / "OE_Neuropix-PXI")
 
-    from probeinterface.plotting import plot_probe_group, plot_probe
-    import matplotlib.pyplot as plt
-    plot_probe(probe, with_contact_id=True)
-    plt.show()
+    # from probeinterface.plotting import plot_probe_group, plot_probe
+    # import matplotlib.pyplot as plt
+    # plot_probe(probe, with_contact_id=True)
+    # plt.show()
     
 
 
