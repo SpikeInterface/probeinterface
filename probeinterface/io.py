@@ -693,6 +693,7 @@ def read_spikeglx(file):
 
     meta_file = Path(file)
     assert meta_file.suffix == ".meta", "'meta_file' should point to the .meta SpikeGLX file"
+    
     with meta_file.open(mode='r') as f:
         lines = f.read().splitlines()
 
@@ -861,7 +862,7 @@ def read_openephys(folder, settings_file=None,
             for proc in child:
                 if "PROCESSOR" == proc.tag:
                     name = proc.attrib["name"]
-                    if name == "Neuropix-PXI":
+                    if "Neuropix-PXI" in name:
                         npix = proc
                         break
     if npix is None:
