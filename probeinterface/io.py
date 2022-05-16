@@ -693,6 +693,7 @@ def read_spikeglx(file):
 
     meta_file = Path(file)
     assert meta_file.suffix == ".meta", "'meta_file' should point to the .meta SpikeGLX file"
+    
     with meta_file.open(mode='r') as f:
         lines = f.read().splitlines()
 
@@ -845,7 +846,7 @@ def read_openephys(folder, settings_file=None,
         if settings_file is None:
             if raise_error:
                 raise FileNotFoundError("More than one settings file found. Specify a settings "
-                                           "file with the 'settings_file' argument")    
+                                        "file with the 'settings_file' argument")    
             else:
                 return None
     elif len(settings_files) == 0:
@@ -865,7 +866,7 @@ def read_openephys(folder, settings_file=None,
             for proc in child:
                 if "PROCESSOR" == proc.tag:
                     name = proc.attrib["name"]
-                    if name == "Neuropix-PXI":
+                    if "Neuropix-PXI" in name:
                         npix = proc
                         break
     if npix is None:
@@ -895,22 +896,28 @@ def read_openephys(folder, settings_file=None,
     # read channels
     for child in np_probe:
         if child.tag == "CHANNELS":
-            channels = np.array(list(child.attrib.keys()))
+            channel_names = np.array(list(child.attrib.keys()))
+            channel_values = np.array(list(child.attrib.values()))
+            # check if shank ids is present
+            if all(":" in val for val in channel_values):
+                shank_ids = [int(val[val.find(":") + 1:]) for val in channel_values]
+            else:
+                shank_ids = None
+            
+            
+            
     # read positions
     for child in np_probe:
         if child.tag == "ELECTRODE_XPOS":
-            xpos = [float(child.attrib[ch]) for ch in channels]
+            xpos = [float(child.attrib[ch]) for ch in channel_names]
         if child.tag == "ELECTRODE_YPOS":
-            ypos = [float(child.attrib[ch]) for ch in channels]
+            ypos = [float(child.attrib[ch]) for ch in channel_names]
     positions = np.array([xpos, ypos]).T
 
     # NP geometry constants
     contact_width = 12
     shank_pitch = 250
 
-    # TODO get example of multishank for parsing
-    shank_ids = None
-    
     # x offset
     if "2.0" in probe_name:
         x_shift = -8
@@ -922,7 +929,7 @@ def read_openephys(folder, settings_file=None,
     probe.set_contacts(positions=positions, shapes='square',
                        shank_ids=shank_ids,
                        shape_params={'width': contact_width})
-    probe.set_contact_ids(channels)
+    probe.set_contact_ids(channel_names)
     probe.annotate(probe_name=probe_name, 
                    probe_part_number=probe_part_number,
                    probe_serial_number=probe_serial_number)
