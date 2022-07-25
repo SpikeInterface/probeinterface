@@ -698,6 +698,112 @@ def write_csv(file, probe):
 
     raise NotImplementedError
 
+def read_imro(file):
+    """
+    Read probe position from the imro file used in input of SpikeGlx and Open-Ephys for neuropixels probes.
+
+    Parameters
+    ----------
+    file : Path or str
+        The .imro file path
+
+    Returns
+    -------
+    probe : Probe object
+
+    """
+
+    meta_file = Path(file)
+    assert meta_file.suffix == ".imro", "'file' should point to the .imro file"
+
+    with meta_file.open(mode='r') as f:
+        headers, *parts,_ = f.read().strip().split(")")
+    imDatPrb_type, num_contact = tuple(map(int, headers[1:].split(',')))
+
+    positions = np.zeros((num_contact, 2), dtype='float64')
+    contact_ids = []
+    n_col = 2
+
+    if imDatPrb_type == 0:  # NP1
+        # NP1.0
+        x_pitch = 32
+        y_pitch = 20
+        contact_width = 12
+        shank_ids = None
+        for i, part in enumerate(parts):
+
+            channel_id, bank, ref, a, l, f = tuple(map(int, part[1:].split(' ')))
+
+            x_idx = channel_id % n_col
+            y_idx = channel_id // n_col
+
+            stagger = np.mod(y_idx + 1, 2) * x_pitch / 2
+            x_pos = x_idx * x_pitch + stagger
+            y_pos = y_idx * y_pitch
+
+            contact_ids.append(channel_id)
+            positions[i, :] = [x_pos, y_pos]
+
+    elif imDatPrb_type == 21:
+        x_pitch = 32
+        y_pitch = 15
+        contact_width = 12
+        shank_ids = None
+        for i, part in enumerate(parts):
+            channel_id, bank, ref, a, l, f = tuple(map(int, part[1:].split(' ')))
+
+            x_idx = channel_id % n_col
+            y_idx = channel_id // n_col
+            stagger = np.mod(y_idx + 1, 2) * x_pitch / 2
+            x_pos = x_idx * x_pitch + stagger
+            y_pos = y_idx * y_pitch
+
+            contact_ids.append(channel_id)
+            positions[i, :] = [x_pos, y_pos]
+
+    elif imDatPrb_type == 24:
+        # NP2.0(4-shank)
+        x_pitch = 32
+        y_pitch = 15
+        contact_width = 12
+        shank_pitch = 250
+        shank_ids=[]
+        for i, part in enumerate(parts):
+            channel_id, shank_id, bank, ref, elec_id = tuple(map(int, part[1:].split(' ')))
+            x_idx = elec_id % n_col
+            y_idx = elec_id // n_col
+            shank_ids.append(shank_id)
+            x_pos = x_idx * x_pitch + int(shank_ids[i]) * shank_pitch
+            y_pos = y_idx * y_pitch
+            contact_ids.append(f'CH{channel_id}')
+            positions[i, :] = [x_pos, y_pos]
+    else:
+        raise RuntimeError(f'unsupported imro type : {imDatPrb_type}')
+
+    probe = Probe(ndim=2, si_units='um')
+    probe.set_contacts(positions=positions, shapes='square',
+                       shank_ids=shank_ids,
+                       shape_params={'width': contact_width})
+    probe.set_contact_ids(contact_ids)
+    probe.annotate(imDatPrb_type=imDatPrb_type)
+
+    # planar contour
+    one_polygon = [(0, 10000), (0, 0), (35, -175), (70, 0), (70, 10000), ]
+    if shank_ids is None:
+        contour = one_polygon
+    else:
+        contour = []
+        for i, shank_id in enumerate(np.unique(shank_ids)):
+            contour += list(np.array(one_polygon) + [shank_pitch * i, 0])
+    # shift
+    contour = np.array(contour) - [11, 11]
+    probe.set_planar_contour(contour)
+
+    # wire it
+    probe.set_device_channel_indices(np.arange(positions.shape[0]))
+
+    return probe
+
 
 def read_spikeglx(file):
     """
