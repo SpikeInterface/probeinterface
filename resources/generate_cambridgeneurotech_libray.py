@@ -35,11 +35,13 @@ from pathlib import Path
 
 
 # work_dir = r"C:\Users\Windows\Dropbox (Scripps Research)\2021-01-SpikeInterface_CambridgeNeurotech"
-work_dir = '.'
-work_dir = Path('.').absolute()
+# work_dir = '.'
+# work_dir = '/home/samuel/Documents/SpikeInterface/2021-03-01-probeinterface_CambridgeNeurotech/'
+work_dir = '/home/samuel/Documents/SpikeInterface/2022-05-20-probeinterface_CambridgeNeurotech/'
+work_dir = Path(work_dir).absolute()
 
-export_folder = work_dir / 'export_2021_04_02'
-probe_map_file = work_dir /  'Probe Maps 2020Final.xlsx'
+export_folder = work_dir / 'export_2021_05_20'
+probe_map_file = work_dir /  'Probe Maps 2020Final_patch2022.xlsx'
 probe_info_table_file = work_dir  / 'ProbesDataBase.csv'
 
 
