@@ -22,6 +22,13 @@ pathways = {
         22, 16, 18, 20, 24, 17, 19, 21, 23, 25, 26, 27, 29, 28, 31, 30,
         14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 3, 2, 1, 0],
     
+    # Done by Samuel Garcia for Pierre-Pascal Lenck-Santini (for a bottle of wine)
+    'ASSY-77>Adpt.A64-Om32_2x-sm>two_RHD2132' :[
+        47, 32, 46, 33, 34, 45, 35, 44, 36, 43, 37, 42, 38, 41, 40, 39,
+        16, 31, 17, 30, 29, 18, 28, 27,  26, 25, 24, 19, 21, 22, 23, 20,
+        11,   8,   9,  10, 12,   7,     6,   5 ,  4,   3,  13,     2,    1,  14,  0,  15,
+        55,  56, 54,  57, 53, 58, 52, 59, 51, 60, 50, 61, 62, 49, 63, 48,],
+
     # from PDF documention of mini-amp-64 page 5
     'cambridgeneurotech_mini-amp-64' : [
         # connector J2 TOP
