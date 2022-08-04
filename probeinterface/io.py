@@ -543,7 +543,7 @@ def read_3brain(file, mea_pitch=42, electrode_width=21):
 
     mea_pitch : float
         The inter-electrode distance (pitch) between electrodes
-        
+
     electrode_width : float
         Width of the electrodes in um
 
@@ -693,7 +693,7 @@ def read_spikeglx(file):
 
     meta_file = Path(file)
     assert meta_file.suffix == ".meta", "'meta_file' should point to the .meta SpikeGLX file"
-    
+
     with meta_file.open(mode='r') as f:
         lines = f.read().splitlines()
 
@@ -815,7 +815,7 @@ def read_spikeglx(file):
     return probe
 
 
-def read_openephys(folder, settings_file=None,
+def read_openephys(folder, settings_file=None, stream_name=None,
                    raise_error=True):
     """
     Read probe positions from Open Ephys folder when using the Neuropix-PXI plugin.
@@ -824,6 +824,16 @@ def read_openephys(folder, settings_file=None,
     ----------
     folder : Path or str
         The path to the Open Ephys folder
+    settings_file :  Path, str, or None
+        If more than one settings.xml file is in the folder structure, this argument
+        is required to indicate which settings file to use
+    stream_name : str or None
+        If more than one probe is used, the 'stream_name' indicates which probe to load base on the
+        stream. For example, if there are 3 probes ('ProbeA', 'ProbeB', Pro'beC) and the stream_name is
+        contains the substring 'ProbeC' (e.g. 'my-stream-ProbeC'), then the probe associated with 
+        ProbeC is returned. This argument is required in case of multiple probes.
+    raise_error: bool
+        If True, any error would raise an exception. If False, None is returned. Default True
 
     Note
     ----
@@ -846,13 +856,11 @@ def read_openephys(folder, settings_file=None,
         if settings_file is None:
             if raise_error:
                 raise FileNotFoundError("More than one settings file found. Specify a settings "
-                                        "file with the 'settings_file' argument")    
-            else:
-                return None
+                                        "file with the 'settings_file' argument")
+
     elif len(settings_files) == 0:
         if raise_error:
             raise FileNotFoundError("Cannot find settings.xml file!")
-        return None
     else:
         settings_file = settings_files[0]
 
@@ -860,65 +868,79 @@ def read_openephys(folder, settings_file=None,
     tree = ET.parse(str(settings_file))
     root = tree.getroot()
 
+    signal_chain = root.find("SIGNALCHAIN")
     npix = None
-    for child in root:
-        if "SIGNALCHAIN" in child.tag:
-            for proc in child:
-                if "PROCESSOR" == proc.tag:
-                    name = proc.attrib["name"]
-                    if "Neuropix-PXI" in name:
-                        npix = proc
-                        break
-    if npix is None:
-        if raise_error:
-            raise Exception("Open Ephys can only be read when the Neuropix-PXI plugin is used")
-        return None
-    
+    for proc in signal_chain:
+        if "PROCESSOR" == proc.tag:
+            name = proc.attrib["name"]
+            if "Neuropix-PXI" in name:
+                npix = proc
+                break
+        if npix is None:
+            if raise_error:
+                raise Exception("Open Ephys can only be read when the Neuropix-PXI plugin is used")
+            return None
+
     if parse(npix.attrib["libraryVersion"]) < parse("0.3.3"):
         if raise_error:
             raise Exception("Electrode locations are available from Neuropix-PXI version 0.3.3")
         return None
 
+    streams = []
     for child in npix:
-        if child.tag == "EDITOR":
-            for child2 in child:
-                if child2.tag == "NP_PROBE":
-                    probe_name = child2.attrib["probe_name"]
-                    probe_serial_number = child2.attrib["probe_serial_number"]
-                    probe_part_number = child2.attrib["probe_part_number"]
-                    np_probe = child2
-                    break
-    if np_probe is None: 
-        if raise_error:
-            raise Exception("Can't find 'NP_PROBE' information. Positions not available")
-        return None
+        if child.tag == "STREAM":
+            streams.append(child.attrib["name"])
 
-    # read channels
-    for child in np_probe:
-        if child.tag == "CHANNELS":
-            channel_names = np.array(list(child.attrib.keys()))
-            channel_values = np.array(list(child.attrib.values()))
-            # check if shank ids is present
-            if all(":" in val for val in channel_values):
-                shank_ids = [int(val[val.find(":") + 1:]) for val in channel_values]
-            else:
-                shank_ids = None
-            
-            
-            
-    # read positions
-    for child in np_probe:
-        if child.tag == "ELECTRODE_XPOS":
-            xpos = [float(child.attrib[ch]) for ch in channel_names]
-        if child.tag == "ELECTRODE_YPOS":
-            ypos = [float(child.attrib[ch]) for ch in channel_names]
-    positions = np.array([xpos, ypos]).T
+    probe_names = np.unique([stream.split("-")[0] for stream in streams])
 
-    # NP geometry constants
+    editor = npix.find("EDITOR")
+    np_probes = editor.findall("NP_PROBE")
+
+    assert len(np_probes) == len(probe_names)
+
+    np_positions = []
+    for np_probe in np_probes:
+        # read channels
+        channels = np_probe.find("CHANNELS")
+        channel_names = np.array(list(channels.attrib.keys()))
+        channel_values = np.array(list(channels.attrib.values()))
+        # check if shank ids is present
+        if all(":" in val for val in channel_values):
+            shank_ids = [int(val[val.find(":") + 1:]) for val in channel_values]
+        else:
+            shank_ids = None
+
+        electrode_xpos = np_probe.find("ELECTRODE_XPOS")
+        electrode_ypos = np_probe.find("ELECTRODE_YPOS")
+
+        assert electrode_xpos is not None and electrode_ypos is not None
+        xpos = [float(electrode_xpos.attrib[ch]) for ch in channel_names]
+        ypos = [float(electrode_ypos.attrib[ch]) for ch in channel_names]
+        positions = np.array([xpos, ypos]).T
+        np_positions.append(positions)
+
+    np_positions = np.array(np_positions)
+
+    # select correct probe for stream
+    if len(probe_names) > 1:
+        assert stream_name is not None
+        probe_matches = [probe_name in stream_name for probe_name in probe_names]
+        if not any(probe_matches):
+            if raise_error:
+                raise Exception(f"The stream {stream_name} is not associated to an available probe: {probe_names}")
+            return None
+        probe_idx = np.where(probe_matches)[0][0]
+    else:
+        probe_idx = 0
+
     contact_width = 12
     shank_pitch = 250
 
+    positions = np_positions[probe_idx]
+    np_probe = np_probes[probe_idx]
+
     # x offset
+    probe_name = np_probe.attrib["probe_name"]
     if "2.0" in probe_name:
         x_shift = -8
     else:
@@ -930,9 +952,10 @@ def read_openephys(folder, settings_file=None,
                        shank_ids=shank_ids,
                        shape_params={'width': contact_width})
     probe.set_contact_ids(channel_names)
-    probe.annotate(probe_name=probe_name, 
-                   probe_part_number=probe_part_number,
-                   probe_serial_number=probe_serial_number)
+    probe.annotate(name=probe_name,
+                   probe_name=probe_name,
+                   probe_part_number=np_probe.attrib["probe_part_number"],
+                   probe_serial_number=np_probe.attrib["probe_serial_number"])
 
     # planar contour
     one_polygon = [(0, 10000), (0, 0), (35, -175), (70, 0), (70, 10000), ]
@@ -952,7 +975,7 @@ def read_openephys(folder, settings_file=None,
 
     return probe
 
-    
+
 def read_mearec(file):
     """
     Read probe position, and contact shape from a MEArec file.
