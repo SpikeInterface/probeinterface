@@ -815,8 +815,9 @@ def read_spikeglx(file):
     return probe
 
 
-def read_openephys(folder, settings_file=None, stream_name=None,
-                   raise_error=True):
+def read_openephys(folder, settings_file=None,
+                   stream_name=None, probe_name=None,
+                   serial_number=None, raise_error=True):
     """
     Read probe positions from Open Ephys folder when using the Neuropix-PXI plugin.
 
@@ -831,7 +832,15 @@ def read_openephys(folder, settings_file=None, stream_name=None,
         If more than one probe is used, the 'stream_name' indicates which probe to load base on the
         stream. For example, if there are 3 probes ('ProbeA', 'ProbeB', Pro'beC) and the stream_name is
         contains the substring 'ProbeC' (e.g. 'my-stream-ProbeC'), then the probe associated with 
-        ProbeC is returned. This argument is required in case of multiple probes.
+        ProbeC is returned. If this argument is used, the 'probe_name' and 'serial_number' must be None.
+    probe_name : str or None
+        If more than one probe is used, the 'probe_name' indicates which probe to load base on the 
+        probe name (e.g. "ProbeB"). If this argument is used, the 'stream_name' and 'serial_number' 
+        must be None.
+    serial_number : str or None
+        If more than one probe is used, the 'serial_number' indicates which probe to load base on the 
+        serial number. If this argument is used, the 'stream_name' and 'probe_name' 
+        must be None.
     raise_error: bool
         If True, any error would raise an exception. If False, None is returned. Default True
 
@@ -891,22 +900,50 @@ def read_openephys(folder, settings_file=None, stream_name=None,
         if child.tag == "STREAM":
             streams.append(child.attrib["name"])
 
-    probe_names = np.unique([stream.split("-")[0] for stream in streams])
-
     editor = npix.find("EDITOR")
     np_probes = editor.findall("NP_PROBE")
+    np_editor = editor.find("NEUROPIXELS_EDITOR")
+    basestations = np_editor.findall("BASESTATION")
 
-    assert len(np_probes) == len(probe_names)
+    # try to find probe names in the basestations attributes
+    probe_names = []
+    if basestations is not None:
+        for bs in basestations:
+            slot = bs.attrib["Slot"]
+            port_docks = [k for k in bs.attrib.keys() if "port" in k and "dock" in k]
+
+            for pd in port_docks:
+                val = bs.attrib[pd]
+                if val != f"slot{slot}-{pd.replace('dock', '-')}":
+                    probe_names.append(val)
+    # if probe names cannot be found this way, use streams
+    if len(probe_names) == 0:
+        probe_names = np.unique([stream.split("-")[0] for stream in streams])
+
+    assert len(np_probes) >= len(probe_names), "There are not enough NP_PROBES in the xml file!"
 
     np_positions = []
+    np_slots = []
+    np_ports = []
+    np_docks = []
+    np_serial_numbers = []
+    np_positions = []
     for np_probe in np_probes:
+        slot = np_probe.attrib["slot"]
+        port = np_probe.attrib["port"]
+        dock = np_probe.attrib["dock"]
+        serial_number = np_probe.attrib["probe_serial_number"]
         # read channels
         channels = np_probe.find("CHANNELS")
         channel_names = np.array(list(channels.attrib.keys()))
-        channel_values = np.array(list(channels.attrib.values()))
+        channel_order = np.argsort([int(ch[2:]) for ch in channel_names])
+
+        channel_names = channel_names[channel_order]
+        channel_values = np.array(list(channels.attrib.values()))[channel_order]
+
         # check if shank ids is present
         if all(":" in val for val in channel_values):
-            shank_ids = [int(val[val.find(":") + 1:]) for val in channel_values]
+            shank_ids = np.array([int(val[val.find(":") + 1:]) for val in channel_values])[channel_order]
         else:
             shank_ids = None
 
@@ -914,22 +951,55 @@ def read_openephys(folder, settings_file=None, stream_name=None,
         electrode_ypos = np_probe.find("ELECTRODE_YPOS")
 
         assert electrode_xpos is not None and electrode_ypos is not None
-        xpos = [float(electrode_xpos.attrib[ch]) for ch in channel_names]
-        ypos = [float(electrode_ypos.attrib[ch]) for ch in channel_names]
+        xpos = np.array([float(electrode_xpos.attrib[ch]) for ch in channel_names])[channel_order]
+        ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])[channel_order]
         positions = np.array([xpos, ypos]).T
+
         np_positions.append(positions)
+        np_slots.append(np_probe.attrib["slot"])
+        np_ports.append(port)
+        np_docks.append(dock)
+        np_serial_numbers.append(serial_number)
 
     np_positions = np.array(np_positions)
 
     # select correct probe for stream
     if len(probe_names) > 1:
-        assert stream_name is not None
-        probe_matches = [probe_name in stream_name for probe_name in probe_names]
-        if not any(probe_matches):
-            if raise_error:
-                raise Exception(f"The stream {stream_name} is not associated to an available probe: {probe_names}")
-            return None
-        probe_idx = np.where(probe_matches)[0][0]
+        assert stream_name is not None or probe_name is not None or serial_number is not None, \
+            ("More than one probe found. Use one of 'stream_name', 'probe_name', or 'serial_number' "
+                "to select the right probe")
+
+        if stream_name is not None:
+            assert probe_name is None and serial_number is None, ("Use one of 'stream_name', 'probe_name', "
+                                                                  "or 'serial_number'")
+            probe_matches = [probe_name in stream_name for probe_name in probe_names]
+            if not any(probe_matches):
+                if raise_error:
+                    raise Exception(f"The stream {stream_name} is not associated to an available probe: {probe_names}")
+                return None
+            if sum(probe_matches) > 1:
+                if raise_error:
+                    raise Exception(f"More than one probe name matched {stream_name}")
+                return None
+            probe_idx = np.where(probe_matches)[0][0]
+        elif probe_name is not None:
+            assert stream_name is None and serial_number is None, ("Use one of 'stream_name', 'probe_name', "
+                                                                   "or 'serial_number'")
+            if probe_name not in probe_names:
+                if raise_error:
+                    raise Exception(f"The provided {probe_name} is not in the available probes: {probe_names}")
+                return None
+            probe_idx = list(probe_names).index(probe)
+        else:
+            assert stream_name is None and probe_name is None, ("Use one of 'stream_name', 'probe_name', "
+                                                                "or 'serial_number'")
+            serial_number = str(serial_number)
+            if serial_number not in np_serial_numbers:
+                if raise_error:
+                    raise Exception(
+                        f"The provided {serial_number} is not in the available serial numbers: {np_serial_numbers}")
+                return None
+            probe_idx = list(np_serial_numbers).index(serial_number)
     else:
         probe_idx = 0
 
