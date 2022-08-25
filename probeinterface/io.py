@@ -866,10 +866,12 @@ def read_openephys(folder, settings_file=None,
             if raise_error:
                 raise FileNotFoundError("More than one settings file found. Specify a settings "
                                         "file with the 'settings_file' argument")
+                return None
 
     elif len(settings_files) == 0:
         if raise_error:
             raise FileNotFoundError("Cannot find settings.xml file!")
+        return None
     else:
         settings_file = settings_files[0]
 
@@ -878,32 +880,39 @@ def read_openephys(folder, settings_file=None,
     root = tree.getroot()
 
     signal_chain = root.find("SIGNALCHAIN")
-    npix = None
-    for proc in signal_chain:
-        if "PROCESSOR" == proc.tag:
-            name = proc.attrib["name"]
+    neuropix_pxi = None
+    for processor in signal_chain:
+        if "PROCESSOR" == processor.tag:
+            name = processor.attrib["name"]
             if "Neuropix-PXI" in name:
-                npix = proc
+                neuropix_pxi = processor
                 break
-        if npix is None:
-            if raise_error:
-                raise Exception("Open Ephys can only be read when the Neuropix-PXI plugin is used")
-            return None
 
-    if parse(npix.attrib["libraryVersion"]) < parse("0.3.3"):
+    if neuropix_pxi is None:
+        if raise_error:
+            raise Exception("Open Ephys can only be read when the Neuropix-PXI plugin is used")
+        return None
+
+    neuropix_pxi_version = parse(neuropix_pxi.attrib["libraryVersion"])
+    if neuropix_pxi_version < parse("0.3.3"):
         if raise_error:
             raise Exception("Electrode locations are available from Neuropix-PXI version 0.3.3")
         return None
 
     streams = []
-    for child in npix:
+    for child in neuropix_pxi:
         if child.tag == "STREAM":
             streams.append(child.attrib["name"])
 
-    editor = npix.find("EDITOR")
+    editor = neuropix_pxi.find("EDITOR")
     np_probes = editor.findall("NP_PROBE")
     np_editor = editor.find("NEUROPIXELS_EDITOR")
     basestations = np_editor.findall("BASESTATION")
+
+    if len(np_probes) == 0:
+        if raise_error:
+            raise Exception("NP_PROBE field not found in settings")
+        return None
 
     # try to find probe names in the basestations attributes
     probe_names = []
