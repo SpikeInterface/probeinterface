@@ -923,7 +923,7 @@ def read_openephys(folder, settings_file=None,
 
             for pd in port_docks:
                 val = bs.attrib[pd]
-                if val != f"slot{slot}-{pd.replace('dock', '-')}":
+                if "Probe" in val:
                     probe_names.append(val)
     # if probe names cannot be found this way, use streams
     if len(probe_names) == 0:
@@ -1032,6 +1032,7 @@ def read_openephys(folder, settings_file=None,
                        shape_params={'width': contact_width})
     probe.set_contact_ids(channel_names)
     probe.annotate(name=probe_name,
+                   manufacturer="IMEC",
                    probe_name=probe_name,
                    probe_part_number=np_probe.attrib["probe_part_number"],
                    probe_serial_number=np_probe.attrib["probe_serial_number"])
