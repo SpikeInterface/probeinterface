@@ -1020,7 +1020,8 @@ def read_openephys(
         electrode_xpos = np_probe.find("ELECTRODE_XPOS")
         electrode_ypos = np_probe.find("ELECTRODE_YPOS")
 
-        assert electrode_xpos is not None and electrode_ypos is not None
+        assert electrode_xpos is not None and electrode_ypos is not None, \
+            ("ELECTRODE_XPOS or ELECTRODE_YPOS is not available in settings!")
         xpos = np.array([float(electrode_xpos.attrib[ch]) for ch in channel_names])[channel_order]
         ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])[channel_order]
         positions = np.array([xpos, ypos]).T
