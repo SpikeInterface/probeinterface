@@ -990,12 +990,14 @@ def read_openephys(
     else:
         assert all(probe_used in probe_names for probe_used in probes_used)
 
+    np_channel_names = []
+    np_shank_ids = []
     np_positions = []
     np_slots = []
     np_ports = []
     np_docks = []
     np_serial_numbers = []
-    np_positions = []
+
     for np_probe in np_probes:
         slot = np_probe.attrib["slot"]
         port = np_probe.attrib["port"]
@@ -1020,11 +1022,16 @@ def read_openephys(
         electrode_xpos = np_probe.find("ELECTRODE_XPOS")
         electrode_ypos = np_probe.find("ELECTRODE_YPOS")
 
-        assert electrode_xpos is not None and electrode_ypos is not None
+        if electrode_xpos is None or electrode_ypos is None:
+            if raise_error:
+                raise Exception("ELECTRODE_XPOS or ELECTRODE_YPOS is not available in settings!")
+            return None
         xpos = np.array([float(electrode_xpos.attrib[ch]) for ch in channel_names])[channel_order]
         ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])[channel_order]
         positions = np.array([xpos, ypos]).T
 
+        np_channel_names.append(channel_names)
+        np_shank_ids.append(shank_ids)
         np_positions.append(positions)
         np_slots.append(slot)
         np_ports.append(port)
@@ -1114,6 +1121,7 @@ def read_openephys(
 
     positions = np_positions[probe_idx]
     np_probe = np_probes[probe_idx]
+    shank_ids = np_shank_ids[probe_idx]
 
     # x offset
     probe_name = np_probe.attrib["probe_name"]
