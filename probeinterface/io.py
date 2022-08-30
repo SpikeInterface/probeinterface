@@ -1130,6 +1130,7 @@ def read_openephys(
         ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])
         positions = np.array([xpos, ypos]).T
 
+
         contact_ids = []
         pname = np_probe.attrib["probe_name"]
         if "2.0" in pname:
@@ -1145,6 +1146,7 @@ def read_openephys(
             ptype = None
             x_shift = 0
 
+
         # x offset
         positions[:, 0] += x_shift
 
@@ -1158,7 +1160,7 @@ def read_openephys(
                 shank_id = shank_ids[i]
                 stagger = 0
             contact_id = int((pos[0] - stagger - npx_probe[ptype]["shank pitch"]*shank_id)/npx_probe[ptype]["x pitch"]\
-                         + npx_probe["ncol"]*pos[1]/npx_probe[ptype]["y pitch"])
+                         + npx_probe["ncol"]*pos[1]/npx_probe[ptype]["y pitch"])+ npx_probe["nelectrods per shank"]*shank_id
             contact_ids.append(contact_id)
 
         np_probe_dict = {'channel_names': channel_names,

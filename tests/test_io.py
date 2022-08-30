@@ -216,7 +216,16 @@ def test_readopenephys():
     # import matplotlib.pyplot as plt
     # plot_probe(probe, with_contact_id=True)
     # plt.show()
-    
+
+
+def test_readimro():
+    #  NP1
+    probe = read_imro(folder / "OE_Neuropix-PXI" / "settings.xml")
+
+    #  from probeinterface.plotting import plot_probe_group, plot_probe
+    #  import matplotlib.pyplot as plt
+    #  plot_probe(probe, with_contact_id=True)
+    #  plt.show()
 
 
 if __name__ == '__main__':
