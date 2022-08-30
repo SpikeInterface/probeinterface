@@ -861,8 +861,7 @@ def read_spikeglx(file):
 
 
 def read_openephys(
-    folder,
-    settings_file=None,
+    settings_file,
     stream_name=None,
     probe_name=None,
     serial_number=None,
@@ -905,27 +904,6 @@ def read_openephys(
     """
     import xml.etree.ElementTree as ET
 
-    folder = Path(folder).absolute()
-    assert folder.is_dir()
-
-    # find settings
-    # settings_files = [p for p in folder.iterdir() if p.suffix == ".xml" and "setting" in p.name]
-    settings_files = [p for p in folder.glob("**/*.xml") if "setting" in p.name]
-    if len(settings_files) > 1:
-        if settings_file is None:
-            if raise_error:
-                raise FileNotFoundError(
-                    "More than one settings file found. Specify a settings "
-                    "file with the 'settings_file' argument"
-                )
-                return None
-    elif len(settings_files) == 0:
-        if raise_error:
-            raise FileNotFoundError("Cannot find settings.xml file!")
-        return None
-    else:
-        settings_file = settings_files[0]
-
     # parse xml
     tree = ET.parse(str(settings_file))
     root = tree.getroot()
@@ -946,6 +924,7 @@ def read_openephys(
             )
         return None
 
+    node_id = neuropix_pxi.attrib["NodeId"]
     neuropix_pxi_version = parse(neuropix_pxi.attrib["libraryVersion"])
     if neuropix_pxi_version < parse("0.3.3"):
         if raise_error:
@@ -958,6 +937,7 @@ def read_openephys(
     for child in neuropix_pxi:
         if child.tag == "STREAM":
             streams.append(child.attrib["name"])
+    has_streams = len(streams) > 0
 
     editor = neuropix_pxi.find("EDITOR")
     np_probes = editor.findall("NP_PROBE")
@@ -990,19 +970,25 @@ def read_openephys(
     probe_names = [p['name'] for p in probes]
     probe_names_used = np.unique([stream.split("-")[0] for stream in streams])
     # if basestation not available, get probe names from stream names
-    if len(probes) == 0:
+    if len(probes) == 0 and has_streams:
         probes = [{'name': p, 'slot': 'unkown', 'port': 'unkown', 'dock': 'unkown'} for p in probe_names_used]
-    else:
+    elif has_streams:
         assert all(probe_used in probe_names for probe_used in probe_names_used)
+    else:
+        probes = [{'name': f"{node_id}.{stream_index}", 'slot': 'unkown', 'port': 'unkown', 'dock': 'unkown'}
+                  for stream_index in range(len(np_probes))]
+        probe_names = [p['name'] for p in probes]
+        probe_names_used = probe_names
 
-    # make sure all descriptions are there
-    if len(np_probes) != len(probe_names_used):
-        print("Warning: mismatch between probes in settings")
+    if has_streams:
+        # make sure all descriptions are there
+        if len(np_probes) != len(probe_names_used):
+            print("Warning: mismatch between probes in settings")
 
-    if len(np_probes) < len(probe_names_used):
-        if raise_error:
-            raise Exception(f"Not enough NP_PROBE entries ({len(np_probes)}) for used probes: {probe_names_used}")
-        return None
+        if len(np_probes) < len(probe_names_used):
+            if raise_error:
+                raise Exception(f"Not enough NP_PROBE entries ({len(np_probes)}) for used probes: {probe_names_used}")
+            return None
 
     np_probes_info = []
     for probe_idx, np_probe in enumerate(np_probes):
@@ -1043,7 +1029,7 @@ def read_openephys(
                          'slot': slot,
                          'port': port,
                          'dock': dock,
-                         'serial_number': serial_number}
+                         'serial_number': np_serial_number}
         # find and append probe name
         probe_name_from_bs = [p['name'] for p in probes if p['slot'] == slot and p['port'] == port and p['dock'] == dock]
         if len(probe_name_from_bs) == 1:
@@ -1143,6 +1129,7 @@ def read_openephys(
     np_probe = np_probes[probe_idx]
     positions = np_probe_info['positions']
     shank_ids = np_probe_info['shank_ids']
+    print(np_probe.attrib)
 
     # x offset
     probe_name = np_probe.attrib["probe_name"]

@@ -210,7 +210,7 @@ def test_readspikeglx():
 
 def test_readopenephys():
     # NP1
-    probe = read_openephys(folder / "OE_Neuropix-PXI")
+    probe = read_openephys(folder / "OE_Neuropix-PXI" / "settings.xml")
 
     # from probeinterface.plotting import plot_probe_group, plot_probe
     # import matplotlib.pyplot as plt
