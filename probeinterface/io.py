@@ -967,6 +967,7 @@ def read_openephys(
     stream_name=None,
     probe_name=None,
     serial_number=None,
+    fix_x_position_for_oe_5=True,
     raise_error=True,
 ):
     """
@@ -992,6 +993,8 @@ def read_openephys(
         If more than one probe is used, the 'serial_number' indicates which probe to load base on the
         serial number. If this argument is used, the 'stream_name' and 'probe_name'
         must be None.
+    fix_x_position_for_oe_5: bool
+        The neuropixels PXI plugin in the open-ephys < 0.6.0 contains a bug in the y position. This option allow to fix it.
     raise_error: bool
         If True, any error would raise an exception. If False, None is returned. Default True
 
@@ -1146,6 +1149,8 @@ def read_openephys(
             ptype = None
             x_shift = 0
 
+        if fix_x_position_for_oe_5 and shank_ids is not None:
+            positions[:, 1] = positions[:, 1]-npx_probe[ptype]["shank pitch"]*shank_ids
 
         # x offset
         positions[:, 0] += x_shift
