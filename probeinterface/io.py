@@ -725,9 +725,7 @@ def read_spikeglx(file):
     """
 
     meta_file = Path(file)
-    assert (
-        meta_file.suffix == ".meta"
-    ), "'meta_file' should point to the .meta SpikeGLX file"
+    assert (meta_file.suffix == ".meta"), "'meta_file' should point to the .meta SpikeGLX file"
 
     with meta_file.open(mode="r") as f:
         lines = f.read().splitlines()
@@ -869,11 +867,18 @@ def read_openephys(
 ):
     """
     Read probe positions from Open Ephys folder when using the Neuropix-PXI plugin.
+    The reader assumes that the NP_PROBE fields are available in the settings file.
+    Open Ephys versions 0.5.x and 0.6.x are supported:
+    * For version 0.6.x, if the BASESTATION field is available in the Neuropix-PXI 
+      editor, it is used to infer the probe names and the relative slots, ports, and 
+      docks. The right probe is then selected based on the probe name in the stream
+      and the connection
+    * For version 0.5.x, STREAMs are not available. In this case, if multiple probes 
+      are available, they are named sequentially based on the nodeId. E.g. "100.0",
+      "100.1". These substrings are used for selection.
 
     Parameters
     ----------
-    folder : Path or str
-        The path to the Open Ephys folder
     settings_file :  Path, str, or None
         If more than one settings.xml file is in the folder structure, this argument
         is required to indicate which settings file to use
@@ -938,11 +943,17 @@ def read_openephys(
             )
         return None
 
-    streams = []
-    for child in neuropix_pxi:
-        if child.tag == "STREAM":
-            streams.append(child.attrib["name"])
-    has_streams = len(streams) > 0
+    # read STREAM fields if present (>=0.6.x)
+    stream_fields = neuropix_pxi.findall("STREAM")
+    if len(stream_fields) > 0:
+        has_streams = True
+        streams = []
+        for stream_field in stream_fields:
+            streams.append(stream_field.attrib["name"])
+        probe_names_used = np.unique([stream.split("-")[0] for stream in streams])
+    else:
+        has_streams = False
+        probe_names_used = None
 
     editor = neuropix_pxi.find("EDITOR")
     np_probes = editor.findall("NP_PROBE")
@@ -954,9 +965,13 @@ def read_openephys(
             raise Exception("NP_PROBE field not found in settings")
         return None
 
-    # try to find probe names in the basestations attributes
+    # read probes info
     probes = []
-    if basestations is not None:
+
+    # option 1. If BASESTATION fields are available, they are used to infer
+    # probe name, slot, port, and dock
+    has_basestations = len(basestations) > 0
+    if has_basestations:
         for bs in basestations:
             slot = bs.attrib["Slot"]
             port_docks = [k for k in bs.attrib.keys() if "port" in k and "dock" in k]
@@ -970,31 +985,33 @@ def read_openephys(
                     probe['port'] = pd[4:pd.find('dock')]
                     probe['dock'] = pd[pd.find('dock') + 4:]
                     probes.append(probe)
-
-    # check consistency with stream names
-    probe_names = [p['name'] for p in probes]
-    probe_names_used = np.unique([stream.split("-")[0] for stream in streams])
-    # if basestation not available, get probe names from stream names
-    if len(probes) == 0 and has_streams:
-        probes = [{'name': p, 'slot': 'unkown', 'port': 'unkown', 'dock': 'unkown'} for p in probe_names_used]
-    elif has_streams:
-        assert all(probe_used in probe_names for probe_used in probe_names_used)
     else:
-        probes = [{'name': f"{node_id}.{stream_index}", 'slot': 'unkown', 'port': 'unkown', 'dock': 'unkown'}
-                  for stream_index in range(len(np_probes))]
-        probe_names = [p['name'] for p in probes]
-        probe_names_used = probe_names
+        # option 2. BASESTATION is not available, but streams are. In this case
+        # probe names are inferred from streams
+        if has_streams:
+            probes = [{'name': p, 'slot': 'unkown', 'port': 'unkown', 'dock': 'unkown'} 
+                      for p in probe_names_used]
+        # option 3. STREAMs are not available. In this case, probes are sequentially
+        # named based on the node id
+        else:
+            probes = [{'name': f"{node_id}.{stream_index}", 'slot': 'unkown', 'port': 'unkown', 'dock': 'unkown'}
+                      for stream_index in range(len(np_probes))]
+            probe_names_used = [p['name'] for p in probes]
 
+    # check consistency with stream names and other fields
+    probe_names = [p['name'] for p in probes]
     if has_streams:
-        # make sure all descriptions are there
-        if len(np_probes) != len(probe_names_used):
-            print("Warning: mismatch between probes in settings")
+        # make sure probes listed in streams are in probe names
+        assert all(probe_used in probe_names for probe_used in probe_names_used)
 
+        # make sure we have at least as many NP_PROBE as the number of used probes
         if len(np_probes) < len(probe_names_used):
             if raise_error:
-                raise Exception(f"Not enough NP_PROBE entries ({len(np_probes)}) for used probes: {probe_names_used}")
+                raise Exception(f"Not enough NP_PROBE entries ({len(np_probes)}) "
+                                f"for used probes: {probe_names_used}")
             return None
 
+    # now load probe info from NP_PROBE fields
     np_probes_info = []
     for probe_idx, np_probe in enumerate(np_probes):
         slot = np_probe.attrib["slot"]
@@ -1035,27 +1052,30 @@ def read_openephys(
                          'port': port,
                          'dock': dock,
                          'serial_number': np_serial_number}
-        # find and append probe name
-        probe_name_from_bs = [p['name'] for p in probes if p['slot'] == slot and p['port'] == port and p['dock'] == dock]
-        if len(probe_name_from_bs) == 1:
-            np_probe_dict.update({'name': probe_name_from_bs[0]})
+        if has_basestations:
+            # find probe name based on connection to basestation
+            probe_name_from_bs = [p['name'] for p in probes if p['slot'] == slot \
+                and p['port'] == port and p['dock'] == dock]
+            if len(probe_name_from_bs) == 1:
+                np_probe_dict.update({'name': probe_name_from_bs[0]})
+            elif len(probe_name_from_bs) == 0:
+                if raise_error:
+                    raise Exception("Mismatch in probe connections! Could not find probe "
+                                    "connected to slot, port, and dock specified in NP_PROBE!")
+                return None
+            else:
+                if raise_error:
+                    raise Exception("Mismatch in probe connections! More than one probe "
+                                    "connected to slot, port, and dock specified in NP_PROBE!")
+                return None
         else:
             # if base station is not available, probe names are sequential from the stream
             np_probe_dict.update({'name': probe_names_used[probe_idx]})
         np_probes_info.append(np_probe_dict)
 
-    # select correct probe for stream
+    # now select correct probe (if multiple)
     if len(np_probes) > 1:
         found = False
-
-        assert (
-            stream_name is not None
-            or probe_name is not None
-            or serial_number is not None
-        ), (
-            "More than one probe found. Use one of 'stream_name', 'probe_name', or 'serial_number' "
-            "to select the right probe"
-        )
 
         if stream_name is not None:
             assert probe_name is None and serial_number is None, (
@@ -1085,7 +1105,7 @@ def read_openephys(
                         f"The provided {probe_name} is not in the available probes: {probe_names}"
                     )
                 return None
-        else:
+        elif serial_number is not None:
             assert stream_name is None and probe_name is None, (
                 "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
             )
@@ -1099,8 +1119,14 @@ def read_openephys(
                         f"The provided {serial_number} is not in the available serial numbers: {np_serial_numbers}"
                     )
                 return None
+        else:
+            raise Exception(
+                "More than one probe found. Use one of 'stream_name', 'probe_name', or 'serial_number' "
+                "to select the right probe"
+            )
     else:
-        # check consistency with streams
+        # in case of a single probe, make sure it is consistent with optional
+        # stream_name, probe_name, or serial number
         if stream_name:
             available_probe_name = np_probes_info[0]['name']
             if available_probe_name not in stream_name:
