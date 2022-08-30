@@ -1129,7 +1129,6 @@ def read_openephys(
     np_probe = np_probes[probe_idx]
     positions = np_probe_info['positions']
     shank_ids = np_probe_info['shank_ids']
-    print(np_probe.attrib)
 
     # x offset
     probe_name = np_probe.attrib["probe_name"]
