@@ -698,6 +698,31 @@ def write_csv(file, probe):
 
     raise NotImplementedError
 
+npx_probe = {
+    "ncol":2,
+    "nelectrods per shank": 384,
+    0: {
+        "x pitch": 32,
+        "y pitch": 20,
+        "contact width": 12,
+        "shank pitch": 0,
+        "shank number": 1
+    },
+    21: {
+        "x pitch": 32,
+        "y pitch": 20,
+        "contact width": 12,
+        "shank pitch": 0,
+        "shank number": 1
+    },
+    24: {
+        "x pitch": 32,
+        "y pitch": 15,
+        "contact width": 12,
+        "shank pitch": 250,
+        "shank number": 4
+    }
+}
 def read_imro(file):
     """
     Read probe position from the imro file used in input of SpikeGlx and Open-Ephys for neuropixels probes.
@@ -722,79 +747,50 @@ def read_imro(file):
 
     positions = np.zeros((num_contact, 2), dtype='float64')
     contact_ids = []
-    n_col = 2
 
-    if imDatPrb_type == 0:  # NP1
-        # NP1.0
-        x_pitch = 32
-        y_pitch = 20
-        contact_width = 12
+    if imDatPrb_type == 0 or imDatPrb_type == 21:  # NP1
         shank_ids = None
         for i, part in enumerate(parts):
 
-            channel_id, bank, ref, a, l, f = tuple(map(int, part[1:].split(' ')))
+            channel_id, _, _, _, _, _ = tuple(map(int, part[1:].split(' ')))
 
-            x_idx = channel_id % n_col
-            y_idx = channel_id // n_col
+            x_idx = channel_id % npx_probe["ncol"]
+            y_idx = channel_id // npx_probe["ncol"]
 
-            stagger = np.mod(y_idx + 1, 2) * x_pitch / 2
-            x_pos = x_idx * x_pitch + stagger
-            y_pos = y_idx * y_pitch
-
-            contact_ids.append(channel_id)
-            positions[i, :] = [x_pos, y_pos]
-
-    elif imDatPrb_type == 21:
-        x_pitch = 32
-        y_pitch = 15
-        contact_width = 12
-        shank_ids = None
-        for i, part in enumerate(parts):
-            channel_id, bank, ref, a, l, f = tuple(map(int, part[1:].split(' ')))
-
-            x_idx = channel_id % n_col
-            y_idx = channel_id // n_col
-            stagger = np.mod(y_idx + 1, 2) * x_pitch / 2
-            x_pos = x_idx * x_pitch + stagger
-            y_pos = y_idx * y_pitch
+            stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x pitch"] / 2
+            x_pos = x_idx * npx_probe[imDatPrb_type ]["x pitch"] + stagger
+            y_pos = y_idx * npx_probe[imDatPrb_type ]["y pitch"]
 
             contact_ids.append(channel_id)
             positions[i, :] = [x_pos, y_pos]
 
     elif imDatPrb_type == 24:
         # NP2.0(4-shank)
-        x_pitch = 32
-        y_pitch = 15
-        contact_width = 12
-        shank_pitch = 250
         shank_ids=[]
         for i, part in enumerate(parts):
             channel_id, shank_id, bank, ref, elec_id = tuple(map(int, part[1:].split(' ')))
-            x_idx = elec_id % n_col
-            y_idx = elec_id // n_col
+            x_idx = elec_id % npx_probe["ncol"]
+            y_idx = elec_id // npx_probe["ncol"]
             shank_ids.append(shank_id)
-            x_pos = x_idx * x_pitch + int(shank_ids[i]) * shank_pitch
-            y_pos = y_idx * y_pitch
-            contact_ids.append(f'CH{channel_id}')
-            positions[i, :] = [x_pos, y_pos]
+            x_pos = x_idx * npx_probe[imDatPrb_type ]["x pitch"] + int(shank_id) * npx_probe[imDatPrb_type ]["shank pitch"]
+            y_pos = y_idx * npx_probe[imDatPrb_type ]["y pitch"]
+            contact_ids.append(str(elec_id+shank_id*npx_probe["nelectrods per shank"]))
+            positions[channel_id, :] = [x_pos, y_pos]
     else:
         raise RuntimeError(f'unsupported imro type : {imDatPrb_type}')
 
     probe = Probe(ndim=2, si_units='um')
     probe.set_contacts(positions=positions, shapes='square',
                        shank_ids=shank_ids,
-                       shape_params={'width': contact_width})
+                       shape_params={'width': npx_probe[imDatPrb_type ]["contact width"]})
     probe.set_contact_ids(contact_ids)
     probe.annotate(imDatPrb_type=imDatPrb_type)
 
     # planar contour
     one_polygon = [(0, 10000), (0, 0), (35, -175), (70, 0), (70, 10000), ]
-    if shank_ids is None:
-        contour = one_polygon
-    else:
-        contour = []
-        for i, shank_id in enumerate(np.unique(shank_ids)):
-            contour += list(np.array(one_polygon) + [shank_pitch * i, 0])
+    contour = []
+    for shank_id in range(npx_probe[imDatPrb_type ]["shank number"]):
+        contour += list(np.array(one_polygon) + [ npx_probe[imDatPrb_type ]["shank pitch"] * shank_id, 0])
     # shift
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
@@ -1134,8 +1130,40 @@ def read_openephys(
         ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])
         positions = np.array([xpos, ypos]).T
 
+        contact_ids = []
+        pname = np_probe.attrib["probe_name"]
+        if "2.0" in pname:
+            x_shift = -8
+            if "Multishank" in pname:
+                ptype = 24
+            else:
+                ptype = 21
+        elif "1.0" in pname:
+            ptype = 0
+            x_shift = -11
+        else: # Probe type unknown
+            ptype = None
+            x_shift = 0
+
+        # x offset
+        positions[:, 0] += x_shift
+
+        for i, pos in enumerate(positions):
+            if ptype is None:
+                break
+            elif ptype == 21 or ptype == 0:
+                shank_id = 0
+                stagger = np.mod(pos[1]/npx_probe[ptype]["y pitch"] + 1, 2) * npx_probe[ptype]["x pitch"] / 2
+            else:
+                shank_id = shank_ids[i]
+                stagger = 0
+            contact_id = int((pos[0] - stagger - npx_probe[ptype]["shank pitch"]*shank_id)/npx_probe[ptype]["x pitch"]\
+                         + npx_probe["ncol"]*pos[1]/npx_probe[ptype]["y pitch"])
+            contact_ids.append(contact_id)
+
         np_probe_dict = {'channel_names': channel_names,
                          'shank_ids': shank_ids,
+                         'contact_ids': contact_ids,
                          'positions': positions,
                          'slot': slot,
                          'port': port,
@@ -1241,14 +1269,6 @@ def read_openephys(
     positions = np_probe_info['positions']
     shank_ids = np_probe_info['shank_ids']
 
-    # x offset
-    probe_name = np_probe.attrib["probe_name"]
-    if "2.0" in probe_name:
-        x_shift = -8
-    else:
-        x_shift = -11
-    positions[:, 0] += x_shift
-
     probe = Probe(ndim=2, si_units="um")
     probe.set_contacts(
         positions=positions,
@@ -1257,13 +1277,14 @@ def read_openephys(
         shape_params={"width": contact_width},
     )
     probe.annotate(
-        name=probe_name,
+        name=pname,
         manufacturer="IMEC",
-        probe_name=probe_name,
+        probe_name=pname,
         probe_part_number=np_probe.attrib["probe_part_number"],
         probe_serial_number=np_probe.attrib["probe_serial_number"],
     )
 
+    probe.set_contact_ids( np_probe_info['contact_ids'])
     # planar contour
     one_polygon = [
         (0, 10000),
