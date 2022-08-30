@@ -924,7 +924,12 @@ def read_openephys(
             )
         return None
 
-    node_id = neuropix_pxi.attrib["NodeId"]
+    if "NodeId" in neuropix_pxi.attrib:
+        node_id = neuropix_pxi.attrib["NodeId"]
+    elif "nodeId" in neuropix_pxi.attrib:
+        node_id = neuropix_pxi.attrib["nodeId"]
+    else:
+        node_id = None
     neuropix_pxi_version = parse(neuropix_pxi.attrib["libraryVersion"])
     if neuropix_pxi_version < parse("0.3.3"):
         if raise_error:
@@ -1022,8 +1027,6 @@ def read_openephys(
         xpos = np.array([float(electrode_xpos.attrib[ch]) for ch in channel_names])
         ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])
         positions = np.array([xpos, ypos]).T
-
-        raise Exception
 
         np_probe_dict = {'channel_names': channel_names,
                          'shank_ids': shank_ids,
