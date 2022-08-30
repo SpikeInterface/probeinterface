@@ -999,16 +999,16 @@ def read_openephys(
         # read channels
         channels = np_probe.find("CHANNELS")
         channel_names = np.array(list(channels.attrib.keys()))
-        channel_order = np.argsort([int(ch[2:]) for ch in channel_names])
+        channel_ids = np.array([int(ch[2:]) for ch in channel_names])
+        channel_order = np.argsort(channel_ids)
 
+        # sort channel_names and channel_values
         channel_names = channel_names[channel_order]
         channel_values = np.array(list(channels.attrib.values()))[channel_order]
 
         # check if shank ids is present
         if all(":" in val for val in channel_values):
-            shank_ids = np.array(
-                [int(val[val.find(":") + 1 :]) for val in channel_values]
-            )[channel_order]
+            shank_ids = np.array([int(val[val.find(":") + 1 :]) for val in channel_values])
         else:
             shank_ids = None
 
@@ -1019,9 +1019,11 @@ def read_openephys(
             if raise_error:
                 raise Exception("ELECTRODE_XPOS or ELECTRODE_YPOS is not available in settings!")
             return None
-        xpos = np.array([float(electrode_xpos.attrib[ch]) for ch in channel_names])[channel_order]
-        ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])[channel_order]
+        xpos = np.array([float(electrode_xpos.attrib[ch]) for ch in channel_names])
+        ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])
         positions = np.array([xpos, ypos]).T
+
+        raise Exception
 
         np_probe_dict = {'channel_names': channel_names,
                          'shank_ids': shank_ids,
