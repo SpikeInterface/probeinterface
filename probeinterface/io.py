@@ -919,7 +919,6 @@ def read_openephys(
                     "file with the 'settings_file' argument"
                 )
                 return None
-
     elif len(settings_files) == 0:
         if raise_error:
             raise FileNotFoundError("Cannot find settings.xml file!")
@@ -971,7 +970,7 @@ def read_openephys(
         return None
 
     # try to find probe names in the basestations attributes
-    probe_names = []
+    probes = []
     if basestations is not None:
         for bs in basestations:
             slot = bs.attrib["Slot"]
@@ -980,25 +979,33 @@ def read_openephys(
             for pd in port_docks:
                 val = bs.attrib[pd]
                 if "Probe" in val:
-                    probe_names.append(val)
+                    probe = {}
+                    probe['name'] = val
+                    probe['slot'] = slot
+                    probe['port'] = pd[4:pd.find('dock')]
+                    probe['dock'] = pd[pd.find('dock') + 4:]
+                    probes.append(probe)
 
     # check consistency with stream names
-    probes_used = np.unique([stream.split("-")[0] for stream in streams])
+    probe_names = [p['name'] for p in probes]
+    probe_names_used = np.unique([stream.split("-")[0] for stream in streams])
     # if basestation not available, get probe names from stream names
-    if len(probe_names) == 0:
-        probe_names = probes_used
+    if len(probes) == 0:
+        probes = [{'name': p, 'slot': 'unkown', 'port': 'unkown', 'dock': 'unkown'} for p in probe_names_used]
     else:
-        assert all(probe_used in probe_names for probe_used in probes_used)
+        assert all(probe_used in probe_names for probe_used in probe_names_used)
 
-    np_channel_names = []
-    np_shank_ids = []
-    np_positions = []
-    np_slots = []
-    np_ports = []
-    np_docks = []
-    np_serial_numbers = []
+    # make sure all descriptions are there
+    if len(np_probes) != len(probe_names_used):
+        print("Warning: mismatch between probes in settings")
 
-    for np_probe in np_probes:
+    if len(np_probes) < len(probe_names_used):
+        if raise_error:
+            raise Exception(f"Not enough NP_PROBE entries ({len(np_probes)}) for used probes: {probe_names_used}")
+        return None
+
+    np_probes_info = []
+    for probe_idx, np_probe in enumerate(np_probes):
         slot = np_probe.attrib["slot"]
         port = np_probe.attrib["port"]
         dock = np_probe.attrib["dock"]
@@ -1030,18 +1037,26 @@ def read_openephys(
         ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])[channel_order]
         positions = np.array([xpos, ypos]).T
 
-        np_channel_names.append(channel_names)
-        np_shank_ids.append(shank_ids)
-        np_positions.append(positions)
-        np_slots.append(slot)
-        np_ports.append(port)
-        np_docks.append(dock)
-        np_serial_numbers.append(np_serial_number)
-
-    np_positions = np.array(np_positions)
+        np_probe_dict = {'channel_names': channel_names,
+                         'shank_ids': shank_ids,
+                         'positions': positions,
+                         'slot': slot,
+                         'port': port,
+                         'dock': dock,
+                         'serial_number': serial_number}
+        # find and append probe name
+        probe_name_from_bs = [p['name'] for p in probes if p['slot'] == slot and p['port'] == port and p['dock'] == dock]
+        if len(probe_name_from_bs) == 1:
+            np_probe_dict.update({'name': probe_name_from_bs[0]})
+        else:
+            # if base station is not available, probe names are sequential from the stream
+            np_probe_dict.update({'name': probe_names_used[probe_idx]})
+        np_probes_info.append(np_probe_dict)
 
     # select correct probe for stream
-    if len(probe_names) > 1:
+    if len(np_probes) > 1:
+        found = False
+
         assert (
             stream_name is not None
             or probe_name is not None
@@ -1055,73 +1070,79 @@ def read_openephys(
             assert probe_name is None and serial_number is None, (
                 "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
             )
-            probe_matches = [probe_name in stream_name for probe_name in probe_names]
-            if not any(probe_matches):
+            for probe_idx, probe_info in enumerate(np_probes_info):
+                if probe_info['name'] in stream_name:
+                    found = True
+                    break
+            if not found:
                 if raise_error:
                     raise Exception(
                         f"The stream {stream_name} is not associated to an available probe: {probe_names}"
                     )
                 return None
-            if sum(probe_matches) > 1:
-                if raise_error:
-                    raise Exception(f"More than one probe name matched {stream_name}")
-                return None
-            probe_idx = np.where(probe_matches)[0][0]
         elif probe_name is not None:
             assert stream_name is None and serial_number is None, (
                 "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
             )
-            if probe_name not in probe_names:
+            for probe_idx, probe_info in enumerate(np_probes_info):
+                if probe_info['name'] == probe_name:
+                    found = True
+                    break
+            if not found:
                 if raise_error:
                     raise Exception(
                         f"The provided {probe_name} is not in the available probes: {probe_names}"
                     )
                 return None
-            probe_idx = list(probe_names).index(probe)
         else:
             assert stream_name is None and probe_name is None, (
                 "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
             )
-            serial_number = str(serial_number)
-            if serial_number not in np_serial_numbers:
+            for probe_idx, probe_info in enumerate(np_probes_info):
+                if probe_info['serial_number'] == str(serial_number):
+                    found = True
+                    break
+            if not found:
                 if raise_error:
                     raise Exception(
                         f"The provided {serial_number} is not in the available serial numbers: {np_serial_numbers}"
                     )
                 return None
-            probe_idx = list(np_serial_numbers).index(serial_number)
     else:
         # check consistency with streams
         if stream_name:
-            if probe_names[0] not in stream_name:
+            available_probe_name = np_probes_info[0]['name']
+            if available_probe_name not in stream_name:
                 if raise_error:
                     raise Exception(
-                        f"Inconsistency betweem provided stream {stream_name} and available probe {probe_names[0]}"
+                        f"Inconsistency betweem provided stream {stream_name} and available probe {available_probe_name}"
                     )
                 return None
         if probe_name:
-            if probe_name not in probe_names:
+            available_probe_name = np_probes_info[0]['name']
+            if probe_name != available_probe_name:
                 if raise_error:
                     raise Exception(
-                        f"Inconsistency betweem provided probe name {probe_name} and available probe {probe_names[0]}"
+                        f"Inconsistency betweem provided probe name {probe_name} and available probe {available_probe_name}"
                     )
                 return None
         if serial_number:
-            if serial_number not in np_serial_numbers:
+            available_serial_number = np_probes_info[0]['serial_number']
+            if str(serial_number) != available_serial_number:
                 if raise_error:
                     raise Exception(
-                        f"Inconsistency betweem provided serial number {serial_number} and available serial numbers {np_serial_numbers[0]}"
+                        f"Inconsistency betweem provided serial number {serial_number} and available serial numbers {available_serial_number}"
                     )
                 return None
-
         probe_idx = 0
 
     contact_width = 12
     shank_pitch = 250
 
-    positions = np_positions[probe_idx]
+    np_probe_info = np_probes_info[probe_idx]
     np_probe = np_probes[probe_idx]
-    shank_ids = np_shank_ids[probe_idx]
+    positions = np_probe_info['positions']
+    shank_ids = np_probe_info['shank_ids']
 
     # x offset
     probe_name = np_probe.attrib["probe_name"]
@@ -1138,7 +1159,6 @@ def read_openephys(
         shank_ids=shank_ids,
         shape_params={"width": contact_width},
     )
-    probe.set_contact_ids(channel_names)
     probe.annotate(
         name=probe_name,
         manufacturer="IMEC",
