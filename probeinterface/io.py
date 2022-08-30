@@ -985,6 +985,10 @@ def read_openephys(
                     probe['port'] = pd[4:pd.find('dock')]
                     probe['dock'] = pd[pd.find('dock') + 4:]
                     probes.append(probe)
+        # this takes care of a bug where BASESTATION exists, but probes do not appear there
+        if len(probes) == 0:
+            probes = [{'name': p, 'slot': 'unkown', 'port': 'unkown', 'dock': 'unkown'}
+                      for p in probe_names_used]
     else:
         # option 2. BASESTATION is not available, but streams are. In this case
         # probe names are inferred from streams
