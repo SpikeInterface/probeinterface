@@ -879,7 +879,7 @@ def read_openephys(
         is required to indicate which settings file to use
     stream_name : str or None
         If more than one probe is used, the 'stream_name' indicates which probe to load base on the
-        stream. For example, if there are 3 probes ('ProbeA', 'ProbeB', Pro'beC) and the stream_name is
+        stream. For example, if there are 3 probes ('ProbeA', 'ProbeB', ProbeC) and the stream_name is
         contains the substring 'ProbeC' (e.g. 'my-stream-ProbeC'), then the probe associated with
         ProbeC is returned. If this argument is used, the 'probe_name' and 'serial_number' must be None.
     probe_name : str or None
