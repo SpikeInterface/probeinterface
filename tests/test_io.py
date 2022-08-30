@@ -210,7 +210,21 @@ def test_readspikeglx():
 
 def test_readopenephys():
     # NP1
-    probe = read_openephys(folder / "OE_Neuropix-PXI")
+    probe = read_openephys(folder / "OE_Neuropix-PXI" / "settings.xml")
+
+    # multiple probes
+    probeA = read_openephys(folder / "OE_Neuropix-PXI-multi-probe" / "settings.xml",
+                            probe_name="ProbeA")
+    probeB = read_openephys(folder / "OE_Neuropix-PXI-multi-probe" / "settings.xml",
+                            stream_name="RecordNode#ProbeB")
+    probeC = read_openephys(folder / "OE_Neuropix-PXI-multi-probe" / "settings.xml",
+                            serial_number="20403311714")
+    probeD = read_openephys(folder / "OE_Neuropix-PXI-multi-probe" / "settings.xml",
+                            probe_name="ProbeD")
+    assert probeA.annotations['probe_serial_number'] == "17131307831"
+    assert probeB.annotations['probe_serial_number'] == "20403311724"
+    assert probeC.annotations['probe_serial_number'] == "20403311714"
+    assert probeD.annotations['probe_serial_number'] == "21144108671"
 
     # from probeinterface.plotting import plot_probe_group, plot_probe
     # import matplotlib.pyplot as plt
