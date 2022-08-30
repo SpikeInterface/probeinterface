@@ -1013,6 +1013,8 @@ def read_openephys(
     tree = ET.parse(str(settings_file))
     root = tree.getroot()
 
+    info_chain = root.find("INFO")
+    oe_version = parse(str(info_chain.find("VERSION")))
     signal_chain = root.find("SIGNALCHAIN")
     neuropix_pxi = None
     for processor in signal_chain:
@@ -1133,7 +1135,6 @@ def read_openephys(
         ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])
         positions = np.array([xpos, ypos]).T
 
-
         contact_ids = []
         pname = np_probe.attrib["probe_name"]
         if "2.0" in pname:
@@ -1149,7 +1150,7 @@ def read_openephys(
             ptype = None
             x_shift = 0
 
-        if fix_x_position_for_oe_5 and shank_ids is not None:
+        if fix_x_position_for_oe_5 and oe_version < parse("0.6.0") and shank_ids is not None:
             positions[:, 1] = positions[:, 1]-npx_probe[ptype]["shank pitch"]*shank_ids
 
         # x offset
