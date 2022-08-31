@@ -1161,6 +1161,7 @@ def read_openephys(
     # if basestation not available, get probe names from stream names
     if len(probes) == 0 and has_streams:
         probes = [{'name': p, 'slot': 'unkown', 'port': 'unkown', 'dock': 'unkown'} for p in probe_names_used]
+        probe_names = [p['name'] for p in probes]
     elif has_streams:
         assert all(probe_used in probe_names for probe_used in probe_names_used)
     else:
@@ -1228,7 +1229,7 @@ def read_openephys(
             x_shift = 0
 
         if fix_x_position_for_oe_5 and oe_version < parse("0.6.0") and shank_ids is not None:
-            positions[:, 1] = positions[:, 1]-npx_probe[ptype]["shank pitch"]*shank_ids
+            positions[:, 1] = positions[:, 1] - npx_probe[ptype]["shank pitch"] * shank_ids
 
         # x offset
         positions[:, 0] += x_shift
@@ -1238,12 +1239,13 @@ def read_openephys(
                 break
             elif ptype == 21 or ptype == 0:
                 shank_id = 0
-                stagger = np.mod(pos[1]/npx_probe[ptype]["y pitch"] + 1, 2) * npx_probe[ptype]["x pitch"] / 2
+                stagger = np.mod(pos[1] / npx_probe[ptype]["y pitch"] + 1, 2) * npx_probe[ptype]["x pitch"] / 2
             else:
                 shank_id = shank_ids[i]
                 stagger = 0
-            contact_id = int((pos[0] - stagger - npx_probe[ptype]["shank pitch"]*shank_id)/npx_probe[ptype]["x pitch"]\
-                         + npx_probe["ncol"]*pos[1]/npx_probe[ptype]["y pitch"])+ npx_probe["nelectrods per shank"]*shank_id
+            contact_id = int((pos[0] - stagger - npx_probe[ptype]["shank pitch"] * shank_id) / \
+                npx_probe[ptype]["x pitch"] + npx_probe["ncol"] * pos[1] / npx_probe[ptype]["y pitch"]) + \
+                npx_probe["nelectrods per shank"] * shank_id
             contact_ids.append(contact_id)
 
         np_probe_dict = {'channel_names': channel_names,
@@ -1254,8 +1256,10 @@ def read_openephys(
                          'port': port,
                          'dock': dock,
                          'serial_number': np_serial_number}
+
         # find and append probe name
-        probe_name_from_bs = [p['name'] for p in probes if p['slot'] == slot and p['port'] == port and p['dock'] == dock]
+        probe_name_from_bs = [p['name'] for p in probes if p['slot'] == slot and \
+            p['port'] == port and p['dock'] == dock]
         if len(probe_name_from_bs) == 1:
             np_probe_dict.update({'name': probe_name_from_bs[0]})
         else:
@@ -1313,6 +1317,7 @@ def read_openephys(
                     found = True
                     break
             if not found:
+                np_serial_numbers = [p['serial_number'] for p in probe_info]
                 if raise_error:
                     raise Exception(
                         f"The provided {serial_number} is not in the available serial numbers: {np_serial_numbers}"
@@ -1325,7 +1330,8 @@ def read_openephys(
             if available_probe_name not in stream_name:
                 if raise_error:
                     raise Exception(
-                        f"Inconsistency betweem provided stream {stream_name} and available probe {available_probe_name}"
+                        f"Inconsistency betweem provided stream {stream_name} and available probe "
+                        f"{available_probe_name}"
                     )
                 return None
         if probe_name:
@@ -1333,7 +1339,8 @@ def read_openephys(
             if probe_name != available_probe_name:
                 if raise_error:
                     raise Exception(
-                        f"Inconsistency betweem provided probe name {probe_name} and available probe {available_probe_name}"
+                        f"Inconsistency betweem provided probe name {probe_name} and available probe "
+                        f"{available_probe_name}"
                     )
                 return None
         if serial_number:
@@ -1341,7 +1348,8 @@ def read_openephys(
             if str(serial_number) != available_serial_number:
                 if raise_error:
                     raise Exception(
-                        f"Inconsistency betweem provided serial number {serial_number} and available serial numbers {available_serial_number}"
+                        f"Inconsistency betweem provided serial number {serial_number} and available serial numbers "
+                        f"{available_serial_number}"
                     )
                 return None
         probe_idx = 0
@@ -1353,6 +1361,7 @@ def read_openephys(
     np_probe = np_probes[probe_idx]
     positions = np_probe_info['positions']
     shank_ids = np_probe_info['shank_ids']
+    pname = np_probe.attrib["probe_name"]
 
     probe = Probe(ndim=2, si_units="um")
     probe.set_contacts(
