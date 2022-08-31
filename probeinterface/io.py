@@ -14,7 +14,6 @@ import re
 import json
 from collections import OrderedDict
 from packaging.version import Version, parse
-import pandas as pd
 import numpy as np
 
 from .version import version
