@@ -195,15 +195,18 @@ def test_readspikeglx():
     # NP1
     probe = read_spikeglx(folder / 'Noise_g0_t0.imec0.ap.meta')
     print(probe)
+    print(probe.contact_ids)
 
     # NP2 4 shanks
     probe = read_spikeglx(folder / 'TEST_20210920_0_g0_t0.imec0.ap.meta')
     print(probe)
+    print(probe.contact_ids)
 
     # NP2 1 shanks
     probe = read_spikeglx(folder / 'p2_g0_t0.imec0.ap.meta')
     print(probe)
-    
+    print(probe.contact_ids)
+
 
 def test_readopenephys():
     # NP1
@@ -212,12 +215,20 @@ def test_readopenephys():
     # multiple probes
     probeA = read_openephys(folder / "OE_Neuropix-PXI-multi-probe" / "settings.xml",
                             probe_name="ProbeA")
+    print(probeA)
+    print(probeA.contact_ids)
     probeB = read_openephys(folder / "OE_Neuropix-PXI-multi-probe" / "settings.xml",
                             stream_name="RecordNode#ProbeB")
+    print(probeB)
+    print(probeB.contact_ids)
     probeC = read_openephys(folder / "OE_Neuropix-PXI-multi-probe" / "settings.xml",
                             serial_number="20403311714")
+    print(probeC)
+    print(probeC.contact_ids)
     probeD = read_openephys(folder / "OE_Neuropix-PXI-multi-probe" / "settings.xml",
                             probe_name="ProbeD")
+    print(probeD)
+    print(probeD.contact_ids)
     assert probeA.annotations['probe_serial_number'] == "17131307831"
     assert probeB.annotations['probe_serial_number'] == "20403311724"
     assert probeC.annotations['probe_serial_number'] == "20403311714"
@@ -243,5 +254,5 @@ if __name__ == '__main__':
     
     # test_prb()
     test_readspikeglx()
-    # test_readopenephys()
+    test_readopenephys()
     
