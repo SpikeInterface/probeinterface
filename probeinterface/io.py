@@ -29,7 +29,6 @@ npx_probe = {
         "contact_width": 12,
         "shank_pitch": 0,
         "shank_number": 1,
-        "nelectrodes_per_shank": 960,
         "ncol": 2
     },
     21: {
@@ -38,7 +37,6 @@ npx_probe = {
         "contact_width": 12,
         "shank_pitch": 0,
         "shank_number": 1,
-        "nelectrodes_per_shank": 1280,
         "ncol": 2
     },
     24: {
@@ -47,7 +45,6 @@ npx_probe = {
         "contact_width": 12,
         "shank_pitch": 250,
         "shank_number": 4,
-        "nelectrodes_per_shank": 384,
         "ncol": 2
     }
 }
@@ -825,7 +822,7 @@ def _read_imro_string(imro_str):
             shank_ids.append(shank_id)
             x_pos = x_idx * npx_probe[imDatPrb_type]["x_pitch"] + int(shank_id) * npx_probe[imDatPrb_type]["shank_pitch"]
             y_pos = y_idx * npx_probe[imDatPrb_type]["y_pitch"]
-            contact_ids.append(str(elec_id+shank_id * npx_probe[imDatPrb_type]["nelectrodes_per_shank"]))
+            contact_ids.append(str(elec_id))
             positions[channel_id, :] = [x_pos, y_pos]
             annotations["banks"].append(bank)
             annotations["references"].append(ref)
@@ -890,7 +887,7 @@ def write_imro(file, probe):
         for ch in range(len(data)):
             ret.append(
                 f"({data['device_channel_indices'][ch]} {data['shank_ids'][ch]} {annotations['banks'][ch]} "
-                f"{annotations['references'][ch]} {int(data['contact_ids'][ch]) - int(data['shank_ids'][ch]) * npx_probe[probe_type]['nelectrodes_per_shank']})")
+                f"{annotations['references'][ch]} {int(data['contact_ids'][ch])})")
     else:
         raise RuntimeError(f'unknown imro type : {probe_type}')
     with open(file, "w") as f:
@@ -1167,8 +1164,7 @@ def read_openephys(
                 shank_id = shank_ids[i]
                 stagger = 0
             contact_id = int((pos[0] - stagger - npx_probe[ptype]["shank_pitch"] * shank_id) / \
-                npx_probe[ptype]["x_pitch"] + npx_probe[ptype]["ncol"] * pos[1] / npx_probe[ptype]["y_pitch"]) + \
-                npx_probe[ptype]["nelectrodes_per_shank"] * shank_id
+                npx_probe[ptype]["x_pitch"] + npx_probe[ptype]["ncol"] * pos[1] / npx_probe[ptype]["y_pitch"])
             contact_ids.append(contact_id)
 
         np_probe_dict = {'channel_names': channel_names,
