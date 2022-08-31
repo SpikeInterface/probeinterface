@@ -2,7 +2,7 @@ name: Test on Ubuntu
 
 on:
   pull_request:
-      branches: [master]
+      branches: [main]
       types: [synchronize, opened, reopened, ready_for_review]
 
 jobs:
