@@ -21,6 +21,39 @@ from .probe import Probe
 from .probegroup import ProbeGroup
 
 
+# neuropixels info
+npx_probe = {
+    0: {
+        "x_pitch": 32,
+        "y_pitch": 20,
+        "contact_width": 12,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "nelectrodes_per_shank": 960,
+        "ncol": 2
+    },
+    21: {
+        "x_pitch": 32,
+        "y_pitch": 15,
+        "contact_width": 12,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "nelectrodes_per_shank": 1280,
+        "ncol": 2
+    },
+    24: {
+        "x_pitch": 32,
+        "y_pitch": 15,
+        "contact_width": 12,
+        "shank_pitch": 250,
+        "shank_number": 4,
+        "nelectrodes_per_shank": 384,
+        "ncol": 2
+    }
+}
+
+
+
 def _probeinterface_format_check_version(d):
     """
     Check format version of probeinterface JSON file
@@ -697,51 +730,34 @@ def write_csv(file, probe):
 
     raise NotImplementedError
 
-npx_probe = {
-    "ncol":2,
-    "nelectrods per shank": 384,
-    0: {
-        "x pitch": 32,
-        "y pitch": 20,
-        "contact width": 12,
-        "shank pitch": 0,
-        "shank number": 1
-    },
-    21: {
-        "x pitch": 32,
-        "y pitch": 20,
-        "contact width": 12,
-        "shank pitch": 0,
-        "shank number": 1
-    },
-    24: {
-        "x pitch": 32,
-        "y pitch": 15,
-        "contact width": 12,
-        "shank pitch": 250,
-        "shank number": 4
-    }
-}
+
 def read_imro(file):
     """
     Read probe position from the imro file used in input of SpikeGlx and Open-Ephys for neuropixels probes.
 
     Parameters
     ----------
-    file : Path or str
-        The .imro file path
+    file_or_str : Path or str
+        The .imro file path or a string containing the imro table
 
     Returns
     -------
     probe : Probe object
 
     """
-
+    # the input is an imro file
     meta_file = Path(file)
     assert meta_file.suffix == ".imro", "'file' should point to the .imro file"
-
     with meta_file.open(mode='r') as f:
-        headers, *parts,_ = f.read().strip().split(")")
+        imro_str = str(f.read())
+    return _read_imro_string(imro_str)
+
+
+def _read_imro_string(imro_str):
+    """
+    Low-level function to parse imro string
+    """
+    headers, *parts,_ = imro_str.strip().split(")")
     imDatPrb_type, num_contact = tuple(map(int, headers[1:].split(',')))
 
     positions = np.zeros((num_contact, 2), dtype='float64')
@@ -760,12 +776,12 @@ def read_imro(file):
 
             channel_id, bank, ref, ap_gain, lf_gain, ap_hp_filter = tuple(map(int, part[1:].split(' ')))
 
-            x_idx = channel_id % npx_probe["ncol"]
-            y_idx = channel_id // npx_probe["ncol"]
+            x_idx = channel_id % npx_probe[imDatPrb_type]["ncol"]
+            y_idx = channel_id // npx_probe[imDatPrb_type]["ncol"]
 
-            stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x pitch"] / 2
-            x_pos = x_idx * npx_probe[imDatPrb_type ]["x pitch"] + stagger
-            y_pos = y_idx * npx_probe[imDatPrb_type ]["y pitch"]
+            stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x_pitch"] / 2
+            x_pos = x_idx * npx_probe[imDatPrb_type ]["x_pitch"] + stagger
+            y_pos = y_idx * npx_probe[imDatPrb_type ]["y_pitch"]
 
             contact_ids.append(channel_id)
             positions[i, :] = [x_pos, y_pos]
@@ -785,12 +801,12 @@ def read_imro(file):
 
             channel_id, bank, ref, elec_id = tuple(map(int, part[1:].split(' ')))
 
-            x_idx = channel_id % npx_probe["ncol"]
-            y_idx = channel_id // npx_probe["ncol"]
+            x_idx = channel_id % npx_probe[imDatPrb_type]["ncol"]
+            y_idx = channel_id // npx_probe[imDatPrb_type]["ncol"]
 
-            stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x pitch"] / 2
-            x_pos = x_idx * npx_probe[imDatPrb_type ]["x pitch"] + stagger
-            y_pos = y_idx * npx_probe[imDatPrb_type ]["y pitch"]
+            stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x_pitch"] / 2
+            x_pos = x_idx * npx_probe[imDatPrb_type ]["x_pitch"] + stagger
+            y_pos = y_idx * npx_probe[imDatPrb_type ]["y_pitch"]
 
             contact_ids.append(channel_id)
             positions[i, :] = [x_pos, y_pos]
@@ -804,12 +820,12 @@ def read_imro(file):
         shank_ids=[]
         for i, part in enumerate(parts):
             channel_id, shank_id, bank, ref, elec_id = tuple(map(int, part[1:].split(' ')))
-            x_idx = elec_id % npx_probe["ncol"]
-            y_idx = elec_id // npx_probe["ncol"]
+            x_idx = elec_id % npx_probe[imDatPrb_type]["ncol"]
+            y_idx = elec_id // npx_probe[imDatPrb_type]["ncol"]
             shank_ids.append(shank_id)
-            x_pos = x_idx * npx_probe[imDatPrb_type ]["x pitch"] + int(shank_id) * npx_probe[imDatPrb_type ]["shank pitch"]
-            y_pos = y_idx * npx_probe[imDatPrb_type ]["y pitch"]
-            contact_ids.append(str(elec_id+shank_id*npx_probe["nelectrods per shank"]))
+            x_pos = x_idx * npx_probe[imDatPrb_type]["x_pitch"] + int(shank_id) * npx_probe[imDatPrb_type]["shank_pitch"]
+            y_pos = y_idx * npx_probe[imDatPrb_type]["y_pitch"]
+            contact_ids.append(str(elec_id+shank_id * npx_probe[imDatPrb_type]["nelectrodes_per_shank"]))
             positions[channel_id, :] = [x_pos, y_pos]
             annotations["banks"].append(bank)
             annotations["references"].append(ref)
@@ -819,15 +835,15 @@ def read_imro(file):
     probe = Probe(ndim=2, si_units='um')
     probe.set_contacts(positions=positions, shapes='square',
                        shank_ids=shank_ids,
-                       shape_params={'width': npx_probe[imDatPrb_type ]["contact width"]})
+                       shape_params={'width': npx_probe[imDatPrb_type ]["contact_width"]})
     probe.set_contact_ids(contact_ids)
 
 
     # planar contour
     one_polygon = [(0, 10000), (0, 0), (35, -175), (70, 0), (70, 10000), ]
     contour = []
-    for shank_id in range(npx_probe[imDatPrb_type ]["shank number"]):
-        contour += list(np.array(one_polygon) + [ npx_probe[imDatPrb_type ]["shank pitch"] * shank_id, 0])
+    for shank_id in range(npx_probe[imDatPrb_type ]["shank_number"]):
+        contour += list(np.array(one_polygon) + [ npx_probe[imDatPrb_type ]["shank_pitch"] * shank_id, 0])
     # shift
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
@@ -862,16 +878,19 @@ def write_imro(file, probe):
 
     if probe_type == 0:
         for ch in range(len(data)):
-            ret.append(f'({ch} 0 {annotations["references"][ch]} {annotations["ap_gains"][ch]} {annotations["lf_gains"][ch]} {annotations["ap_hp_filters"][ch]})')
+            ret.append(f"({ch} 0 {annotations['references'][ch]} {annotations['ap_gains'][ch]} "
+                       f"{annotations['lf_gains'][ch]} {annotations['ap_hp_filters'][ch]})")
 
     elif probe_type == 21:
         for ch in range(len(data)):
-            ret.append(f'({data["device_channel_indices"][ch]} {annotations["banks"][ch]} {annotations["references"][ch]} {data["contact_ids"][ch]})')
+            ret.append(f"({data['device_channel_indices'][ch]} {annotations['banks'][ch]} "
+                       f"{annotations['references'][ch]} {data['contact_ids'][ch]})")
 
     elif probe_type == 24:
         for ch in range(len(data)):
             ret.append(
-                f'({data["device_channel_indices"][ch]} {data["shank_ids"][ch]} {annotations["banks"][ch]} {annotations["references"][ch]} {int(data["contact_ids"][ch])-int(data["shank_ids"][ch])*npx_probe["nelectrods per shank"]})')
+                f"({data['device_channel_indices'][ch]} {data['shank_ids'][ch]} {annotations['banks'][ch]} "
+                f"{annotations['references'][ch]} {int(data['contact_ids'][ch]) - int(data['shank_ids'][ch]) * npx_probe[probe_type]['nelectrodes_per_shank']})")
     else:
         raise RuntimeError(f'unknown imro type : {probe_type}')
     with open(file, "w") as f:
@@ -904,139 +923,18 @@ def read_spikeglx(file):
     """
 
     meta_file = Path(file)
-    assert (
-        meta_file.suffix == ".meta"
-    ), "'meta_file' should point to the .meta SpikeGLX file"
+    assert (meta_file.suffix == ".meta"), "'meta_file' should point to the .meta SpikeGLX file"
 
     with meta_file.open(mode="r") as f:
         lines = f.read().splitlines()
 
-    meta = {}
-    for line in lines:
-        if "=" not in line:
-            continue
-        splited = line.split("=")
-        if len(splited) != 2:
-            # strange lines
-            continue
-        k, v = splited
-        if k.startswith("~"):
-            # replace by the list
-            k = k[1:]
-            v = v[1:-1].split(")(")[1:]
-        meta[k] = v
+    imro_table = None
+    for l in lines:
+        if "imroTbl" in l:
+            imro_table = l[l.find("=") + 1:]
+    assert imro_table is not None, "Could not find imroTbl field in meta file!"
 
-    # given this
-    # https://github.com/billkarsh/SpikeGLX/blob/gh-pages/Support/Metadata_30.md#channel-entries-by-type
-    # imDatPrb_type=0/21/24
-    # This is the probe type {0=NP1.0, 21=NP2.0(1-shank), 24=NP2.0(4-shank)}.
-    # See also this # https://billkarsh.github.io/SpikeGLX/help/imroTables/
-    # See also https://github.com/cortex-lab/neuropixels/wiki
-    imDatPrb_type = int(meta.get("imDatPrb_type", 0))
-
-    num_contact = len(meta["snsShankMap"])
-    positions = np.zeros((num_contact, 2), dtype="float64")
-
-    # the x_pitch/y_pitch depend on NP version
-    if imDatPrb_type == 0:
-        # NP1.0
-        x_pitch = 32
-        y_pitch = 20
-        contact_width = 12
-        shank_ids = None
-
-        contact_ids = []
-        for e in meta["imroTbl"]:
-            # here no elec_id is avaliable we take the chan_id instead
-            chan_id = e.split(" ")[0]
-            contact_ids.append(f"e{chan_id}")
-
-        for i, e in enumerate(meta["snsShankMap"]):
-            x_idx = int(e.split(":")[1])
-            y_idx = int(e.split(":")[2])
-            stagger = np.mod(y_idx + 1, 2) * x_pitch / 2
-            x_pos = x_idx * x_pitch + stagger
-            y_pos = y_idx * y_pitch
-            positions[i, :] = [x_pos, y_pos]
-
-    elif imDatPrb_type == 21:
-        x_pitch = 32
-        y_pitch = 15
-        contact_width = 12
-        shank_ids = None
-
-        contact_ids = []
-        for e in meta["imroTbl"]:
-            elec_id = e.split(" ")[3]
-            contact_ids.append(f"e{elec_id}")
-
-        for i, e in enumerate(meta["snsShankMap"]):
-            x_idx = int(e.split(":")[1])
-            y_idx = int(e.split(":")[2])
-            x_pos = x_idx * x_pitch
-            y_pos = y_idx * y_pitch
-            positions[i, :] = [x_pos, y_pos]
-
-    elif imDatPrb_type == 24:
-        # NP2.0(4-shank)
-        x_pitch = 32
-        y_pitch = 15
-        contact_width = 12
-        shank_pitch = 250
-
-        shank_ids = []
-        contact_ids = []
-        for e in meta["imroTbl"]:
-            shank_id = e.split(" ")[1]
-            shank_ids.append(shank_id)
-            elec_id = e.split(" ")[4]
-            contact_ids.append(f"s{shank_id}:e{elec_id}")
-
-        for i, e in enumerate(meta["snsShankMap"]):
-            x_idx = int(e.split(":")[1])
-            y_idx = int(e.split(":")[2])
-            x_pos = x_idx * x_pitch + int(shank_ids[i]) * shank_pitch
-            y_pos = y_idx * y_pitch
-            positions[i, :] = [x_pos, y_pos]
-
-    else:
-        # NP unknown
-        raise NotImplementedError(
-            "This neuropixel is not implemented in probeinterface"
-        )
-
-    probe = Probe(ndim=2, si_units="um")
-    probe.set_contacts(
-        positions=positions,
-        shapes="square",
-        shank_ids=shank_ids,
-        shape_params={"width": contact_width},
-    )
-    probe.set_contact_ids(contact_ids)
-    probe.annotate(imDatPrb_type=imDatPrb_type)
-
-    # planar contour
-    one_polygon = [
-        (0, 10000),
-        (0, 0),
-        (35, -175),
-        (70, 0),
-        (70, 10000),
-    ]
-    if shank_ids is None:
-        contour = one_polygon
-    else:
-        contour = []
-        for i, shank_id in enumerate(np.unique(shank_ids)):
-            contour += list(np.array(one_polygon) + [shank_pitch * i, 0])
-    # shift
-    contour = np.array(contour) - [11, 11]
-    probe.set_planar_contour(contour)
-
-    # wire it
-    probe.set_device_channel_indices(np.arange(positions.shape[0]))
-
-    return probe
+    return _read_imro_string(imro_table)
 
 
 def read_openephys(
@@ -1049,11 +947,18 @@ def read_openephys(
 ):
     """
     Read probe positions from Open Ephys folder when using the Neuropix-PXI plugin.
+    The reader assumes that the NP_PROBE fields are available in the settings file.
+    Open Ephys versions 0.5.x and 0.6.x are supported:
+    * For version 0.6.x, if the BASESTATION field is available in the Neuropix-PXI 
+      editor, it is used to infer the probe names and the relative slots, ports, and 
+      docks. The right probe is then selected based on the probe name in the stream
+      and the connection
+    * For version 0.5.x, STREAMs are not available. In this case, if multiple probes 
+      are available, they are named sequentially based on the nodeId. E.g. "100.0",
+      "100.1". These substrings are used for selection.
 
     Parameters
     ----------
-    folder : Path or str
-        The path to the Open Ephys folder
     settings_file :  Path, str, or None
         If more than one settings.xml file is in the folder structure, this argument
         is required to indicate which settings file to use
@@ -1122,11 +1027,17 @@ def read_openephys(
             )
         return None
 
-    streams = []
-    for child in neuropix_pxi:
-        if child.tag == "STREAM":
-            streams.append(child.attrib["name"])
-    has_streams = len(streams) > 0
+    # read STREAM fields if present (>=0.6.x)
+    stream_fields = neuropix_pxi.findall("STREAM")
+    if len(stream_fields) > 0:
+        has_streams = True
+        streams = []
+        for stream_field in stream_fields:
+            streams.append(stream_field.attrib["name"])
+        probe_names_used = np.unique([stream.split("-")[0] for stream in streams])
+    else:
+        has_streams = False
+        probe_names_used = None
 
     editor = neuropix_pxi.find("EDITOR")
     np_probes = editor.findall("NP_PROBE")
@@ -1138,9 +1049,13 @@ def read_openephys(
             raise Exception("NP_PROBE field not found in settings")
         return None
 
-    # try to find probe names in the basestations attributes
+    # read probes info
     probes = []
-    if basestations is not None:
+
+    # option 1. If BASESTATION fields are available, they are used to infer
+    # probe name, slot, port, and dock
+    has_basestations = len(basestations) > 0
+    if has_basestations:
         for bs in basestations:
             slot = bs.attrib["Slot"]
             port_docks = [k for k in bs.attrib.keys() if "port" in k and "dock" in k]
@@ -1154,32 +1069,37 @@ def read_openephys(
                     probe['port'] = pd[4:pd.find('dock')]
                     probe['dock'] = pd[pd.find('dock') + 4:]
                     probes.append(probe)
-
-    # check consistency with stream names
-    probe_names = [p['name'] for p in probes]
-    probe_names_used = np.unique([stream.split("-")[0] for stream in streams])
-    # if basestation not available, get probe names from stream names
-    if len(probes) == 0 and has_streams:
-        probes = [{'name': p, 'slot': 'unkown', 'port': 'unkown', 'dock': 'unkown'} for p in probe_names_used]
-        probe_names = [p['name'] for p in probes]
-    elif has_streams:
-        assert all(probe_used in probe_names for probe_used in probe_names_used)
+        # this takes care of a bug where BASESTATION exists, but probes do not appear there
+        if len(probes) == 0:
+            probes = [{'name': p, 'slot': 'unkown', 'port': 'unkown', 'dock': 'unkown'}
+                      for p in probe_names_used]
     else:
-        probes = [{'name': f"{node_id}.{stream_index}", 'slot': 'unkown', 'port': 'unkown', 'dock': 'unkown'}
-                  for stream_index in range(len(np_probes))]
-        probe_names = [p['name'] for p in probes]
-        probe_names_used = probe_names
+        # option 2. BASESTATION is not available, but streams are. In this case
+        # probe names are inferred from streams
+        if has_streams:
+            probes = [{'name': p, 'slot': 'unkown', 'port': 'unkown', 'dock': 'unkown'} 
+                      for p in probe_names_used]
+        # option 3. STREAMs are not available. In this case, probes are sequentially
+        # named based on the node id
+        else:
+            probes = [{'name': f"{node_id}.{stream_index}", 'slot': 'unkown', 'port': 'unkown', 'dock': 'unkown'}
+                      for stream_index in range(len(np_probes))]
+            probe_names_used = [p['name'] for p in probes]
 
+    # check consistency with stream names and other fields
+    probe_names = [p['name'] for p in probes]
     if has_streams:
-        # make sure all descriptions are there
-        if len(np_probes) != len(probe_names_used):
-            print("Warning: mismatch between probes in settings")
+        # make sure probes listed in streams are in probe names
+        assert all(probe_used in probe_names for probe_used in probe_names_used)
 
+        # make sure we have at least as many NP_PROBE as the number of used probes
         if len(np_probes) < len(probe_names_used):
             if raise_error:
-                raise Exception(f"Not enough NP_PROBE entries ({len(np_probes)}) for used probes: {probe_names_used}")
+                raise Exception(f"Not enough NP_PROBE entries ({len(np_probes)}) "
+                                f"for used probes: {probe_names_used}")
             return None
 
+    # now load probe info from NP_PROBE fields
     np_probes_info = []
     for probe_idx, np_probe in enumerate(np_probes):
         slot = np_probe.attrib["slot"]
@@ -1229,7 +1149,7 @@ def read_openephys(
             x_shift = 0
 
         if fix_x_position_for_oe_5 and oe_version < parse("0.6.0") and shank_ids is not None:
-            positions[:, 1] = positions[:, 1] - npx_probe[ptype]["shank pitch"] * shank_ids
+            positions[:, 1] = positions[:, 1] - npx_probe[ptype]["shank_pitch"] * shank_ids
 
         # x offset
         positions[:, 0] += x_shift
@@ -1237,15 +1157,18 @@ def read_openephys(
         for i, pos in enumerate(positions):
             if ptype is None:
                 break
-            elif ptype == 21 or ptype == 0:
+            elif ptype == 0:
                 shank_id = 0
-                stagger = np.mod(pos[1] / npx_probe[ptype]["y pitch"] + 1, 2) * npx_probe[ptype]["x pitch"] / 2
+                stagger = np.mod(pos[1] / npx_probe[ptype]["y_pitch"] + 1, 2) * npx_probe[ptype]["x_pitch"] / 2
+            elif ptype == 21:
+                shank_id = 0
+                stagger = 0
             else:
                 shank_id = shank_ids[i]
                 stagger = 0
-            contact_id = int((pos[0] - stagger - npx_probe[ptype]["shank pitch"] * shank_id) / \
-                npx_probe[ptype]["x pitch"] + npx_probe["ncol"] * pos[1] / npx_probe[ptype]["y pitch"]) + \
-                npx_probe["nelectrods per shank"] * shank_id
+            contact_id = int((pos[0] - stagger - npx_probe[ptype]["shank_pitch"] * shank_id) / \
+                npx_probe[ptype]["x_pitch"] + npx_probe[ptype]["ncol"] * pos[1] / npx_probe[ptype]["y_pitch"]) + \
+                npx_probe[ptype]["nelectrodes_per_shank"] * shank_id
             contact_ids.append(contact_id)
 
         np_probe_dict = {'channel_names': channel_names,
@@ -1256,29 +1179,30 @@ def read_openephys(
                          'port': port,
                          'dock': dock,
                          'serial_number': np_serial_number}
-
-        # find and append probe name
-        probe_name_from_bs = [p['name'] for p in probes if p['slot'] == slot and \
-            p['port'] == port and p['dock'] == dock]
-        if len(probe_name_from_bs) == 1:
-            np_probe_dict.update({'name': probe_name_from_bs[0]})
+        if has_basestations:
+            # find probe name based on connection to basestation
+            probe_name_from_bs = [p['name'] for p in probes if p['slot'] == slot \
+                and p['port'] == port and p['dock'] == dock]
+            if len(probe_name_from_bs) == 1:
+                np_probe_dict.update({'name': probe_name_from_bs[0]})
+            elif len(probe_name_from_bs) == 0:
+                if raise_error:
+                    raise Exception("Mismatch in probe connections! Could not find probe "
+                                    "connected to slot, port, and dock specified in NP_PROBE!")
+                return None
+            else:
+                if raise_error:
+                    raise Exception("Mismatch in probe connections! More than one probe "
+                                    "connected to slot, port, and dock specified in NP_PROBE!")
+                return None
         else:
             # if base station is not available, probe names are sequential from the stream
             np_probe_dict.update({'name': probe_names_used[probe_idx]})
         np_probes_info.append(np_probe_dict)
 
-    # select correct probe for stream
+    # now select correct probe (if multiple)
     if len(np_probes) > 1:
         found = False
-
-        assert (
-            stream_name is not None
-            or probe_name is not None
-            or serial_number is not None
-        ), (
-            "More than one probe found. Use one of 'stream_name', 'probe_name', or 'serial_number' "
-            "to select the right probe"
-        )
 
         if stream_name is not None:
             assert probe_name is None and serial_number is None, (
@@ -1308,7 +1232,7 @@ def read_openephys(
                         f"The provided {probe_name} is not in the available probes: {probe_names}"
                     )
                 return None
-        else:
+        elif serial_number is not None:
             assert stream_name is None and probe_name is None, (
                 "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
             )
@@ -1323,8 +1247,14 @@ def read_openephys(
                         f"The provided {serial_number} is not in the available serial numbers: {np_serial_numbers}"
                     )
                 return None
+        else:
+            raise Exception(
+                "More than one probe found. Use one of 'stream_name', 'probe_name', or 'serial_number' "
+                "to select the right probe"
+            )
     else:
-        # check consistency with streams
+        # in case of a single probe, make sure it is consistent with optional
+        # stream_name, probe_name, or serial number
         if stream_name:
             available_probe_name = np_probes_info[0]['name']
             if available_probe_name not in stream_name:
@@ -1361,7 +1291,7 @@ def read_openephys(
     np_probe = np_probes[probe_idx]
     positions = np_probe_info['positions']
     shank_ids = np_probe_info['shank_ids']
-    pname = np_probe.attrib["probe_name"]
+    pname = np_probe.attrib['probe_name']
 
     probe = Probe(ndim=2, si_units="um")
     probe.set_contacts(
