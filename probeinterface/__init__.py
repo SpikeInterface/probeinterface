@@ -6,6 +6,7 @@ from .io import (
     write_probeinterface, read_probeinterface,
     read_prb, write_prb,
     read_csv, write_csv,
+    read_imro, write_imro,
     read_BIDS_probe, write_BIDS_probe,
     read_spikeglx, read_mearec, read_nwb,
     read_maxwell, read_3brain, read_openephys)

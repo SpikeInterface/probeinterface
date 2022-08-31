@@ -14,12 +14,41 @@ import re
 import json
 from collections import OrderedDict
 from packaging.version import Version, parse
-
 import numpy as np
 
 from .version import version
 from .probe import Probe
 from .probegroup import ProbeGroup
+
+
+# neuropixels info
+npx_probe = {
+    0: {
+        "x_pitch": 32,
+        "y_pitch": 20,
+        "contact_width": 12,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 2
+    },
+    21: {
+        "x_pitch": 32,
+        "y_pitch": 15,
+        "contact_width": 12,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 2
+    },
+    24: {
+        "x_pitch": 32,
+        "y_pitch": 15,
+        "contact_width": 12,
+        "shank_pitch": 250,
+        "shank_number": 4,
+        "ncol": 2
+    }
+}
+
 
 
 def _probeinterface_format_check_version(d):
@@ -699,12 +728,177 @@ def write_csv(file, probe):
     raise NotImplementedError
 
 
+def read_imro(file):
+    """
+    Read probe position from the imro file used in input of SpikeGlx and Open-Ephys for neuropixels probes.
+
+    Parameters
+    ----------
+    file : Path or str
+        The .imro file path
+
+    Returns
+    -------
+    probe : Probe object
+
+    """
+    # the input is an imro file
+    meta_file = Path(file)
+    assert meta_file.suffix == ".imro", "'file' should point to the .imro file"
+    with meta_file.open(mode='r') as f:
+        imro_str = str(f.read())
+    return _read_imro_string(imro_str)
+
+
+def _read_imro_string(imro_str):
+    """
+    Low-level function to parse imro string
+    """
+    headers, *parts,_ = imro_str.strip().split(")")
+    imDatPrb_type, num_contact = tuple(map(int, headers[1:].split(',')))
+
+    positions = np.zeros((num_contact, 2), dtype='float64')
+    contact_ids = []
+
+    if imDatPrb_type == 0 :  # NP1
+        probe_name = "Neuropixels 1.0"
+        shank_ids = None
+        annotations =  dict(banks = [],
+                            references = [],
+                            ap_gains = [],
+                            lf_gains = [],
+                            ap_hp_filters = []
+                           )
+        for i, part in enumerate(parts):
+
+            channel_id, bank, ref, ap_gain, lf_gain, ap_hp_filter = tuple(map(int, part[1:].split(' ')))
+
+            x_idx = channel_id % npx_probe[imDatPrb_type]["ncol"]
+            y_idx = channel_id // npx_probe[imDatPrb_type]["ncol"]
+
+            stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x_pitch"] / 2
+            x_pos = x_idx * npx_probe[imDatPrb_type ]["x_pitch"] + stagger
+            y_pos = y_idx * npx_probe[imDatPrb_type ]["y_pitch"]
+
+            contact_ids.append(f"e{channel_id}")
+            positions[i, :] = [x_pos, y_pos]
+
+            annotations["banks"].append(bank)
+            annotations["references"].append(ref)
+            annotations["ap_gains"].append(ap_gain)
+            annotations["ap_gains"].append(ap_gain)
+            annotations["ap_hp_filters"].append(ap_hp_filter)
+
+    elif imDatPrb_type == 21:
+        probe_name = "Neuropixels 2.0 - SingleShank"
+        shank_ids = None
+        annotations = dict(banks=[], references=[])
+
+        for i, part in enumerate(parts):
+
+            channel_id, bank, ref, elec_id = tuple(map(int, part[1:].split(' ')))
+
+            x_idx = channel_id % npx_probe[imDatPrb_type]["ncol"]
+            y_idx = channel_id // npx_probe[imDatPrb_type]["ncol"]
+
+            stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x_pitch"] / 2
+            x_pos = x_idx * npx_probe[imDatPrb_type ]["x_pitch"] + stagger
+            y_pos = y_idx * npx_probe[imDatPrb_type ]["y_pitch"]
+
+            contact_ids.append(f"e{channel_id}")
+            positions[i, :] = [x_pos, y_pos]
+            annotations["banks"].append(bank)
+            annotations["references"].append(ref)
+    elif imDatPrb_type == 24:
+        # NP2.0(4-shank)
+        annotations = dict(banks=[], references=[])
+
+        probe_name = "Neuropixels 2.0 - MultiShank"
+        shank_ids=[]
+        for i, part in enumerate(parts):
+            channel_id, shank_id, bank, ref, elec_id = tuple(map(int, part[1:].split(' ')))
+            x_idx = elec_id % npx_probe[imDatPrb_type]["ncol"]
+            y_idx = elec_id // npx_probe[imDatPrb_type]["ncol"]
+            shank_ids.append(shank_id)
+            x_pos = x_idx * npx_probe[imDatPrb_type]["x_pitch"] + int(shank_id) * npx_probe[imDatPrb_type]["shank_pitch"]
+            y_pos = y_idx * npx_probe[imDatPrb_type]["y_pitch"]
+            contact_ids.append(f"s{shank_id}e{elec_id}")
+            positions[channel_id, :] = [x_pos, y_pos]
+            annotations["banks"].append(bank)
+            annotations["references"].append(ref)
+    else:
+        raise RuntimeError(f'unsupported imro type : {imDatPrb_type}')
+
+    probe = Probe(ndim=2, si_units='um')
+    probe.set_contacts(positions=positions, shapes='square',
+                       shank_ids=shank_ids,
+                       shape_params={'width': npx_probe[imDatPrb_type ]["contact_width"]})
+    probe.set_contact_ids(contact_ids)
+
+
+    # planar contour
+    one_polygon = [(0, 10000), (0, 0), (35, -175), (70, 0), (70, 10000), ]
+    contour = []
+    for shank_id in range(npx_probe[imDatPrb_type ]["shank_number"]):
+        contour += list(np.array(one_polygon) + [ npx_probe[imDatPrb_type ]["shank_pitch"] * shank_id, 0])
+    # shift
+    contour = np.array(contour) - [11, 11]
+    probe.set_planar_contour(contour)
+
+    probe.annotate(
+        name=probe_name,
+        manufacturer="IMEC",
+        probe_type=imDatPrb_type,
+        **annotations
+    )
+    # wire it
+    probe.set_device_channel_indices(np.arange(positions.shape[0]))
+
+    return probe
+
+
+def write_imro(file, probe):
+    """
+    save imro file (`.imrc`, imec readout) in a file.
+    https://github.com/open-ephys-plugins/neuropixels-pxi/blob/master/Source/Formats/IMRO.h
+
+    Parameters
+    ----------
+    file : Path or str
+        The file path
+    probe : Probe object
+    """
+    probe_type = probe.annotations["probe_type"]
+    data = probe.to_dataframe(complete=True).sort_values("device_channel_indices")
+    annotations = probe.annotations
+    ret = [f'({probe_type},{len(data)})']
+
+    if probe_type == 0:
+        for ch in range(len(data)):
+            ret.append(f"({ch} 0 {annotations['references'][ch]} {annotations['ap_gains'][ch]} "
+                       f"{annotations['lf_gains'][ch]} {annotations['ap_hp_filters'][ch]})")
+
+    elif probe_type == 21:
+        for ch in range(len(data)):
+            ret.append(f"({data['device_channel_indices'][ch]} {annotations['banks'][ch]} "
+                       f"{annotations['references'][ch]} {data['contact_ids'][ch][1:]})")
+
+    elif probe_type == 24:
+        for ch in range(len(data)):
+            ret.append(
+                f"({data['device_channel_indices'][ch]} {data['shank_ids'][ch]} {annotations['banks'][ch]} "
+                f"{annotations['references'][ch]} {data['contact_ids'][ch][3:]})")
+    else:
+        raise RuntimeError(f'unknown imro type : {probe_type}')
+    with open(file, "w") as f:
+        f.write(''.join(ret))
+
+
 def read_spikeglx(file):
     """
     Read probe position for the meta file generated by SpikeGLX
 
     See http://billkarsh.github.io/SpikeGLX/#metadata-guides for implementation.
-
     The x_pitch/y_pitch/width are set automatically depending the NP version.
 
     The shape is auto generated as a shank.
@@ -730,132 +924,13 @@ def read_spikeglx(file):
     with meta_file.open(mode="r") as f:
         lines = f.read().splitlines()
 
-    meta = {}
-    for line in lines:
-        if "=" not in line:
-            continue
-        splited = line.split("=")
-        if len(splited) != 2:
-            # strange lines
-            continue
-        k, v = splited
-        if k.startswith("~"):
-            # replace by the list
-            k = k[1:]
-            v = v[1:-1].split(")(")[1:]
-        meta[k] = v
+    imro_table = None
+    for l in lines:
+        if "imroTbl" in l:
+            imro_table = l[l.find("=") + 1:]
+    assert imro_table is not None, "Could not find imroTbl field in meta file!"
 
-    # given this
-    # https://github.com/billkarsh/SpikeGLX/blob/gh-pages/Support/Metadata_30.md#channel-entries-by-type
-    # imDatPrb_type=0/21/24
-    # This is the probe type {0=NP1.0, 21=NP2.0(1-shank), 24=NP2.0(4-shank)}.
-    # See also this # https://billkarsh.github.io/SpikeGLX/help/imroTables/
-    # See also https://github.com/cortex-lab/neuropixels/wiki
-    imDatPrb_type = int(meta.get("imDatPrb_type", 0))
-
-    num_contact = len(meta["snsShankMap"])
-    positions = np.zeros((num_contact, 2), dtype="float64")
-
-    # the x_pitch/y_pitch depend on NP version
-    if imDatPrb_type == 0:
-        # NP1.0
-        x_pitch = 32
-        y_pitch = 20
-        contact_width = 12
-        shank_ids = None
-
-        contact_ids = []
-        for e in meta["imroTbl"]:
-            # here no elec_id is avaliable we take the chan_id instead
-            chan_id = e.split(" ")[0]
-            contact_ids.append(f"e{chan_id}")
-
-        for i, e in enumerate(meta["snsShankMap"]):
-            x_idx = int(e.split(":")[1])
-            y_idx = int(e.split(":")[2])
-            stagger = np.mod(y_idx + 1, 2) * x_pitch / 2
-            x_pos = x_idx * x_pitch + stagger
-            y_pos = y_idx * y_pitch
-            positions[i, :] = [x_pos, y_pos]
-
-    elif imDatPrb_type == 21:
-        x_pitch = 32
-        y_pitch = 15
-        contact_width = 12
-        shank_ids = None
-
-        contact_ids = []
-        for e in meta["imroTbl"]:
-            elec_id = e.split(" ")[3]
-            contact_ids.append(f"e{elec_id}")
-
-        for i, e in enumerate(meta["snsShankMap"]):
-            x_idx = int(e.split(":")[1])
-            y_idx = int(e.split(":")[2])
-            x_pos = x_idx * x_pitch
-            y_pos = y_idx * y_pitch
-            positions[i, :] = [x_pos, y_pos]
-
-    elif imDatPrb_type == 24:
-        # NP2.0(4-shank)
-        x_pitch = 32
-        y_pitch = 15
-        contact_width = 12
-        shank_pitch = 250
-
-        shank_ids = []
-        contact_ids = []
-        for e in meta["imroTbl"]:
-            shank_id = e.split(" ")[1]
-            shank_ids.append(shank_id)
-            elec_id = e.split(" ")[4]
-            contact_ids.append(f"s{shank_id}:e{elec_id}")
-
-        for i, e in enumerate(meta["snsShankMap"]):
-            x_idx = int(e.split(":")[1])
-            y_idx = int(e.split(":")[2])
-            x_pos = x_idx * x_pitch + int(shank_ids[i]) * shank_pitch
-            y_pos = y_idx * y_pitch
-            positions[i, :] = [x_pos, y_pos]
-
-    else:
-        # NP unknown
-        raise NotImplementedError(
-            "This neuropixel is not implemented in probeinterface"
-        )
-
-    probe = Probe(ndim=2, si_units="um")
-    probe.set_contacts(
-        positions=positions,
-        shapes="square",
-        shank_ids=shank_ids,
-        shape_params={"width": contact_width},
-    )
-    probe.set_contact_ids(contact_ids)
-    probe.annotate(imDatPrb_type=imDatPrb_type)
-
-    # planar contour
-    one_polygon = [
-        (0, 10000),
-        (0, 0),
-        (35, -175),
-        (70, 0),
-        (70, 10000),
-    ]
-    if shank_ids is None:
-        contour = one_polygon
-    else:
-        contour = []
-        for i, shank_id in enumerate(np.unique(shank_ids)):
-            contour += list(np.array(one_polygon) + [shank_pitch * i, 0])
-    # shift
-    contour = np.array(contour) - [11, 11]
-    probe.set_planar_contour(contour)
-
-    # wire it
-    probe.set_device_channel_indices(np.arange(positions.shape[0]))
-
-    return probe
+    return _read_imro_string(imro_table)
 
 
 def read_openephys(
@@ -863,6 +938,7 @@ def read_openephys(
     stream_name=None,
     probe_name=None,
     serial_number=None,
+    fix_x_position_for_oe_5=True,
     raise_error=True,
 ):
     """
@@ -895,6 +971,8 @@ def read_openephys(
         If more than one probe is used, the 'serial_number' indicates which probe to load base on the
         serial number. If this argument is used, the 'stream_name' and 'probe_name'
         must be None.
+    fix_x_position_for_oe_5: bool
+        The neuropixels PXI plugin in the open-ephys < 0.6.0 contains a bug in the y position. This option allow to fix it.
     raise_error: bool
         If True, any error would raise an exception. If False, None is returned. Default True
 
@@ -913,6 +991,8 @@ def read_openephys(
     tree = ET.parse(str(settings_file))
     root = tree.getroot()
 
+    info_chain = root.find("INFO")
+    oe_version = parse(str(info_chain.find("VERSION")))
     signal_chain = root.find("SIGNALCHAIN")
     neuropix_pxi = None
     for processor in signal_chain:
@@ -1049,8 +1129,50 @@ def read_openephys(
         ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])
         positions = np.array([xpos, ypos]).T
 
+        contact_ids = []
+        pname = np_probe.attrib["probe_name"]
+        if "2.0" in pname:
+            x_shift = -8
+            if "Multishank" in pname:
+                ptype = 24
+            else:
+                ptype = 21
+        elif "1.0" in pname:
+            ptype = 0
+            x_shift = -11
+        else: # Probe type unknown
+            ptype = None
+            x_shift = 0
+
+        if fix_x_position_for_oe_5 and oe_version < parse("0.6.0") and shank_ids is not None:
+            positions[:, 1] = positions[:, 1] - npx_probe[ptype]["shank_pitch"] * shank_ids
+
+        # x offset
+        positions[:, 0] += x_shift
+
+        for i, pos in enumerate(positions):
+            if ptype is None:
+                break
+            elif ptype == 0:
+                shank_id = 0
+                stagger = np.mod(pos[1] / npx_probe[ptype]["y_pitch"] + 1, 2) * npx_probe[ptype]["x_pitch"] / 2
+            elif ptype == 21:
+                shank_id = 0
+                stagger = 0
+            else:
+                shank_id = shank_ids[i]
+                stagger = 0
+            contact_id = int((pos[0] - stagger - npx_probe[ptype]["shank_pitch"] * shank_id) / \
+                npx_probe[ptype]["x_pitch"] + npx_probe[ptype]["ncol"] * pos[1] / npx_probe[ptype]["y_pitch"])
+            if ptype == 24:
+                contact_ids.append(f"s{shank_id}e{contact_id}")
+            else:
+                contact_ids.append(f"e{contact_id}")
+
+
         np_probe_dict = {'channel_names': channel_names,
                          'shank_ids': shank_ids,
+                         'contact_ids': contact_ids,
                          'positions': positions,
                          'slot': slot,
                          'port': port,
@@ -1118,6 +1240,7 @@ def read_openephys(
                     found = True
                     break
             if not found:
+                np_serial_numbers = [p['serial_number'] for p in probe_info]
                 if raise_error:
                     raise Exception(
                         f"The provided {serial_number} is not in the available serial numbers: {np_serial_numbers}"
@@ -1136,7 +1259,8 @@ def read_openephys(
             if available_probe_name not in stream_name:
                 if raise_error:
                     raise Exception(
-                        f"Inconsistency betweem provided stream {stream_name} and available probe {available_probe_name}"
+                        f"Inconsistency betweem provided stream {stream_name} and available probe "
+                        f"{available_probe_name}"
                     )
                 return None
         if probe_name:
@@ -1144,7 +1268,8 @@ def read_openephys(
             if probe_name != available_probe_name:
                 if raise_error:
                     raise Exception(
-                        f"Inconsistency betweem provided probe name {probe_name} and available probe {available_probe_name}"
+                        f"Inconsistency betweem provided probe name {probe_name} and available probe "
+                        f"{available_probe_name}"
                     )
                 return None
         if serial_number:
@@ -1152,7 +1277,8 @@ def read_openephys(
             if str(serial_number) != available_serial_number:
                 if raise_error:
                     raise Exception(
-                        f"Inconsistency betweem provided serial number {serial_number} and available serial numbers {available_serial_number}"
+                        f"Inconsistency betweem provided serial number {serial_number} and available serial numbers "
+                        f"{available_serial_number}"
                     )
                 return None
         probe_idx = 0
@@ -1164,14 +1290,7 @@ def read_openephys(
     np_probe = np_probes[probe_idx]
     positions = np_probe_info['positions']
     shank_ids = np_probe_info['shank_ids']
-
-    # x offset
-    probe_name = np_probe.attrib["probe_name"]
-    if "2.0" in probe_name:
-        x_shift = -8
-    else:
-        x_shift = -11
-    positions[:, 0] += x_shift
+    pname = np_probe.attrib['probe_name']
 
     probe = Probe(ndim=2, si_units="um")
     probe.set_contacts(
@@ -1181,13 +1300,14 @@ def read_openephys(
         shape_params={"width": contact_width},
     )
     probe.annotate(
-        name=probe_name,
+        name=pname,
         manufacturer="IMEC",
-        probe_name=probe_name,
+        probe_name=pname,
         probe_part_number=np_probe.attrib["probe_part_number"],
         probe_serial_number=np_probe.attrib["probe_serial_number"],
     )
 
+    probe.set_contact_ids( np_probe_info['contact_ids'])
     # planar contour
     one_polygon = [
         (0, 10000),

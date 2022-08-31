@@ -1,6 +1,6 @@
 from probeinterface import write_probeinterface, read_probeinterface, write_BIDS_probe, read_BIDS_probe
 from probeinterface import read_prb, write_prb
-from probeinterface import read_spikeglx, read_openephys
+from probeinterface import read_spikeglx, read_openephys, read_imro, write_imro
 from probeinterface import generate_dummy_probe_group
 
 
@@ -194,19 +194,19 @@ def test_prb():
 def test_readspikeglx():
     # NP1
     probe = read_spikeglx(folder / 'Noise_g0_t0.imec0.ap.meta')
-    
+    print(probe)
+    print(probe.contact_ids)
+
     # NP2 4 shanks
     probe = read_spikeglx(folder / 'TEST_20210920_0_g0_t0.imec0.ap.meta')
-    
+    print(probe)
+    print(probe.contact_ids)
+
     # NP2 1 shanks
     probe = read_spikeglx(folder / 'p2_g0_t0.imec0.ap.meta')
-    
-    
-    # from probeinterface.plotting import plot_probe_group, plot_probe
-    # import matplotlib.pyplot as plt
-    # plot_probe(probe, with_contact_id=True)
-    # plt.show()
-    
+    print(probe)
+    print(probe.contact_ids)
+
 
 def test_readopenephys():
     # NP1
@@ -215,12 +215,20 @@ def test_readopenephys():
     # multiple probes
     probeA = read_openephys(folder / "OE_Neuropix-PXI-multi-probe" / "settings.xml",
                             probe_name="ProbeA")
+    print(probeA)
+    print(probeA.contact_ids)
     probeB = read_openephys(folder / "OE_Neuropix-PXI-multi-probe" / "settings.xml",
                             stream_name="RecordNode#ProbeB")
+    print(probeB)
+    print(probeB.contact_ids)
     probeC = read_openephys(folder / "OE_Neuropix-PXI-multi-probe" / "settings.xml",
                             serial_number="20403311714")
+    print(probeC)
+    print(probeC.contact_ids)
     probeD = read_openephys(folder / "OE_Neuropix-PXI-multi-probe" / "settings.xml",
                             probe_name="ProbeD")
+    print(probeD)
+    print(probeD.contact_ids)
     assert probeA.annotations['probe_serial_number'] == "17131307831"
     assert probeB.annotations['probe_serial_number'] == "20403311724"
     assert probeC.annotations['probe_serial_number'] == "20403311714"
@@ -230,8 +238,13 @@ def test_readopenephys():
     # import matplotlib.pyplot as plt
     # plot_probe(probe, with_contact_id=True)
     # plt.show()
-    
 
+def test_readimro():
+    probe = read_imro(folder / "test_multi_shank.imro")
+    write_imro(folder/"multi_shank_written.imro", probe)
+    probe2 = read_imro(folder / "multi_shank_written.imro")
+    np.testing.assert_array_equal(probe2.contact_ids , probe.contact_ids)
+    np.testing.assert_array_equal(probe2.contact_positions, probe.contact_positions)
 
 if __name__ == '__main__':
     # test_probeinterface_format()
@@ -240,6 +253,6 @@ if __name__ == '__main__':
     # test_BIDS_format_minimal()
     
     # test_prb()
-    # test_readspikeglx()
+    test_readspikeglx()
     test_readopenephys()
     
