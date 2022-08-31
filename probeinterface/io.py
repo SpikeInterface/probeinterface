@@ -734,8 +734,8 @@ def read_imro(file):
 
     Parameters
     ----------
-    file_or_str : Path or str
-        The .imro file path or a string containing the imro table
+    file : Path or str
+        The .imro file path
 
     Returns
     -------
