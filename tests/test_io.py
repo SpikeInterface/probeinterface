@@ -1,6 +1,6 @@
 from probeinterface import write_probeinterface, read_probeinterface, write_BIDS_probe, read_BIDS_probe
 from probeinterface import read_prb, write_prb
-from probeinterface import read_spikeglx, read_openephys
+from probeinterface import read_spikeglx, read_openephys, read_imro, write_imro
 from probeinterface import generate_dummy_probe_group
 
 
@@ -228,7 +228,12 @@ def test_readopenephys():
     # plot_probe(probe, with_contact_id=True)
     # plt.show()
 
-
+def test_readimro():
+    probe = read_imro(folder / "test_multi_shank.imro")
+    write_imro(folder/"multi_shank_written.imro", probe)
+    probe2 = read_imro(folder / "multi_shank_written.imro")
+    np.testing.assert_array_equal(probe2.contact_ids , probe.contact_ids)
+    np.testing.assert_array_equal(probe2.contact_positions, probe.contact_positions)
 
 if __name__ == '__main__':
     # test_probeinterface_format()
