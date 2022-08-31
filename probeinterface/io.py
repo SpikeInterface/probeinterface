@@ -14,7 +14,7 @@ import re
 import json
 from collections import OrderedDict
 from packaging.version import Version, parse
-
+import pandas as pd
 import numpy as np
 
 from .version import version
@@ -748,11 +748,18 @@ def read_imro(file):
     positions = np.zeros((num_contact, 2), dtype='float64')
     contact_ids = []
 
-    if imDatPrb_type == 0 or imDatPrb_type == 21:  # NP1
+    if imDatPrb_type == 0 :  # NP1
+        probe_name = "Neuropixels 1.0"
         shank_ids = None
+        annotations =  dict(banks = [],
+                            references = [],
+                            ap_gains = [],
+                            lf_gains = [],
+                            ap_hp_filters = []
+                           )
         for i, part in enumerate(parts):
 
-            channel_id, _, _, _, _, _ = tuple(map(int, part[1:].split(' ')))
+            channel_id, bank, ref, ap_gain, lf_gain, ap_hp_filter = tuple(map(int, part[1:].split(' ')))
 
             x_idx = channel_id % npx_probe["ncol"]
             y_idx = channel_id // npx_probe["ncol"]
@@ -764,8 +771,37 @@ def read_imro(file):
             contact_ids.append(channel_id)
             positions[i, :] = [x_pos, y_pos]
 
+            annotations["banks"].append(bank)
+            annotations["references"].append(ref)
+            annotations["ap_gains"].append(ap_gain)
+            annotations["ap_gains"].append(ap_gain)
+            annotations["ap_hp_filters"].append(ap_hp_filter)
+
+    elif imDatPrb_type == 21:
+        probe_name = "Neuropixels 2.0 - SingleShank"
+        shank_ids = None
+        annotations = dict(banks=[], references=[])
+
+        for i, part in enumerate(parts):
+
+            channel_id, bank, ref, elec_id = tuple(map(int, part[1:].split(' ')))
+
+            x_idx = channel_id % npx_probe["ncol"]
+            y_idx = channel_id // npx_probe["ncol"]
+
+            stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x pitch"] / 2
+            x_pos = x_idx * npx_probe[imDatPrb_type ]["x pitch"] + stagger
+            y_pos = y_idx * npx_probe[imDatPrb_type ]["y pitch"]
+
+            contact_ids.append(channel_id)
+            positions[i, :] = [x_pos, y_pos]
+            annotations["banks"].append(bank)
+            annotations["references"].append(ref)
     elif imDatPrb_type == 24:
         # NP2.0(4-shank)
+        annotations = dict(banks=[], references=[])
+
+        probe_name = "Neuropixels 2.0 - MultiShank"
         shank_ids=[]
         for i, part in enumerate(parts):
             channel_id, shank_id, bank, ref, elec_id = tuple(map(int, part[1:].split(' ')))
@@ -776,6 +812,8 @@ def read_imro(file):
             y_pos = y_idx * npx_probe[imDatPrb_type ]["y pitch"]
             contact_ids.append(str(elec_id+shank_id*npx_probe["nelectrods per shank"]))
             positions[channel_id, :] = [x_pos, y_pos]
+            annotations["banks"].append(bank)
+            annotations["references"].append(ref)
     else:
         raise RuntimeError(f'unsupported imro type : {imDatPrb_type}')
 
@@ -784,7 +822,7 @@ def read_imro(file):
                        shank_ids=shank_ids,
                        shape_params={'width': npx_probe[imDatPrb_type ]["contact width"]})
     probe.set_contact_ids(contact_ids)
-    probe.annotate(imDatPrb_type=imDatPrb_type)
+
 
     # planar contour
     one_polygon = [(0, 10000), (0, 0), (35, -175), (70, 0), (70, 10000), ]
@@ -795,10 +833,50 @@ def read_imro(file):
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
 
+    probe.annotate(
+        name=probe_name,
+        manufacturer="IMEC",
+        probe_type=imDatPrb_type,
+        **annotations
+    )
     # wire it
     probe.set_device_channel_indices(np.arange(positions.shape[0]))
 
     return probe
+
+
+def write_imro(file, probe):
+    """
+    save imro file (`.imrc`, imec readout) in a file.
+    https://github.com/open-ephys-plugins/neuropixels-pxi/blob/master/Source/Formats/IMRO.h
+
+    Parameters
+    ----------
+    file : Path or str
+        The file path
+    probe : Probe object
+    """
+    probe_type = probe.annotations["probe_type"]
+    data = probe.to_dataframe(complete=True).sort_values("device_channel_indices")
+    annotations = probe.annotations
+    ret = [f'({probe_type},{len(data)})']
+
+    if probe_type == 0:
+        for ch in range(len(data)):
+            ret.append(f'({ch} 0 {annotations["references"][ch]} {annotations["ap_gains"][ch]} {annotations["lf_gains"][ch]} {annotations["ap_hp_filters"][ch]})')
+
+    elif probe_type == 21:
+        for ch in range(len(data)):
+            ret.append(f'({data["device_channel_indices"][ch]} {annotations["banks"][ch]} {annotations["references"][ch]} {data["contact_ids"][ch]})')
+
+    elif probe_type == 24:
+        for ch in range(len(data)):
+            ret.append(
+                f'({data["device_channel_indices"][ch]} {data["shank_ids"][ch]} {annotations["banks"][ch]} {annotations["references"][ch]} {int(data["contact_ids"][ch])-int(data["shank_ids"][ch])*npx_probe["nelectrods per shank"]})')
+    else:
+        raise RuntimeError(f'unknown imro type : {probe_type}')
+    with open(file, "w") as f:
+        f.write(''.join(ret))
 
 
 def read_spikeglx(file):
