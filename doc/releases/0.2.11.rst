@@ -1,13 +1,7 @@
-probeinterface 0.2.10
+probeinterface 0.2.11
 ---------------------
 
 
-September, 1st 2022
+September, 14th 2022
 
-* fix read_openephys()
-* fix read_spikeglx()
-* regenerate cambridge neurotec
-* implement read_imro() / write_imro()
-* Add new wiring : 'ASSY-77>Adpt.A64-Om32_2x-sm>two_RHD2132'
-* Handle OpenEphys NPIX with multiple probes
-* Add cross-checked ASSY-116>RHD2132 mapping 
+* do not rely on BASESTATION field to parse OpenEphys probe
