@@ -1,0 +1,7 @@
+probeinterface 0.2.11
+---------------------
+
+
+September, 14th 2022
+
+* do not rely on BASESTATION field to parse OpenEphys probe
