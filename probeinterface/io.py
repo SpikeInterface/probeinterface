@@ -20,7 +20,6 @@ from .version import version
 from .probe import Probe
 from .probegroup import ProbeGroup
 
-
 # neuropixels info
 npx_probe = {
     0: {
@@ -46,7 +45,16 @@ npx_probe = {
         "shank_pitch": 250,
         "shank_number": 4,
         "ncol": 2
-    }
+    },
+    2018: {
+        
+        "x_pitch": 32,
+        "y_pitch": 20,
+        "contact_width": 12,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 2
+        }
 }
 
 
@@ -755,12 +763,19 @@ def _read_imro_string(imro_str):
     Low-level function to parse imro string
     """
     headers, *parts,_ = imro_str.strip().split(")")
-    imDatPrb_type, num_contact = tuple(map(int, headers[1:].split(',')))
+    
+    """
+    In older versions of neuropixel arrays (phase 3A), imro tables were structured differently. 
+    """
+    header_len = len(headers[1:].split(','))
+    if header_len > 2:
+        [_,imDatPrb_type,num_contact] = list(map(int, headers[1:].split(',')))
+    else:
+        imDatPrb_type, num_contact = tuple(map(int, headers[1:].split(',')))
 
     positions = np.zeros((num_contact, 2), dtype='float64')
     contact_ids = []
-
-    if imDatPrb_type == 0 :  # NP1
+    if imDatPrb_type == 0 and header_len<3:  # NP1
         probe_name = "Neuropixels 1.0"
         shank_ids = None
         annotations =  dict(banks = [],
@@ -788,7 +803,30 @@ def _read_imro_string(imro_str):
             annotations["ap_gains"].append(ap_gain)
             annotations["ap_gains"].append(ap_gain)
             annotations["ap_hp_filters"].append(ap_hp_filter)
-
+    elif header_len > 2:
+        probe_name = "Neuropixels Phase3a"
+        typeIM = 2018
+        shank_ids = None
+        annotations =  dict(banks = [],
+                            references = [],
+                            ap_gains = [],
+                            lf_gains = [],
+                            ap_hp_filters = []
+                           )
+        for i, part in enumerate(parts):
+            channel_id, bank, ref, ap_gain, lf_gain = tuple(map(int, part[1:].split(' ')))
+            x_idx = channel_id % npx_probe[typeIM]["ncol"]
+            y_idx = channel_id // npx_probe[typeIM]["ncol"]
+            stagger = np.mod(y_idx + 1, 2) * npx_probe[typeIM]["x_pitch"] / 2
+            x_pos = x_idx * npx_probe[typeIM]["x_pitch"] + stagger
+            y_pos = y_idx * npx_probe[typeIM]["y_pitch"]
+            contact_ids.append(f"e{channel_id}")
+            positions[i, :] = [x_pos, y_pos]
+            annotations["banks"].append(bank)
+            annotations["references"].append(ref)
+            annotations["ap_gains"].append(ap_gain)
+            annotations["ap_gains"].append(ap_gain)
+            annotations["ap_hp_filters"].append(1) # for phase 3A probes HP filters are always enabled. 
     elif imDatPrb_type == 21:
         probe_name = "Neuropixels 2.0 - SingleShank"
         shank_ids = None
@@ -829,18 +867,22 @@ def _read_imro_string(imro_str):
     else:
         raise RuntimeError(f'unsupported imro type : {imDatPrb_type}')
 
+    if header_len<3:
+        typeIM = imDatPrb_type
+    else:
+        typeIM = 2018
     probe = Probe(ndim=2, si_units='um')
     probe.set_contacts(positions=positions, shapes='square',
                        shank_ids=shank_ids,
-                       shape_params={'width': npx_probe[imDatPrb_type ]["contact_width"]})
+                       shape_params={'width': npx_probe[typeIM]["contact_width"]})
     probe.set_contact_ids(contact_ids)
 
 
     # planar contour
     one_polygon = [(0, 10000), (0, 0), (35, -175), (70, 0), (70, 10000), ]
     contour = []
-    for shank_id in range(npx_probe[imDatPrb_type ]["shank_number"]):
-        contour += list(np.array(one_polygon) + [ npx_probe[imDatPrb_type ]["shank_pitch"] * shank_id, 0])
+    for shank_id in range(npx_probe[typeIM]["shank_number"]):
+        contour += list(np.array(one_polygon) + [ npx_probe[typeIM]["shank_pitch"] * shank_id, 0])
     # shift
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
@@ -903,7 +945,8 @@ def read_spikeglx(file):
 
     The shape is auto generated as a shank.
 
-    Now read:
+    Now reads:
+      * NP0.0 (=phase3A) 
       * NP1.0 (=phase3B2)
       * NP2.0 with 4 shank
 
