@@ -16,7 +16,7 @@ from collections import OrderedDict
 from packaging.version import Version, parse
 import numpy as np
 
-from .version import version
+from . import __version__
 from .probe import Probe
 from .probegroup import ProbeGroup
 
@@ -113,7 +113,7 @@ def write_probeinterface(file, probe_or_probegroup):
 
     d = OrderedDict()
     d["specification"] = "probeinterface"
-    d["version"] = version
+    d["version"] = __version__
     d.update(probegroup.to_dict(array_as_list=True))
 
     with open(file, "w", encoding="utf8") as f:

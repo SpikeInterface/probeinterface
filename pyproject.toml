@@ -1,0 +1,51 @@
+[project]
+name = "probeinterface"
+version = "0.2.11"
+authors = [
+  { name="Samuel Garcia", email="sam.garcia.die@gmail.com" },
+  { name="Alessio Buccino", email="alessiop.buccino@gmail.com" },
+]
+
+description = "Python package to handle probe layout, geometry and wiring to device."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "numpy",
+]
+
+[project.urls]
+homepage = "https://github.com/SpikeInterface/probeinterface"
+repository = "https://github.com/SpikeInterface/probeinterface"
+documentation = "https://probeinterface.readthedocs.io"
+changelog = "https://probeinterface.readthedocs.io/en/main/release_notes.html"
+
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["probeinterface"]
+
+[project.optional-dependencies]
+
+test = [
+    "pytest",
+    "matplotlib",
+    "scipy",
+    "pandas",
+]
+
+docs = [
+    "pillow",
+    "sphinx-gallery",
+    "matplotlib==3.2.2",
+    "scipy",
+    "pandas",
+]

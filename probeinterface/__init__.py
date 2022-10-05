@@ -1,4 +1,6 @@
-from .version import version as __version__
+import importlib.metadata
+__version__ = importlib.metadata.version("probeinterface")
+
 
 from .probe import Probe, select_axes
 from .probegroup import ProbeGroup
