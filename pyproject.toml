@@ -20,7 +20,11 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/SpikeInterface/probeinterface"
+homepage = "https://github.com/SpikeInterface/probeinterface"
+repository = "https://github.com/SpikeInterface/probeinterface"
+documentation = "https://probeinterface.readthedocs.io"
+changelog = "https://probeinterface.readthedocs.io/en/main/release_notes.html"
+
 
 [build-system]
 requires = ["setuptools>=61.0"]
