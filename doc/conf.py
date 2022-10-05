@@ -22,7 +22,10 @@ copyright = '2020, Samuel Garcia'
 author = 'Samuel Garcia'
 
 # This a hack to get the version inside the code
-exec(open("../probeinterface/version.py").read())
+import re
+with open('../pyproject.toml', mode='r') as f:
+    txt = f.read()
+    version = re.findall('version = "(\S+)"', txt)[0]
 
 
 # -- General configuration ---------------------------------------------------

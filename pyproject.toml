@@ -30,8 +30,10 @@ changelog = "https://probeinterface.readthedocs.io/en/main/release_notes.html"
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.packages.find]
-where = ["probeinterface"]
+
+[tool.setuptools.packages]
+find = {}
+
 
 [project.optional-dependencies]
 
