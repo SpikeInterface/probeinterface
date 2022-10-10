@@ -6,6 +6,7 @@ Release notes
 .. toctree::
    :maxdepth: 1
 
+   releases/0.2.12.rst
    releases/0.2.11.rst
    releases/0.2.10.rst
    releases/0.2.9.rst
