@@ -1,0 +1,7 @@
+probeinterface 0.2.12
+---------------------
+
+
+October, 10th 2022
+
+* New configuration files with pyproject.toml
