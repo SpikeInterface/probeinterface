@@ -1112,6 +1112,7 @@ def read_openephys(
 
         for i, pos in enumerate(positions):
             if ptype is None:
+                contact_ids = None
                 break
             elif ptype == 0:
                 shank_id = 0
@@ -1250,7 +1251,9 @@ def read_openephys(
         probe_serial_number=np_probe.attrib["probe_serial_number"],
     )
 
-    probe.set_contact_ids( np_probe_info['contact_ids'])
+    if np_probe_info['contact_ids'] is not None:
+        probe.set_contact_ids(np_probe_info['contact_ids'])
+
     # planar contour
     one_polygon = [
         (0, 10000),
