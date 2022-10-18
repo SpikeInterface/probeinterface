@@ -27,7 +27,7 @@ changelog = "https://probeinterface.readthedocs.io/en/main/release_notes.html"
 
 
 [build-system]
-requires = ["setuptools>=65.4"]
+requires = ["setuptools>=62.0"]
 build-backend = "setuptools.build_meta"
 
 
