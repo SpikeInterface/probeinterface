@@ -1,0 +1,9 @@
+probeinterface 0.2.13
+---------------------
+
+
+October, 20th 2022
+
+* Fix install bug due to pyproject.toml
+* Better handling of contact ids for unknown NP type in OpenEphy
+* Including ability to read phase3A neuropixel arrays
