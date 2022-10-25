@@ -775,7 +775,7 @@ def _read_imro_string(imro_str):
 
     positions = np.zeros((num_contact, 2), dtype='float64')
     contact_ids = []
-    if imDatPrb_type == 0 and header_len<3:  # NP1
+    if imDatPrb_type == 0 and header_len < 3:  # NP1
         probe_name = "Neuropixels 1.0"
         shank_ids = None
         annotations =  dict(banks = [],
@@ -787,15 +787,15 @@ def _read_imro_string(imro_str):
         for i, part in enumerate(parts):
 
             channel_id, bank, ref, ap_gain, lf_gain, ap_hp_filter = tuple(map(int, part[1:].split(' ')))
-
-            x_idx = channel_id % npx_probe[imDatPrb_type]["ncol"]
-            y_idx = channel_id // npx_probe[imDatPrb_type]["ncol"]
+            elec_id = bank*384 + channel_id
+            x_idx = elec_id % npx_probe[imDatPrb_type]["ncol"]
+            y_idx = elec_id // npx_probe[imDatPrb_type]["ncol"]
 
             stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x_pitch"] / 2
             x_pos = x_idx * npx_probe[imDatPrb_type ]["x_pitch"] + stagger
             y_pos = y_idx * npx_probe[imDatPrb_type ]["y_pitch"]
 
-            contact_ids.append(f"e{channel_id}")
+            contact_ids.append(f"e{elec_id}")
             positions[i, :] = [x_pos, y_pos]
 
             annotations["banks"].append(bank)
@@ -803,30 +803,6 @@ def _read_imro_string(imro_str):
             annotations["ap_gains"].append(ap_gain)
             annotations["ap_gains"].append(ap_gain)
             annotations["ap_hp_filters"].append(ap_hp_filter)
-    elif header_len > 2:
-        probe_name = "Neuropixels Phase3a"
-        typeIM = 2018
-        shank_ids = None
-        annotations =  dict(banks = [],
-                            references = [],
-                            ap_gains = [],
-                            lf_gains = [],
-                            ap_hp_filters = []
-                           )
-        for i, part in enumerate(parts):
-            channel_id, bank, ref, ap_gain, lf_gain = tuple(map(int, part[1:].split(' ')))
-            x_idx = channel_id % npx_probe[typeIM]["ncol"]
-            y_idx = channel_id // npx_probe[typeIM]["ncol"]
-            stagger = np.mod(y_idx + 1, 2) * npx_probe[typeIM]["x_pitch"] / 2
-            x_pos = x_idx * npx_probe[typeIM]["x_pitch"] + stagger
-            y_pos = y_idx * npx_probe[typeIM]["y_pitch"]
-            contact_ids.append(f"e{channel_id}")
-            positions[i, :] = [x_pos, y_pos]
-            annotations["banks"].append(bank)
-            annotations["references"].append(ref)
-            annotations["ap_gains"].append(ap_gain)
-            annotations["ap_gains"].append(ap_gain)
-            annotations["ap_hp_filters"].append(1) # for phase 3A probes HP filters are always enabled. 
     elif imDatPrb_type == 21:
         probe_name = "Neuropixels 2.0 - SingleShank"
         shank_ids = None
@@ -864,6 +840,32 @@ def _read_imro_string(imro_str):
             positions[channel_id, :] = [x_pos, y_pos]
             annotations["banks"].append(bank)
             annotations["references"].append(ref)
+    elif header_len > 2:
+        probe_name = "Neuropixels Phase3a"
+        typeIM = 2018
+        shank_ids = None
+        annotations =  dict(banks = [],
+                            references = [],
+                            ap_gains = [],
+                            lf_gains = [],
+                            ap_hp_filters = []
+                           )
+        for i, part in enumerate(parts):
+            channel_id, bank, ref, ap_gain, lf_gain = tuple(map(int, part[1:].split(' ')))
+            elec_id = bank*384 + channel_id
+
+            x_idx = elec_id % npx_probe[typeIM]["ncol"]
+            y_idx = elec_id // npx_probe[typeIM]["ncol"]
+            stagger = np.mod(y_idx + 1, 2) * npx_probe[typeIM]["x_pitch"] / 2
+            x_pos = x_idx * npx_probe[typeIM]["x_pitch"] + stagger
+            y_pos = y_idx * npx_probe[typeIM]["y_pitch"]
+            contact_ids.append(f"e{elec_id}")
+            positions[i, :] = [x_pos, y_pos]
+            annotations["banks"].append(bank)
+            annotations["references"].append(ref)
+            annotations["ap_gains"].append(ap_gain)
+            annotations["ap_gains"].append(ap_gain)
+            annotations["ap_hp_filters"].append(1) # for phase 3A probes HP filters are always enabled. 
     else:
         raise RuntimeError(f'unsupported imro type : {imDatPrb_type}')
 

@@ -195,6 +195,7 @@ def test_readspikeglx():
     # NP1
     probe = read_spikeglx(folder / 'Noise_g0_t0.imec0.ap.meta')
     print(probe)
+    print(probe.annotations)
     print(probe.contact_ids)
 
     # NP2 4 shanks
