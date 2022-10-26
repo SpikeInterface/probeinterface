@@ -20,43 +20,6 @@ from . import __version__
 from .probe import Probe
 from .probegroup import ProbeGroup
 
-# neuropixels info
-npx_probe = {
-    0: {
-        "x_pitch": 32,
-        "y_pitch": 20,
-        "contact_width": 12,
-        "shank_pitch": 0,
-        "shank_number": 1,
-        "ncol": 2
-    },
-    21: {
-        "x_pitch": 32,
-        "y_pitch": 15,
-        "contact_width": 12,
-        "shank_pitch": 0,
-        "shank_number": 1,
-        "ncol": 2
-    },
-    24: {
-        "x_pitch": 32,
-        "y_pitch": 15,
-        "contact_width": 12,
-        "shank_pitch": 250,
-        "shank_number": 4,
-        "ncol": 2
-    },
-    2018: {
-        
-        "x_pitch": 32,
-        "y_pitch": 20,
-        "contact_width": 12,
-        "shank_pitch": 0,
-        "shank_number": 1,
-        "ncol": 2
-        }
-}
-
 
 
 def _probeinterface_format_check_version(d):
@@ -736,6 +699,47 @@ def write_csv(file, probe):
     raise NotImplementedError
 
 
+# neuropixels info
+npx_probe = {
+    # Neuropixels 1.0
+    0: {
+        "x_pitch": 32,
+        "y_pitch": 20,
+        "contact_width": 12,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 2
+    },
+    # Neuropixels 2.0 - Single Shank
+    21: {
+        "x_pitch": 32,
+        "y_pitch": 15,
+        "contact_width": 12,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 2
+    },
+    # Neuropixels 2.0 - Four Shank
+    24: {
+        "x_pitch": 32,
+        "y_pitch": 15,
+        "contact_width": 12,
+        "shank_pitch": 250,
+        "shank_number": 4,
+        "ncol": 2
+    },
+    # 
+    'Phase3a': {
+        
+        "x_pitch": 32,
+        "y_pitch": 20,
+        "contact_width": 12,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 2
+        }
+}
+
 def read_imro(file):
     """
     Read probe position from the imro file used in input of SpikeGlx and Open-Ephys for neuropixels probes.
@@ -761,17 +765,23 @@ def read_imro(file):
 def _read_imro_string(imro_str):
     """
     Low-level function to parse imro string
+    
+    
     """
     headers, *parts,_ = imro_str.strip().split(")")
     
-    """
-    In older versions of neuropixel arrays (phase 3A), imro tables were structured differently. 
-    """
+    print(headers)
+
     header_len = len(headers[1:].split(','))
     if header_len > 2:
-        [_,imDatPrb_type,num_contact] = list(map(int, headers[1:].split(',')))
+        # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently. 
+        [probe_serial_number, probe_option, num_contact] = list(map(int, headers[1:].split(',')))
+        imDatPrb_type = 'Phase3a'
     else:
+        
         imDatPrb_type, num_contact = tuple(map(int, headers[1:].split(',')))
+    
+    print('imDatPrb_type', imDatPrb_type, 'header_len', header_len)
 
     positions = np.zeros((num_contact, 2), dtype='float64')
     contact_ids = []
@@ -812,8 +822,8 @@ def _read_imro_string(imro_str):
 
             channel_id, bank, ref, elec_id = tuple(map(int, part[1:].split(' ')))
 
-            x_idx = channel_id % npx_probe[imDatPrb_type]["ncol"]
-            y_idx = channel_id // npx_probe[imDatPrb_type]["ncol"]
+            x_idx = elec_id % npx_probe[imDatPrb_type]["ncol"]
+            y_idx = elec_id // npx_probe[imDatPrb_type]["ncol"]
 
             stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x_pitch"] / 2
             x_pos = x_idx * npx_probe[imDatPrb_type ]["x_pitch"] + stagger
@@ -840,9 +850,9 @@ def _read_imro_string(imro_str):
             positions[channel_id, :] = [x_pos, y_pos]
             annotations["banks"].append(bank)
             annotations["references"].append(ref)
+    
     elif header_len > 2:
         probe_name = "Neuropixels Phase3a"
-        typeIM = 2018
         shank_ids = None
         annotations =  dict(banks = [],
                             references = [],
@@ -854,11 +864,11 @@ def _read_imro_string(imro_str):
             channel_id, bank, ref, ap_gain, lf_gain = tuple(map(int, part[1:].split(' ')))
             elec_id = bank*384 + channel_id
 
-            x_idx = elec_id % npx_probe[typeIM]["ncol"]
-            y_idx = elec_id // npx_probe[typeIM]["ncol"]
-            stagger = np.mod(y_idx + 1, 2) * npx_probe[typeIM]["x_pitch"] / 2
-            x_pos = x_idx * npx_probe[typeIM]["x_pitch"] + stagger
-            y_pos = y_idx * npx_probe[typeIM]["y_pitch"]
+            x_idx = elec_id % npx_probe[imDatPrb_type]["ncol"]
+            y_idx = elec_id // npx_probe[imDatPrb_type]["ncol"]
+            stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type]["x_pitch"] / 2
+            x_pos = x_idx * npx_probe[imDatPrb_type]["x_pitch"] + stagger
+            y_pos = y_idx * npx_probe[imDatPrb_type]["y_pitch"]
             contact_ids.append(f"e{elec_id}")
             positions[i, :] = [x_pos, y_pos]
             annotations["banks"].append(bank)
@@ -869,22 +879,18 @@ def _read_imro_string(imro_str):
     else:
         raise RuntimeError(f'unsupported imro type : {imDatPrb_type}')
 
-    if header_len<3:
-        typeIM = imDatPrb_type
-    else:
-        typeIM = 2018
     probe = Probe(ndim=2, si_units='um')
     probe.set_contacts(positions=positions, shapes='square',
                        shank_ids=shank_ids,
-                       shape_params={'width': npx_probe[typeIM]["contact_width"]})
+                       shape_params={'width': npx_probe[imDatPrb_type]["contact_width"]})
     probe.set_contact_ids(contact_ids)
 
 
     # planar contour
     one_polygon = [(0, 10000), (0, 0), (35, -175), (70, 0), (70, 10000), ]
     contour = []
-    for shank_id in range(npx_probe[typeIM]["shank_number"]):
-        contour += list(np.array(one_polygon) + [ npx_probe[typeIM]["shank_pitch"] * shank_id, 0])
+    for shank_id in range(npx_probe[imDatPrb_type]["shank_number"]):
+        contour += list(np.array(one_polygon) + [ npx_probe[imDatPrb_type]["shank_pitch"] * shank_id, 0])
     # shift
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)

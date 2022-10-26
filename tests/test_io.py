@@ -193,20 +193,26 @@ def test_prb():
 
 def test_readspikeglx():
     # NP1
-    probe = read_spikeglx(folder / 'Noise_g0_t0.imec0.ap.meta')
-    print(probe)
-    print(probe.annotations)
-    print(probe.contact_ids)
+    # probe = read_spikeglx(folder / 'Noise_g0_t0.imec0.ap.meta')
+    # print(probe)
+    # print(probe.annotations)
+    # print(probe.contact_ids)
 
-    # NP2 4 shanks
-    probe = read_spikeglx(folder / 'TEST_20210920_0_g0_t0.imec0.ap.meta')
-    print(probe)
-    print(probe.contact_ids)
+    # # NP2 4 shanks
+    # probe = read_spikeglx(folder / 'TEST_20210920_0_g0_t0.imec0.ap.meta')
+    # print(probe)
+    # print(probe.contact_ids)
 
-    # NP2 1 shanks
+    # # NP2 1 shanks
     probe = read_spikeglx(folder / 'p2_g0_t0.imec0.ap.meta')
     print(probe)
     print(probe.contact_ids)
+
+    # NP phase3A: data given by rtraghavan
+    probe = read_spikeglx(folder / 'NeuropixelPhase3A_file_g0_t0.imec.ap.meta')
+    print(probe)
+    print(probe.contact_ids)
+    
 
 
 def test_readopenephys():
@@ -255,5 +261,5 @@ if __name__ == '__main__':
     
     # test_prb()
     test_readspikeglx()
-    test_readopenephys()
+    # test_readopenephys()
     
