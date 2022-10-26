@@ -766,6 +766,9 @@ def _read_imro_string(imro_str):
     """
     Low-level function to parse imro string
     
+    TODO:
+      * Metadata_30
+      * Metadata_3B1
     
     """
     headers, *parts, _ = imro_str.strip().split(")")
@@ -782,6 +785,7 @@ def _read_imro_string(imro_str):
     contact_ids = []
     if imDatPrb_type == 0:
         # NP1
+        # https://billkarsh.github.io/SpikeGLX/Support/Metadata_3B2.html
         probe_name = "Neuropixels 1.0"
         shank_ids = None
         annotations =  dict(banks = [],
@@ -803,13 +807,14 @@ def _read_imro_string(imro_str):
 
             contact_ids.append(f"e{elec_id}")
             positions[i, :] = [x_pos, y_pos]
-
             annotations["banks"].append(bank)
             annotations["references"].append(ref)
             annotations["ap_gains"].append(ap_gain)
             annotations["ap_gains"].append(ap_gain)
             annotations["ap_hp_filters"].append(ap_hp_filter)
+
     elif imDatPrb_type == 21:
+        # https://billkarsh.github.io/SpikeGLX/Support/Metadata_20.html
         probe_name = "Neuropixels 2.0 - SingleShank"
         shank_ids = None
         annotations = dict(banks=[], references=[])
@@ -830,6 +835,7 @@ def _read_imro_string(imro_str):
             annotations["banks"].append(bank)
             annotations["references"].append(ref)
     elif imDatPrb_type == 24:
+        # https://billkarsh.github.io/SpikeGLX/Support/Metadata_20.html
         # NP2.0(4-shank)
         annotations = dict(banks=[], references=[])
 
@@ -848,6 +854,7 @@ def _read_imro_string(imro_str):
             annotations["references"].append(ref)
     
     elif imDatPrb_type == 'Phase3a':
+        # https://billkarsh.github.io/SpikeGLX/Support/Metadata_3A.html
         probe_name = "Neuropixels Phase3a"
         shank_ids = None
         annotations =  dict(banks = [],
