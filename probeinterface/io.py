@@ -768,24 +768,20 @@ def _read_imro_string(imro_str):
     
     
     """
-    headers, *parts,_ = imro_str.strip().split(")")
+    headers, *parts, _ = imro_str.strip().split(")")
     
-    print(headers)
-
-    header_len = len(headers[1:].split(','))
-    if header_len > 2:
+    header = tuple(map(int, headers[1:].split(',')))
+    if len(header) > 2:
         # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently. 
-        [probe_serial_number, probe_option, num_contact] = list(map(int, headers[1:].split(',')))
+        probe_serial_number, probe_option, num_contact = header
         imDatPrb_type = 'Phase3a'
     else:
-        
-        imDatPrb_type, num_contact = tuple(map(int, headers[1:].split(',')))
+        imDatPrb_type, num_contact = header
     
-    print('imDatPrb_type', imDatPrb_type, 'header_len', header_len)
-
     positions = np.zeros((num_contact, 2), dtype='float64')
     contact_ids = []
-    if imDatPrb_type == 0 and header_len < 3:  # NP1
+    if imDatPrb_type == 0:
+        # NP1
         probe_name = "Neuropixels 1.0"
         shank_ids = None
         annotations =  dict(banks = [],
@@ -797,7 +793,7 @@ def _read_imro_string(imro_str):
         for i, part in enumerate(parts):
 
             channel_id, bank, ref, ap_gain, lf_gain, ap_hp_filter = tuple(map(int, part[1:].split(' ')))
-            elec_id = bank*384 + channel_id
+            elec_id = bank * 384 + channel_id
             x_idx = elec_id % npx_probe[imDatPrb_type]["ncol"]
             y_idx = elec_id // npx_probe[imDatPrb_type]["ncol"]
 
@@ -851,7 +847,7 @@ def _read_imro_string(imro_str):
             annotations["banks"].append(bank)
             annotations["references"].append(ref)
     
-    elif header_len > 2:
+    elif imDatPrb_type == 'Phase3a':
         probe_name = "Neuropixels Phase3a"
         shank_ids = None
         annotations =  dict(banks = [],
@@ -862,7 +858,7 @@ def _read_imro_string(imro_str):
                            )
         for i, part in enumerate(parts):
             channel_id, bank, ref, ap_gain, lf_gain = tuple(map(int, part[1:].split(' ')))
-            elec_id = bank*384 + channel_id
+            elec_id = bank * 384 + channel_id
 
             x_idx = elec_id % npx_probe[imDatPrb_type]["ncol"]
             y_idx = elec_id // npx_probe[imDatPrb_type]["ncol"]
