@@ -1,0 +1,11 @@
+probeinterface 0.2.14
+---------------------
+
+
+October, 26th 2022
+
+* Fix a strong bug in read_spikeglx() that was affected
+  the channel location when the Imec Readout Table (aka imRo)
+  was set with multi bank pattern.
+  **You should maybe re-run all your analysis with this update if you have a doubt**
+  **on the contact position for recent spike sorting**
