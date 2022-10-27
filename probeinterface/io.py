@@ -780,20 +780,20 @@ def _read_imro_string(imro_str):
         imDatPrb_type, num_contact = header
     else:
         raise RuntimeError(f'read_imro error,  header have strange length :{header}')
-    
+
     # disptach values from list in the info dict
     if imDatPrb_type == 0:
         probe_name = "Neuropixels 1.0"
-        fields = ('channel_id', 'bank', 'ref', 'ap_gain', 'lf_gain', 'ap_hp_filter')
+        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
     elif imDatPrb_type == 21:
         probe_name = "Neuropixels 2.0 - SingleShank"
-        fields = ('channel_id', 'bank', 'ref', 'elec_id')
+        fields = ('channel_ids', 'banks', 'references', 'elec_ids')
     elif imDatPrb_type == 24:
         probe_name = "Neuropixels 2.0 - MultiShank"
-        fields = ('channel_id', 'shank_id', 'bank', 'ref', 'elec_id')
+        fields = ('channel_ids', 'shank_id', 'banks', 'references', 'elec_ids')
     elif imDatPrb_type == 'Phase3a':
         probe_name = "Neuropixels Phase3a"
-        fields = ('channel_id', 'bank', 'ref', 'ap_gain', 'lf_gain')
+        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains')
     else:
         raise RuntimeError(f'unsupported imro type : {imDatPrb_type}')    
 
@@ -803,13 +803,13 @@ def _read_imro_string(imro_str):
         for k, v in zip(fields, values):
             contact_info[k].append(v)
     
-    channel_ids = np.array(contact_info['channel_id'])
-    if 'elec_id' in contact_info:
-        elec_ids = np.array(contact_info['elec_id'])
+    channel_ids = np.array(contact_info['channel_ids'])
+    if 'elec_ids' in contact_info:
+        elec_ids = np.array(contact_info['elec_ids'])
     
     if imDatPrb_type == 0 or imDatPrb_type == 'Phase3a':
         # for NP1 and previous the elec_id is not in the list
-        bank = np.array(contact_info['bank'])
+        bank = np.array(contact_info['banks'])
         elec_ids = bank * 384 + channel_ids
     
     # compute poisition
@@ -823,12 +823,15 @@ def _read_imro_string(imro_str):
         x_pos = x_idx * x_pitch + stagger
         y_pos = y_idx * y_pitch
         shank_ids = None
+        contact_ids = [f'e{elec_id}' for elec_id in elec_ids]
     elif imDatPrb_type in (24, ):
         # 4 shanks
         shank_ids = np.array(contact_info['shank_id'])
         shank_pitch = npx_probe[imDatPrb_type]["shank_pitch"]
         x_pos = x_idx * x_pitch + shank_ids * shank_pitch
         y_pos = y_idx * y_pitch
+        contact_ids = [f's{shank_id}e{elec_id}' for shank_id, elec_id in zip(shank_ids, elec_ids)]
+        
     positions = np.zeros((num_contact, 2), dtype='float64')
     positions[:, 0] = x_pos
     positions[:, 1] = y_pos
@@ -838,9 +841,7 @@ def _read_imro_string(imro_str):
     probe.set_contacts(positions=positions, shapes='square',
                        shank_ids=shank_ids,
                        shape_params={'width': npx_probe[imDatPrb_type]["contact_width"]})
-    contact_ids = elec_ids.astype('S')
     probe.set_contact_ids(contact_ids)
-
 
     # planar contour
     one_polygon = [(0, 10000), (0, 0), (35, -175), (70, 0), (70, 10000), ]
@@ -852,7 +853,7 @@ def _read_imro_string(imro_str):
     probe.set_planar_contour(contour)
     
     annotations = {}
-    for k in ('bank', 'ref', 'ap_gain', 'lf_gain', 'ap_hp_filter'):
+    for k in ('banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters'):
         if k in contact_info:
             annotations[k] = contact_info[k]
     
