@@ -254,5 +254,5 @@ if __name__ == '__main__':
     
     # test_prb()
     test_readspikeglx()
-    test_readopenephys()
+    # test_readopenephys()
     
