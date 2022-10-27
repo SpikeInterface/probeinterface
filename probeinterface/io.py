@@ -779,7 +779,7 @@ def _read_imro_string(imro_str):
     elif len(header) == 2:
         imDatPrb_type, num_contact = header
     else:
-        raise RuntimeError(f'read_imro error,  header have strange length :{header}')
+        raise RuntimeError(f'read_imro error, the header has a strange length: {len(header)}')
 
     # disptach values from list in the info dict
     if imDatPrb_type == 0:
