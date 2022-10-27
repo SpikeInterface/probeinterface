@@ -1,0 +1,18 @@
+probeinterface 0.2.14
+---------------------
+
+
+October, 27th 2022
+
+* Fix a **important bug** in :code:`read_spikeglx()` / :code:`read_imro()` that was leading
+  to wrong contact locations when the Imec Readout Table (aka imRo)
+  was set with complex multi-bank patterns.
+  The bug was introduced with version **0.2.10**, released on September 1st 2022, and it is also present in these 
+  versions: **0.2.10**, **0.2.11**, **0.2.12**, and **0.2.13**.
+
+  **If you used spikeinterface/probeinterface with SpikeGLX data using one of these versions, we recommend you 
+  to check your contact positions (if they are non-standard - using the probe tip) and re-run your spike-sorting 
+  analysis if they are wrong.**
+
+  A big thanks to Tom Bugnon and Graham Findlay for 
+  `spotting the bug <https://github.com/SpikeInterface/probeinterface/issues/141>`_.
