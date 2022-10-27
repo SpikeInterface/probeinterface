@@ -766,126 +766,79 @@ def _read_imro_string(imro_str):
     """
     Low-level function to parse imro string
     
-    TODO:
-      * Metadata_30
-      * Metadata_3B1
+    See this doc https://billkarsh.github.io/SpikeGLX/help/imroTables/
     
     """
     headers, *parts, _ = imro_str.strip().split(")")
     
     header = tuple(map(int, headers[1:].split(',')))
-    if len(header) > 2:
+    if len(header) == 3:
         # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently. 
         probe_serial_number, probe_option, num_contact = header
         imDatPrb_type = 'Phase3a'
-    else:
+    elif len(header) == 2:
         imDatPrb_type, num_contact = header
-    
-    positions = np.zeros((num_contact, 2), dtype='float64')
-    contact_ids = []
-    if imDatPrb_type == 0:
-        # NP1
-        # https://billkarsh.github.io/SpikeGLX/Support/Metadata_3B2.html
-        probe_name = "Neuropixels 1.0"
-        shank_ids = None
-        annotations =  dict(banks = [],
-                            references = [],
-                            ap_gains = [],
-                            lf_gains = [],
-                            ap_hp_filters = []
-                           )
-        for i, part in enumerate(parts):
-
-            channel_id, bank, ref, ap_gain, lf_gain, ap_hp_filter = tuple(map(int, part[1:].split(' ')))
-            elec_id = bank * 384 + channel_id
-            x_idx = elec_id % npx_probe[imDatPrb_type]["ncol"]
-            y_idx = elec_id // npx_probe[imDatPrb_type]["ncol"]
-
-            stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x_pitch"] / 2
-            x_pos = x_idx * npx_probe[imDatPrb_type ]["x_pitch"] + stagger
-            y_pos = y_idx * npx_probe[imDatPrb_type ]["y_pitch"]
-
-            contact_ids.append(f"e{elec_id}")
-            positions[i, :] = [x_pos, y_pos]
-            annotations["banks"].append(bank)
-            annotations["references"].append(ref)
-            annotations["ap_gains"].append(ap_gain)
-            annotations["ap_gains"].append(ap_gain)
-            annotations["ap_hp_filters"].append(ap_hp_filter)
-
-    elif imDatPrb_type == 21:
-        # https://billkarsh.github.io/SpikeGLX/Support/Metadata_20.html
-        probe_name = "Neuropixels 2.0 - SingleShank"
-        shank_ids = None
-        annotations = dict(banks=[], references=[])
-
-        for i, part in enumerate(parts):
-
-            channel_id, bank, ref, elec_id = tuple(map(int, part[1:].split(' ')))
-
-            x_idx = elec_id % npx_probe[imDatPrb_type]["ncol"]
-            y_idx = elec_id // npx_probe[imDatPrb_type]["ncol"]
-
-            stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x_pitch"] / 2
-            x_pos = x_idx * npx_probe[imDatPrb_type ]["x_pitch"] + stagger
-            y_pos = y_idx * npx_probe[imDatPrb_type ]["y_pitch"]
-
-            contact_ids.append(f"e{channel_id}")
-            positions[i, :] = [x_pos, y_pos]
-            annotations["banks"].append(bank)
-            annotations["references"].append(ref)
-    elif imDatPrb_type == 24:
-        # https://billkarsh.github.io/SpikeGLX/Support/Metadata_20.html
-        # NP2.0(4-shank)
-        annotations = dict(banks=[], references=[])
-
-        probe_name = "Neuropixels 2.0 - MultiShank"
-        shank_ids=[]
-        for i, part in enumerate(parts):
-            channel_id, shank_id, bank, ref, elec_id = tuple(map(int, part[1:].split(' ')))
-            x_idx = elec_id % npx_probe[imDatPrb_type]["ncol"]
-            y_idx = elec_id // npx_probe[imDatPrb_type]["ncol"]
-            shank_ids.append(shank_id)
-            x_pos = x_idx * npx_probe[imDatPrb_type]["x_pitch"] + int(shank_id) * npx_probe[imDatPrb_type]["shank_pitch"]
-            y_pos = y_idx * npx_probe[imDatPrb_type]["y_pitch"]
-            contact_ids.append(f"s{shank_id}e{elec_id}")
-            positions[channel_id, :] = [x_pos, y_pos]
-            annotations["banks"].append(bank)
-            annotations["references"].append(ref)
-    
-    elif imDatPrb_type == 'Phase3a':
-        # https://billkarsh.github.io/SpikeGLX/Support/Metadata_3A.html
-        probe_name = "Neuropixels Phase3a"
-        shank_ids = None
-        annotations =  dict(banks = [],
-                            references = [],
-                            ap_gains = [],
-                            lf_gains = [],
-                            ap_hp_filters = []
-                           )
-        for i, part in enumerate(parts):
-            channel_id, bank, ref, ap_gain, lf_gain = tuple(map(int, part[1:].split(' ')))
-            elec_id = bank * 384 + channel_id
-
-            x_idx = elec_id % npx_probe[imDatPrb_type]["ncol"]
-            y_idx = elec_id // npx_probe[imDatPrb_type]["ncol"]
-            stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type]["x_pitch"] / 2
-            x_pos = x_idx * npx_probe[imDatPrb_type]["x_pitch"] + stagger
-            y_pos = y_idx * npx_probe[imDatPrb_type]["y_pitch"]
-            contact_ids.append(f"e{elec_id}")
-            positions[i, :] = [x_pos, y_pos]
-            annotations["banks"].append(bank)
-            annotations["references"].append(ref)
-            annotations["ap_gains"].append(ap_gain)
-            annotations["ap_gains"].append(ap_gain)
-            annotations["ap_hp_filters"].append(1) # for phase 3A probes HP filters are always enabled. 
     else:
-        raise RuntimeError(f'unsupported imro type : {imDatPrb_type}')
+        raise RuntimeError(f'read_imro error,  header have strange length :{header}')
+    
+    # disptach values from list in the info dict
+    if imDatPrb_type == 0:
+        probe_name = "Neuropixels 1.0"
+        fields = ('channel_id', 'bank', 'ref', 'ap_gain', 'lf_gain', 'ap_hp_filter')
+    elif imDatPrb_type == 21:
+        probe_name = "Neuropixels 2.0 - SingleShank"
+        fields = ('channel_id', 'bank', 'ref', 'elec_id')
+    elif imDatPrb_type == 24:
+        probe_name = "Neuropixels 2.0 - MultiShank"
+        fields = ('channel_id', 'shank_id', 'bank', 'ref', 'elec_id')
+    elif imDatPrb_type == 'Phase3a':
+        probe_name = "Neuropixels Phase3a"
+        fields = ('channel_id', 'bank', 'ref', 'ap_gain', 'lf_gain')
+    else:
+        raise RuntimeError(f'unsupported imro type : {imDatPrb_type}')    
 
+    contact_info = {k: [] for k in fields}
+    for i, part in enumerate(parts):
+        values = tuple(map(int, part[1:].split(' ')))
+        for k, v in zip(fields, values):
+            contact_info[k].append(v)
+    
+    channel_ids = np.array(contact_info['channel_id'])
+    if 'elec_id' in contact_info:
+        elec_ids = np.array(contact_info['elec_id'])
+    
+    if imDatPrb_type == 0 or imDatPrb_type == 'Phase3a':
+        # for NP1 and previous the elec_id is not in the list
+        bank = np.array(contact_info['bank'])
+        elec_ids = bank * 384 + channel_ids
+    
+    # compute poisition
+    x_idx = elec_ids % npx_probe[imDatPrb_type]["ncol"]
+    y_idx = elec_ids // npx_probe[imDatPrb_type]["ncol"]
+    x_pitch = npx_probe[imDatPrb_type ]["x_pitch"]
+    y_pitch = npx_probe[imDatPrb_type ]["y_pitch"]
+    if imDatPrb_type in (0, 21, 'Phase3a'):
+        # one shank
+        stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x_pitch"] / 2
+        x_pos = x_idx * x_pitch + stagger
+        y_pos = y_idx * y_pitch
+        shank_ids = None
+    elif imDatPrb_type in (24, ):
+        # 4 shanks
+        shank_ids = np.array(contact_info['shank_id'])
+        shank_pitch = npx_probe[imDatPrb_type]["shank_pitch"]
+        x_pos = x_idx * x_pitch + shank_ids * shank_pitch
+        y_pos = y_idx * y_pitch
+    positions = np.zeros((num_contact, 2), dtype='float64')
+    positions[:, 0] = x_pos
+    positions[:, 1] = y_pos
+    
+    # construct Probe object
     probe = Probe(ndim=2, si_units='um')
     probe.set_contacts(positions=positions, shapes='square',
                        shank_ids=shank_ids,
                        shape_params={'width': npx_probe[imDatPrb_type]["contact_width"]})
+    contact_ids = elec_ids.astype('S')
     probe.set_contact_ids(contact_ids)
 
 
@@ -897,7 +850,12 @@ def _read_imro_string(imro_str):
     # shift
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
-
+    
+    annotations = {}
+    for k in ('bank', 'ref', 'ap_gain', 'lf_gain', 'ap_hp_filter'):
+        if k in contact_info:
+            annotations[k] = contact_info[k]
+    
     probe.annotate(
         name=probe_name,
         manufacturer="IMEC",
