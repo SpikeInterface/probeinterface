@@ -809,8 +809,8 @@ def _read_imro_string(imro_str):
     
     if imDatPrb_type == 0 or imDatPrb_type == 'Phase3a':
         # for NP1 and previous the elec_id is not in the list
-        bank = np.array(contact_info['banks'])
-        elec_ids = bank * 384 + channel_ids
+        banks = np.array(contact_info['banks'])
+        elec_ids = banks * 384 + channel_ids
     
     # compute poisition
     x_idx = elec_ids % npx_probe[imDatPrb_type]["ncol"]
@@ -831,7 +831,7 @@ def _read_imro_string(imro_str):
         x_pos = x_idx * x_pitch + shank_ids * shank_pitch
         y_pos = y_idx * y_pitch
         contact_ids = [f's{shank_id}e{elec_id}' for shank_id, elec_id in zip(shank_ids, elec_ids)]
-        
+
     positions = np.zeros((num_contact, 2), dtype='float64')
     positions[:, 0] = x_pos
     positions[:, 1] = y_pos
