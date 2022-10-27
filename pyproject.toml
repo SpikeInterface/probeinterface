@@ -1,6 +1,6 @@
 [project]
 name = "probeinterface"
-version = "0.2.14"
+version = "0.2.15"
 authors = [
   { name="Samuel Garcia", email="sam.garcia.die@gmail.com" },
   { name="Alessio Buccino", email="alessiop.buccino@gmail.com" },
