@@ -1,0 +1,8 @@
+probeinterface 0.2.15
+---------------------
+
+
+December, 12th 2022
+
+* Bug fix when parsing Open Ephys version from XML file (https://github.com/SpikeInterface/probeinterface/pull/146)
+* Add test files and tests for Open Ephys reader
