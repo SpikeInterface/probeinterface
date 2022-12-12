@@ -997,13 +997,12 @@ def read_openephys(
 
     """
     import xml.etree.ElementTree as ET
-
     # parse xml
     tree = ET.parse(str(settings_file))
     root = tree.getroot()
 
     info_chain = root.find("INFO")
-    oe_version = parse(str(info_chain.find("VERSION")))
+    oe_version = parse(info_chain.find("VERSION").text)
     signal_chain = root.find("SIGNALCHAIN")
     neuropix_pxi = None
     for processor in signal_chain:
