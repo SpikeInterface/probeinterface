@@ -235,7 +235,12 @@ def test_readspikeglx():
     assert '1.0' in probe.annotations['name']
     assert probe.get_shank_count()== 1
     assert (np.max(ypos) - np.min(ypos)) > 7600
-
+    
+    # example by Pierre Yger NP1.0 with 384 but only 151 channels are saved
+    probe = read_spikeglx(folder / 'Day_3_g0_t0.imec1.ap.meta')
+    assert probe.get_shank_count()== 1
+    assert probe.get_contact_count()== 151
+    assert 152 not in probe.contact_annotations['channel_ids']
 
     # from probeinterface.plotting import plot_probe
     # import matplotlib.pyplot as plt
@@ -325,5 +330,5 @@ if __name__ == '__main__':
     # test_prb()
     test_readspikeglx()
     test_readopenephys()
-    test_readimro()
+    # test_readimro()
     

@@ -852,17 +852,20 @@ def _read_imro_string(imro_str):
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
     
-    annotations = {}
-    for k in ('banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters'):
-        if k in contact_info:
-            annotations[k] = contact_info[k]
     
     probe.annotate(
         name=probe_name,
         manufacturer="IMEC",
         probe_type=imDatPrb_type,
-        **annotations
+        
     )
+
+    annotations = {}
+    for k in ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters'):
+        if k in contact_info:
+            annotations[k] = contact_info[k]
+    probe.annotate_contacts(**annotations)
+    
     # wire it
     probe.set_device_channel_indices(np.arange(positions.shape[0]))
 
@@ -941,9 +944,30 @@ def read_spikeglx(file):
     for l in lines:
         if "imroTbl" in l:
             imro_table = l[l.find("=") + 1:]
+        if "snsChanMap" in l:
+            chan_map_str = l[l.find("=") + 1:]
     assert imro_table is not None, "Could not find imroTbl field in meta file!"
+    
+    probe = _read_imro_string(imro_table)
+    
+    # sometimes we need to slice the probe when not all channels are saved
+    # we are using the field snsChanMap and keep the corresponding channel_id
+    # we could also use the field snsSaveChanSubset but the upper 
+    # bound is ambiguous (included or not from version to version)
+    headers, *parts, _ = chan_map_str.strip().split(")")
+    saved_channel_ids = []
+    for part in parts:
+        chan_id = part[1:].split(';')[0]
+        if chan_id.startswith('AP'):
+            # this avoid the 'SY0' channel
+            saved_channel_ids.append(int(chan_id[2:]))
 
-    return _read_imro_string(imro_table)
+    keep_mask = np.in1d(probe.contact_annotations['channel_ids'], saved_channel_ids)
+    if not np.all(keep_mask):
+        keep_inds, = np.nonzero(keep_mask)
+        probe = probe.get_slice(keep_inds)
+
+    return probe
 
 
 def read_openephys(
