@@ -328,7 +328,7 @@ if __name__ == '__main__':
     # test_BIDS_format_minimal()
     
     # test_prb()
-    test_readspikeglx()
-    test_readopenephys()
-    # test_readimro()
+    # test_readspikeglx()
+    # test_readopenephys()
+    test_readimro()
     

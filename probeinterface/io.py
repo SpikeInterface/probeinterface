@@ -885,7 +885,7 @@ def write_imro(file, probe):
     """
     probe_type = probe.annotations["probe_type"]
     data = probe.to_dataframe(complete=True).sort_values("device_channel_indices")
-    annotations = probe.annotations
+    annotations = probe.contact_annotations
     ret = [f'({probe_type},{len(data)})']
 
     if probe_type == 0:
