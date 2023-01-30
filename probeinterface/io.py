@@ -978,7 +978,7 @@ def get_saved_channel_indices_from_spikeglx_meta(meta_file):
     """
     Utils function to get the saved channels.
     
-    This use the field snsSaveChanSubset in meta file which is as follow
+    It uses the 'snsSaveChanSubset' field in  the meta file, which is as follows:
     snsSaveChanSubset=0:10,50:55,100
     with chan1:chan2 chan2 inclusive
     
