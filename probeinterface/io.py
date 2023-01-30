@@ -852,14 +852,14 @@ def _read_imro_string(imro_str):
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
     
-    
+    # this is scalar annotations
     probe.annotate(
         name=probe_name,
         manufacturer="IMEC",
         probe_type=imDatPrb_type,
-        
     )
-
+    
+    # this is vector annotations
     annotations = {}
     for k in ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters'):
         if k in contact_info:
@@ -936,38 +936,72 @@ def read_spikeglx(file):
 
     meta_file = Path(file)
     assert (meta_file.suffix == ".meta"), "'meta_file' should point to the .meta SpikeGLX file"
-
-    with meta_file.open(mode="r") as f:
-        lines = f.read().splitlines()
-
-    imro_table = None
-    for l in lines:
-        if "imroTbl" in l:
-            imro_table = l[l.find("=") + 1:]
-        if "snsChanMap" in l:
-            chan_map_str = l[l.find("=") + 1:]
-    assert imro_table is not None, "Could not find imroTbl field in meta file!"
+    
+    meta = parse_spikeglx_meta(meta_file)
+    
+    assert "imroTbl" in meta, "Could not find imroTbl field in meta file!"
+    imro_table = meta['imroTbl']
+    chan_map_str = meta['snsChanMap']
     
     probe = _read_imro_string(imro_table)
     
     # sometimes we need to slice the probe when not all channels are saved
-    # we are using the field snsChanMap and keep the corresponding channel_id
-    # we could also use the field snsSaveChanSubset but the upper 
-    # bound is ambiguous (included or not from version to version)
-    headers, *parts, _ = chan_map_str.strip().split(")")
-    saved_channel_ids = []
-    for part in parts:
-        chan_id = part[1:].split(';')[0]
-        if chan_id.startswith('AP'):
-            # this avoid the 'SY0' channel
-            saved_channel_ids.append(int(chan_id[2:]))
-
-    keep_mask = np.in1d(probe.contact_annotations['channel_ids'], saved_channel_ids)
-    if not np.all(keep_mask):
-        keep_inds, = np.nonzero(keep_mask)
-        probe = probe.get_slice(keep_inds)
+    saved_chans = get_saved_channel_indices_from_spikeglx_meta(meta_file)
+    # remove the SYS chans
+    saved_chans = saved_chans[saved_chans < probe.get_contact_count()]
+    if saved_chans.size != probe.get_contact_count():
+        # slice if needed
+        probe = probe.get_slice(saved_chans)
 
     return probe
+
+
+def parse_spikeglx_meta(meta_file):
+    """
+    Parse the "meta" file from spikeglx into a dict.
+    All fiields are kept in txt format and must also parsed themself.
+    """
+    with meta_file.open(mode="r") as f:
+        lines = f.read().splitlines()
+    
+    meta = {}
+    for line in lines:
+        key, val = line.split('=')
+        if key.startswith('~'):
+            key = key[1:]
+        meta[key] = val
+        
+    return meta
+    
+
+def get_saved_channel_indices_from_spikeglx_meta(meta_file):
+    """
+    Utils function to get the saved channels.
+    
+    This use the field snsSaveChanSubset in meta file which is as follow
+    snsSaveChanSubset=0:10,50:55,100
+    with chan1:chan2 chan2 inclusive
+    
+    This function come from here Jennifer Colonell
+    https://github.com/jenniferColonell/ecephys_spike_sorting/blob/master/ecephys_spike_sorting/common/SGLXMetaToCoords.py#L65
+    """
+    meta = parse_spikeglx_meta(meta_file)
+    chans_txt = meta['snsSaveChanSubset']
+    
+    if chans_txt == 'all':
+        chans = np.arange(int(meta['nSavedChans']))
+    else:
+        chans = []
+        for e in chans_txt.split(','):
+            if ':' in e:
+                start, stop = e.split(':')
+                start, stop = int(start), int(stop) +1 
+                chans.extend(np.arange(start, stop))
+            else:
+                chans.append(int(e))
+    chans = np.array(chans, dtype='int64')
+    return chans
+    
 
 
 def read_openephys(

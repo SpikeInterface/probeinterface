@@ -1,6 +1,7 @@
 from probeinterface import write_probeinterface, read_probeinterface, write_BIDS_probe, read_BIDS_probe
 from probeinterface import read_prb, write_prb
-from probeinterface import read_spikeglx, read_openephys, read_imro, write_imro
+from probeinterface import (read_spikeglx, read_openephys, read_imro, write_imro, 
+    parse_spikeglx_meta, get_saved_channel_indices_from_spikeglx_meta)
 from probeinterface import generate_dummy_probe_group
 
 
@@ -246,8 +247,25 @@ def test_readspikeglx():
     # import matplotlib.pyplot as plt
     # plot_probe(probe)
     # plt.show()
-
     
+def test_parse_meta():
+    
+    for meta_file in [
+        'doppio-checkerboard_t0.imec0.ap.meta',
+        'Day_3_g0_t0.imec1.ap.meta',
+        'allan-longcol_g0_t0.imec0.ap.meta'
+        ]:
+        meta = parse_spikeglx_meta(folder /meta_file)
+
+
+def test_get_saved_channel_indices_from_spikeglx_meta():
+    # all channel saved + 1 synchro
+    chan_inds = get_saved_channel_indices_from_spikeglx_meta(folder / 'Noise_g0_t0.imec0.ap.meta')
+    assert chan_inds.size == 385
+    
+    # example by Pierre Yger NP1.0 with 384 but only 151 channels are saved + 1 synchro
+    chan_inds = get_saved_channel_indices_from_spikeglx_meta(folder / 'Day_3_g0_t0.imec1.ap.meta')
+    assert chan_inds.size == 152
 
 
 def test_readopenephys():
@@ -328,7 +346,9 @@ if __name__ == '__main__':
     # test_BIDS_format_minimal()
     
     # test_prb()
-    # test_readspikeglx()
+    test_readspikeglx()
+    # test_parse_meta()
+    # test_get_saved_channel_indices_from_spikeglx_meta()
     # test_readopenephys()
-    test_readimro()
+    # test_readimro()
     
