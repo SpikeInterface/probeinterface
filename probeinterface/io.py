@@ -961,6 +961,7 @@ def parse_spikeglx_meta(meta_file):
     Parse the "meta" file from spikeglx into a dict.
     All fiields are kept in txt format and must also parsed themself.
     """
+    meta_file = Path(meta_file)
     with meta_file.open(mode="r") as f:
         lines = f.read().splitlines()
     
@@ -985,6 +986,7 @@ def get_saved_channel_indices_from_spikeglx_meta(meta_file):
     This function come from here Jennifer Colonell
     https://github.com/jenniferColonell/ecephys_spike_sorting/blob/master/ecephys_spike_sorting/common/SGLXMetaToCoords.py#L65
     """
+    meta_file = Path(meta_file)
     meta = parse_spikeglx_meta(meta_file)
     chans_txt = meta['snsSaveChanSubset']
     

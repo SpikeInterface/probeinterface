@@ -347,8 +347,8 @@ if __name__ == '__main__':
     
     # test_prb()
     test_readspikeglx()
-    # test_parse_meta()
-    # test_get_saved_channel_indices_from_spikeglx_meta()
+    test_parse_meta()
+    test_get_saved_channel_indices_from_spikeglx_meta()
     # test_readopenephys()
     # test_readimro()
     
