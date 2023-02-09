@@ -1,0 +1,7 @@
+probeinterface 0.2.16
+---------------------
+
+
+February, 9th 2023
+
+* Fix for read_spikeglx() when not all channels are saved
