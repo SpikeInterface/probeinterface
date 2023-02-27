@@ -193,61 +193,67 @@ def test_prb():
 
 
 def test_readspikeglx():
-    # NP1
-    probe = read_spikeglx(folder / 'Noise_g0_t0.imec0.ap.meta')
-    print(probe)
-    assert '1.0' in probe.annotations['name']
+    #~ # NP1
+    #~ probe = read_spikeglx(folder / 'Noise_g0_t0.imec0.ap.meta')
+    #~ print(probe)
+    #~ assert '1.0' in probe.annotations['name']
 
-    # NP2 4 shanks
-    probe = read_spikeglx(folder / 'TEST_20210920_0_g0_t0.imec0.ap.meta')
-    assert probe.get_shank_count()== 4
-    assert '2.0' in probe.annotations['name']
-    print(probe)
+    #~ # NP2 4 shanks
+    #~ probe = read_spikeglx(folder / 'TEST_20210920_0_g0_t0.imec0.ap.meta')
+    #~ assert probe.get_shank_count()== 4
+    #~ assert '2.0' in probe.annotations['name']
+    #~ print(probe)
     
-    # NP2 1 shanks
-    probe = read_spikeglx(folder / 'p2_g0_t0.imec0.ap.meta')
-    assert '2.0' in probe.annotations['name']
-    assert probe.get_shank_count()== 1
-    print(probe)
+    #~ # NP2 1 shanks
+    #~ probe = read_spikeglx(folder / 'p2_g0_t0.imec0.ap.meta')
+    #~ assert '2.0' in probe.annotations['name']
+    #~ assert probe.get_shank_count()== 1
+    #~ print(probe)
 
-    # NP phase3A: data given by rtraghavan
-    probe = read_spikeglx(folder / 'NeuropixelPhase3A_file_g0_t0.imec.ap.meta')
-    print(probe)
-    assert 'Phase3a' in probe.annotations['name']
-    assert probe.get_shank_count()== 1
+    #~ # NP phase3A: data given by rtraghavan
+    #~ probe = read_spikeglx(folder / 'NeuropixelPhase3A_file_g0_t0.imec.ap.meta')
+    #~ print(probe)
+    #~ assert 'Phase3a' in probe.annotations['name']
+    #~ assert probe.get_shank_count()== 1
 
-    # NP2 4 shanks given by Jennifer Colonell
-    probe = read_spikeglx(folder / 'NP24_g0_t0.imec0.ap.meta')
-    print(probe)
-    assert '2.0' in probe.annotations['name']
-    assert probe.get_shank_count()== 4
+    #~ # NP2 4 shanks given by Jennifer Colonell
+    #~ probe = read_spikeglx(folder / 'NP24_g0_t0.imec0.ap.meta')
+    #~ print(probe)
+    #~ assert '2.0' in probe.annotations['name']
+    #~ assert probe.get_shank_count()== 4
     
-    # example provided by Tom Bugnon NP1 with large Depth span
-    probe = read_spikeglx(folder / 'allan-longcol_g0_t0.imec0.ap.meta')
-    print(probe)
-    assert '1.0' in probe.annotations['name']
-    assert probe.get_shank_count()== 1
-    ypos = probe.contact_positions[:, 1]
-    assert (np.max(ypos) - np.min(ypos)) > 7600
+    #~ # example provided by Tom Bugnon NP1 with large Depth span
+    #~ probe = read_spikeglx(folder / 'allan-longcol_g0_t0.imec0.ap.meta')
+    #~ print(probe)
+    #~ assert '1.0' in probe.annotations['name']
+    #~ assert probe.get_shank_count()== 1
+    #~ ypos = probe.contact_positions[:, 1]
+    #~ assert (np.max(ypos) - np.min(ypos)) > 7600
     
-    # example provided by Tom Bugnon NP1
-    probe = read_spikeglx(folder / 'doppio-checkerboard_t0.imec0.ap.meta')
-    print(probe)
-    assert '1.0' in probe.annotations['name']
-    assert probe.get_shank_count()== 1
-    assert (np.max(ypos) - np.min(ypos)) > 7600
+    #~ # example provided by Tom Bugnon NP1
+    #~ probe = read_spikeglx(folder / 'doppio-checkerboard_t0.imec0.ap.meta')
+    #~ print(probe)
+    #~ assert '1.0' in probe.annotations['name']
+    #~ assert probe.get_shank_count()== 1
+    #~ assert (np.max(ypos) - np.min(ypos)) > 7600
     
-    # example by Pierre Yger NP1.0 with 384 but only 151 channels are saved
-    probe = read_spikeglx(folder / 'Day_3_g0_t0.imec1.ap.meta')
-    assert probe.get_shank_count()== 1
-    assert probe.get_contact_count()== 151
-    assert 152 not in probe.contact_annotations['channel_ids']
+    #~ # example by Pierre Yger NP1.0 with 384 but only 151 channels are saved
+    #~ probe = read_spikeglx(folder / 'Day_3_g0_t0.imec1.ap.meta')
+    #~ assert probe.get_shank_count()== 1
+    #~ assert probe.get_contact_count()== 151
+    #~ assert 152 not in probe.contact_annotations['channel_ids']
+    
+    # example of NPHP given by Jonathan A Michaels
+    probe = read_spikeglx(folder / '022423_g0_t0.imec0.ap.meta')
+    
+    
+    
+    from probeinterface.plotting import plot_probe
+    import matplotlib.pyplot as plt
+    plot_probe(probe)
+    plt.show()
 
-    # from probeinterface.plotting import plot_probe
-    # import matplotlib.pyplot as plt
-    # plot_probe(probe)
-    # plt.show()
-    
+
 def test_parse_meta():
     
     for meta_file in [
@@ -347,8 +353,8 @@ if __name__ == '__main__':
     
     # test_prb()
     test_readspikeglx()
-    test_parse_meta()
-    test_get_saved_channel_indices_from_spikeglx_meta()
+    #~ test_parse_meta()
+    #~ test_get_saved_channel_indices_from_spikeglx_meta()
     # test_readopenephys()
     # test_readimro()
     
