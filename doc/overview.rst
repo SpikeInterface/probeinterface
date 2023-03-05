@@ -6,33 +6,33 @@ Overview
 Introduction
 ------------
 
-To record neural electrical signals, extracellular neural probes are inserted in the brain.
+To record neural electrical signals, extracellular neural probes are inserted into the nervous system (e.g. brain, spinal cord).
 Neural probes are (usually) multi-channel arrays able to record from multiple contacts simultaneously, spanning from
-a few channels (e.g. tetrodes) to high-dense silicon probes (e.g. Neuropixels - with up to 384 recorded channels).
+a few channels (e.g. tetrodes) to high-density silicon probes (e.g. Neuropixels - with up to 384 recording channels).
 
 These probes (especially silicon probes) generally have a complex layout (or geometry) and can be connected to the
 recording system in multiple ways (wiring). To connect a neural probe to a recording device (e.g. Open Ephys, Blackrock,
 Ripple, Plexon, Intan, Multi-channel System) a headstage is used that is connected to the main recording device.
 
-The complexity of the probe wiring and device wiring leads to the difficult task to directly link
+The complexity of the probe wiring and device wiring leads to the difficult task of directly linking
 the **physical contacts on the probe**  and the **logical channel index on the device**.
 
 Recent *spike sorting* (i.e. methods to extract single neurons' activity from the extracellular recordings) algorithms
-mainly strongly rely on the probe geometry to exploit the spatial distribution of the contacts and improve their
+strongly rely on the probe geometry to exploit the spatial distribution of the contacts and improve their
 performance.
 
-Therefore, there is a need to correctly handle probe geometry and the wiring to the device in an easy-to-use and
+Therefore, there is a need to correctly handle probe geometry and the wiring to the recording device in an easy-to-use and
 standardized way.
 
 As an example, imagine you have:
    * a **Neuronexus A1x32-Poly2** probe
    * with the **intan RHD2132** headstage using the **omnetics 1315** connector
-   * connected on the **port B of Open Ephys board**
+   * connected on the **port B of an Open Ephys board**
 
-What would be your final channel mapping?
+What would be your final channel mapping be?
 
 Of course one can sit down in the lab and try to figure it out...
-The goal of :code:`probeinterface` is to make this time-consuming and error-prone step easier and standardized.
+The goal of :code:`probeinterface` is to make this time-consuming and error-prone process easier and standardized.
 
 
 Scope
@@ -46,14 +46,14 @@ The scope of this project is to handle one (or several) Probe with three simple 
 
 These classes handle:
   * probe geometry (2D or 3D contact layout)
-  * probe planar contour (polygon)
+  * probe planar contours (polygon)
   * shape and size of the contacts
   * probe wiring to the recording device
   * combination of several probes: global geometry + global wiring
 
 This package also provide:
   * read/write to a common format (JSON based)
-  * read/write function to existing format (PRB, NWB, CSV, MEArec, SpikeGLX, ...)
+  * read/write function to other existing formats (PRB, NWB, CSV, MEArec, SpikeGLX, ...)
   * plotting routines
   * generator functions to create user-defined probes
 
@@ -67,7 +67,7 @@ This common interface could be used by several projects for spike sorting and el
   * `NEO <https://github.com/NeuralEnsemble/python-neo>`_: handle array_annotations for AnalogSignal
   * `SpikeForest <https://spikeforest.flatironinstitute.org/>`_: use this package for plotting probe activity
   * `Phy <https://github.com/cortex-lab/phy>`_: integrate for probe display
-  * `SpiKING Circus <https://github.com/spyking-circus/spyking-circus>`_: handle probe with this package
+  * `SpyKING Circus <https://github.com/spyking-circus/spyking-circus>`_: handle probe with this package
   * `Kilosort <https://github.com/MouseLand/Kilosort>`_: handle probe with this package
   * `Tridesclous <https://github.com/tridesclous/tridesclous>`_: handle probe with this package
   * ...and more
@@ -113,5 +113,5 @@ While the general idea of having an enhanced probe description is present, the :
 on handling probes for modeling purposes, hence missing the wiring concept, and it can only handle a single probe at a
 time.
 
-With :code:`probeinterface` the focus is also to combinade several Probes and to handle complex wiring
+With :code:`probeinterface` the focus is also to combine several Probes and to handle complex wiring
 for experimental description.
