@@ -15,7 +15,7 @@ recording system in multiple ways (wiring). To connect a neural probe to a recor
 Ripple, Plexon, Intan, Multi-channel System) a headstage is used that is connected to the main recording device.
 
 The complexity of the probe wiring and device wiring leads to the difficult task of directly linking
-the **physical contacts on the probe**  and the **logical channel index on the device**.
+the **physical contacts on the probe**  and the **logical channel indices on the device**.
 
 Recent *spike sorting* (i.e. methods to extract single neurons' activity from the extracellular recordings) algorithms
 strongly rely on the probe geometry to exploit the spatial distribution of the contacts and improve their
