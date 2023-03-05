@@ -6,7 +6,7 @@ Overview
 Introduction
 ------------
 
-To record neural electrical signals, extracellular neural probes are inserted into the nervous system (e.g. brain, spinal cord).
+To record neural electrical signals, extracellular neural probes are inserted into nervous tissues (e.g. brain, spinal cord).
 Neural probes are (usually) multi-channel arrays able to record from multiple contacts simultaneously, spanning from
 a few channels (e.g. tetrodes) to high-density silicon probes (e.g. Neuropixels - with up to 384 recording channels).
 
