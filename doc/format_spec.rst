@@ -1,17 +1,17 @@
 Format specifications
 =====================
 
-With :code:`probeinterface` we introduce a simple format based on JSON format.
+With :code:`probeinterface` we introduce a simple format based on the JSON format.
 The format is a trivial json-serialisation of a Python
 dictionary. The dictionary maps every
-attributes of the Probe class.
+attribute of the Probe class.
 
 In fact, the format itself describes a ProbeGroup, so it can include several probes.
 The format can describe a simple unique probe with its geometry and wiring, as well as a full experimental setup
-with several probes and their wiring to the recordingdevice.
+with several probes and their wiring to the recording device.
 
 
-Here a description of the fields in the json file.
+Here is a description of the fields in the json file.
 
 Let's imagine we want to describe a probe with:
   * 8 channels
@@ -64,7 +64,7 @@ Optional:
   * shank_ids
 
 
-The full json file looks as follows:
+An example of a full json file:
 
 .. include:: probe_format_example.json
     :code: json
