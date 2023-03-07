@@ -3,8 +3,8 @@ More complicated probes
 -----------------------
 
 
-This example demonstrates how to generate more complicated probe with hybrid contacts shape
-and contact rotations with the `contact_plane_axes` attribute.
+This example demonstrates how to generate a more complicated probe with hybrid contacts shape
+and contact rotations within the `contact_plane_axes` attribute.
 """
 
 ##############################################################################
