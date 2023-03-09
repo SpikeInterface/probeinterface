@@ -27,11 +27,11 @@ print(probe)
 # We can "wire"  this probe to a recording device.
 # Imagine we connect this Neuronexus probe with an Omnetic to an Intan RHD headstage.
 # 
-# Using this 2 wiring documentation
+# Using the wiring documentation from these two sites:
 # https://neuronexus.com/wp-content/uploads/2018/09/Wiring_H32.pdf
 # http://intantech.com/RHD_headstages.html?tabSelect=RHD32ch&yPos=0
 # 
-# after long headache we can figura out the wiring to device manually and set it
+# After a long headache we can figure out the wiring to the device manually and set it
 # using the `probe.set_device_channel_indices()` function:
 
 device_channel_indices = [
@@ -41,7 +41,7 @@ probe.set_device_channel_indices(device_channel_indices)
 
 ##############################################################################
 # In order to ease this process, `probeinterface` also includes some commonly
-# used wiring based on standard connectors. In our case, we can simply use:
+# used wirings based on standard connectors. In our case, we can simply use:
 
 probe.wiring_to_device('H32>RHD2132')
 print(probe.device_channel_indices)

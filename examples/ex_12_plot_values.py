@@ -2,8 +2,8 @@
 Plot values
 ----------------
 
-Here is an example on how to plot values with color scales.
-And also plot interpolated image.
+Here is an example of how to plot values with color scales.
+And also to plot an interpolated image.
 """
 
 ##############################################################################
@@ -30,7 +30,7 @@ probe.rotate(23)
 values = np.random.randn(32)
 
 ##############################################################################
-# plot with value
+# plot with values
 
 fig, ax = plt.subplots()
 poly, poly_contour = plot_probe(probe, contacts_values=values,
@@ -53,7 +53,7 @@ im.set_clim(-2,2)
 fig.colorbar(im)
 
 ##############################################################################
-# works with several interpolation method
+# works with several interpolation methods
 
 image, xlims, ylims = probe.to_image(values, num_pixel=1000, method='nearest')
 
