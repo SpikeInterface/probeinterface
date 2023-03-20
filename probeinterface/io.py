@@ -1384,9 +1384,9 @@ def read_mearec(file):
     mearec_description = None
     mearec_name = None
     if "description" in elinfo_keys:
-        mearec_description = elinfo["description"][()]
+        mearec_description = str(elinfo["description"][()])
     if "electrode_name" in elinfo_keys:
-        mearec_name = elinfo["electrode_name"][()]
+        mearec_name = str(elinfo["electrode_name"][()])
 
     probe = Probe(ndim=2, si_units="um")
 
