@@ -1384,9 +1384,11 @@ def read_mearec(file):
     mearec_description = None
     mearec_name = None
     if "description" in elinfo_keys:
-        mearec_description = elinfo["description"][()]
+        description = elinfo["description"][()]
+        mearec_description = description.decode("utf-8") if isinstance(description, bytes) else description
     if "electrode_name" in elinfo_keys:
         mearec_name = elinfo["electrode_name"][()]
+        mearec_name = mearec_name.decode("utf-8") if isinstance(mearec_name, bytes) else mearec_name
 
     probe = Probe(ndim=2, si_units="um")
 
