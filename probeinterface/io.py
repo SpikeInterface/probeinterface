@@ -767,7 +767,7 @@ npx_probe = {
     },
     # Neuropixels 1.0-NHP 45mm SOI125 - NHP long 125um wide, staggered contacts
     1031: {
-        "x_pitch": 103,
+        "x_pitch": 91,
         "y_pitch": 20,
         "contact_width": 12,
         "shank_pitch": 0,
@@ -921,7 +921,7 @@ def _read_imro_string(imro_str):
     # planar contour
     one_polygon = [(0, 10000), (0, 0), (35, -175), (70, 0), (70, 10000), ]
     nhp90_polygon = [(0, 10000), (0, 0), (45, -342), (90, 0), (90, 10000), ]
-    nhp125_polygon = [(0, 10000), (0, 0), (62, -342), (125, 0), (125, 10000), ]
+    nhp125_polygon = [(0, 10000), (0, 0), (62.5, -342), (125, 0), (125, 10000), ]
     contour = []
     for shank_id in range(npx_probe[imDatPrb_type]["shank_number"]):
         if imDatPrb_type in (1030, ):
@@ -1440,7 +1440,7 @@ def read_openephys(
     nhp125_polygon = [
         (0, 10000),
         (0, 0),
-        (62, -342),
+        (62.5, -342),
         (125, 0),
         (125, 10000),
     ]
