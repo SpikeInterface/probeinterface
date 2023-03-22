@@ -737,7 +737,52 @@ npx_probe = {
         "shank_pitch": 0,
         "shank_number": 1,
         "ncol": 2
-        }
+	    },
+    # Neuropixels 1.0-NHP Short (10mm)
+    1015: {
+        "x_pitch": 32,
+        "y_pitch": 20,
+        "contact_width": 12,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 2
+    },
+    # Neuropixels 1.0-NHP Medium (25mm)
+    1022: {
+        "x_pitch": 103,
+        "y_pitch": 20,
+        "contact_width": 12,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 2
+    },
+    # Neuropixels 1.0-NHP 45mm SOI90 - NHP long 90um wide, staggered contacts 
+    1030: {
+        "x_pitch": 56,
+        "y_pitch": 20,
+        "contact_width": 12,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 2
+    },
+    # Neuropixels 1.0-NHP 45mm SOI125 - NHP long 125um wide, staggered contacts
+    1031: {
+        "x_pitch": 103,
+        "y_pitch": 20,
+        "contact_width": 12,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 2
+    },  
+    # 1.0-NHP 45mm SOI115 / 125 linear - NHP long 125um wide, linear contacts
+    1032: {
+        "x_pitch": 103,
+        "y_pitch": 20,
+        "contact_width": 12,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 2
+    }
 }
 
 def read_imro(file):
@@ -794,6 +839,21 @@ def _read_imro_string(imro_str):
     elif imDatPrb_type == 'Phase3a':
         probe_name = "Neuropixels Phase3a"
         fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains')
+    elif imDatPrb_type == 1015:
+        probe_name = "Neuropixels 1.0-NHP - short"
+        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
+    elif imDatPrb_type == 1022:
+        probe_name = "Neuropixels 1.0-NHP - medium"
+        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
+    elif imDatPrb_type == 1030:
+        probe_name = "Neuropixels 1.0-NHP - long SOI90 staggered"
+        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
+    elif imDatPrb_type == 1031:
+        probe_name = "Neuropixels 1.0-NHP - long SOI125 staggered"
+        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
+    elif imDatPrb_type == 1032:
+        probe_name = "Neuropixels 1.0-NHP - long SOI125 linear"
+        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
     else:
         raise RuntimeError(f'unsupported imro type : {imDatPrb_type}')    
 
@@ -807,12 +867,12 @@ def _read_imro_string(imro_str):
     if 'elec_ids' in contact_info:
         elec_ids = np.array(contact_info['elec_ids'])
     
-    if imDatPrb_type == 0 or imDatPrb_type == 'Phase3a':
+    if imDatPrb_type == 0 or imDatPrb_type == 'Phase3a' or (imDatPrb_type in (1015, 1022, 1030, 1031, 1032)):
         # for NP1 and previous the elec_id is not in the list
         banks = np.array(contact_info['banks'])
         elec_ids = banks * 384 + channel_ids
     
-    # compute poisition
+    # compute position
     x_idx = elec_ids % npx_probe[imDatPrb_type]["ncol"]
     y_idx = elec_ids // npx_probe[imDatPrb_type]["ncol"]
     x_pitch = npx_probe[imDatPrb_type ]["x_pitch"]
@@ -831,6 +891,21 @@ def _read_imro_string(imro_str):
         x_pos = x_idx * x_pitch + shank_ids * shank_pitch
         y_pos = y_idx * y_pitch
         contact_ids = [f's{shank_id}e{elec_id}' for shank_id, elec_id in zip(shank_ids, elec_ids)]
+    elif imDatPrb_type in (1030, 1031):
+        # one shank, NHP probes with staggered electrodes
+        #stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x_pitch"] / 2
+        stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["contact_width"]
+        x_pos = x_idx * x_pitch + stagger
+        y_pos = y_idx * y_pitch
+        shank_ids = None
+        contact_ids = [f'e{elec_id}' for elec_id in elec_ids]
+    elif imDatPrb_type in (1015, 1022, 1032):
+        # one shank, NHP probes with linear electrodes
+        stagger = 0
+        x_pos = x_idx * x_pitch + stagger
+        y_pos = y_idx * y_pitch
+        shank_ids = None
+        contact_ids = [f'e{elec_id}' for elec_id in elec_ids]
 
     positions = np.zeros((num_contact, 2), dtype='float64')
     positions[:, 0] = x_pos
@@ -845,9 +920,16 @@ def _read_imro_string(imro_str):
 
     # planar contour
     one_polygon = [(0, 10000), (0, 0), (35, -175), (70, 0), (70, 10000), ]
+    nhp90_polygon = [(0, 10000), (0, 0), (45, -342), (90, 0), (90, 10000), ]
+    nhp125_polygon = [(0, 10000), (0, 0), (62, -342), (125, 0), (125, 10000), ]
     contour = []
     for shank_id in range(npx_probe[imDatPrb_type]["shank_number"]):
-        contour += list(np.array(one_polygon) + [ npx_probe[imDatPrb_type]["shank_pitch"] * shank_id, 0])
+        if imDatPrb_type in (1030, ):
+            contour += list(np.array(nhp90_polygon) + [ npx_probe[imDatPrb_type]["shank_pitch"] * shank_id, 0])
+        elif imDatPrb_type in (1022, 1031, 1032):
+            contour += list(np.array(nhp125_polygon) + [ npx_probe[imDatPrb_type]["shank_pitch"] * shank_id, 0])
+        else:
+            contour += list(np.array(one_polygon) + [ npx_probe[imDatPrb_type]["shank_pitch"] * shank_id, 0])
     # shift
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
@@ -922,6 +1004,7 @@ def read_spikeglx(file):
       * NP0.0 (=phase3A) 
       * NP1.0 (=phase3B2)
       * NP2.0 with 4 shank
+      * NP1.0-NHP
 
     Parameters
     ----------
@@ -1169,6 +1252,9 @@ def read_openephys(
                 ptype = 24
             else:
                 ptype = 21
+        elif "NHP" in pname:
+            ptype = 0
+            x_shift = -11
         elif "1.0" in pname:
             ptype = 0
             x_shift = -11
@@ -1190,6 +1276,14 @@ def read_openephys(
                 shank_id = 0
                 stagger = np.mod(pos[1] / npx_probe[ptype]["y_pitch"] + 1, 2) * npx_probe[ptype]["x_pitch"] / 2
             elif ptype == 21:
+                shank_id = 0
+                stagger = 0
+            elif ptype in (1030, 1031):
+                shank_id = 0
+                stagger = np.mod(pos[1] / npx_probe[ptype]["y_pitch"] + 1, 2) * npx_probe[ptype]["contact_width"]
+                #stagger = np.mod(pos[1] / npx_probe[ptype]["y_pitch"] + 1, 2) * npx_probe[ptype]["x_pitch"] / 2
+                #stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["contact_width"]
+            elif ptype in (1015, 1022, 1032):
                 shank_id = 0
                 stagger = 0
             else:
@@ -1334,6 +1428,23 @@ def read_openephys(
         (70, 0),
         (70, 10000),
     ]
+    # planar contour - 1.0-NHP SOI90
+    nhp90_polygon = [
+        (0, 10000),
+        (0, 0),
+        (45, -342),
+        (90, 0),
+        (90, 10000),
+    ]
+    # planar contour - 1.0-NHP SOI125
+    nhp125_polygon = [
+        (0, 10000),
+        (0, 0),
+        (62, -342),
+        (125, 0),
+        (125, 10000),
+    ]
+
     if shank_ids is None:
         contour = one_polygon
     else:
