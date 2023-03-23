@@ -38,7 +38,7 @@ print(probe.device_channel_indices)
 
 ##############################################################################
 # Let's imagine we have a headstage with the following wiring: the first half
-# of the channels have natural indices, but the order of other half is reversed:
+# of the channels have natural indices, but the order of the other half is reversed:
 
 channel_indices = np.arange(16)
 channel_indices[8:16] = channel_indices[8:16][::-1]

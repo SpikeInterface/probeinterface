@@ -22,7 +22,7 @@ from probeinterface import combine_probes
 from probeinterface.plotting import plot_probe
 
 ##############################################################################
-# Let's use a generator to create a multi shank probe:
+# Let's use a generator to create a multi-shank probe:
 
 
 multi_shank = generate_multi_shank(num_shank=3, num_columns=2, num_contact_per_column=6)
@@ -41,7 +41,7 @@ df
 
 ##############################################################################
 #  We can iterate over a multi-shank probe and get :py:class:`Shank` objects.
-# A `Shank` is link to a `Probe` object and can also retrieve
+# A `Shank` is linked to a `Probe` object and can also retrieve
 # positions, contact shapes, etc.:
 
 for i, shank in enumerate(multi_shank.get_shanks()):
@@ -52,7 +52,7 @@ for i, shank in enumerate(multi_shank.get_shanks()):
 
 ##############################################################################
 # Another option to create multi-shank probes is to create several `Shank`
-# objects as separate probes and then combine then into a single `Probe` object
+# objects as separate probes and then combine them into a single `Probe` object
 
 # generate a 2 shanks linear
 probe0 = generate_linear_probe(num_elec=16, ypitch=20,
