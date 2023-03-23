@@ -21,12 +21,12 @@ import pytest
 data_path = Path(__file__).absolute().parent.parent / "data"
 
 
-def test_probeinterface_format():
-    filename = "test_pi_format.json"
+def test_probeinterface_format(tmp_path):
+    file_path = tmp_path / "test_pi_format.json"
     probegroup = generate_dummy_probe_group()
-    write_probeinterface(filename, probegroup)
+    write_probeinterface(file_path, probegroup)
 
-    probegroup2 = read_probeinterface(filename)
+    probegroup2 = read_probeinterface(file_path)
 
     assert len(probegroup.probes) == len(probegroup.probes)
 
@@ -47,9 +47,10 @@ def test_probeinterface_format():
     # ~ plt.show()
 
 
-def test_BIDS_format():
-    data_path = Path("test_BIDS")
-    data_path.mkdir(exist_ok=True)
+def test_BIDS_format(tmp_path):
+    folder_path = tmp_path / "test_BIDS"
+    folder_path.mkdir()
+
     probegroup = generate_dummy_probe_group()
 
     # add custom probe type annotation to be
@@ -71,9 +72,9 @@ def test_BIDS_format():
         # switch to more generic dtype for shank_ids
         probe.set_shank_ids(probe.shank_ids.astype(str))
 
-    write_BIDS_probe(data_path, probegroup)
+    write_BIDS_probe(folder_path, probegroup)
 
-    probegroup_read = read_BIDS_probe(data_path)
+    probegroup_read = read_BIDS_probe(folder_path)
 
     # compare written (original) and read probegroup
     assert len(probegroup.probes) == len(probegroup_read.probes)
@@ -117,32 +118,34 @@ def test_BIDS_format():
                 )
 
 
-def test_BIDS_format_empty():
-    data_path = Path("test_BIDS_minimal")
-    data_path.mkdir(exist_ok=True)
-
+def test_BIDS_format_empty(tmp_path):
+    folder_path = tmp_path / "test_BIDS_minimal"
+    folder_path.mkdir()
     # create empty BIDS probe and contact files
-    with open(data_path.joinpath("probes.tsv"), "w") as f:
+    probes_path = folder_path / "probes.tsv"
+    with open(probes_path, "w") as f:
         f.write("probe_id\ttype")
 
-    with open(data_path.joinpath("contacts.tsv"), "w") as f:
+    contacts_path = folder_path / "contacts.tsv"
+    with open(contacts_path, "w") as f:
         f.write("contact_id\tprobe_id")
 
-    read_BIDS_probe(data_path)
+    read_BIDS_probe(folder_path)
 
 
-def test_BIDS_format_minimal():
-    data_path = Path("test_BIDS_minimal")
-    data_path.mkdir(exist_ok=True)
-
+def test_BIDS_format_minimal(tmp_path):
+    folder_path = tmp_path / "test_BIDS_minimal"
+    folder_path.mkdir()
     # create minimal BIDS probe and contact files
-    with open(data_path.joinpath("probes.tsv"), "w") as f:
+    probes_path = folder_path / "probes.tsv"
+    with open(probes_path, "w") as f:
         f.write("probe_id\ttype\n" "0\tcustom\n" "1\tgeneric")
 
-    with open(data_path.joinpath("contacts.tsv"), "w") as f:
+    contacts_path = folder_path / "contacts.tsv"
+    with open(contacts_path, "w") as f:
         f.write("contact_id\tprobe_id\n" "01\t0\n" "02\t0\n" "11\t1\n" "12\t1")
 
-    probegroup = read_BIDS_probe(data_path)
+    probegroup = read_BIDS_probe(folder_path)
 
     assert len(probegroup.probes) == 2
 
@@ -177,7 +180,7 @@ channel_groups = {
 """
 
 
-def test_prb():
+def test_prb(tmp_path):
     probegroup = read_prb(data_path / "dummy.prb")
 
     with open("two_tetrodes.prb", "w") as f:
@@ -186,9 +189,9 @@ def test_prb():
     two_tetrode = read_prb("two_tetrodes.prb")
     assert len(two_tetrode.probes) == 2
     assert two_tetrode.probes[0].get_contact_count() == 4
-
-    write_prb("two_tetrodes_written.prb", two_tetrode)
-    two_tetrode_back = read_prb("two_tetrodes_written.prb")
+    file_path = tmp_path / "two_tetrodes_written.prb"
+    write_prb(file_path, two_tetrode)
+    two_tetrode_back = read_prb(file_path)
 
     # ~ from probeinterface.plotting import plot_probe_group
     # ~ import matplotlib.pyplot as plt
@@ -201,10 +204,12 @@ def test_prb():
     # plt.show()
 
 
-def test_readimro():
+def test_readimro(tmp_path):
     probe = read_imro(data_path / "test_multi_shank.imro")
-    write_imro(data_path / "multi_shank_written.imro", probe)
-    probe2 = read_imro(data_path / "multi_shank_written.imro")
+
+    file_path = tmp_path / "multi_shank_written.imro"
+    write_imro(file_path, probe)
+    probe2 = read_imro(file_path)
     np.testing.assert_array_equal(probe2.contact_ids, probe.contact_ids)
     np.testing.assert_array_equal(probe2.contact_positions, probe.contact_positions)
 
@@ -214,9 +219,4 @@ if __name__ == "__main__":
     # test_BIDS_format()
     # test_BIDS_format_empty()
     # test_BIDS_format_minimal()
-
-    # test_prb()
-    test_parse_meta()
-    test_get_saved_channel_indices_from_spikeglx_meta()
-    # test_readopenephys()
-    # test_readimro()
+    pass
