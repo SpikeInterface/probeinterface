@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<SETTINGS>
+  <INFO>
+    <VERSION>0.6.0</VERSION>
+    <PLUGIN_API_VERSION>8</PLUGIN_API_VERSION>
+    <DATE>21 Feb 2022 15:18:07</DATE>
+    <OS>Windows 10</OS>
+    <MACHINE name="W10DT711330" cpu_model="Intel(R) Core(TM) i7-4790K CPU @ 4.00GHz"
+             cpu_num_cores="8"/>
+  </INFO>
+  <SIGNALCHAIN>
+    <PROCESSOR name="Neuropix-PXI" insertionPoint="0" pluginName="Neuropix-PXI"
+               type="4" index="0" libraryName="Neuropix-PXI" libraryVersion="0.4.0"
+               processorType="2" nodeId="100">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-AP" description="description" sample_rate="30000.0"
+              channel_count="384">
+        <PARAMETERS/>
+      </STREAM>
+      <CUSTOM_PARAMETERS>
+        <CHANNEL_INFO/>
+      </CUSTOM_PARAMETERS>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Neuropix-PXI" activeStream="0"
+              Type="Visualizer">
+        <TAB Active="1"/>
+        <WINDOW Active="0"/>
+        <NEUROPIXELS_EDITOR Slot0Directory="" MasterSlot="0" SendSyncAsContinuous="0" SyncDirection="0"
+                            SyncFreq="0"/>
+        <NP_PROBE slot="2" bs_firmware_version="2.0137" bs_hardware_version="UNKNOWN"
+                  bs_serial_number="0" bs_part_number="NeurPix2 PXI Carrier" headstage_serial_number="21180097"
+                  headstage_part_number="NPM_HS_30" flex_version="1.8" flex_part_number="NPM_HS_30"
+                  port="1" dock="1" probe_serial_number="20403311724" probe_part_number="NP2000"
+                  probe_name="Neuropixels 2.0 - Single Shank" ZoomHeight="120"
+                  ZoomOffset="0" referenceChannel="Ext" referenceChannelIndex="0"
+                  visualizationMode="0" activityToView="0">
+          <CHANNELS CH0="0" CH1="0" CH2="0" CH3="0" CH4="0" CH5="0" CH6="0" CH7="0"
+                    CH8="0" CH9="0" CH10="0" CH11="0" CH12="0" CH13="0" CH14="0"
+                    CH15="0" CH16="0" CH17="0" CH18="0" CH19="0" CH20="0" CH21="0"
+                    CH22="0" CH23="0" CH24="0" CH25="0" CH26="0" CH27="0" CH28="0"
+                    CH29="0" CH30="0" CH31="0" CH32="0" CH33="0" CH34="0" CH35="0"
+                    CH36="0" CH37="0" CH38="0" CH39="0" CH40="0" CH41="0" CH42="0"
+                    CH43="0" CH44="0" CH45="0" CH46="0" CH47="0" CH48="0" CH49="0"
+                    CH50="0" CH51="0" CH52="0" CH53="0" CH54="0" CH55="0" CH56="0"
+                    CH57="0" CH58="0" CH59="0" CH60="0" CH61="0" CH62="0" CH63="0"
+                    CH64="0" CH65="0" CH66="0" CH67="0" CH68="0" CH69="0" CH70="0"
+                    CH71="0" CH72="0" CH73="0" CH74="0" CH75="0" CH76="0" CH77="0"
+                    CH78="0" CH79="0" CH80="0" CH81="0" CH82="0" CH83="0" CH84="0"
+                    CH85="0" CH86="0" CH87="0" CH88="0" CH89="0" CH90="0" CH91="0"
+                    CH92="0" CH93="0" CH94="0" CH95="0" CH96="0" CH97="0" CH98="0"
+                    CH99="0" CH100="0" CH101="0" CH102="0" CH103="0" CH104="0" CH105="0"
+                    CH106="0" CH107="0" CH108="0" CH109="0" CH110="0" CH111="0" CH112="0"
+                    CH113="0" CH114="0" CH115="0" CH116="0" CH117="0" CH118="0" CH119="0"
+                    CH120="0" CH121="0" CH122="0" CH123="0" CH124="0" CH125="0" CH126="0"
+                    CH127="0" CH128="0" CH129="0" CH130="0" CH131="0" CH132="0" CH133="0"
+                    CH134="0" CH135="0" CH136="0" CH137="0" CH138="0" CH139="0" CH140="0"
+                    CH141="0" CH142="0" CH143="0" CH144="0" CH145="0" CH146="0" CH147="0"
+                    CH148="0" CH149="0" CH150="0" CH151="0" CH152="0" CH153="0" CH154="0"
+                    CH155="0" CH156="0" CH157="0" CH158="0" CH159="0" CH160="0" CH161="0"
+                    CH162="0" CH163="0" CH164="0" CH165="0" CH166="0" CH167="0" CH168="0"
+                    CH169="0" CH170="0" CH171="0" CH172="0" CH173="0" CH174="0" CH175="0"
+                    CH176="0" CH177="0" CH178="0" CH179="0" CH180="0" CH181="0" CH182="0"
+                    CH183="0" CH184="0" CH185="0" CH186="0" CH187="0" CH188="0" CH189="0"
+                    CH190="0" CH191="0" CH192="0" CH193="0" CH194="0" CH195="0" CH196="0"
+                    CH197="0" CH198="0" CH199="0" CH200="0" CH201="0" CH202="0" CH203="0"
+                    CH204="0" CH205="0" CH206="0" CH207="0" CH208="0" CH209="0" CH210="0"
+                    CH211="0" CH212="0" CH213="0" CH214="0" CH215="0" CH216="0" CH217="0"
+                    CH218="0" CH219="0" CH220="0" CH221="0" CH222="0" CH223="0" CH224="0"
+                    CH225="0" CH226="0" CH227="0" CH228="0" CH229="0" CH230="0" CH231="0"
+                    CH232="0" CH233="0" CH234="0" CH235="0" CH236="0" CH237="0" CH238="0"
+                    CH239="0" CH240="0" CH241="0" CH242="0" CH243="0" CH244="0" CH245="0"
+                    CH246="0" CH247="0" CH248="0" CH249="0" CH250="0" CH251="0" CH252="0"
+                    CH253="0" CH254="0" CH255="0" CH256="0" CH257="0" CH258="0" CH259="0"
+                    CH260="0" CH261="0" CH262="0" CH263="0" CH264="0" CH265="0" CH266="0"
+                    CH267="0" CH268="0" CH269="0" CH270="0" CH271="0" CH272="0" CH273="0"
+                    CH274="0" CH275="0" CH276="0" CH277="0" CH278="0" CH279="0" CH280="0"
+                    CH281="0" CH282="0" CH283="0" CH284="0" CH285="0" CH286="0" CH287="0"
+                    CH288="0" CH289="0" CH290="0" CH291="0" CH292="0" CH293="0" CH294="0"
+                    CH295="0" CH296="0" CH297="0" CH298="0" CH299="0" CH300="0" CH301="0"
+                    CH302="0" CH303="0" CH304="0" CH305="0" CH306="0" CH307="0" CH308="0"
+                    CH309="0" CH310="0" CH311="0" CH312="0" CH313="0" CH314="0" CH315="0"
+                    CH316="0" CH317="0" CH318="0" CH319="0" CH320="0" CH321="0" CH322="0"
+                    CH323="0" CH324="0" CH325="0" CH326="0" CH327="0" CH328="0" CH329="0"
+                    CH330="0" CH331="0" CH332="0" CH333="0" CH334="0" CH335="0" CH336="0"
+                    CH337="0" CH338="0" CH339="0" CH340="0" CH341="0" CH342="0" CH343="0"
+                    CH344="0" CH345="0" CH346="0" CH347="0" CH348="0" CH349="0" CH350="0"
+                    CH351="0" CH352="0" CH353="0" CH354="0" CH355="0" CH356="0" CH357="0"
+                    CH358="0" CH359="0" CH360="0" CH361="0" CH362="0" CH363="0" CH364="0"
+                    CH365="0" CH366="0" CH367="0" CH368="0" CH369="0" CH370="0" CH371="0"
+                    CH372="0" CH373="0" CH374="0" CH375="0" CH376="0" CH377="0" CH378="0"
+                    CH379="0" CH380="0" CH381="0" CH382="0" CH383="0"/>
+          <ELECTRODE_XPOS CH0="8" CH1="40" CH2="8" CH3="40" CH4="8" CH5="40" CH6="8" CH7="40"
+                          CH8="8" CH9="40" CH10="8" CH11="40" CH12="8" CH13="40" CH14="8"
+                          CH15="40" CH16="8" CH17="40" CH18="8" CH19="40" CH20="8" CH21="40"
+                          CH22="8" CH23="40" CH24="8" CH25="40" CH26="8" CH27="40" CH28="8"
+                          CH29="40" CH30="8" CH31="40" CH32="8" CH33="40" CH34="8" CH35="40"
+                          CH36="8" CH37="40" CH38="8" CH39="40" CH40="8" CH41="40" CH42="8"
+                          CH43="40" CH44="8" CH45="40" CH46="8" CH47="40" CH48="8" CH49="40"
+                          CH50="8" CH51="40" CH52="8" CH53="40" CH54="8" CH55="40" CH56="8"
+                          CH57="40" CH58="8" CH59="40" CH60="8" CH61="40" CH62="8" CH63="40"
+                          CH64="8" CH65="40" CH66="8" CH67="40" CH68="8" CH69="40" CH70="8"
+                          CH71="40" CH72="8" CH73="40" CH74="8" CH75="40" CH76="8" CH77="40"
+                          CH78="8" CH79="40" CH80="8" CH81="40" CH82="8" CH83="40" CH84="8"
+                          CH85="40" CH86="8" CH87="40" CH88="8" CH89="40" CH90="8" CH91="40"
+                          CH92="8" CH93="40" CH94="8" CH95="40" CH96="8" CH97="40" CH98="8"
+                          CH99="40" CH100="8" CH101="40" CH102="8" CH103="40" CH104="8"
+                          CH105="40" CH106="8" CH107="40" CH108="8" CH109="40" CH110="8"
+                          CH111="40" CH112="8" CH113="40" CH114="8" CH115="40" CH116="8"
+                          CH117="40" CH118="8" CH119="40" CH120="8" CH121="40" CH122="8"
+                          CH123="40" CH124="8" CH125="40" CH126="8" CH127="40" CH128="8"
+                          CH129="40" CH130="8" CH131="40" CH132="8" CH133="40" CH134="8"
+                          CH135="40" CH136="8" CH137="40" CH138="8" CH139="40" CH140="8"
+                          CH141="40" CH142="8" CH143="40" CH144="8" CH145="40" CH146="8"
+                          CH147="40" CH148="8" CH149="40" CH150="8" CH151="40" CH152="8"
+                          CH153="40" CH154="8" CH155="40" CH156="8" CH157="40" CH158="8"
+                          CH159="40" CH160="8" CH161="40" CH162="8" CH163="40" CH164="8"
+                          CH165="40" CH166="8" CH167="40" CH168="8" CH169="40" CH170="8"
+                          CH171="40" CH172="8" CH173="40" CH174="8" CH175="40" CH176="8"
+                          CH177="40" CH178="8" CH179="40" CH180="8" CH181="40" CH182="8"
+                          CH183="40" CH184="8" CH185="40" CH186="8" CH187="40" CH188="8"
+                          CH189="40" CH190="8" CH191="40" CH192="8" CH193="40" CH194="8"
+                          CH195="40" CH196="8" CH197="40" CH198="8" CH199="40" CH200="8"
+                          CH201="40" CH202="8" CH203="40" CH204="8" CH205="40" CH206="8"
+                          CH207="40" CH208="8" CH209="40" CH210="8" CH211="40" CH212="8"
+                          CH213="40" CH214="8" CH215="40" CH216="8" CH217="40" CH218="8"
+                          CH219="40" CH220="8" CH221="40" CH222="8" CH223="40" CH224="8"
+                          CH225="40" CH226="8" CH227="40" CH228="8" CH229="40" CH230="8"
+                          CH231="40" CH232="8" CH233="40" CH234="8" CH235="40" CH236="8"
+                          CH237="40" CH238="8" CH239="40" CH240="8" CH241="40" CH242="8"
+                          CH243="40" CH244="8" CH245="40" CH246="8" CH247="40" CH248="8"
+                          CH249="40" CH250="8" CH251="40" CH252="8" CH253="40" CH254="8"
+                          CH255="40" CH256="8" CH257="40" CH258="8" CH259="40" CH260="8"
+                          CH261="40" CH262="8" CH263="40" CH264="8" CH265="40" CH266="8"
+                          CH267="40" CH268="8" CH269="40" CH270="8" CH271="40" CH272="8"
+                          CH273="40" CH274="8" CH275="40" CH276="8" CH277="40" CH278="8"
+                          CH279="40" CH280="8" CH281="40" CH282="8" CH283="40" CH284="8"
+                          CH285="40" CH286="8" CH287="40" CH288="8" CH289="40" CH290="8"
+                          CH291="40" CH292="8" CH293="40" CH294="8" CH295="40" CH296="8"
+                          CH297="40" CH298="8" CH299="40" CH300="8" CH301="40" CH302="8"
+                          CH303="40" CH304="8" CH305="40" CH306="8" CH307="40" CH308="8"
+                          CH309="40" CH310="8" CH311="40" CH312="8" CH313="40" CH314="8"
+                          CH315="40" CH316="8" CH317="40" CH318="8" CH319="40" CH320="8"
+                          CH321="40" CH322="8" CH323="40" CH324="8" CH325="40" CH326="8"
+                          CH327="40" CH328="8" CH329="40" CH330="8" CH331="40" CH332="8"
+                          CH333="40" CH334="8" CH335="40" CH336="8" CH337="40" CH338="8"
+                          CH339="40" CH340="8" CH341="40" CH342="8" CH343="40" CH344="8"
+                          CH345="40" CH346="8" CH347="40" CH348="8" CH349="40" CH350="8"
+                          CH351="40" CH352="8" CH353="40" CH354="8" CH355="40" CH356="8"
+                          CH357="40" CH358="8" CH359="40" CH360="8" CH361="40" CH362="8"
+                          CH363="40" CH364="8" CH365="40" CH366="8" CH367="40" CH368="8"
+                          CH369="40" CH370="8" CH371="40" CH372="8" CH373="40" CH374="8"
+                          CH375="40" CH376="8" CH377="40" CH378="8" CH379="40" CH380="8"
+                          CH381="40" CH382="8" CH383="40"/>
+          <ELECTRODE_YPOS CH0="0" CH1="0" CH2="15" CH3="15" CH4="30" CH5="30" CH6="45"
+                          CH7="45" CH8="60" CH9="60" CH10="75" CH11="75" CH12="90" CH13="90"
+                          CH14="105" CH15="105" CH16="120" CH17="120" CH18="135" CH19="135"
+                          CH20="150" CH21="150" CH22="165" CH23="165" CH24="180" CH25="180"
+                          CH26="195" CH27="195" CH28="210" CH29="210" CH30="225" CH31="225"
+                          CH32="240" CH33="240" CH34="255" CH35="255" CH36="270" CH37="270"
+                          CH38="285" CH39="285" CH40="300" CH41="300" CH42="315" CH43="315"
+                          CH44="330" CH45="330" CH46="345" CH47="345" CH48="360" CH49="360"
+                          CH50="375" CH51="375" CH52="390" CH53="390" CH54="405" CH55="405"
+                          CH56="420" CH57="420" CH58="435" CH59="435" CH60="450" CH61="450"
+                          CH62="465" CH63="465" CH64="480" CH65="480" CH66="495" CH67="495"
+                          CH68="510" CH69="510" CH70="525" CH71="525" CH72="540" CH73="540"
+                          CH74="555" CH75="555" CH76="570" CH77="570" CH78="585" CH79="585"
+                          CH80="600" CH81="600" CH82="615" CH83="615" CH84="630" CH85="630"
+                          CH86="645" CH87="645" CH88="660" CH89="660" CH90="675" CH91="675"
+                          CH92="690" CH93="690" CH94="705" CH95="705" CH96="720" CH97="720"
+                          CH98="735" CH99="735" CH100="750" CH101="750" CH102="765" CH103="765"
+                          CH104="780" CH105="780" CH106="795" CH107="795" CH108="810" CH109="810"
+                          CH110="825" CH111="825" CH112="840" CH113="840" CH114="855" CH115="855"
+                          CH116="870" CH117="870" CH118="885" CH119="885" CH120="900" CH121="900"
+                          CH122="915" CH123="915" CH124="930" CH125="930" CH126="945" CH127="945"
+                          CH128="960" CH129="960" CH130="975" CH131="975" CH132="990" CH133="990"
+                          CH134="1005" CH135="1005" CH136="1020" CH137="1020" CH138="1035"
+                          CH139="1035" CH140="1050" CH141="1050" CH142="1065" CH143="1065"
+                          CH144="1080" CH145="1080" CH146="1095" CH147="1095" CH148="1110"
+                          CH149="1110" CH150="1125" CH151="1125" CH152="1140" CH153="1140"
+                          CH154="1155" CH155="1155" CH156="1170" CH157="1170" CH158="1185"
+                          CH159="1185" CH160="1200" CH161="1200" CH162="1215" CH163="1215"
+                          CH164="1230" CH165="1230" CH166="1245" CH167="1245" CH168="1260"
+                          CH169="1260" CH170="1275" CH171="1275" CH172="1290" CH173="1290"
+                          CH174="1305" CH175="1305" CH176="1320" CH177="1320" CH178="1335"
+                          CH179="1335" CH180="1350" CH181="1350" CH182="1365" CH183="1365"
+                          CH184="1380" CH185="1380" CH186="1395" CH187="1395" CH188="1410"
+                          CH189="1410" CH190="1425" CH191="1425" CH192="1440" CH193="1440"
+                          CH194="1455" CH195="1455" CH196="1470" CH197="1470" CH198="1485"
+                          CH199="1485" CH200="1500" CH201="1500" CH202="1515" CH203="1515"
+                          CH204="1530" CH205="1530" CH206="1545" CH207="1545" CH208="1560"
+                          CH209="1560" CH210="1575" CH211="1575" CH212="1590" CH213="1590"
+                          CH214="1605" CH215="1605" CH216="1620" CH217="1620" CH218="1635"
+                          CH219="1635" CH220="1650" CH221="1650" CH222="1665" CH223="1665"
+                          CH224="1680" CH225="1680" CH226="1695" CH227="1695" CH228="1710"
+                          CH229="1710" CH230="1725" CH231="1725" CH232="1740" CH233="1740"
+                          CH234="1755" CH235="1755" CH236="1770" CH237="1770" CH238="1785"
+                          CH239="1785" CH240="1800" CH241="1800" CH242="1815" CH243="1815"
+                          CH244="1830" CH245="1830" CH246="1845" CH247="1845" CH248="1860"
+                          CH249="1860" CH250="1875" CH251="1875" CH252="1890" CH253="1890"
+                          CH254="1905" CH255="1905" CH256="1920" CH257="1920" CH258="1935"
+                          CH259="1935" CH260="1950" CH261="1950" CH262="1965" CH263="1965"
+                          CH264="1980" CH265="1980" CH266="1995" CH267="1995" CH268="2010"
+                          CH269="2010" CH270="2025" CH271="2025" CH272="2040" CH273="2040"
+                          CH274="2055" CH275="2055" CH276="2070" CH277="2070" CH278="2085"
+                          CH279="2085" CH280="2100" CH281="2100" CH282="2115" CH283="2115"
+                          CH284="2130" CH285="2130" CH286="2145" CH287="2145" CH288="2160"
+                          CH289="2160" CH290="2175" CH291="2175" CH292="2190" CH293="2190"
+                          CH294="2205" CH295="2205" CH296="2220" CH297="2220" CH298="2235"
+                          CH299="2235" CH300="2250" CH301="2250" CH302="2265" CH303="2265"
+                          CH304="2280" CH305="2280" CH306="2295" CH307="2295" CH308="2310"
+                          CH309="2310" CH310="2325" CH311="2325" CH312="2340" CH313="2340"
+                          CH314="2355" CH315="2355" CH316="2370" CH317="2370" CH318="2385"
+                          CH319="2385" CH320="2400" CH321="2400" CH322="2415" CH323="2415"
+                          CH324="2430" CH325="2430" CH326="2445" CH327="2445" CH328="2460"
+                          CH329="2460" CH330="2475" CH331="2475" CH332="2490" CH333="2490"
+                          CH334="2505" CH335="2505" CH336="2520" CH337="2520" CH338="2535"
+                          CH339="2535" CH340="2550" CH341="2550" CH342="2565" CH343="2565"
+                          CH344="2580" CH345="2580" CH346="2595" CH347="2595" CH348="2610"
+                          CH349="2610" CH350="2625" CH351="2625" CH352="2640" CH353="2640"
+                          CH354="2655" CH355="2655" CH356="2670" CH357="2670" CH358="2685"
+                          CH359="2685" CH360="2700" CH361="2700" CH362="2715" CH363="2715"
+                          CH364="2730" CH365="2730" CH366="2745" CH367="2745" CH368="2760"
+                          CH369="2760" CH370="2775" CH371="2775" CH372="2790" CH373="2790"
+                          CH374="2805" CH375="2805" CH376="2820" CH377="2820" CH378="2835"
+                          CH379="2835" CH380="2850" CH381="2850" CH382="2865" CH383="2865"/>
+        </NP_PROBE>
+      </EDITOR>
+    </PROCESSOR>
+    <PROCESSOR name="Record Node" insertionPoint="1" pluginName="Record Node"
+               type="0" index="3" libraryName="" libraryVersion="" processorType="8"
+               nodeId="102">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-AP" description="description" sample_rate="30000.0"
+              channel_count="384">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Record Node" activeStream="0"
+              Type="RecordNode">
+        <SETTINGS path="D:" engine="BINARY" recordEvents="1" recordSpikes="1">
+          <STREAM isPrimary="1" sync_line="0" recording_state="ALL"/>
+        </SETTINGS>
+      </EDITOR>
+    </PROCESSOR>
+    <PROCESSOR name="Bandpass Filter" insertionPoint="1" pluginName="Bandpass Filter"
+               type="1" index="5" libraryName="Bandpass Filter" libraryVersion="0.1.0"
+               processorType="1" nodeId="103">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-AP" description="description" sample_rate="30000.0"
+              channel_count="384">
+        <PARAMETERS enable_stream="1" high_cut="9000" low_cut="300" Channels=""/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Bandpass Filter"
+              activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="Common Avg Ref" insertionPoint="1" pluginName="Common Avg Ref"
+               type="1" index="4" libraryName="Common Average Reference" libraryVersion="0.1.0"
+               processorType="1" nodeId="104">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-AP" description="description" sample_rate="30000.0"
+              channel_count="384">
+        <PARAMETERS enable_stream="1" Affected="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,347,348,349,350,351,352,353,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371,372,373,374,375,376,377,378,379,380,381,382,383,384"
+                    Reference="" gain_level="100.0"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Common Avg Ref"
+              activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="LFP Viewer" insertionPoint="1" pluginName="LFP Viewer"
+               type="1" index="6" libraryName="LFP viewer" libraryVersion="0.1.0"
+               processorType="3" nodeId="105">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-AP" description="description" sample_rate="30000.0"
+              channel_count="384">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="LFP Viewer" activeStream="0"
+              Type="LfpDisplayEditor">
+        <TAB Active="1"/>
+        <WINDOW Active="0"/>
+        <VALUES SelectedLayout="2"/>
+        <LFPDISPLAY0 SubprocessorID="10001" Range="400,2000,10.0" Timebase="2.0" Spread="20"
+                     colourScheme="1" colorGrouping="1" spikeRaster="OFF" clipWarning="1"
+                     satWarning="1" reverseOrder="0" sortByDepth="0" channelSkip="1"
+                     showChannelNum="0" subtractOffset="0" isInverted="0" triggerSource="1"
+                     trialAvg="0" singleChannelView="-1" EventButtonState="255" ChannelDisplayState="111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                     ScrollX="0" ScrollY="5930"/>
+        <LFPDISPLAY1 SubprocessorID="10001" Range="400,2000,10.0" Timebase="2.0" Spread="6"
+                     colourScheme="3" colorGrouping="1" spikeRaster="-80" clipWarning="1"
+                     satWarning="1" reverseOrder="1" sortByDepth="0" channelSkip="1"
+                     showChannelNum="0" subtractOffset="1" isInverted="0" triggerSource="1"
+                     trialAvg="0" singleChannelView="-1" EventButtonState="255" ChannelDisplayState="111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                     ScrollX="0" ScrollY="295"/>
+        <LFPDISPLAY2 SubprocessorID="10001" Range="250,2000,10.0" Timebase="2.0" Spread="40"
+                     colourScheme="1" colorGrouping="1" spikeRaster="OFF" clipWarning="1"
+                     satWarning="1" reverseOrder="0" sortByDepth="0" channelSkip="1"
+                     showChannelNum="0" subtractOffset="0" isInverted="0" triggerSource="1"
+                     trialAvg="0" singleChannelView="-1" EventButtonState="255" ChannelDisplayState="111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                     ScrollX="0" ScrollY="0"/>
+        <CANVAS doubleVerticalSplitRatio="0.5" doubleHorizontalSplitRatio="0.5"
+                tripleHorizontalSplitRatio="0.33,0.66" tripleVerticalSplitRatio="0.33,0.66"
+                showAllOptions="0"/>
+      </EDITOR>
+    </PROCESSOR>
+  </SIGNALCHAIN>
+  <EDITORVIEWPORT scroll="0"/>
+  <AUDIO sampleRate="48000.0" bufferSize="1024" deviceType="Windows Audio">
+    <DEVICESETUP deviceType="Windows Audio" audioOutputDeviceName="Digital Audio (S/PDIF) (High Definition Audio Device)"
+                 audioInputDeviceName="" audioDeviceRate="48000.0" audioDeviceBufferSize="1024"
+                 audioDeviceInChans="0"/>
+  </AUDIO>
+  <GLOBAL_TIMESTAMP selected_index="0" selected_sub_index="0"/>
+  <CONTROLPANEL isOpen="1" recordPath="D:" recordEngine="BINARY"/>
+  <AUDIOEDITOR isMuted="0" volume="50.0" noiseGate="0.0"/>
+  <FILENAMECONFIG>
+    <PREPEND state="2" value="595262_"/>
+    <MAIN state="1" value="2022-02-21_15-18-07"/>
+    <APPEND state="0" value=""/>
+  </FILENAMECONFIG>
+  <PROCESSORLIST>
+    <COLOR ID="801" R="59" G="59" B="59"/>
+    <COLOR ID="804" R="241" G="90" B="41"/>
+    <COLOR ID="802" R="0" G="174" B="239"/>
+    <COLOR ID="803" R="0" G="166" B="81"/>
+    <COLOR ID="805" R="147" G="149" B="152"/>
+    <COLOR ID="806" R="255" G="0" B="0"/>
+    <COLOR ID="807" R="0" G="0" B="0"/>
+  </PROCESSORLIST>
+  <UICOMPONENT isProcessorListOpen="1" isEditorViewportOpen="1"/>
+</SETTINGS>

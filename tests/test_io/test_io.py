@@ -20,7 +20,8 @@ import numpy as np
 import pytest
 
 
-folder_path = Path(__file__).absolute().parent.parent
+data_path = Path(__file__).absolute().parent.parent / "data"
+
 
 def test_probeinterface_format():
     filename = "test_pi_format.json"
@@ -49,8 +50,8 @@ def test_probeinterface_format():
 
 
 def test_BIDS_format():
-    folder_path = Path("test_BIDS")
-    folder_path.mkdir(exist_ok=True)
+    data_path = Path("test_BIDS")
+    data_path.mkdir(exist_ok=True)
     probegroup = generate_dummy_probe_group()
 
     # add custom probe type annotation to be
@@ -72,9 +73,9 @@ def test_BIDS_format():
         # switch to more generic dtype for shank_ids
         probe.set_shank_ids(probe.shank_ids.astype(str))
 
-    write_BIDS_probe(folder_path, probegroup)
+    write_BIDS_probe(data_path, probegroup)
 
-    probegroup_read = read_BIDS_probe(folder_path)
+    probegroup_read = read_BIDS_probe(data_path)
 
     # compare written (original) and read probegroup
     assert len(probegroup.probes) == len(probegroup_read.probes)
@@ -119,31 +120,31 @@ def test_BIDS_format():
 
 
 def test_BIDS_format_empty():
-    folder_path = Path("test_BIDS_minimal")
-    folder_path.mkdir(exist_ok=True)
+    data_path = Path("test_BIDS_minimal")
+    data_path.mkdir(exist_ok=True)
 
     # create empty BIDS probe and contact files
-    with open(folder_path.joinpath("probes.tsv"), "w") as f:
+    with open(data_path.joinpath("probes.tsv"), "w") as f:
         f.write("probe_id\ttype")
 
-    with open(folder_path.joinpath("contacts.tsv"), "w") as f:
+    with open(data_path.joinpath("contacts.tsv"), "w") as f:
         f.write("contact_id\tprobe_id")
 
-    read_BIDS_probe(folder_path)
+    read_BIDS_probe(data_path)
 
 
 def test_BIDS_format_minimal():
-    folder_path = Path("test_BIDS_minimal")
-    folder_path.mkdir(exist_ok=True)
+    data_path = Path("test_BIDS_minimal")
+    data_path.mkdir(exist_ok=True)
 
     # create minimal BIDS probe and contact files
-    with open(folder_path.joinpath("probes.tsv"), "w") as f:
+    with open(data_path.joinpath("probes.tsv"), "w") as f:
         f.write("probe_id\ttype\n" "0\tcustom\n" "1\tgeneric")
 
-    with open(folder_path.joinpath("contacts.tsv"), "w") as f:
+    with open(data_path.joinpath("contacts.tsv"), "w") as f:
         f.write("contact_id\tprobe_id\n" "01\t0\n" "02\t0\n" "11\t1\n" "12\t1")
 
-    probegroup = read_BIDS_probe(folder_path)
+    probegroup = read_BIDS_probe(data_path)
 
     assert len(probegroup.probes) == 2
 
@@ -179,7 +180,7 @@ channel_groups = {
 
 
 def test_prb():
-    probegroup = read_prb(folder_path / "dummy.prb")
+    probegroup = read_prb(data_path / "dummy.prb")
 
     with open("two_tetrodes.prb", "w") as f:
         f.write(prb_two_tetrodes)
@@ -208,30 +209,27 @@ def test_parse_meta():
         "Day_3_g0_t0.imec1.ap.meta",
         "allan-longcol_g0_t0.imec0.ap.meta",
     ]:
-        meta = parse_spikeglx_meta(folder_path / meta_file)
+        meta = parse_spikeglx_meta(data_path / meta_file)
 
 
 def test_get_saved_channel_indices_from_spikeglx_meta():
     # all channel saved + 1 synchro
     chan_inds = get_saved_channel_indices_from_spikeglx_meta(
-        folder_path / "Noise_g0_t0.imec0.ap.meta"
+        data_path / "Noise_g0_t0.imec0.ap.meta"
     )
     assert chan_inds.size == 385
 
     # example by Pierre Yger NP1.0 with 384 but only 151 channels are saved + 1 synchro
     chan_inds = get_saved_channel_indices_from_spikeglx_meta(
-        folder_path / "Day_3_g0_t0.imec1.ap.meta"
+        data_path / "Day_3_g0_t0.imec1.ap.meta"
     )
     assert chan_inds.size == 152
 
 
-
-
-
 def test_readimro():
-    probe = read_imro(folder_path / "test_multi_shank.imro")
-    write_imro(folder_path / "multi_shank_written.imro", probe)
-    probe2 = read_imro(folder_path / "multi_shank_written.imro")
+    probe = read_imro(data_path / "test_multi_shank.imro")
+    write_imro(data_path / "multi_shank_written.imro", probe)
+    probe2 = read_imro(data_path / "multi_shank_written.imro")
     np.testing.assert_array_equal(probe2.contact_ids, probe.contact_ids)
     np.testing.assert_array_equal(probe2.contact_positions, probe.contact_positions)
 
