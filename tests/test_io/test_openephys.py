@@ -6,7 +6,7 @@ import pytest
 
 from probeinterface import read_openephys
 
-data_path = Path(__file__).absolute().parent.parent / "data"
+data_path = Path(__file__).absolute().parent.parent / "data" / "openephys"
 
 
 def test_NP1():
