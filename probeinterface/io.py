@@ -728,6 +728,7 @@ polygon_description = {
 npx_probe = {
     # Neuropixels 1.0
     0: {
+        "probe_name": "Neuropixels 1.0",
         "x_pitch": 32,
         "y_pitch": 20,
         "contact_width": 12,
@@ -736,9 +737,18 @@ npx_probe = {
         "shank_number": 1,
         "ncol": 2,
         "polygon": polygon_description["default"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+            "ap_hp_filters",
+        ),
     },
-    # Neuropixels 2.0 - Single Shank
+    # Neuropixels 2.0 - Single Shank
     21: {
+        "probe_name": "Neuropixels 2.0 - Single Shank",
         "x_pitch": 32,
         "y_pitch": 15,
         "contact_width": 12,
@@ -747,9 +757,11 @@ npx_probe = {
         "shank_number": 1,
         "ncol": 2,
         "polygon": polygon_description["default"],
+        "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
     },
-    # Neuropixels 2.0 - Four Shank
+    # Neuropixels 2.0 - Four Shank
     24: {
+        "probe_name": "Neuropixels 2.0 - Four Shank",
         "x_pitch": 32,
         "y_pitch": 15,
         "contact_width": 12,
@@ -758,10 +770,17 @@ npx_probe = {
         "shank_number": 4,
         "ncol": 2,
         "polygon": polygon_description["default"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "shank_id",
+            "banks",
+            "references",
+            "elec_ids",
+        ),
     },
-    # 
-    'Phase3a': {
-        
+    #
+    "Phase3a": {
+        "probe_name": "Phase3a",
         "x_pitch": 32,
         "y_pitch": 20,
         "contact_width": 12,
@@ -770,9 +789,17 @@ npx_probe = {
         "shank_number": 1,
         "ncol": 2,
         "polygon": polygon_description["default"],
-	    },
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+        ),
+    },
     # Neuropixels 1.0-NHP Short (10mm)
     1015: {
+        "probe_name": "Neuropixels 1.0-NHP - medium",
         "x_pitch": 32,
         "y_pitch": 20,
         "contact_width": 12,
@@ -781,9 +808,18 @@ npx_probe = {
         "shank_number": 1,
         "ncol": 2,
         "polygon": polygon_description["default"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+            "ap_hp_filters",
+        ),
     },
     # Neuropixels 1.0-NHP Medium (25mm)
     1022: {
+        "probe_name": "Neuropixels 1.0-NHP - medium",
         "x_pitch": 103,
         "y_pitch": 20,
         "contact_width": 12,
@@ -792,9 +828,18 @@ npx_probe = {
         "shank_number": 1,
         "ncol": 2,
         "polygon": polygon_description["nhp125"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+            "ap_hp_filters",
+        ),
     },
-    # Neuropixels 1.0-NHP 45mm SOI90 - NHP long 90um wide, staggered contacts 
+    # Neuropixels 1.0-NHP 45mm SOI90 - NHP long 90um wide, staggered contacts
     1030: {
+        "probe_name": "Neuropixels 1.0-NHP - long SOI90 staggered",
         "x_pitch": 56,
         "y_pitch": 20,
         "stagger": 12,
@@ -803,9 +848,18 @@ npx_probe = {
         "shank_number": 1,
         "ncol": 2,
         "polygon": polygon_description["nhp90"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+            "ap_hp_filters",
+        ),
     },
     # Neuropixels 1.0-NHP 45mm SOI125 - NHP long 125um wide, staggered contacts
     1031: {
+        "probe_name": "Neuropixels 1.0-NHP - long SOI125 staggered",
         "x_pitch": 91,
         "y_pitch": 20,
         "contact_width": 12,
@@ -814,9 +868,18 @@ npx_probe = {
         "shank_number": 1,
         "ncol": 2,
         "polygon": polygon_description["nhp125"],
-    },  
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+            "ap_hp_filters",
+        ),
+    },
     # 1.0-NHP 45mm SOI115 / 125 linear - NHP long 125um wide, linear contacts
     1032: {
+        "probe_name": "Neuropixels 1.0-NHP - long SOI125 linear",
         "x_pitch": 103,
         "y_pitch": 20,
         "contact_width": 12,
@@ -825,7 +888,15 @@ npx_probe = {
         "shank_number": 1,
         "ncol": 2,
         "polygon": polygon_description["nhp125"],
-    }
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+            "ap_hp_filters",
+        ),
+    },
 }
 
 def read_imro(file):
@@ -852,7 +923,7 @@ def read_imro(file):
 
 def _read_imro_string(imro_str: str) -> Probe:
     """
-    Low-level function to parse imro string
+    Low-level function to parse the imro table when presented as a string
     
     See this doc https://billkarsh.github.io/SpikeGLX/help/imroTables/
     
@@ -869,37 +940,7 @@ def _read_imro_string(imro_str: str) -> Probe:
     else:
         raise RuntimeError(f'read_imro error, the header has a strange length: {len(header)}')
 
-    # disptach values from list in the info dict
-    if imDatPrb_type == 0:
-        probe_name = "Neuropixels 1.0"
-        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
-    elif imDatPrb_type == 21:
-        probe_name = "Neuropixels 2.0 - SingleShank"
-        fields = ('channel_ids', 'banks', 'references', 'elec_ids')
-    elif imDatPrb_type == 24:
-        probe_name = "Neuropixels 2.0 - MultiShank"
-        fields = ('channel_ids', 'shank_id', 'banks', 'references', 'elec_ids')
-    elif imDatPrb_type == 'Phase3a':
-        probe_name = "Neuropixels Phase3a"
-        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains')
-    elif imDatPrb_type == 1015:
-        probe_name = "Neuropixels 1.0-NHP - short"
-        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
-    elif imDatPrb_type == 1022:
-        probe_name = "Neuropixels 1.0-NHP - medium"
-        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
-    elif imDatPrb_type == 1030:
-        probe_name = "Neuropixels 1.0-NHP - long SOI90 staggered"
-        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
-    elif imDatPrb_type == 1031:
-        probe_name = "Neuropixels 1.0-NHP - long SOI125 staggered"
-        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
-    elif imDatPrb_type == 1032:
-        probe_name = "Neuropixels 1.0-NHP - long SOI125 linear"
-        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
-    else:
-        raise RuntimeError(f'unsupported imro type : {imDatPrb_type}')    
-
+    fields = npx_probe[imDatPrb_type]["fields_in_imro_table"]
     contact_info = {k: [] for k in fields}
     for i, part in enumerate(parts):
         values = tuple(map(int, part[1:].split(' ')))
@@ -956,6 +997,7 @@ def _read_imro_string(imro_str: str) -> Probe:
     probe.set_planar_contour(contour)
     
     # this is scalar annotations
+    probe_name = npx_probe[imDatPrb_type]["probe_name"]
     probe.annotate(
         name=probe_name,
         manufacturer="IMEC",
@@ -963,11 +1005,9 @@ def _read_imro_string(imro_str: str) -> Probe:
     )
     
     # this is vector annotations
-    annotations = {}
-    for k in ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters'):
-        if k in contact_info:
-            annotations[k] = contact_info[k]
-    probe.annotate_contacts(**annotations)
+    vector_properties = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
+    vector_properties_available = {k: v  for k, v in contact_info.items() if k in vector_properties}
+    probe.annotate_contacts(**vector_properties_available)
     
     # wire it
     probe.set_device_channel_indices(np.arange(positions.shape[0]))
