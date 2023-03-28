@@ -19,6 +19,7 @@ import numpy as np
 from . import __version__
 from .probe import Probe
 from .probegroup import ProbeGroup
+from .utils import import_safely
 
 
 
@@ -121,7 +122,7 @@ def read_BIDS_probe(folder, prefix=None):
 
     """
 
-    import pandas as pd
+    pd = import_safely("pandas")
 
     folder = Path(folder)
     probes = {}
@@ -326,8 +327,8 @@ def write_BIDS_probe(folder, probe_or_probegroup, prefix=""):
 
     """
 
-    import pandas as pd
-
+    pd = import_safely("pandas")
+    
     if isinstance(probe_or_probegroup, Probe):
         probe = probe_or_probegroup
         probegroup = ProbeGroup()
@@ -519,11 +520,8 @@ def read_maxwell(file, well_name="well000", rec_name="rec0000"):
     file = Path(file).absolute()
     assert file.is_file()
 
-    try:
-        import h5py
-    except ImportError as error:
-        print(error.__class__.__name__ + ": " + error.message)
-
+    
+    h5py = import_safely("h5py")
     my_file = h5py.File(file, mode="r")
 
     if "mapping" in my_file.keys():
@@ -590,11 +588,7 @@ def read_3brain(file, mea_pitch=42, electrode_width=21):
     file = Path(file).absolute()
     assert file.is_file()
 
-    try:
-        import h5py
-    except ImportError as error:
-        print(error.__class__.__name__ + ": " + error.message)
-
+    h5py = import_safely("h5py")
     rf = h5py.File(file, "r")
 
     # get channel positions
@@ -1159,7 +1153,8 @@ def read_openephys(
     probe : Probe object
 
     """
-    import xml.etree.ElementTree as ET
+
+    ET = import_safely("xml.etree.ElementTree")
     # parse xml
     tree = ET.parse(str(settings_file))
     root = tree.getroot()
@@ -1489,10 +1484,7 @@ def read_mearec(file):
     file = Path(file).absolute()
     assert file.is_file()
 
-    try:
-        import h5py
-    except ImportError as error:
-        print(error.__class__.__name__ + ": " + error.message)
+    h5py = import_safely("h5py")
 
     f = h5py.File(file, "r")
     positions = f["channel_positions"][()]
