@@ -1,4 +1,47 @@
 # probeinterface
+<table>
+<tr>
+  <td>Latest Release</td>
+  <td>
+    <a href="https://pypi.org/project/probeinterface/">
+    <img src="https://img.shields.io/pypi/v/probeinterface.svg" alt="latest release" />
+    </a>
+  </td>
+</tr>
+<tr>
+  <td>Documentation</td>
+  <td>
+    <a href="https://probeinterface.readthedocs.io/">
+    <img src="https://readthedocs.org/projects/probeinterface/badge/?version=latest" alt="latest documentation" />
+    </a>
+  </td>
+</tr>
+<tr>
+  <td>License</td>
+  <td>
+    <a href="https://github.com/probeinterface/probeinterface/blob/main/LICENSE">
+    <img src="https://img.shields.io/pypi/l/probeinterface.svg" alt="license" />
+    </a>
+</td>
+</tr>
+<tr>
+  <td>Build Status</td>
+  <td>
+    <a href="https://github.com/SpikeInterface/probeinterface/actions/workflows/full_tests/badge.svg">
+    <img src="https://github.com/SpikeInterface/probeinterface/actions/workflows/full_tests/badge.svg" alt="CI build status" />
+    </a>
+  </td>
+</tr>
+<tr>
+	<td>Codecov</td>
+	<td>
+		<a href="https://codecov.io/github/SpikeInterface/probeinterface">
+		<img src="https://codecov.io/gh/SpikeInterface/probeinterface/branch/main/graphs/badge.svg" alt="codecov" />
+		</a>
+	</td>
+</tr>
+</table>
+
 
 A Python package to handle the layout, geometry, and wiring of silicon probes for extracellular electrophysiology experiments.
 

@@ -22,4 +22,10 @@ jobs:
         pip install .[test]
     - name: Pytest
       run: |
-        pytest tests/
+        pytest --cov=probeinterface --cov-report xml:./coverage.xml tests/ 
+    - uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: true
+        file: ./coverage.xml
+        flags: unittests
