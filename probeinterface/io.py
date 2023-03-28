@@ -10,6 +10,7 @@ Read/write probe info using a variety of formats:
 
 """
 from pathlib import Path
+from typing import Union
 import re
 import json
 from collections import OrderedDict
@@ -701,9 +702,11 @@ def write_csv(file, probe):
 
 # neuropixels info
 # A map from probe type to geometry_parameters
+neuropixels_1_type = 0
 npx_probe = {
     # Neuropixels 1.0
-    0: {
+    # This probably should be None or something else because NOT ONLY the neuropixels 1.0 have that imDatPrb_type
+    neuropixels_1_type: {
         "x_pitch": 32,
         "y_pitch": 20,
         "contact_width": 12,
@@ -732,9 +735,8 @@ npx_probe = {
         "shank_number": 4,
         "ncol": 2
     },
-    # 
+    # Identical to Neuropixels 1.0 but has diffent headers 
     'Phase3a': {
-        
         "x_pitch": 32,
         "y_pitch": 20,
         "contact_width": 12,
@@ -795,7 +797,21 @@ npx_probe = {
     }
 }
 
-def read_imro(file):
+# Map imDatPrb_pn to imDatPrb_type when the latter is missing
+probe_number_to_probe_type = {
+    "PRB_1_4_0480_1": neuropixels_1_type,
+    "PRB_1_4_0480_1_C": neuropixels_1_type,
+    "DPRB_1_4_0480_1": neuropixels_1_type,
+    "DPRB_1_4_0480_1_C": neuropixels_1_type,
+    "NP1015": 1015,
+    "NP1022": 1022,
+    "NP1030": 1030,
+    "NP1031": 1031,
+    "NP1032": 1032,
+}
+
+    
+def read_imro(file: Union[str, Path]) -> Probe:
     """
     Read probe position from the imro file used in input of SpikeGlx and Open-Ephys for neuropixels probes.
 
@@ -817,7 +833,7 @@ def read_imro(file):
     return _read_imro_string(imro_str)
 
 
-def _read_imro_string(imro_str: str) -> Probe:
+def _read_imro_string(imro_str: str, imDatPrb_pn: str) -> Probe:
     """
     Low-level function to parse imro string
     
@@ -836,6 +852,9 @@ def _read_imro_string(imro_str: str) -> Probe:
     else:
         raise RuntimeError(f'read_imro error, the header has a strange length: {len(header)}')
 
+    if imDatPrb_type in [0, None]:
+        imDatPrb_type = probe_number_to_probe_type[imDatPrb_pn] 
+    
     # disptach values from list in the info dict
     if imDatPrb_type == 0:
         probe_name = "Neuropixels 1.0"
@@ -1017,8 +1036,9 @@ def read_spikeglx(file):
     
     assert "imroTbl" in meta, "Could not find imroTbl field in meta file!"
     imro_table = meta['imroTbl']
+    imDatPrb_pn = meta.get("imDatPrb_pn", None)
     
-    probe = _read_imro_string(imro_table)
+    probe = _read_imro_string(imro_str=imro_table, imDatPrb_pn=imDatPrb_pn)
     
     # sometimes we need to slice the probe when not all channels are saved
     saved_chans = get_saved_channel_indices_from_spikeglx_meta(meta_file)
