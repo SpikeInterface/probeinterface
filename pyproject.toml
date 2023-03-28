@@ -40,6 +40,7 @@ package-dir = {"probeinterface" = "probeinterface"}
 
 test = [
     "pytest",
+    "pytest-cov",
     "matplotlib",
     "scipy",
     "pandas",
