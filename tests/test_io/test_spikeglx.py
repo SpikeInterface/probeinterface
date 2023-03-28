@@ -91,3 +91,51 @@ def test_get_saved_channel_indices_from_spikeglx_meta():
         data_path / "Day_3_g0_t0.imec1.ap.meta"
     )
     assert chan_inds.size == 152
+
+
+def test_NPHP_long_staggered():
+    # Data provided by Nate Dolensek
+    probe = read_spikeglx(data_path / "non_human_primate_long_staggered.imec0.ap.meta")
+    
+    assert probe.annotations["name"] == 'Neuropixels 1.0-NHP - long SOI90 staggered'
+    assert probe.annotations["manufacturer"] == "IMEC"
+    assert probe.annotations["probe_type"] == 1030
+
+    assert probe.ndim == 2
+    assert probe.get_shank_count() == 1
+    assert probe.get_contact_count() == 384
+    
+
+    # Test contact geometry
+    x_pitch = 56.0
+    y_pitch = 20.0
+    contact_width = 12.0
+    contact_shape = "square"
+    
+    assert np.all(probe.contact_shape_params == {"width": contact_width})
+    assert np.all(probe.contact_shapes == contact_shape)
+        
+    contact_positions = probe.contact_positions
+    x = contact_positions[:, 0]
+    y = contact_positions[:, 1]
+    
+    # Every second contact the x position should increase by x_pitch
+    increase = np.diff(x)
+    every_second_increase = increase[::2]
+    x_pitch = 56
+    assert np.allclose(every_second_increase, x_pitch)
+        
+    # Every second contact should be staggered by contact_width
+    every_second_contact = x[::2]
+    staggered_values = np.abs(np.diff(every_second_contact))
+    contact_width = 12
+    assert np.allclose(staggered_values, contact_width)
+    
+    # Every second contact should increase by y_pitch
+    y_pitch = 20.0
+    every_second_contact = y[::2]
+    increase = np.diff(every_second_contact)
+    assert np.allclose(increase, y_pitch)
+    
+    
+        

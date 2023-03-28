@@ -892,7 +892,7 @@ def _read_imro_string(imro_str):
         y_pos = y_idx * y_pitch
         contact_ids = [f's{shank_id}e{elec_id}' for shank_id, elec_id in zip(shank_ids, elec_ids)]
     elif imDatPrb_type in (1030, 1031):
-        # one shank, NHP probes with staggered electrodes
+        # one shank, NHP (non-human primate) probes with staggered electrodes
         #stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x_pitch"] / 2
         stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["contact_width"]
         x_pos = x_idx * x_pitch + stagger
@@ -900,7 +900,7 @@ def _read_imro_string(imro_str):
         shank_ids = None
         contact_ids = [f'e{elec_id}' for elec_id in elec_ids]
     elif imDatPrb_type in (1015, 1022, 1032):
-        # one shank, NHP probes with linear electrodes
+        # one shank, NHP (non-human primate)  probes with linear electrodes
         stagger = 0
         x_pos = x_idx * x_pitch + stagger
         y_pos = y_idx * y_pitch
@@ -1024,7 +1024,6 @@ def read_spikeglx(file):
     
     assert "imroTbl" in meta, "Could not find imroTbl field in meta file!"
     imro_table = meta['imroTbl']
-    chan_map_str = meta['snsChanMap']
     
     probe = _read_imro_string(imro_table)
     
