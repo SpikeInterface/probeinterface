@@ -44,6 +44,7 @@ test = [
     "matplotlib",
     "scipy",
     "pandas",
+    "
 ]
 
 docs = [
@@ -52,6 +53,7 @@ docs = [
     "matplotlib==3.2.2",
     "scipy",
     "pandas",
+    "h5py",
 ]
 
 [tool.coverage.run]
