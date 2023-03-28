@@ -702,11 +702,10 @@ def write_csv(file, probe):
 
 # neuropixels info
 # A map from probe type to geometry_parameters
-neuropixels_1_type = 0
 npx_probe = {
     # Neuropixels 1.0
     # This probably should be None or something else because NOT ONLY the neuropixels 1.0 have that imDatPrb_type
-    neuropixels_1_type: {
+    0: {
         "x_pitch": 32,
         "y_pitch": 20,
         "contact_width": 12,
@@ -799,10 +798,10 @@ npx_probe = {
 
 # Map imDatPrb_pn to imDatPrb_type when the latter is missing
 probe_number_to_probe_type = {
-    "PRB_1_4_0480_1": neuropixels_1_type,
-    "PRB_1_4_0480_1_C": neuropixels_1_type,
-    "DPRB_1_4_0480_1": neuropixels_1_type,
-    "DPRB_1_4_0480_1_C": neuropixels_1_type,
+    "PRB_1_4_0480_1": 0,
+    "PRB_1_4_0480_1_C": 0,
+    "DPRB_1_4_0480_1": 0,
+    "DPRB_1_4_0480_1_C": 0,
     "NP1015": 1015,
     "NP1022": 1022,
     "NP1030": 1030,
@@ -833,7 +832,7 @@ def read_imro(file: Union[str, Path]) -> Probe:
     return _read_imro_string(imro_str)
 
 
-def _read_imro_string(imro_str: str, imDatPrb_pn: str) -> Probe:
+def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
     """
     Low-level function to parse imro string
     
