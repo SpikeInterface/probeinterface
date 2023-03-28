@@ -66,6 +66,7 @@ class Probe:
 
     @property
     def contact_positions(self):
+        """The position of the center for each contact"""
         return self._contact_positions
 
     @property
@@ -148,6 +149,12 @@ class Probe:
                      shapes='circle', shape_params={'radius': 10},
                      plane_axes=None, shank_ids=None):
         """Sets contacts to a Probe.
+        
+        This sets four attributes of the probe: 
+            contact_positions, 
+            contact_shapes,
+            contact_shape_params,
+            _contact_plane_axes
 
         Parameters
         ----------
