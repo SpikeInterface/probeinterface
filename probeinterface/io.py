@@ -892,7 +892,7 @@ def _read_imro_string(imro_str):
         y_pos = y_idx * y_pitch
         contact_ids = [f's{shank_id}e{elec_id}' for shank_id, elec_id in zip(shank_ids, elec_ids)]
     elif imDatPrb_type in (1030, 1031):
-        # one shank, NHP (no human primate) probes with staggered electrodes
+        # one shank, NHP (non-human primate) probes with staggered electrodes
         #stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x_pitch"] / 2
         stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["contact_width"]
         x_pos = x_idx * x_pitch + stagger
