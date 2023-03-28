@@ -95,7 +95,7 @@ def test_get_saved_channel_indices_from_spikeglx_meta():
 
 def test_NPHP_long_staggered():
     # Data provided by Nate Dolensek
-    probe = read_spikeglx(data_path / "non_human_primate_probe_long_staggered.imec0.ap.meta")
+    probe = read_spikeglx(data_path / "non_human_primate_long_staggered.imec0.ap.meta")
     
     assert probe.annotations["name"] == 'Neuropixels 1.0-NHP - long SOI90 staggered'
     assert probe.annotations["manufacturer"] == "IMEC"
