@@ -26,7 +26,7 @@ jobs:
         pip install -e .[test]
     - name: Pytest
       run: |
-        pytest -s --cov=probeinterface --cov-report xml:./coverage.xml
+        pytest --cov=probeinterface --cov-report xml:./coverage.xml
     - uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
