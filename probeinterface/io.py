@@ -724,6 +724,7 @@ polygon_description = {
 }
 
 # A map from probe type to geometry_parameters
+# A map from probe type to geometry_parameters
 npx_probe = {
     # Neuropixels 1.0
     0: {
