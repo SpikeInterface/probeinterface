@@ -699,7 +699,30 @@ def write_csv(file, probe):
     raise NotImplementedError
 
 
-# neuropixels info
+polygon_description = {
+    "default": [
+        (0, 10000),
+        (0, 0),
+        (35, -175),
+        (70, 0),
+        (70, 10000),
+    ],
+    "nhp90": [
+        (0, 10000),
+        (0, 0),
+        (45, -342),
+        (90, 0),
+        (90, 10000),
+    ],
+    "nhp125": [
+        (0, 10000),
+        (0, 0),
+        (62.5, -342),
+        (125, 0),
+        (125, 10000),
+    ],
+}
+
 npx_probe = {
     # Neuropixels 1.0
     0: {
@@ -708,7 +731,8 @@ npx_probe = {
         "contact_width": 12,
         "shank_pitch": 0,
         "shank_number": 1,
-        "ncol": 2
+        "ncol": 2,
+        "polygon": polygon_description["default"],
     },
     # Neuropixels 2.0 - Single Shank
     21: {
@@ -717,7 +741,8 @@ npx_probe = {
         "contact_width": 12,
         "shank_pitch": 0,
         "shank_number": 1,
-        "ncol": 2
+        "ncol": 2,
+        "polygon": polygon_description["default"],
     },
     # Neuropixels 2.0 - Four Shank
     24: {
@@ -726,7 +751,8 @@ npx_probe = {
         "contact_width": 12,
         "shank_pitch": 250,
         "shank_number": 4,
-        "ncol": 2
+        "ncol": 2,
+        "polygon": polygon_description["default"],
     },
     # 
     'Phase3a': {
@@ -736,7 +762,8 @@ npx_probe = {
         "contact_width": 12,
         "shank_pitch": 0,
         "shank_number": 1,
-        "ncol": 2
+        "ncol": 2,
+        "polygon": polygon_description["default"],
 	    },
     # Neuropixels 1.0-NHP Short (10mm)
     1015: {
@@ -745,7 +772,8 @@ npx_probe = {
         "contact_width": 12,
         "shank_pitch": 0,
         "shank_number": 1,
-        "ncol": 2
+        "ncol": 2,
+        "polygon": polygon_description["default"],
     },
     # Neuropixels 1.0-NHP Medium (25mm)
     1022: {
@@ -754,7 +782,8 @@ npx_probe = {
         "contact_width": 12,
         "shank_pitch": 0,
         "shank_number": 1,
-        "ncol": 2
+        "ncol": 2,
+        "polygon": polygon_description["nhp125"],
     },
     # Neuropixels 1.0-NHP 45mm SOI90 - NHP long 90um wide, staggered contacts 
     1030: {
@@ -763,7 +792,8 @@ npx_probe = {
         "contact_width": 12,
         "shank_pitch": 0,
         "shank_number": 1,
-        "ncol": 2
+        "ncol": 2,
+        "polygon": polygon_description["nhp90"],
     },
     # Neuropixels 1.0-NHP 45mm SOI125 - NHP long 125um wide, staggered contacts
     1031: {
@@ -772,7 +802,8 @@ npx_probe = {
         "contact_width": 12,
         "shank_pitch": 0,
         "shank_number": 1,
-        "ncol": 2
+        "ncol": 2,
+        "polygon": polygon_description["nhp125"],
     },  
     # 1.0-NHP 45mm SOI115 / 125 linear - NHP long 125um wide, linear contacts
     1032: {
@@ -781,7 +812,8 @@ npx_probe = {
         "contact_width": 12,
         "shank_pitch": 0,
         "shank_number": 1,
-        "ncol": 2
+        "ncol": 2,
+        "polygon": polygon_description["nhp125"],
     }
 }
 
@@ -918,18 +950,13 @@ def _read_imro_string(imro_str):
                        shape_params={'width': npx_probe[imDatPrb_type]["contact_width"]})
     probe.set_contact_ids(contact_ids)
 
-    # planar contour
-    one_polygon = [(0, 10000), (0, 0), (35, -175), (70, 0), (70, 10000), ]
-    nhp90_polygon = [(0, 10000), (0, 0), (45, -342), (90, 0), (90, 10000), ]
-    nhp125_polygon = [(0, 10000), (0, 0), (62.5, -342), (125, 0), (125, 10000), ]
+    # Add planar contour
+    polygon = np.array(npx_probe[imDatPrb_type]["polygon"])
     contour = []
     for shank_id in range(npx_probe[imDatPrb_type]["shank_number"]):
-        if imDatPrb_type in (1030, ):
-            contour += list(np.array(nhp90_polygon) + [ npx_probe[imDatPrb_type]["shank_pitch"] * shank_id, 0])
-        elif imDatPrb_type in (1022, 1031, 1032):
-            contour += list(np.array(nhp125_polygon) + [ npx_probe[imDatPrb_type]["shank_pitch"] * shank_id, 0])
-        else:
-            contour += list(np.array(one_polygon) + [ npx_probe[imDatPrb_type]["shank_pitch"] * shank_id, 0])
+        shift = [npx_probe[imDatPrb_type]["shank_pitch"] * shank_id, 0]
+        contour += list(polygon + shift)
+      
     # shift
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
