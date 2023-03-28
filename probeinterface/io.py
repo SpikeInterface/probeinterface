@@ -723,12 +723,14 @@ polygon_description = {
     ],
 }
 
+# A map from probe type to geometry_parameters
 npx_probe = {
     # Neuropixels 1.0
     0: {
         "x_pitch": 32,
         "y_pitch": 20,
         "contact_width": 12,
+        "stagger": 16,
         "shank_pitch": 0,
         "shank_number": 1,
         "ncol": 2,
@@ -739,6 +741,7 @@ npx_probe = {
         "x_pitch": 32,
         "y_pitch": 15,
         "contact_width": 12,
+        "stagger": 0.0,
         "shank_pitch": 0,
         "shank_number": 1,
         "ncol": 2,
@@ -749,6 +752,7 @@ npx_probe = {
         "x_pitch": 32,
         "y_pitch": 15,
         "contact_width": 12,
+        "stagger": 0.0,
         "shank_pitch": 250,
         "shank_number": 4,
         "ncol": 2,
@@ -760,6 +764,7 @@ npx_probe = {
         "x_pitch": 32,
         "y_pitch": 20,
         "contact_width": 12,
+        "stagger": 16.0,
         "shank_pitch": 0,
         "shank_number": 1,
         "ncol": 2,
@@ -770,6 +775,7 @@ npx_probe = {
         "x_pitch": 32,
         "y_pitch": 20,
         "contact_width": 12,
+        "stagger": 0,
         "shank_pitch": 0,
         "shank_number": 1,
         "ncol": 2,
@@ -780,6 +786,7 @@ npx_probe = {
         "x_pitch": 103,
         "y_pitch": 20,
         "contact_width": 12,
+        "stagger": 0.0,
         "shank_pitch": 0,
         "shank_number": 1,
         "ncol": 2,
@@ -789,6 +796,7 @@ npx_probe = {
     1030: {
         "x_pitch": 56,
         "y_pitch": 20,
+        "stagger": 12,
         "contact_width": 12,
         "shank_pitch": 0,
         "shank_number": 1,
@@ -800,6 +808,7 @@ npx_probe = {
         "x_pitch": 91,
         "y_pitch": 20,
         "contact_width": 12,
+        "stagger": 12.0,
         "shank_pitch": 0,
         "shank_number": 1,
         "ncol": 2,
@@ -810,6 +819,7 @@ npx_probe = {
         "x_pitch": 103,
         "y_pitch": 20,
         "contact_width": 12,
+        "stagger": 0.0,
         "shank_pitch": 0,
         "shank_number": 1,
         "ncol": 2,
@@ -839,7 +849,7 @@ def read_imro(file):
     return _read_imro_string(imro_str)
 
 
-def _read_imro_string(imro_str):
+def _read_imro_string(imro_str: str) -> Probe:
     """
     Low-level function to parse imro string
     
@@ -909,35 +919,18 @@ def _read_imro_string(imro_str):
     y_idx = elec_ids // npx_probe[imDatPrb_type]["ncol"]
     x_pitch = npx_probe[imDatPrb_type ]["x_pitch"]
     y_pitch = npx_probe[imDatPrb_type ]["y_pitch"]
-    if imDatPrb_type in (0, 21, 'Phase3a'):
-        # one shank
-        stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x_pitch"] / 2
-        x_pos = x_idx * x_pitch + stagger
-        y_pos = y_idx * y_pitch
-        shank_ids = None
-        contact_ids = [f'e{elec_id}' for elec_id in elec_ids]
-    elif imDatPrb_type in (24, ):
-        # 4 shanks
+
+    stagger =  np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type]["stagger"]
+    x_pos = x_idx * x_pitch + stagger
+    y_pos = y_idx * y_pitch
+    
+    if imDatPrb_type == 24:
         shank_ids = np.array(contact_info['shank_id'])
-        shank_pitch = npx_probe[imDatPrb_type]["shank_pitch"]
-        x_pos = x_idx * x_pitch + shank_ids * shank_pitch
-        y_pos = y_idx * y_pitch
         contact_ids = [f's{shank_id}e{elec_id}' for shank_id, elec_id in zip(shank_ids, elec_ids)]
-    elif imDatPrb_type in (1030, 1031):
-        # one shank, NHP probes with staggered electrodes
-        #stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["x_pitch"] / 2
-        stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["contact_width"]
-        x_pos = x_idx * x_pitch + stagger
-        y_pos = y_idx * y_pitch
-        shank_ids = None
+    else:
+        shank_ids = None 
         contact_ids = [f'e{elec_id}' for elec_id in elec_ids]
-    elif imDatPrb_type in (1015, 1022, 1032):
-        # one shank, NHP probes with linear electrodes
-        stagger = 0
-        x_pos = x_idx * x_pitch + stagger
-        y_pos = y_idx * y_pitch
-        shank_ids = None
-        contact_ids = [f'e{elec_id}' for elec_id in elec_ids]
+
 
     positions = np.zeros((num_contact, 2), dtype='float64')
     positions[:, 0] = x_pos
@@ -1051,7 +1044,6 @@ def read_spikeglx(file):
     
     assert "imroTbl" in meta, "Could not find imroTbl field in meta file!"
     imro_table = meta['imroTbl']
-    chan_map_str = meta['snsChanMap']
     
     probe = _read_imro_string(imro_table)
     
@@ -1299,23 +1291,10 @@ def read_openephys(
             if ptype is None:
                 contact_ids = None
                 break
-            elif ptype == 0:
-                shank_id = 0
-                stagger = np.mod(pos[1] / npx_probe[ptype]["y_pitch"] + 1, 2) * npx_probe[ptype]["x_pitch"] / 2
-            elif ptype == 21:
-                shank_id = 0
-                stagger = 0
-            elif ptype in (1030, 1031):
-                shank_id = 0
-                stagger = np.mod(pos[1] / npx_probe[ptype]["y_pitch"] + 1, 2) * npx_probe[ptype]["contact_width"]
-                #stagger = np.mod(pos[1] / npx_probe[ptype]["y_pitch"] + 1, 2) * npx_probe[ptype]["x_pitch"] / 2
-                #stagger = np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type ]["contact_width"]
-            elif ptype in (1015, 1022, 1032):
-                shank_id = 0
-                stagger = 0
-            else:
-                shank_id = shank_ids[i]
-                stagger = 0
+            
+            stagger = np.mod(pos[1] / npx_probe[ptype]["y_pitch"] + 1, 2) * npx_probe[ptype]["stagger"]            
+            shank_id = shank_ids[0] if ptype == 24 else 0
+            
             contact_id = int((pos[0] - stagger - npx_probe[ptype]["shank_pitch"] * shank_id) / \
                 npx_probe[ptype]["x_pitch"] + npx_probe[ptype]["ncol"] * pos[1] / npx_probe[ptype]["y_pitch"])
             if ptype == 24:
