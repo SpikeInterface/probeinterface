@@ -900,7 +900,7 @@ def _read_imro_string(imro_str):
         shank_ids = None
         contact_ids = [f'e{elec_id}' for elec_id in elec_ids]
     elif imDatPrb_type in (1015, 1022, 1032):
-        # one shank, NHP (no human primate)  probes with linear electrodes
+        # one shank, NHP (non-human primate)  probes with linear electrodes
         stagger = 0
         x_pos = x_idx * x_pitch + stagger
         y_pos = y_idx * y_pitch
