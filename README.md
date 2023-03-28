@@ -27,8 +27,8 @@
 <tr>
   <td>Build Status</td>
   <td>
-    <a href="https://github.com/SpikeInterface/probeinterface/actions/workflows/full_tests/badge.svg">
-    <img src="https://github.com/SpikeInterface/probeinterface/actions/workflows/full_tests/badge.svg" alt="CI build status" />
+    <a href="https://github.com/SpikeInterface/probeinterface/actions/workflows/full_tests.yml/badge.svg">
+    <img src="https://github.com/SpikeInterface/probeinterface/actions/workflows/full_tests.yml/badge.svg" alt="CI build status" />
     </a>
   </td>
 </tr>

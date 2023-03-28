@@ -53,3 +53,8 @@ docs = [
     "scipy",
     "pandas",
 ]
+
+[tool.coverage.run]
+omit = [
+    "tests/*",
+]
