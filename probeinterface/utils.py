@@ -1,10 +1,49 @@
 """
 Some utility functions
 """
+from importlib import import_module
+from types import ModuleType
+
 import numpy as np
 
 from .probe import Probe
 
+def import_safely(module: str) -> ModuleType:
+    """
+    Safely import a module with importlib and return the imported module object.
+
+    Parameters
+    ----------
+    module : str
+        The name of the module to import.
+
+    Returns
+    -------
+    module_obj : module
+        The imported module object.
+
+    Raises
+    ------
+    ImportError
+        If the specified module cannot be imported.
+
+    Examples
+    --------
+    >>> import math
+    >>> math_module = import_safely("math")
+    >>> math_module.sqrt(4)
+    2.0
+
+    >>> import_safely("non_existent_module")
+    ImportError: No module named 'non_existent_module'
+    """
+
+    try:
+        module_obj = import_module(module)
+    except ImportError as error:
+        raise ImportError(f"{repr(error)}")
+
+    return module_obj
 
 def combine_probes(probes, connect_shape=True):
     """
