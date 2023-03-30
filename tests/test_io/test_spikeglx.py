@@ -93,10 +93,10 @@ def test_get_saved_channel_indices_from_spikeglx_meta():
     assert chan_inds.size == 152
 
 
-def test_NPHP_long_staggered():
+def test_NPH_long_staggered():
     # Data provided by Nate Dolensek
     probe = read_spikeglx(data_path / "non_human_primate_long_staggered.imec0.ap.meta")
-
+    
     assert probe.annotations["name"] == "Neuropixels 1.0-NHP - long SOI90 staggered"
     assert probe.annotations["manufacturer"] == "IMEC"
     assert probe.annotations["probe_type"] == 1030
@@ -135,8 +135,70 @@ def test_NPHP_long_staggered():
     every_second_contact = y[::2]
     increase = np.diff(every_second_contact)
     assert np.allclose(increase, y_pitch)
+    
+    # Test vector annotaitons
+    ap_gains = probe.contact_annotations["ap_gains"]
+    lf_gains = probe.contact_annotations["lf_gains"]
+    banks = probe.contact_annotations["banks"]
+    references = probe.contact_annotations["references"]
+    filters = probe.contact_annotations["ap_hp_filters"]
+    assert np.allclose(ap_gains, 500)
+    assert np.allclose(lf_gains, 250)
+    assert np.allclose(banks, 0)
+    assert np.allclose(references, 0)
+    assert np.allclose(filters, 1)
 
+def test_NPH_short_linear_probe_type_0():
+    # Data provided by Jonathan A Michaels 
+    probe = read_spikeglx(data_path / "non_human_primate_short_linear_probe_type_0.meta")
+    
+    assert probe.annotations["name"] == "Neuropixels 1.0-NHP - short"
+    assert probe.annotations["manufacturer"] == "IMEC"
+    assert probe.annotations["probe_type"] == 1015
 
+    assert probe.ndim == 2
+    assert probe.get_shank_count() == 1
+    assert probe.get_contact_count() == 384
+    
+
+    # Test contact geometry
+    x_pitch = 56.0
+    y_pitch = 20.0
+    contact_width = 12.0
+    contact_shape = "square"
+    
+    assert np.all(probe.contact_shape_params == {"width": contact_width})
+    assert np.all(probe.contact_shapes == contact_shape)
+        
+    contact_positions = probe.contact_positions
+    x = contact_positions[:, 0]
+    y = contact_positions[:, 1]
+    
+    # Every second contact the x position should increase by x_pitch
+    increase = np.diff(x)
+    every_second_increase = increase[::2]
+    x_pitch = 32
+    assert np.allclose(every_second_increase, x_pitch)
+        
+    # Every second contact should increase by y_pitch
+    y_pitch = 20.0
+    every_second_contact = y[::2]
+    increase = np.diff(every_second_contact)
+    assert np.allclose(increase, y_pitch)
+
+    # Test vector annotaitons
+    ap_gains = probe.contact_annotations["ap_gains"]
+    lf_gains = probe.contact_annotations["lf_gains"]
+    banks = probe.contact_annotations["banks"]
+    references = probe.contact_annotations["references"]
+    filters = probe.contact_annotations["ap_hp_filters"]
+    assert np.allclose(ap_gains, 500)
+    assert np.allclose(lf_gains, 250)
+    assert np.allclose(banks, 0)
+    assert np.allclose(references, 0)
+    assert np.allclose(filters, 1)
+    
+    
 def test_ultra_probe():
     # Data provided by Alessio
     probe = read_spikeglx(data_path / "npUltra.meta")
