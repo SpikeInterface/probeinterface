@@ -918,10 +918,11 @@ probe_number_to_probe_type = {
     "NP1030": 1030,
     "NP1031": 1031,
     "NP1032": 1032,
+    None: 0,
 }
 
     
-def read_imro(file: Union[str, Path]) -> Probe:
+def read_imro(file_path: Union[str, Path]) -> Probe:
     """
     Read probe position from the imro file used in input of SpikeGlx and Open-Ephys for neuropixels probes.
 

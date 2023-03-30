@@ -49,7 +49,7 @@ def test_writeprobeinterface(tmp_path):
     write_probeinterface(file_path, probe)
     
     probe_read = read_probeinterface(file_path)
-
+    
 
 def test_BIDS_format(tmp_path):
     folder_path = tmp_path / "test_BIDS"
