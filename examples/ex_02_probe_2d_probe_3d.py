@@ -2,7 +2,7 @@
 2d and 3d Probes
 ----------------
 
-This example shows how to manipulate the probe in 2d or 3d.
+This example shows how to manipulate a probe in 2d or 3d.
 """
 
 ##############################################################################
@@ -15,7 +15,7 @@ from probeinterface import Probe
 from probeinterface.plotting import plot_probe
 
 ##############################################################################
-# First, let's create one 2d probe with 32 contacts:
+# First, let's create one 2d probe with 24 contacts:
 
 n = 24
 positions = np.zeros((n, 2))
@@ -47,7 +47,7 @@ df = probe_3d.to_dataframe()
 df[['x', 'y', 'z']].head()
 
 ##############################################################################
-#  The plotting function autiomatically displays the `Probe` in 3d:
+#  The plotting function automatically displays the `Probe` in 3d:
 
 plot_probe(probe_3d)
 

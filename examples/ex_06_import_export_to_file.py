@@ -8,12 +8,12 @@ It has a 'probes' key that can contain a list of probes.
 
 Each probe field in the json format contains the `Probe` class attributes.
 
-It also supports reading (and sometimes writing) from theses formats:
+It also supports reading (and sometimes writing) from these formats:
 
   * PRB (.prb) : used by klusta/spyking-circus/tridesclous
-  * CVS (.csv): 2 or 3 columns locations in text file
-  * mearec (.h5) : mearec handle the geometry 
-  * spikeglx (.meta) : spikeglx handle the handle also the geometry
+  * CSV (.csv): 2 or 3 columns locations in text file
+  * mearec (.h5) : mearec handles the geometry 
+  * spikeglx (.meta) : spikeglx also handles the geometry
 
 """
 
@@ -67,7 +67,7 @@ print(txt[:600], '...')
 #   * contact_positions with 'geometry'
 #   * device_channel_indices with 'channels'
 #
-# Here an example .prb file with 2 channel groups of 4 channels each.
+# Here is an example of a .prb file with 2 channel groups of 4 channels each.
 # It can be easily loaded and plotted with `probeinterface`
 
 

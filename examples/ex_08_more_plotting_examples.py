@@ -2,7 +2,7 @@
 More plotting examples
 ----------------------
 
-Here some examples to showcase several plotting scenarios.
+Here are some examples to showcase several plotting scenarios.
 
 """
 
@@ -24,7 +24,7 @@ fig, ax = plt.subplots()
 probe0 = generate_multi_columns_probe()
 plot_probe(probe0, ax=ax)
 
-# make some colors for each probe
+# give each probe a different color
 probe1 = generate_linear_probe(num_elec=9)
 probe1.rotate(theta=15)
 probe1.move([200, 0])
@@ -58,7 +58,7 @@ ax.set_ylim(-200, 350)
 ax.set_aspect('equal')
 
 ##############################################################################
-# Some example in 3d for romantic who like flowers...
+# Some examples in 3d for the romantic who likes flowers...
 
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1, projection='3d')

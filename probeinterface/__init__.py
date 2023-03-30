@@ -10,7 +10,8 @@ from .io import (
     read_csv, write_csv,
     read_imro, write_imro,
     read_BIDS_probe, write_BIDS_probe,
-    read_spikeglx, read_mearec, read_nwb,
+    read_spikeglx, parse_spikeglx_meta, get_saved_channel_indices_from_spikeglx_meta,
+    read_mearec, read_nwb,
     read_maxwell, read_3brain, read_openephys)
 from .utils import combine_probes
 from .generator import (generate_dummy_probe, generate_dummy_probe_group,
