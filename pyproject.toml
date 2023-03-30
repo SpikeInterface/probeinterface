@@ -40,9 +40,11 @@ package-dir = {"probeinterface" = "probeinterface"}
 
 test = [
     "pytest",
+    "pytest-cov",
     "matplotlib",
     "scipy",
     "pandas",
+    "h5py",
 ]
 
 docs = [
@@ -51,4 +53,9 @@ docs = [
     "matplotlib==3.2.2",
     "scipy",
     "pandas",
+]
+
+[tool.coverage.run]
+omit = [
+    "tests/*",
 ]

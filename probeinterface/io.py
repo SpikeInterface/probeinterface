@@ -10,7 +10,7 @@ Read/write probe info using a variety of formats:
 
 """
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 import re
 import json
 from collections import OrderedDict
@@ -20,6 +20,7 @@ import numpy as np
 from . import __version__
 from .probe import Probe
 from .probegroup import ProbeGroup
+from .utils import import_safely
 
 
 
@@ -57,7 +58,7 @@ def read_probeinterface(file):
     return ProbeGroup.from_dict(d)
 
 
-def write_probeinterface(file, probe_or_probegroup):
+def write_probeinterface(file: Union[str, Path], probe_or_probegroup: Union[Probe, ProbeGroup]):
     """
     Write a probeinterface JSON file.
 
@@ -102,7 +103,7 @@ tsv_label_map_to_BIDS = {
 tsv_label_map_to_probeinterface = {v: k for k, v in tsv_label_map_to_BIDS.items()}
 
 
-def read_BIDS_probe(folder, prefix=None):
+def read_BIDS_probe(folder: Union[str, Path], prefix: bool = None) -> ProbeGroup:
     """
     Read to BIDS probe format.
 
@@ -122,7 +123,7 @@ def read_BIDS_probe(folder, prefix=None):
 
     """
 
-    import pandas as pd
+    pd = import_safely("pandas")
 
     folder = Path(folder)
     probes = {}
@@ -309,7 +310,8 @@ def read_BIDS_probe(folder, prefix=None):
     return probegroup
 
 
-def write_BIDS_probe(folder, probe_or_probegroup, prefix=""):
+def write_BIDS_probe(folder: Union[str, Path], probe_or_probegroup: Union[Probe, ProbeGroup], 
+                     prefix=""):
     """
     Write to probe and contact formats as proposed
     for ephy BIDS extension (tsv & json based).
@@ -327,8 +329,8 @@ def write_BIDS_probe(folder, probe_or_probegroup, prefix=""):
 
     """
 
-    import pandas as pd
-
+    pd = import_safely("pandas")
+    
     if isinstance(probe_or_probegroup, Probe):
         probe = probe_or_probegroup
         probegroup = ProbeGroup()
@@ -440,7 +442,7 @@ def write_BIDS_probe(folder, probe_or_probegroup, prefix=""):
         json.dump({"ContactId": contacts_dict}, f, indent=4)
 
 
-def read_prb(file):
+def read_prb(file: Union[str, Path]) -> ProbeGroup:
     """
     Read a PRB file and return a ProbeGroup object.
 
@@ -490,7 +492,9 @@ def read_prb(file):
     return probegroup
 
 
-def read_maxwell(file, well_name="well000", rec_name="rec0000"):
+def read_maxwell(
+    file: Union[str, Path], well_name: str = "well000", rec_name: str = "rec0000"
+) -> Probe:
     """
     Read a maxwell file and return a Probe object. The Maxwell file format can be
     either Maxone (and thus just the file name is needed), or MaxTwo. In case
@@ -520,11 +524,8 @@ def read_maxwell(file, well_name="well000", rec_name="rec0000"):
     file = Path(file).absolute()
     assert file.is_file()
 
-    try:
-        import h5py
-    except ImportError as error:
-        print(error.__class__.__name__ + ": " + error.message)
-
+    
+    h5py = import_safely("h5py")
     my_file = h5py.File(file, mode="r")
 
     if "mapping" in my_file.keys():
@@ -567,7 +568,9 @@ def read_maxwell(file, well_name="well000", rec_name="rec0000"):
     return probe
 
 
-def read_3brain(file, mea_pitch=42, electrode_width=21):
+def read_3brain(
+    file: Union[str, Path], mea_pitch: float = 42, electrode_width: float = 21
+) -> Probe:
     """
     Read a 3brain file and return a Probe object. The 3brain file format can be
     either an .h5 file or a .brw
@@ -591,11 +594,7 @@ def read_3brain(file, mea_pitch=42, electrode_width=21):
     file = Path(file).absolute()
     assert file.is_file()
 
-    try:
-        import h5py
-    except ImportError as error:
-        print(error.__class__.__name__ + ": " + error.message)
-
+    h5py = import_safely("h5py")
     rf = h5py.File(file, "r")
 
     # get channel positions
@@ -700,100 +699,205 @@ def write_csv(file, probe):
     raise NotImplementedError
 
 
-# neuropixels info
+polygon_description = {
+    "default": [
+        (0, 10000),
+        (0, 0),
+        (35, -175),
+        (70, 0),
+        (70, 10000),
+    ],
+    "nhp90": [
+        (0, 10000),
+        (0, 0),
+        (45, -342),
+        (90, 0),
+        (90, 10000),
+    ],
+    "nhp125": [
+        (0, 10000),
+        (0, 0),
+        (62.5, -342),
+        (125, 0),
+        (125, 10000),
+    ],
+}
+
+# A map from probe type to geometry_parameters
 # A map from probe type to geometry_parameters
 npx_probe = {
     # Neuropixels 1.0
     # This probably should be None or something else because NOT ONLY the neuropixels 1.0 have that imDatPrb_type
     0: {
+        "probe_name": "Neuropixels 1.0",
         "x_pitch": 32,
         "y_pitch": 20,
         "contact_width": 12,
         "stagger": 16,
         "shank_pitch": 0,
         "shank_number": 1,
-        "ncol": 2
+        "ncol": 2,
+        "polygon": polygon_description["default"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+            "ap_hp_filters",
+        ),
     },
-    # Neuropixels 2.0 - Single Shank
+    # Neuropixels 2.0 - Single Shank
     21: {
+        "probe_name": "Neuropixels 2.0 - Single Shank",
         "x_pitch": 32,
         "y_pitch": 15,
         "contact_width": 12,
         "stagger": 0.0,
         "shank_pitch": 0,
         "shank_number": 1,
-        "ncol": 2
+        "ncol": 2,
+        "polygon": polygon_description["default"],
+        "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
     },
-    # Neuropixels 2.0 - Four Shank
+    # Neuropixels 2.0 - Four Shank
     24: {
+        "probe_name": "Neuropixels 2.0 - Four Shank",
         "x_pitch": 32,
         "y_pitch": 15,
         "contact_width": 12,
         "stagger": 0.0,
         "shank_pitch": 250,
         "shank_number": 4,
-        "ncol": 2
+        "ncol": 2,
+        "polygon": polygon_description["default"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "shank_id",
+            "banks",
+            "references",
+            "elec_ids",
+        ),
     },
-    # Identical to Neuropixels 1.0 but has diffent headers 
-    'Phase3a': {
+    #
+    "Phase3a": {
+        "probe_name": "Phase3a",
         "x_pitch": 32,
         "y_pitch": 20,
         "contact_width": 12,
         "stagger": 16.0,
         "shank_pitch": 0,
         "shank_number": 1,
-        "ncol": 2
-	    },
+        "ncol": 2,
+        "polygon": polygon_description["default"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+        ),
+    },
     # Neuropixels 1.0-NHP Short (10mm)
     1015: {
+        "probe_name": "Neuropixels 1.0-NHP - medium",
         "x_pitch": 32,
         "y_pitch": 20,
         "contact_width": 12,
         "stagger": 0,
         "shank_pitch": 0,
         "shank_number": 1,
-        "ncol": 2
+        "ncol": 2,
+        "polygon": polygon_description["default"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+            "ap_hp_filters",
+        ),
     },
     # Neuropixels 1.0-NHP Medium (25mm)
     1022: {
+        "probe_name": "Neuropixels 1.0-NHP - medium",
         "x_pitch": 103,
         "y_pitch": 20,
         "contact_width": 12,
         "stagger": 0.0,
         "shank_pitch": 0,
         "shank_number": 1,
-        "ncol": 2
+        "ncol": 2,
+        "polygon": polygon_description["nhp125"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+            "ap_hp_filters",
+        ),
     },
-    # Neuropixels 1.0-NHP 45mm SOI90 - NHP long 90um wide, staggered contacts 
+    # Neuropixels 1.0-NHP 45mm SOI90 - NHP long 90um wide, staggered contacts
     1030: {
+        "probe_name": "Neuropixels 1.0-NHP - long SOI90 staggered",
         "x_pitch": 56,
         "y_pitch": 20,
         "stagger": 12,
         "contact_width": 12,
         "shank_pitch": 0,
         "shank_number": 1,
-        "ncol": 2
+        "ncol": 2,
+        "polygon": polygon_description["nhp90"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+            "ap_hp_filters",
+        ),
     },
     # Neuropixels 1.0-NHP 45mm SOI125 - NHP long 125um wide, staggered contacts
     1031: {
+        "probe_name": "Neuropixels 1.0-NHP - long SOI125 staggered",
         "x_pitch": 91,
         "y_pitch": 20,
         "contact_width": 12,
         "stagger": 12.0,
         "shank_pitch": 0,
         "shank_number": 1,
-        "ncol": 2
-    },  
+        "ncol": 2,
+        "polygon": polygon_description["nhp125"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+            "ap_hp_filters",
+        ),
+    },
     # 1.0-NHP 45mm SOI115 / 125 linear - NHP long 125um wide, linear contacts
     1032: {
+        "probe_name": "Neuropixels 1.0-NHP - long SOI125 linear",
         "x_pitch": 103,
         "y_pitch": 20,
         "contact_width": 12,
         "stagger": 0.0,
         "shank_pitch": 0,
         "shank_number": 1,
-        "ncol": 2
-    }
+        "ncol": 2,
+        "polygon": polygon_description["nhp125"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+            "ap_hp_filters",
+        ),
+    },
 }
 
 # Map imDatPrb_pn to imDatPrb_type when the latter is missing
@@ -832,7 +936,7 @@ def read_imro(file: Union[str, Path]) -> Probe:
 
 def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
     """
-    Low-level function to parse imro string
+    Low-level function to parse the imro table when presented as a string
     
     See this doc https://billkarsh.github.io/SpikeGLX/help/imroTables/
     
@@ -852,37 +956,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
     if imDatPrb_type in [0, None]:
         imDatPrb_type = probe_number_to_probe_type[imDatPrb_pn] 
     
-    # disptach values from list in the info dict
-    if imDatPrb_type == 0:
-        probe_name = "Neuropixels 1.0"
-        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
-    elif imDatPrb_type == 21:
-        probe_name = "Neuropixels 2.0 - SingleShank"
-        fields = ('channel_ids', 'banks', 'references', 'elec_ids')
-    elif imDatPrb_type == 24:
-        probe_name = "Neuropixels 2.0 - MultiShank"
-        fields = ('channel_ids', 'shank_id', 'banks', 'references', 'elec_ids')
-    elif imDatPrb_type == 'Phase3a':
-        probe_name = "Neuropixels Phase3a"
-        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains')
-    elif imDatPrb_type == 1015:
-        probe_name = "Neuropixels 1.0-NHP - short"
-        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
-    elif imDatPrb_type == 1022:
-        probe_name = "Neuropixels 1.0-NHP - medium"
-        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
-    elif imDatPrb_type == 1030:
-        probe_name = "Neuropixels 1.0-NHP - long SOI90 staggered"
-        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
-    elif imDatPrb_type == 1031:
-        probe_name = "Neuropixels 1.0-NHP - long SOI125 staggered"
-        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
-    elif imDatPrb_type == 1032:
-        probe_name = "Neuropixels 1.0-NHP - long SOI125 linear"
-        fields = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
-    else:
-        raise RuntimeError(f'unsupported imro type : {imDatPrb_type}')    
-
+    fields = npx_probe[imDatPrb_type]["fields_in_imro_table"]
     contact_info = {k: [] for k in fields}
     for i, part in enumerate(parts):
         values = tuple(map(int, part[1:].split(' ')))
@@ -927,23 +1001,19 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
                        shape_params={'width': npx_probe[imDatPrb_type]["contact_width"]})
     probe.set_contact_ids(contact_ids)
 
-    # planar contour
-    one_polygon = [(0, 10000), (0, 0), (35, -175), (70, 0), (70, 10000), ]
-    nhp90_polygon = [(0, 10000), (0, 0), (45, -342), (90, 0), (90, 10000), ]
-    nhp125_polygon = [(0, 10000), (0, 0), (62.5, -342), (125, 0), (125, 10000), ]
+    # Add planar contour
+    polygon = np.array(npx_probe[imDatPrb_type]["polygon"])
     contour = []
     for shank_id in range(npx_probe[imDatPrb_type]["shank_number"]):
-        if imDatPrb_type in (1030, ):
-            contour += list(np.array(nhp90_polygon) + [ npx_probe[imDatPrb_type]["shank_pitch"] * shank_id, 0])
-        elif imDatPrb_type in (1022, 1031, 1032):
-            contour += list(np.array(nhp125_polygon) + [ npx_probe[imDatPrb_type]["shank_pitch"] * shank_id, 0])
-        else:
-            contour += list(np.array(one_polygon) + [ npx_probe[imDatPrb_type]["shank_pitch"] * shank_id, 0])
+        shift = [npx_probe[imDatPrb_type]["shank_pitch"] * shank_id, 0]
+        contour += list(polygon + shift)
+      
     # shift
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
     
     # this is scalar annotations
+    probe_name = npx_probe[imDatPrb_type]["probe_name"]
     probe.annotate(
         name=probe_name,
         manufacturer="IMEC",
@@ -951,11 +1021,9 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
     )
     
     # this is vector annotations
-    annotations = {}
-    for k in ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters'):
-        if k in contact_info:
-            annotations[k] = contact_info[k]
-    probe.annotate_contacts(**annotations)
+    vector_properties = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
+    vector_properties_available = {k: v  for k, v in contact_info.items() if k in vector_properties}
+    probe.annotate_contacts(**vector_properties_available)
     
     # wire it
     probe.set_device_channel_indices(np.arange(positions.shape[0]))
@@ -1000,7 +1068,7 @@ def write_imro(file, probe):
         f.write(''.join(ret))
 
 
-def read_spikeglx(file):
+def read_spikeglx(file: Union[str, Path]) -> Probe:
     """
     Read probe position for the meta file generated by SpikeGLX
 
@@ -1048,7 +1116,7 @@ def read_spikeglx(file):
     return probe
 
 
-def parse_spikeglx_meta(meta_file):
+def parse_spikeglx_meta(meta_file: Union[str, Path]) -> dict:
     """
     Parse the "meta" file from spikeglx into a dict.
     All fiields are kept in txt format and must also parsed themself.
@@ -1067,7 +1135,7 @@ def parse_spikeglx_meta(meta_file):
     return meta
     
 
-def get_saved_channel_indices_from_spikeglx_meta(meta_file):
+def get_saved_channel_indices_from_spikeglx_meta(meta_file: Union[str, Path]) -> np.array:
     """
     Utils function to get the saved channels.
     
@@ -1099,13 +1167,13 @@ def get_saved_channel_indices_from_spikeglx_meta(meta_file):
 
 
 def read_openephys(
-    settings_file,
-    stream_name=None,
-    probe_name=None,
-    serial_number=None,
-    fix_x_position_for_oe_5=True,
-    raise_error=True,
-):
+    settings_file: Union[str, Path],
+    stream_name: Optional[str] = None,
+    probe_name: Optional[str] = None,
+    serial_number: Optional[str] = None,
+    fix_x_position_for_oe_5: bool = True,
+    raise_error: bool = True,
+) -> Probe:
     """
     Read probe positions from Open Ephys folder when using the Neuropix-PXI plugin.
     The reader assumes that the NP_PROBE fields are available in the settings file.
@@ -1148,7 +1216,8 @@ def read_openephys(
     probe : Probe object
 
     """
-    import xml.etree.ElementTree as ET
+
+    ET = import_safely("xml.etree.ElementTree")
     # parse xml
     tree = ET.parse(str(settings_file))
     root = tree.getroot()
@@ -1416,37 +1485,13 @@ def read_openephys(
     if np_probe_info['contact_ids'] is not None:
         probe.set_contact_ids(np_probe_info['contact_ids'])
 
-    # planar contour
-    one_polygon = [
-        (0, 10000),
-        (0, 0),
-        (35, -175),
-        (70, 0),
-        (70, 10000),
-    ]
-    # planar contour - 1.0-NHP SOI90
-    nhp90_polygon = [
-        (0, 10000),
-        (0, 0),
-        (45, -342),
-        (90, 0),
-        (90, 10000),
-    ]
-    # planar contour - 1.0-NHP SOI125
-    nhp125_polygon = [
-        (0, 10000),
-        (0, 0),
-        (62.5, -342),
-        (125, 0),
-        (125, 10000),
-    ]
-
+    polygon = polygon_description["default"]
     if shank_ids is None:
-        contour = one_polygon
+        contour = polygon
     else:
         contour = []
         for i, shank_id in enumerate(np.unique(shank_ids)):
-            contour += list(np.array(one_polygon) + [shank_pitch * i, 0])
+            contour += list(np.array(polygon) + [shank_pitch * i, 0])
 
     # shift
     contour = np.array(contour) - [11, 11]
@@ -1458,7 +1503,7 @@ def read_openephys(
     return probe
 
 
-def read_mearec(file):
+def read_mearec(file: Union[str, Path]) -> Probe:
     """
     Read probe position, and contact shape from a MEArec file.
 
@@ -1478,10 +1523,7 @@ def read_mearec(file):
     file = Path(file).absolute()
     assert file.is_file()
 
-    try:
-        import h5py
-    except ImportError as error:
-        print(error.__class__.__name__ + ": " + error.message)
+    h5py = import_safely("h5py")
 
     f = h5py.File(file, "r")
     positions = f["channel_positions"][()]
