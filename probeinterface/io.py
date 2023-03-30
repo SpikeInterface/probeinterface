@@ -724,7 +724,6 @@ polygon_description = {
 }
 
 # A map from probe type to geometry_parameters
-# A map from probe type to geometry_parameters
 npx_probe = {
     # Neuropixels 1.0
     # This probably should be None or something else because NOT ONLY the neuropixels 1.0 have that imDatPrb_type
@@ -1006,7 +1005,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
     for shank_id in range(npx_probe[imDatPrb_type]["shank_number"]):
         shift = [npx_probe[imDatPrb_type]["shank_pitch"] * shank_id, 0]
         contour += list(polygon + shift)
-        
+
     # shift
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
