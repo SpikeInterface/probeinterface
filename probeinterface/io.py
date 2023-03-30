@@ -975,8 +975,8 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
     if imDatPrb_type in [0, None]:
         imDatPrb_type = probe_number_to_probe_type[imDatPrb_pn] 
     
-    probe_information = npx_probe[imDatPrb_type]
-    fields = probe_information["fields_in_imro_table"]
+    probe_description = npx_probe[imDatPrb_type]
+    fields = probe_description["fields_in_imro_table"]
     contact_info = {k: [] for k in fields}
     for i, part in enumerate(parts):
         values = tuple(map(int, part[1:].split(' ')))
@@ -991,13 +991,12 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
     else:
         elec_ids = np.array(contact_info['elec_ids'])
 
-    
     # compute position
-    y_idx, x_idx = np.divmod(elec_ids, npx_probe[imDatPrb_type]["ncol"])
-    x_pitch = npx_probe[imDatPrb_type ]["x_pitch"]
-    y_pitch = npx_probe[imDatPrb_type ]["y_pitch"]
+    y_idx, x_idx = np.divmod(elec_ids, probe_description["ncol"])
+    x_pitch = probe_description["x_pitch"]
+    y_pitch = probe_description["y_pitch"]
 
-    stagger =  np.mod(y_idx + 1, 2) * probe_information["stagger"]
+    stagger = np.mod(y_idx + 1, 2) * probe_description["stagger"]
     x_pos = x_idx * x_pitch + stagger
     y_pos = y_idx * y_pitch
     positions = np.stack((x_pos, y_pos), axis=1)
@@ -1015,16 +1014,16 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
         positions=positions,
         shapes="square",
         shank_ids=shank_ids,
-        shape_params={"width": probe_information["contact_width"]},
+        shape_params={"width": probe_description["contact_width"]},
     )
 
     probe.set_contact_ids(contact_ids)
 
     # Add planar contour
-    polygon = np.array(probe_information["polygon"])
+    polygon = np.array(probe_description["polygon"])
     contour = []
-    shank_pitch = probe_information["shank_pitch"]
-    for shank_id in range(probe_information["shank_number"]):
+    shank_pitch = probe_description["shank_pitch"]
+    for shank_id in range(probe_description["shank_number"]):
         shift = [shank_pitch * shank_id, 0]
         contour += list(polygon + shift)
 
@@ -1033,7 +1032,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
     probe.set_planar_contour(contour)
     
     # this is scalar annotations
-    probe_name = probe_information["probe_name"]
+    probe_name = probe_description["probe_name"]
     probe.annotate(
         name=probe_name,
         manufacturer="IMEC",

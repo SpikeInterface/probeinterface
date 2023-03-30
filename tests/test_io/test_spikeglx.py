@@ -208,10 +208,23 @@ def test_ultra_probe():
     assert probe.annotations["probe_type"] == 1100
 
     # Test contact geometry
-    x_pitch = 6.0
-    y_pitch = 6.0
     contact_width = 5.0
     contact_shape = "square"
 
     assert np.all(probe.contact_shape_params == {"width": contact_width})
     assert np.all(probe.contact_shapes == contact_shape)
+    
+    contact_positions = probe.contact_positions
+    x = contact_positions[:, 0]
+    y = contact_positions[:, 1]
+    
+    expected_electrode_columns = 8
+    unique_x_values = np.unique(x)
+    assert unique_x_values.size == expected_electrode_columns
+    
+    expected_electode_rows = 48
+    unique_y_values = np.unique(y)
+    assert unique_y_values.size == expected_electode_rows
+    
+    
+    
