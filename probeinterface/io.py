@@ -778,6 +778,15 @@ npx_probe = {
             "elec_ids",
         ),
     },
+    'Ultra': {
+        "x_pitch": 6,
+        "y_pitch": 6,
+        "contact_width": 5,
+        "stagger": 0.0,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 8
+    },
     #
     "Phase3a": {
         "probe_name": "Phase3a",
@@ -1319,6 +1328,9 @@ def read_openephys(
         elif "1.0" in pname:
             ptype = 0
             x_shift = -11
+        elif "Ultra" in pname:
+            ptype = "Ultra"
+            x_shift = -8
         else: # Probe type unknown
             ptype = None
             x_shift = 0
@@ -1333,7 +1345,7 @@ def read_openephys(
             if ptype is None:
                 contact_ids = None
                 break
-            
+
             stagger = np.mod(pos[1] / npx_probe[ptype]["y_pitch"] + 1, 2) * npx_probe[ptype]["stagger"]            
             shank_id = shank_ids[0] if ptype == 24 else 0
             
@@ -1344,7 +1356,6 @@ def read_openephys(
             else:
                 contact_ids.append(f"e{contact_id}")
 
-
         np_probe_dict = {'channel_names': channel_names,
                          'shank_ids': shank_ids,
                          'contact_ids': contact_ids,
@@ -1352,7 +1363,8 @@ def read_openephys(
                          'slot': slot,
                          'port': port,
                          'dock': dock,
-                         'serial_number': np_serial_number}
+                         'serial_number': np_serial_number,
+                         'ptype': ptype}
         # Sequentially assign probe names
         np_probe_dict.update({'name': probe_names_used[probe_idx]})
         np_probes_info.append(np_probe_dict)
@@ -1441,14 +1453,19 @@ def read_openephys(
                 return None
         probe_idx = 0
 
-    contact_width = 12
-    shank_pitch = 250
-
     np_probe_info = np_probes_info[probe_idx]
     np_probe = np_probes[probe_idx]
     positions = np_probe_info['positions']
     shank_ids = np_probe_info['shank_ids']
     pname = np_probe.attrib['probe_name']
+
+    ptype = np_probe_info['ptype']
+    if ptype in npx_probe:
+        contact_width = npx_probe[ptype]['contact_width']
+        shank_pitch = npx_probe[ptype]['shank_pitch']
+    else:
+        contact_width = 12
+        shank_pitch = 250
 
     probe = Probe(ndim=2, si_units="um")
     probe.set_contacts(
