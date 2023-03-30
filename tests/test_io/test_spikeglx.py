@@ -150,7 +150,7 @@ def test_NPH_long_staggered():
     assert np.allclose(filters, 1)
 
 def test_NPH_short_linear_probe_type_0():
-    # Data provided by Nate Dolensek
+    # Data provided by Jonathan A Michaels 
     probe = read_spikeglx(data_path / "non_human_primate_short_linear_probe_type_0.meta")
     
     assert probe.annotations["name"] == "Neuropixels 1.0-NHP - short"
