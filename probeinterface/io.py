@@ -724,9 +724,9 @@ polygon_description = {
 }
 
 # A map from probe type to geometry_parameters
-# A map from probe type to geometry_parameters
 npx_probe = {
     # Neuropixels 1.0
+    # This probably should be None or something else because NOT ONLY the neuropixels 1.0 have that imDatPrb_type
     0: {
         "probe_name": "Neuropixels 1.0",
         "x_pitch": 32,
@@ -808,7 +808,7 @@ npx_probe = {
     },
     # Neuropixels 1.0-NHP Short (10mm)
     1015: {
-        "probe_name": "Neuropixels 1.0-NHP - medium",
+        "probe_name": "Neuropixels 1.0-NHP - short",
         "x_pitch": 32,
         "y_pitch": 20,
         "contact_width": 12,
@@ -908,7 +908,19 @@ npx_probe = {
     },
 }
 
-def read_imro(file):
+# Map imDatPrb_pn to imDatPrb_type when the latter is missing
+probe_number_to_probe_type = {
+    "PRB_1_4_0480_1": 0,
+    "PRB_1_4_0480_1_C": 0,
+    "NP1015": 1015,
+    "NP1022": 1022,
+    "NP1030": 1030,
+    "NP1031": 1031,
+    "NP1032": 1032,
+}
+
+    
+def read_imro(file: Union[str, Path]) -> Probe:
     """
     Read probe position from the imro file used in input of SpikeGlx and Open-Ephys for neuropixels probes.
 
@@ -930,7 +942,7 @@ def read_imro(file):
     return _read_imro_string(imro_str)
 
 
-def _read_imro_string(imro_str: str) -> Probe:
+def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
     """
     Low-level function to parse the imro table when presented as a string
     
@@ -949,6 +961,9 @@ def _read_imro_string(imro_str: str) -> Probe:
     else:
         raise RuntimeError(f'read_imro error, the header has a strange length: {len(header)}')
 
+    if imDatPrb_type in [0, None]:
+        imDatPrb_type = probe_number_to_probe_type[imDatPrb_pn] 
+    
     fields = npx_probe[imDatPrb_type]["fields_in_imro_table"]
     contact_info = {k: [] for k in fields}
     for i, part in enumerate(parts):
@@ -966,8 +981,7 @@ def _read_imro_string(imro_str: str) -> Probe:
         elec_ids = banks * 384 + channel_ids
     
     # compute position
-    x_idx = elec_ids % npx_probe[imDatPrb_type]["ncol"]
-    y_idx = elec_ids // npx_probe[imDatPrb_type]["ncol"]
+    y_idx, x_idx = np.divmod(elec_ids, npx_probe[imDatPrb_type]["ncol"])
     x_pitch = npx_probe[imDatPrb_type ]["x_pitch"]
     y_pitch = npx_probe[imDatPrb_type ]["y_pitch"]
 
@@ -1000,7 +1014,7 @@ def _read_imro_string(imro_str: str) -> Probe:
     for shank_id in range(npx_probe[imDatPrb_type]["shank_number"]):
         shift = [npx_probe[imDatPrb_type]["shank_pitch"] * shank_id, 0]
         contour += list(polygon + shift)
-      
+
     # shift
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
@@ -1094,8 +1108,9 @@ def read_spikeglx(file: Union[str, Path]) -> Probe:
     
     assert "imroTbl" in meta, "Could not find imroTbl field in meta file!"
     imro_table = meta['imroTbl']
+    imDatPrb_pn = meta.get("imDatPrb_pn", None)
     
-    probe = _read_imro_string(imro_table)
+    probe = _read_imro_string(imro_str=imro_table, imDatPrb_pn=imDatPrb_pn)
     
     # sometimes we need to slice the probe when not all channels are saved
     saved_chans = get_saved_channel_indices_from_spikeglx_meta(meta_file)
