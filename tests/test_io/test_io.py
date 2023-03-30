@@ -48,7 +48,18 @@ def test_writeprobeinterface(tmp_path):
     file_path = tmp_path / "test.prb"
     write_probeinterface(file_path, probe)
     
-    probe_read = read_probeinterface(file_path)
+    probe_read = read_probeinterface(file_path).probes[0]
+    assert probe.get_contact_count() == probe_read.get_contact_count()
+    assert np.allclose(probe.contact_positions, probe_read.contact_positions)
+    assert np.allclose(probe.probe_planar_contour, probe_read.probe_planar_contour)
+
+
+def test_writeproeinterface_raises_error_with_bad_input(tmp_path):
+    probe = "WrongInput"
+    file_path = tmp_path / "test.prb"
+    with pytest.raises(ValueError):
+        write_probeinterface(file_path, probe)
+    
     
 
 def test_BIDS_format(tmp_path):
