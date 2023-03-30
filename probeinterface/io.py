@@ -724,7 +724,6 @@ polygon_description = {
 }
 
 # A map from probe type to geometry_parameters
-# A map from probe type to geometry_parameters
 npx_probe = {
     # Neuropixels 1.0
     0: {
@@ -778,16 +777,7 @@ npx_probe = {
             "elec_ids",
         ),
     },
-    'Ultra': {
-        "x_pitch": 6,
-        "y_pitch": 6,
-        "contact_width": 5,
-        "stagger": 0.0,
-        "shank_pitch": 0,
-        "shank_number": 1,
-        "ncol": 8
-    },
-    #
+    # Experimental probes previous to 1.0
     "Phase3a": {
         "probe_name": "Phase3a",
         "x_pitch": 32,
@@ -906,6 +896,26 @@ npx_probe = {
             "ap_hp_filters",
         ),
     },
+    # Ultra probe
+    1100: {
+        "probe_name": "Ultra probe",
+        "x_pitch": 6,
+        "y_pitch": 6,
+        "contact_width": 5,
+        "stagger": 0.0,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 8,
+        "polygon": polygon_description["default"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+            "ap_hp_filters",
+        ),
+    },
 }
 
 def read_imro(file):
@@ -958,13 +968,13 @@ def _read_imro_string(imro_str: str) -> Probe:
             contact_info[k].append(v)
     
     channel_ids = np.array(contact_info['channel_ids'])
-    if 'elec_ids' in contact_info:
-        elec_ids = np.array(contact_info['elec_ids'])
-    
-    if imDatPrb_type == 0 or imDatPrb_type == 'Phase3a' or (imDatPrb_type in (1015, 1022, 1030, 1031, 1032)):
-        # for NP1 and previous the elec_id is not in the list
+    probe_types_without_elec_ids_in_their_imro_table = (0, 1015, 1022, 1030, 1031, 1032, "Phase3a", 1100)
+    if imDatPrb_type in probe_types_without_elec_ids_in_their_imro_table:
         banks = np.array(contact_info['banks'])
         elec_ids = banks * 384 + channel_ids
+    else:
+        elec_ids = np.array(contact_info['elec_ids'])
+
     
     # compute position
     x_idx = elec_ids % probe_information["ncol"]
@@ -975,6 +985,7 @@ def _read_imro_string(imro_str: str) -> Probe:
     stagger =  np.mod(y_idx + 1, 2) * probe_information["stagger"]
     x_pos = x_idx * x_pitch + stagger
     y_pos = y_idx * y_pitch
+    positions = np.stack((x_pos, y_pos), axis=1)
     
     if imDatPrb_type == 24:
         shank_ids = np.array(contact_info['shank_id'])
@@ -983,25 +994,25 @@ def _read_imro_string(imro_str: str) -> Probe:
         shank_ids = None 
         contact_ids = [f'e{elec_id}' for elec_id in elec_ids]
 
-
-    positions = np.zeros((num_contact, 2), dtype='float64')
-    positions[:, 0] = x_pos
-    positions[:, 1] = y_pos
-    
     # construct Probe object
     probe = Probe(ndim=2, si_units='um')
-    probe.set_contacts(positions=positions, shapes='square',
-                       shank_ids=shank_ids,
-                       shape_params={'width': probe_information["contact_width"]})
+    probe.set_contacts(
+        positions=positions,
+        shapes="square",
+        shank_ids=shank_ids,
+        shape_params={"width": probe_information["contact_width"]},
+    )
+
     probe.set_contact_ids(contact_ids)
 
     # Add planar contour
     polygon = np.array(probe_information["polygon"])
     contour = []
+    shank_pitch = probe_information["shank_pitch"]
     for shank_id in range(probe_information["shank_number"]):
-        shift = [probe_information["shank_pitch"] * shank_id, 0]
+        shift = [shank_pitch * shank_id, 0]
         contour += list(polygon + shift)
-      
+
     # shift
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
@@ -1330,7 +1341,7 @@ def read_openephys(
             ptype = 0
             x_shift = -11
         elif "Ultra" in pname:
-            ptype = "Ultra"
+            ptype = 1100
             x_shift = -8
         else: # Probe type unknown
             ptype = None
