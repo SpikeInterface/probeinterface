@@ -800,7 +800,7 @@ npx_probe = {
     },
     # Neuropixels 1.0-NHP Short (10mm)
     1015: {
-        "probe_name": "Neuropixels 1.0-NHP - medium",
+        "probe_name": "Neuropixels 1.0-NHP - short",
         "x_pitch": 32,
         "y_pitch": 20,
         "contact_width": 12,
