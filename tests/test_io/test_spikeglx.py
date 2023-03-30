@@ -73,13 +73,17 @@ def test_NP2_4_shanks():
     assert probe.get_shank_count() == 4
     assert probe.get_contact_count() == 384
     
-    
     # Test contact geometry
     contact_width = 12.0
     contact_shape = "square"
 
     assert np.all(probe.contact_shape_params == {"width": contact_width})
     assert np.all(probe.contact_shapes == contact_shape)
+
+    # This file does not save the channnels from 0 as the one above (NP2_4_shanks_g0_t0.imec0.ap.meta)
+    ypos = probe.contact_positions[:, 1]
+    assert np.min(ypos) == pytest.approx(0)
+
 
 def test_NP2_4_shanks_with_different_electrodes_saved():
     # Data provided by Jennifer Colonell
@@ -102,7 +106,8 @@ def test_NP2_4_shanks_with_different_electrodes_saved():
     
     # This file does not save the channnels from 0 as the one above (NP2_4_shanks_g0_t0.imec0.ap.meta)
     ypos = probe.contact_positions[:, 1]
-    assert np.min(ypos) == pytest.approx(4080.0)
+    assert np.min(ypos) == pytest.approx(2880.0)
+    assert np.max(ypos) == pytest.approx(5745.0)
 
         
 def test_NP1_large_depth_span():
