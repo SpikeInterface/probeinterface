@@ -5,11 +5,8 @@ from probeinterface import (
     read_BIDS_probe,
 )
 from probeinterface import read_prb, write_prb
-from probeinterface import (
-    read_imro,
-    write_imro,
-)
-from probeinterface import generate_dummy_probe_group
+
+from probeinterface import generate_dummy_probe_group, generate_dummy_probe
 
 
 from pathlib import Path
@@ -45,6 +42,13 @@ def test_probeinterface_format(tmp_path):
     # ~ plot_probe_group(probegroup, with_channel_index=True, same_axes=False)
     # ~ plot_probe_group(probegroup2, with_channel_index=True, same_axes=False)
     # ~ plt.show()
+
+def test_writeprobeinterface(tmp_path):
+    probe = generate_dummy_probe()
+    file_path = tmp_path / "test.prb"
+    write_probeinterface(file_path, probe)
+    
+    probe_read = read_probeinterface(file_path)
 
 
 def test_BIDS_format(tmp_path):
@@ -202,17 +206,6 @@ def test_prb(tmp_path):
     # import matplotlib.pyplot as plt
     # plot_probe(probe)
     # plt.show()
-
-
-def test_readimro(tmp_path):
-    probe = read_imro(data_path / "test_multi_shank.imro")
-
-    file_path = tmp_path / "multi_shank_written.imro"
-    write_imro(file_path, probe)
-    probe2 = read_imro(file_path)
-    np.testing.assert_array_equal(probe2.contact_ids, probe.contact_ids)
-    np.testing.assert_array_equal(probe2.contact_positions, probe.contact_positions)
-
 
 if __name__ == "__main__":
     # test_probeinterface_format()

@@ -908,13 +908,13 @@ npx_probe = {
     },
 }
 
-def read_imro(file):
+def read_imro(file_path: Union[str, Path]) -> Probe:
     """
     Read probe position from the imro file used in input of SpikeGlx and Open-Ephys for neuropixels probes.
 
     Parameters
     ----------
-    file : Path or str
+    file_path : Path or str
         The .imro file path
 
     Returns
@@ -923,7 +923,7 @@ def read_imro(file):
 
     """
     # the input is an imro file
-    meta_file = Path(file)
+    meta_file = Path(file_path)
     assert meta_file.suffix == ".imro", "'file' should point to the .imro file"
     with meta_file.open(mode='r') as f:
         imro_str = str(f.read())
@@ -947,7 +947,7 @@ def _read_imro_string(imro_str: str) -> Probe:
     elif len(header) == 2:
         imDatPrb_type, num_contact = header
     else:
-        raise RuntimeError(f'read_imro error, the header has a strange length: {len(header)}')
+        raise ValueError(f'read_imro error, the header has a strange length: {len(header)}')
 
     fields = npx_probe[imDatPrb_type]["fields_in_imro_table"]
     contact_info = {k: [] for k in fields}
@@ -1056,7 +1056,7 @@ def write_imro(file, probe):
                 f"({data['device_channel_indices'][ch]} {data['shank_ids'][ch]} {annotations['banks'][ch]} "
                 f"{annotations['references'][ch]} {data['contact_ids'][ch][3:]})")
     else:
-        raise RuntimeError(f'unknown imro type : {probe_type}')
+        raise ValueError(f'unknown imro type : {probe_type}')
     with open(file, "w") as f:
         f.write(''.join(ret))
 
