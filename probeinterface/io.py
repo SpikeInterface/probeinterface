@@ -973,8 +973,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
         elec_ids = banks * 384 + channel_ids
     
     # compute position
-    x_idx = elec_ids % npx_probe[imDatPrb_type]["ncol"]
-    y_idx = elec_ids // npx_probe[imDatPrb_type]["ncol"]
+    y_idx, x_idx = np.divmod(elec_ids, npx_probe[imDatPrb_type]["ncol"])
     x_pitch = npx_probe[imDatPrb_type ]["x_pitch"]
     y_pitch = npx_probe[imDatPrb_type ]["y_pitch"]
 
@@ -1007,7 +1006,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
     for shank_id in range(npx_probe[imDatPrb_type]["shank_number"]):
         shift = [npx_probe[imDatPrb_type]["shank_pitch"] * shank_id, 0]
         contour += list(polygon + shift)
-      
+        
     # shift
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
