@@ -778,16 +778,7 @@ npx_probe = {
             "elec_ids",
         ),
     },
-    'Ultra': {
-        "x_pitch": 6,
-        "y_pitch": 6,
-        "contact_width": 5,
-        "stagger": 0.0,
-        "shank_pitch": 0,
-        "shank_number": 1,
-        "ncol": 8
-    },
-    #
+    # Experimental probes previous to 1.0
     "Phase3a": {
         "probe_name": "Phase3a",
         "x_pitch": 32,
@@ -906,6 +897,26 @@ npx_probe = {
             "ap_hp_filters",
         ),
     },
+    # Ultra probe
+    1100: {
+        "probe_name": "Ultra probe",
+        "x_pitch": 6,
+        "y_pitch": 6,
+        "contact_width": 5,
+        "stagger": 0.0,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 8,
+        "polygon": polygon_description["default"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+            "ap_hp_filters",
+        ),
+    },
 }
 
 # Map imDatPrb_pn to imDatPrb_type when the latter is missing
@@ -960,11 +971,12 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
         imDatPrb_type, num_contact = header
     else:
         raise RuntimeError(f'read_imro error, the header has a strange length: {len(header)}')
-
+    
     if imDatPrb_type in [0, None]:
         imDatPrb_type = probe_number_to_probe_type[imDatPrb_pn] 
     
-    fields = npx_probe[imDatPrb_type]["fields_in_imro_table"]
+    probe_description = npx_probe[imDatPrb_type]
+    fields = probe_description["fields_in_imro_table"]
     contact_info = {k: [] for k in fields}
     for i, part in enumerate(parts):
         values = tuple(map(int, part[1:].split(' ')))
@@ -972,22 +984,22 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
             contact_info[k].append(v)
     
     channel_ids = np.array(contact_info['channel_ids'])
-    if 'elec_ids' in contact_info:
-        elec_ids = np.array(contact_info['elec_ids'])
-    
-    if imDatPrb_type == 0 or imDatPrb_type == 'Phase3a' or (imDatPrb_type in (1015, 1022, 1030, 1031, 1032)):
-        # for NP1 and previous the elec_id is not in the list
+    probe_types_without_elec_ids_in_their_imro_table = (0, 1015, 1022, 1030, 1031, 1032, "Phase3a", 1100)
+    if imDatPrb_type in probe_types_without_elec_ids_in_their_imro_table:
         banks = np.array(contact_info['banks'])
         elec_ids = banks * 384 + channel_ids
-    
-    # compute position
-    y_idx, x_idx = np.divmod(elec_ids, npx_probe[imDatPrb_type]["ncol"])
-    x_pitch = npx_probe[imDatPrb_type ]["x_pitch"]
-    y_pitch = npx_probe[imDatPrb_type ]["y_pitch"]
+    else:
+        elec_ids = np.array(contact_info['elec_ids'])
 
-    stagger =  np.mod(y_idx + 1, 2) * npx_probe[imDatPrb_type]["stagger"]
+    # compute position
+    y_idx, x_idx = np.divmod(elec_ids, probe_description["ncol"])
+    x_pitch = probe_description["x_pitch"]
+    y_pitch = probe_description["y_pitch"]
+
+    stagger = np.mod(y_idx + 1, 2) * probe_description["stagger"]
     x_pos = x_idx * x_pitch + stagger
     y_pos = y_idx * y_pitch
+    positions = np.stack((x_pos, y_pos), axis=1)
     
     if imDatPrb_type == 24:
         shank_ids = np.array(contact_info['shank_id'])
@@ -996,23 +1008,23 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
         shank_ids = None 
         contact_ids = [f'e{elec_id}' for elec_id in elec_ids]
 
-
-    positions = np.zeros((num_contact, 2), dtype='float64')
-    positions[:, 0] = x_pos
-    positions[:, 1] = y_pos
-    
     # construct Probe object
     probe = Probe(ndim=2, si_units='um')
-    probe.set_contacts(positions=positions, shapes='square',
-                       shank_ids=shank_ids,
-                       shape_params={'width': npx_probe[imDatPrb_type]["contact_width"]})
+    probe.set_contacts(
+        positions=positions,
+        shapes="square",
+        shank_ids=shank_ids,
+        shape_params={"width": probe_description["contact_width"]},
+    )
+
     probe.set_contact_ids(contact_ids)
 
     # Add planar contour
-    polygon = np.array(npx_probe[imDatPrb_type]["polygon"])
+    polygon = np.array(probe_description["polygon"])
     contour = []
-    for shank_id in range(npx_probe[imDatPrb_type]["shank_number"]):
-        shift = [npx_probe[imDatPrb_type]["shank_pitch"] * shank_id, 0]
+    shank_pitch = probe_description["shank_pitch"]
+    for shank_id in range(probe_description["shank_number"]):
+        shift = [shank_pitch * shank_id, 0]
         contour += list(polygon + shift)
 
     # shift
@@ -1020,7 +1032,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
     probe.set_planar_contour(contour)
     
     # this is scalar annotations
-    probe_name = npx_probe[imDatPrb_type]["probe_name"]
+    probe_name = probe_description["probe_name"]
     probe.annotate(
         name=probe_name,
         manufacturer="IMEC",
@@ -1344,7 +1356,7 @@ def read_openephys(
             ptype = 0
             x_shift = -11
         elif "Ultra" in pname:
-            ptype = "Ultra"
+            ptype = 1100
             x_shift = -8
         else: # Probe type unknown
             ptype = None
