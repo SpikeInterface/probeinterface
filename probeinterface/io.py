@@ -1568,44 +1568,41 @@ def read_mearec(file: Union[str, Path]) -> Probe:
 
     f = h5py.File(file, "r")
     positions = f["channel_positions"][()]
-    elinfo = f["info"]["electrodes"]
-    elinfo_keys = elinfo.keys()
+    electrodes_info = f["info"]["electrodes"]
+    electrodes_info_keys = electrodes_info.keys()
 
     mearec_description = None
     mearec_name = None
-    if "description" in elinfo_keys:
-        description = elinfo["description"][()]
-        mearec_description = description.decode("utf-8") if isinstance(description, bytes) else description
-    if "electrode_name" in elinfo_keys:
-        mearec_name = elinfo["electrode_name"][()]
+    if "electrode_name" in electrodes_info_keys:
+        mearec_name = electrodes_info["electrode_name"][()]
         mearec_name = mearec_name.decode("utf-8") if isinstance(mearec_name, bytes) else mearec_name
+
+    if "description" in electrodes_info_keys:
+        description = electrodes_info["description"][()]
+        mearec_description = description.decode("utf-8") if isinstance(description, bytes) else description
 
     probe = Probe(ndim=2, si_units="um")
 
-    if "plane" in elinfo_keys:
-        plane = elinfo["plane"]
-    else:
-        plane = "yz"  # default
-
-    if plane == "xy":
-        positions_2d = positions[()][:, :2]
-    elif plane == "xz":
-        positions_2d = positions[()][:, [0, 2]]
-    else:
-        positions_2d = positions[()][:, 1:]
+    plane = "yz"  # default
+    if "plane" in electrodes_info_keys:
+        plane = electrodes_info["plane"][()]
+        plane = plane.decode("utf-8") if isinstance(plane, bytes) else plane
+    
+    plane_to_columns = {"xy": [0, 1], "xz": [0, 2], "yz": [1, 2]}
+    columns = plane_to_columns[plane]
+    positions_2d = positions[()][:, columns]
 
     shape = None
-    if "shape" in elinfo_keys:
-        shape = elinfo["shape"][()]
-        if isinstance(shape, bytes):
-            shape = shape.decode()
+    if "shape" in electrodes_info_keys:
+        shape = electrodes_info["shape"][()]
+        shape = shape.decode("utf-8") if isinstance(shape, bytes) else shape
 
     size = None
-    if "shape" in elinfo_keys:
-        size = elinfo["size"][()]
+    if "shape" in electrodes_info_keys:
+        size = electrodes_info["size"][()]
 
     shape_params = {}
-    if shape is not None:
+    if shape is not None and size is not None:
         if shape == "circle":
             shape_params = {"radius": size}
         elif shape == "square":
@@ -1617,14 +1614,12 @@ def read_mearec(file: Union[str, Path]) -> Probe:
     probe.set_contacts(positions_2d, shapes=shape, shape_params=shape_params)
 
     # add MEArec annotations
-    if mearec_name is not None:
-        probe.annotate(mearec_name=mearec_name)
-    if mearec_description is not None:
-        probe.annotate(mearec_description=mearec_description)
+    annotations = dict(mearec_name=mearec_name, mearec_description=mearec_description)
+    probe.annotate(**annotations)
 
     # set device indices
-    if elinfo["sortlist"][()] not in (b"null", "null"):
-        channel_indices = elinfo["sortlist"][()]
+    if electrodes_info["sortlist"][()] not in (b"null", "null"):
+        channel_indices = electrodes_info["sortlist"][()]
     else:
         channel_indices = np.arange(positions.shape[0], dtype="int64")
     probe.set_device_channel_indices(channel_indices)
