@@ -1245,12 +1245,14 @@ def read_openephys(
     oe_version = parse(info_chain.find("VERSION").text)
     signal_chain = root.find("SIGNALCHAIN")
     neuropix_pxi = None
+    record_node = None
     for processor in signal_chain:
         if "PROCESSOR" == processor.tag:
             name = processor.attrib["name"]
             if "Neuropix-PXI" in name:
                 neuropix_pxi = processor
-                break
+            if "Record Node" in name:
+                record_node = processor
 
     if neuropix_pxi is None:
         if raise_error:
@@ -1451,8 +1453,10 @@ def read_openephys(
     else:
         # in case of a single probe, make sure it is consistent with optional
         # stream_name, probe_name, or serial number
+        available_probe_name = np_probes_info[0]['name']
+        available_serial_number = np_probes_info[0]['serial_number']
+
         if stream_name:
-            available_probe_name = np_probes_info[0]['name']
             if available_probe_name not in stream_name:
                 if raise_error:
                     raise Exception(
@@ -1461,7 +1465,6 @@ def read_openephys(
                     )
                 return None
         if probe_name:
-            available_probe_name = np_probes_info[0]['name']
             if probe_name != available_probe_name:
                 if raise_error:
                     raise Exception(
@@ -1470,7 +1473,6 @@ def read_openephys(
                     )
                 return None
         if serial_number:
-            available_serial_number = np_probes_info[0]['serial_number']
             if str(serial_number) != available_serial_number:
                 if raise_error:
                     raise Exception(
@@ -1494,6 +1496,44 @@ def read_openephys(
         contact_width = 12
         shank_pitch = 250
 
+    contact_ids = np_probe_info['contact_ids'] if np_probe_info['contact_ids'] is not None else None
+
+    # check if subset of channels
+    recording_mask = None
+    if record_node is not None:
+        custom_params = record_node.find("CUSTOM_PARAMETERS")
+        if custom_params is not None:
+            custom_streams = custom_params.findall("STREAM")
+            if len(custom_streams) > 0:
+                possible_streams = [stream for stream in custom_streams if np_probe_info["name"]
+                                    in stream.attrib["name"]]
+                possible_stream_names = [stream.attrib["name"] for stream in possible_streams]
+                custom_stream = None
+                if len(possible_streams) > 1:
+                    assert stream_name is not None, \
+                        (f"More than one possible stream found with custom parameters: {possible_stream_names}. "
+                         f"Use the `stream_name` argument to choose the correct stream")
+                    # use stream_name to disambiguate
+                    custom_stream = [stream for stream in custom_streams
+                                    if stream.attrib["name"] in stream_name]
+                    assert len(custom_stream) == 1
+                    custom_stream = custom_stream[0]
+                elif len(possible_streams) == 1:
+                    custom_stream = possible_streams[0]
+                if custom_stream is not None:
+                    recording_state = custom_stream.attrib.get("recording_state", None)
+                    if recording_state is not None:
+                        if recording_state != "ALL":
+                            recording_mask = np.array([int(r) for r in recording_state], dtype=bool)
+
+    # if a recording state is found, slice probe
+    if recording_mask is not None:
+        positions = positions[recording_mask]
+        if shank_ids is not None:
+            shank_ids = np.array(shank_ids)[recording_mask]
+        if contact_ids is not None:
+            contact_ids = np.array(contact_ids)[recording_mask]
+
     probe = Probe(ndim=2, si_units="um")
     probe.set_contacts(
         positions=positions,
@@ -1509,8 +1549,8 @@ def read_openephys(
         probe_serial_number=np_probe.attrib["probe_serial_number"],
     )
 
-    if np_probe_info['contact_ids'] is not None:
-        probe.set_contact_ids(np_probe_info['contact_ids'])
+    if contact_ids is not None:
+        probe.set_contact_ids(contact_ids)
 
     polygon = polygon_description["default"]
     if shank_ids is None:

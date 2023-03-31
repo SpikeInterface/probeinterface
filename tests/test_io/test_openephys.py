@@ -9,11 +9,27 @@ from probeinterface import read_openephys
 data_path = Path(__file__).absolute().parent.parent / "data" / "openephys"
 
 
-def test_NP1():
-    # NP1
+def test_NP2():
+    # NP2
     probe = read_openephys(data_path / "OE_Neuropix-PXI" / "settings.xml")
     assert probe.get_shank_count() == 1
     assert "2.0 - Single Shank" in probe.annotations["name"]
+
+
+def test_NP1_subset():
+    # NP1 - 200 channels selected by recording_state in Record Node
+    probe = read_openephys(
+        data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-AP"
+    )
+
+    assert probe.get_shank_count() == 1
+    assert "1.0" in probe.annotations["name"]
+    assert len(probe.contact_positions) == 200
+
+    # Not specifying the stream_name should raise an Exception, because both the ProbeA-AP and
+    # ProbeA-LFP have custome channel selections
+    with pytest.raises(AssertionError):
+        probe = read_openephys(data_path / "OE_Neuropix-PXI-subset" / "settings.xml")
 
 
 def test_multiple_probes():
