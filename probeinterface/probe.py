@@ -347,7 +347,7 @@ class Probe:
         assert self.shank_ids is not None
         shanks = []
         for shank_id in np.unique(self.shank_ids):
-            shank = Shank(self, shank_id)
+            shank = Shank(probe=self, shank_id=shank_id)
             shanks.append(shank)
         return shanks
 
