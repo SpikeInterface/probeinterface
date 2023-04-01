@@ -103,7 +103,7 @@ tsv_label_map_to_BIDS = {
 tsv_label_map_to_probeinterface = {v: k for k, v in tsv_label_map_to_BIDS.items()}
 
 
-def read_BIDS_probe(folder: Union[str, Path], prefix: bool = None) -> ProbeGroup:
+def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> ProbeGroup:
     """
     Read to BIDS probe format.
 
@@ -114,7 +114,7 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: bool = None) -> ProbeGroup
     ----------
     folder: Path or str
         The folder to scan for probes and contacts files
-    prefix : None or str
+    prefix : str
         Prefix of the probes and contacts files
 
     Returns
@@ -140,8 +140,8 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: bool = None) -> ProbeGroup
         probes_file = probes_files[0]
         contacts_file = contacts_files[0]
     else:
-        probes_file = folder / prefix + "_probes.tsv"
-        contacts_file = folder / prefix + "_contacts.tsv"
+        probes_file = folder / f"{prefix}_probes.tsv"
+        contacts_file = folder / f"{prefix}_contacts.tsv"
         for file in [probes_file, contacts_file]:
             if not file.exists():
                 raise ValueError(f"Source file does not exist ({file})")
@@ -955,7 +955,7 @@ def read_imro(file_path: Union[str, Path]) -> Probe:
     return _read_imro_string(imro_str)
 
 
-def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
+def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe:
     """
     Parse the IMRO table when presented as a string and create a Probe object.
 
@@ -986,7 +986,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
     elif len(imro_table_header) == 2:
         imDatPrb_type, num_contact = imro_table_header
     else:
-        raise RuntimeError(f'read_imro error, the header has a strange length: {imro_table_header}')
+        raise ValueError(f'read_imro error, the header has a strange length: {imro_table_header}')
     
 
     if imDatPrb_type in [0, None]:
