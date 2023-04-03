@@ -37,4 +37,6 @@ class Shank:
 
     @property
     def device_channel_indices(self):
-        return self.probe.device_channel_indices[self.get_indices()]
+        device_channel_indices = self.probe.device_channel_indices
+        return None if device_channel_indices is None else device_channel_indices[self.get_indices()]
+        
