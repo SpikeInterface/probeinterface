@@ -103,7 +103,7 @@ tsv_label_map_to_BIDS = {
 tsv_label_map_to_probeinterface = {v: k for k, v in tsv_label_map_to_BIDS.items()}
 
 
-def read_BIDS_probe(folder: Union[str, Path], prefix: bool = None) -> ProbeGroup:
+def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> ProbeGroup:
     """
     Read to BIDS probe format.
 
@@ -114,7 +114,7 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: bool = None) -> ProbeGroup
     ----------
     folder: Path or str
         The folder to scan for probes and contacts files
-    prefix : None or str
+    prefix : str
         Prefix of the probes and contacts files
 
     Returns
@@ -140,8 +140,8 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: bool = None) -> ProbeGroup
         probes_file = probes_files[0]
         contacts_file = contacts_files[0]
     else:
-        probes_file = folder / prefix + "_probes.tsv"
-        contacts_file = folder / prefix + "_contacts.tsv"
+        probes_file = folder / f"{prefix}_probes.tsv"
+        contacts_file = folder / f"{prefix}_contacts.tsv"
         for file in [probes_file, contacts_file]:
             if not file.exists():
                 raise ValueError(f"Source file does not exist ({file})")
@@ -919,7 +919,8 @@ npx_probe = {
     },
 }
 
-# Map imDatPrb_pn to imDatPrb_type (values from the meta file) when the latter is missing
+
+# Map imDatPrb_pn (probe number) to imDatPrb_type (probe type) when the latter is missing
 probe_number_to_probe_type = {
     "PRB_1_4_0480_1": 0,
     "PRB_1_4_0480_1_C": 0,
@@ -928,16 +929,17 @@ probe_number_to_probe_type = {
     "NP1030": 1030,
     "NP1031": 1031,
     "NP1032": 1032,
+    None: 0,
 }
 
     
-def read_imro(file: Union[str, Path]) -> Probe:
+def read_imro(file_path: Union[str, Path]) -> Probe:
     """
     Read probe position from the imro file used in input of SpikeGlx and Open-Ephys for neuropixels probes.
 
     Parameters
     ----------
-    file : Path or str
+    file_path : Path or str
         The .imro file path
 
     Returns
@@ -946,14 +948,14 @@ def read_imro(file: Union[str, Path]) -> Probe:
 
     """
     # the input is an imro file
-    meta_file = Path(file)
+    meta_file = Path(file_path)
     assert meta_file.suffix == ".imro", "'file' should point to the .imro file"
     with meta_file.open(mode='r') as f:
         imro_str = str(f.read())
     return _read_imro_string(imro_str)
 
 
-def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
+def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe:
     """
     Parse the IMRO table when presented as a string and create a Probe object.
 
@@ -984,8 +986,9 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
     elif len(imro_table_header) == 2:
         imDatPrb_type, num_contact = imro_table_header
     else:
-        raise RuntimeError(f'read_imro error, the header has a strange length: {imro_table_header}')
+        raise ValueError(f'read_imro error, the header has a strange length: {imro_table_header}')
     
+
     if imDatPrb_type in [0, None]:
         imDatPrb_type = probe_number_to_probe_type[imDatPrb_pn] 
     
@@ -1096,7 +1099,7 @@ def write_imro(file, probe):
                 f"({data['device_channel_indices'][ch]} {data['shank_ids'][ch]} {annotations['banks'][ch]} "
                 f"{annotations['references'][ch]} {data['contact_ids'][ch][3:]})")
     else:
-        raise RuntimeError(f'unknown imro type : {probe_type}')
+        raise ValueError(f'unknown imro type : {probe_type}')
     with open(file, "w") as f:
         f.write(''.join(ret))
 
