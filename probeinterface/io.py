@@ -104,7 +104,7 @@ tsv_label_map_to_BIDS = {
 tsv_label_map_to_probeinterface = {v: k for k, v in tsv_label_map_to_BIDS.items()}
 
 
-def read_BIDS_probe(folder: Union[str, Path], prefix: bool = None) -> ProbeGroup:
+def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> ProbeGroup:
     """
     Read to BIDS probe format.
 
@@ -115,7 +115,7 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: bool = None) -> ProbeGroup
     ----------
     folder: Path or str
         The folder to scan for probes and contacts files
-    prefix : None or str
+    prefix : str
         Prefix of the probes and contacts files
 
     Returns
@@ -141,8 +141,8 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: bool = None) -> ProbeGroup
         probes_file = probes_files[0]
         contacts_file = contacts_files[0]
     else:
-        probes_file = folder / prefix + "_probes.tsv"
-        contacts_file = folder / prefix + "_contacts.tsv"
+        probes_file = folder / f"{prefix}_probes.tsv"
+        contacts_file = folder / f"{prefix}_contacts.tsv"
         for file in [probes_file, contacts_file]:
             if not file.exists():
                 raise ValueError(f"Source file does not exist ({file})")
@@ -920,7 +920,8 @@ npx_probe = {
     },
 }
 
-# Map imDatPrb_pn to imDatPrb_type when the latter is missing
+
+# Map imDatPrb_pn (probe number) to imDatPrb_type (probe type) when the latter is missing
 probe_number_to_probe_type = {
     "PRB_1_4_0480_1": 0,
     "PRB_1_4_0480_1_C": 0,
@@ -929,16 +930,17 @@ probe_number_to_probe_type = {
     "NP1030": 1030,
     "NP1031": 1031,
     "NP1032": 1032,
+    None: 0,
 }
 
     
-def read_imro(file: Union[str, Path]) -> Probe:
+def read_imro(file_path: Union[str, Path]) -> Probe:
     """
     Read probe position from the imro file used in input of SpikeGlx and Open-Ephys for neuropixels probes.
 
     Parameters
     ----------
-    file : Path or str
+    file_path : Path or str
         The .imro file path
 
     Returns
@@ -947,50 +949,65 @@ def read_imro(file: Union[str, Path]) -> Probe:
 
     """
     # the input is an imro file
-    meta_file = Path(file)
+    meta_file = Path(file_path)
     assert meta_file.suffix == ".imro", "'file' should point to the .imro file"
     with meta_file.open(mode='r') as f:
         imro_str = str(f.read())
     return _read_imro_string(imro_str)
 
 
-def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
+def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe:
     """
-    Low-level function to parse the imro table when presented as a string
-    
-    See this doc https://billkarsh.github.io/SpikeGLX/help/imroTables/
-    
+    Parse the IMRO table when presented as a string and create a Probe object.
+
+    Parameters
+    ----------
+    imro_str : str
+        IMRO table as a string.
+    imDatPrb_pn : str, optional
+        Probe number, by default None.
+
+    Returns
+    -------
+    Probe
+        A Probe object built from  the parsed IMRO table data.
+
+    See Also
+    --------
+    https://billkarsh.github.io/SpikeGLX/help/imroTables/
+
     """
-    headers, *parts, _ = imro_str.strip().split(")")
+    imro_table_header_str, *imro_table_values_list, _ = imro_str.strip().split(")")
     
-    header = tuple(map(int, headers[1:].split(',')))
-    if len(header) == 3:
+    imro_table_header = tuple(map(int, imro_table_header_str[1:].split(',')))
+    if len(imro_table_header) == 3:
         # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently. 
-        probe_serial_number, probe_option, num_contact = header
+        probe_serial_number, probe_option, num_contact = imro_table_header
         imDatPrb_type = 'Phase3a'
-    elif len(header) == 2:
-        imDatPrb_type, num_contact = header
+    elif len(imro_table_header) == 2:
+        imDatPrb_type, num_contact = imro_table_header
     else:
-        raise RuntimeError(f'read_imro error, the header has a strange length: {len(header)}')
+        raise ValueError(f'read_imro error, the header has a strange length: {imro_table_header}')
     
+
     if imDatPrb_type in [0, None]:
         imDatPrb_type = probe_number_to_probe_type[imDatPrb_pn] 
     
     probe_description = npx_probe[imDatPrb_type]
     fields = probe_description["fields_in_imro_table"]
-    contact_info = {k: [] for k in fields}
-    for i, part in enumerate(parts):
-        values = tuple(map(int, part[1:].split(' ')))
-        for k, v in zip(fields, values):
-            contact_info[k].append(v)
+    contact_info = {k: [] for k in fields}      
+    for field_values_str in imro_table_values_list: # Imro table values look like '(value, value, value, ... '
+        values = tuple(map(int, field_values_str[1:].split(' '))) 
+        # Split them by space to get (int('value'), int('value'), int('value'), ...)
+        for field, field_value in zip(fields, values):
+            contact_info[field].append(field_value)
     
     channel_ids = np.array(contact_info['channel_ids'])
-    probe_types_without_elec_ids_in_their_imro_table = (0, 1015, 1022, 1030, 1031, 1032, "Phase3a", 1100)
-    if imDatPrb_type in probe_types_without_elec_ids_in_their_imro_table:
+    if "elect_ids" in contact_info:
+        elec_ids = np.array(contact_info['elect_ids'])
+    else:        
         banks = np.array(contact_info['banks'])
         elec_ids = banks * 384 + channel_ids
-    else:
-        elec_ids = np.array(contact_info['elec_ids'])
 
     # compute position
     y_idx, x_idx = np.divmod(elec_ids, probe_description["ncol"])
@@ -1083,7 +1100,7 @@ def write_imro(file, probe):
                 f"({data['device_channel_indices'][ch]} {data['shank_ids'][ch]} {annotations['banks'][ch]} "
                 f"{annotations['references'][ch]} {data['contact_ids'][ch][3:]})")
     else:
-        raise RuntimeError(f'unknown imro type : {probe_type}')
+        raise ValueError(f'unknown imro type : {probe_type}')
     with open(file, "w") as f:
         f.write(''.join(ret))
 

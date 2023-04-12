@@ -22,3 +22,5 @@ doc/_*
 doc/examples/*
 
 dev_*
+.coverage
+cov.xml
