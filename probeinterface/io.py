@@ -12,6 +12,7 @@ Read/write probe info using a variety of formats:
 from pathlib import Path
 from typing import Union, Optional
 import re
+import warnings
 import json
 from collections import OrderedDict
 from packaging.version import Version, parse
@@ -1499,40 +1500,15 @@ def read_openephys(
     contact_ids = np_probe_info['contact_ids'] if np_probe_info['contact_ids'] is not None else None
 
     # check if subset of channels
-    recording_mask = None
-    if record_node is not None:
-        custom_params = record_node.find("CUSTOM_PARAMETERS")
-        if custom_params is not None:
-            custom_streams = custom_params.findall("STREAM")
-            if len(custom_streams) > 0:
-                possible_streams = [stream for stream in custom_streams if np_probe_info["name"]
-                                    in stream.attrib["name"]]
-                possible_stream_names = [stream.attrib["name"] for stream in possible_streams]
-                custom_stream = None
-                if len(possible_streams) > 1:
-                    assert stream_name is not None, \
-                        (f"More than one possible stream found with custom parameters: {possible_stream_names}. "
-                         f"Use the `stream_name` argument to choose the correct stream")
-                    # use stream_name to disambiguate
-                    custom_stream = [stream for stream in custom_streams
-                                    if stream.attrib["name"] in stream_name]
-                    assert len(custom_stream) == 1
-                    custom_stream = custom_stream[0]
-                elif len(possible_streams) == 1:
-                    custom_stream = possible_streams[0]
-                if custom_stream is not None:
-                    recording_state = custom_stream.attrib.get("recording_state", None)
-                    if recording_state is not None:
-                        if recording_state != "ALL":
-                            recording_mask = np.array([int(r) for r in recording_state], dtype=bool)
+    chans_saved = get_saved_channels_from_openephys_settings(settings_file, stream_name=stream_name)
 
     # if a recording state is found, slice probe
-    if recording_mask is not None:
-        positions = positions[recording_mask]
+    if chans_saved is not None:
+        positions = positions[chans_saved]
         if shank_ids is not None:
-            shank_ids = np.array(shank_ids)[recording_mask]
+            shank_ids = np.array(shank_ids)[chans_saved]
         if contact_ids is not None:
-            contact_ids = np.array(contact_ids)[recording_mask]
+            contact_ids = np.array(contact_ids)[chans_saved]
 
     probe = Probe(ndim=2, si_units="um")
     probe.set_contacts(
@@ -1568,6 +1544,69 @@ def read_openephys(
     probe.set_device_channel_indices(np.arange(positions.shape[0]))
 
     return probe
+
+
+def get_saved_channels_from_openephys_settings(settings_file, stream_name):
+    """
+    Returns a mask with the subset of saved channels (if used)
+
+    Parameters
+    ----------
+    settings_file : str or Path
+        The path to the settings file
+    stream_name : str
+        The stream name that contains the probe name
+        For example, "Record Node 100#ProbeA-AP" will select the AP stream of ProbeA.
+
+    Returns
+    -------
+    chans_saved
+        np.array of saved channel indices or None
+    """
+    # check if subset of channels
+    ET = import_safely("xml.etree.ElementTree")
+    # parse xml
+    tree = ET.parse(str(settings_file))
+    root = tree.getroot()
+
+    signal_chain = root.find("SIGNALCHAIN")
+    record_node = None
+    for processor in signal_chain:
+        if "PROCESSOR" == processor.tag:
+            name = processor.attrib["name"]
+            if "Record Node" in name:
+                record_node = processor
+                break
+    chans_saved = None
+    if record_node is not None:
+        custom_params = record_node.find("CUSTOM_PARAMETERS")
+        if custom_params is not None:
+            custom_streams = custom_params.findall("STREAM")
+            custom_stream_names = [stream.attrib["name"] for stream in custom_streams]
+            if len(custom_streams) > 0:
+                recording_states = [stream.attrib.get("recording_state", None) for stream in custom_streams]
+                has_custom_states = False
+                for rs in recording_states:
+                    if rs is not None and rs != "ALL":
+                        has_custom_states = True
+                if has_custom_states:
+                    if len(custom_streams) > 1:
+                        assert stream_name is not None, \
+                                (f"More than one stream found with custom parameters: {custom_stream_names}. "
+                                f"Use the `stream_name` argument to choose the correct stream")
+                        possible_custom_streams = [stream for stream in custom_streams
+                                                   if stream.attrib["name"] in stream_name]
+                        if len(possible_custom_streams) > 1:
+                            warnings.warn(f"More than one custom parameters associated to {stream_name} "
+                                          f"found. Using fisrt one")
+                        custom_stream = possible_custom_streams[0]
+                    else:
+                        custom_stream = custom_streams[0]
+                    recording_state = custom_stream.attrib.get("recording_state", None)
+                    if recording_state is not None:
+                        if recording_state != "ALL":
+                            chans_saved = np.array([chan for chan, r in enumerate(recording_state) if int(r) == 1])
+    return chans_saved
 
 
 def read_mearec(file: Union[str, Path]) -> Probe:

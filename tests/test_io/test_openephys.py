@@ -18,13 +18,21 @@ def test_NP2():
 
 def test_NP1_subset():
     # NP1 - 200 channels selected by recording_state in Record Node
-    probe = read_openephys(
+    probe_ap = read_openephys(
         data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-AP"
     )
 
-    assert probe.get_shank_count() == 1
-    assert "1.0" in probe.annotations["name"]
-    assert len(probe.contact_positions) == 200
+    assert probe_ap.get_shank_count() == 1
+    assert "1.0" in probe_ap.annotations["name"]
+    assert len(probe_ap.contact_positions) == 200
+
+    probe_lf = read_openephys(
+        data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-LFP"
+    )
+
+    assert probe_lf.get_shank_count() == 1
+    assert "1.0" in probe_lf.annotations["name"]
+    assert len(probe_lf.contact_positions) == 200
 
     # Not specifying the stream_name should raise an Exception, because both the ProbeA-AP and
     # ProbeA-LFP have custome channel selections
@@ -98,3 +106,7 @@ def test_older_than_06_format():
     assert "2.0 - Multishank" in probe.annotations["name"]
     ypos = probe.contact_positions[:, 1]
     assert np.min(ypos) >= 0
+
+
+if __name__ == "__main__":
+    test_NP1_subset()
