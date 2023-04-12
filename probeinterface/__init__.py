@@ -11,7 +11,7 @@ from .io import (
     read_imro, write_imro,
     read_BIDS_probe, write_BIDS_probe,
     read_spikeglx, parse_spikeglx_meta, get_saved_channel_indices_from_spikeglx_meta,
-    read_openephys, get_saved_channels_from_openephys_settings,
+    read_openephys, get_saved_channel_indices_from_openephys_settings,
     read_mearec, read_nwb,
     read_maxwell, read_3brain)
 from .utils import combine_probes

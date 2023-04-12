@@ -1517,7 +1517,7 @@ def read_openephys(
     contact_ids = np_probe_info['contact_ids'] if np_probe_info['contact_ids'] is not None else None
 
     # check if subset of channels
-    chans_saved = get_saved_channels_from_openephys_settings(settings_file, stream_name=stream_name)
+    chans_saved = get_saved_channel_indices_from_openephys_settings(settings_file, stream_name=stream_name)
 
     # if a recording state is found, slice probe
     if chans_saved is not None:
@@ -1563,7 +1563,7 @@ def read_openephys(
     return probe
 
 
-def get_saved_channels_from_openephys_settings(settings_file, stream_name):
+def get_saved_channel_indices_from_openephys_settings(settings_file, stream_name):
     """
     Returns an array with the subset of saved channels indices (if used)
 
