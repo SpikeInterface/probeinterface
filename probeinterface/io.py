@@ -1565,7 +1565,7 @@ def read_openephys(
 
 def get_saved_channels_from_openephys_settings(settings_file, stream_name):
     """
-    Returns a mask with the subset of saved channels (if used)
+    Returns an array with the subset of saved channels indices (if used)
 
     Parameters
     ----------
