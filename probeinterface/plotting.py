@@ -172,7 +172,7 @@ def plot_probe(probe, ax=None, contacts_colors=None,
     ax.set_ylim(*ylims)
 
     if probe.si_units == "um":
-        unit_str = "($\mu m$)"
+        unit_str = "($\\mu m$)"
     else:
         unit_str = f"({probe.si_units})"
     ax.set_xlabel(f'x {unit_str}', fontsize=15)
