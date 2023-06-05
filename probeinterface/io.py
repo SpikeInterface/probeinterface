@@ -12,6 +12,7 @@ Read/write probe info using a variety of formats:
 from pathlib import Path
 from typing import Union, Optional
 import re
+import warnings
 import json
 from collections import OrderedDict
 from packaging.version import Version, parse
@@ -103,7 +104,7 @@ tsv_label_map_to_BIDS = {
 tsv_label_map_to_probeinterface = {v: k for k, v in tsv_label_map_to_BIDS.items()}
 
 
-def read_BIDS_probe(folder: Union[str, Path], prefix: bool = None) -> ProbeGroup:
+def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> ProbeGroup:
     """
     Read to BIDS probe format.
 
@@ -114,7 +115,7 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: bool = None) -> ProbeGroup
     ----------
     folder: Path or str
         The folder to scan for probes and contacts files
-    prefix : None or str
+    prefix : str
         Prefix of the probes and contacts files
 
     Returns
@@ -140,8 +141,8 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: bool = None) -> ProbeGroup
         probes_file = probes_files[0]
         contacts_file = contacts_files[0]
     else:
-        probes_file = folder / prefix + "_probes.tsv"
-        contacts_file = folder / prefix + "_contacts.tsv"
+        probes_file = folder / f"{prefix}_probes.tsv"
+        contacts_file = folder / f"{prefix}_contacts.tsv"
         for file in [probes_file, contacts_file]:
             if not file.exists():
                 raise ValueError(f"Source file does not exist ({file})")
@@ -919,25 +920,28 @@ npx_probe = {
     },
 }
 
-# Map imDatPrb_pn to imDatPrb_type (values from the meta file) when the latter is missing
+
+# Map imDatPrb_pn (probe number) to imDatPrb_type (probe type) when the latter is missing
 probe_number_to_probe_type = {
     "PRB_1_4_0480_1": 0,
     "PRB_1_4_0480_1_C": 0,
+    "NP1010": 0,
     "NP1015": 1015,
     "NP1022": 1022,
     "NP1030": 1030,
     "NP1031": 1031,
     "NP1032": 1032,
+    None: 0,
 }
 
     
-def read_imro(file: Union[str, Path]) -> Probe:
+def read_imro(file_path: Union[str, Path]) -> Probe:
     """
     Read probe position from the imro file used in input of SpikeGlx and Open-Ephys for neuropixels probes.
 
     Parameters
     ----------
-    file : Path or str
+    file_path : Path or str
         The .imro file path
 
     Returns
@@ -946,14 +950,14 @@ def read_imro(file: Union[str, Path]) -> Probe:
 
     """
     # the input is an imro file
-    meta_file = Path(file)
+    meta_file = Path(file_path)
     assert meta_file.suffix == ".imro", "'file' should point to the .imro file"
     with meta_file.open(mode='r') as f:
         imro_str = str(f.read())
     return _read_imro_string(imro_str)
 
 
-def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
+def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe:
     """
     Parse the IMRO table when presented as a string and create a Probe object.
 
@@ -984,8 +988,9 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: str = None) -> Probe:
     elif len(imro_table_header) == 2:
         imDatPrb_type, num_contact = imro_table_header
     else:
-        raise RuntimeError(f'read_imro error, the header has a strange length: {imro_table_header}')
+        raise ValueError(f'read_imro error, the header has a strange length: {imro_table_header}')
     
+
     if imDatPrb_type in [0, None]:
         imDatPrb_type = probe_number_to_probe_type[imDatPrb_pn] 
     
@@ -1096,7 +1101,7 @@ def write_imro(file, probe):
                 f"({data['device_channel_indices'][ch]} {data['shank_ids'][ch]} {annotations['banks'][ch]} "
                 f"{annotations['references'][ch]} {data['contact_ids'][ch][3:]})")
     else:
-        raise RuntimeError(f'unknown imro type : {probe_type}')
+        raise ValueError(f'unknown imro type : {probe_type}')
     with open(file, "w") as f:
         f.write(''.join(ret))
 
@@ -1259,12 +1264,14 @@ def read_openephys(
     oe_version = parse(info_chain.find("VERSION").text)
     signal_chain = root.find("SIGNALCHAIN")
     neuropix_pxi = None
+    record_node = None
     for processor in signal_chain:
         if "PROCESSOR" == processor.tag:
             name = processor.attrib["name"]
             if "Neuropix-PXI" in name:
                 neuropix_pxi = processor
-                break
+            if "Record Node" in name:
+                record_node = processor
 
     if neuropix_pxi is None:
         if raise_error:
@@ -1465,8 +1472,10 @@ def read_openephys(
     else:
         # in case of a single probe, make sure it is consistent with optional
         # stream_name, probe_name, or serial number
+        available_probe_name = np_probes_info[0]['name']
+        available_serial_number = np_probes_info[0]['serial_number']
+
         if stream_name:
-            available_probe_name = np_probes_info[0]['name']
             if available_probe_name not in stream_name:
                 if raise_error:
                     raise Exception(
@@ -1475,7 +1484,6 @@ def read_openephys(
                     )
                 return None
         if probe_name:
-            available_probe_name = np_probes_info[0]['name']
             if probe_name != available_probe_name:
                 if raise_error:
                     raise Exception(
@@ -1484,7 +1492,6 @@ def read_openephys(
                     )
                 return None
         if serial_number:
-            available_serial_number = np_probes_info[0]['serial_number']
             if str(serial_number) != available_serial_number:
                 if raise_error:
                     raise Exception(
@@ -1508,6 +1515,19 @@ def read_openephys(
         contact_width = 12
         shank_pitch = 250
 
+    contact_ids = np_probe_info['contact_ids'] if np_probe_info['contact_ids'] is not None else None
+
+    # check if subset of channels
+    chans_saved = get_saved_channel_indices_from_openephys_settings(settings_file, stream_name=stream_name)
+
+    # if a recording state is found, slice probe
+    if chans_saved is not None:
+        positions = positions[chans_saved]
+        if shank_ids is not None:
+            shank_ids = np.array(shank_ids)[chans_saved]
+        if contact_ids is not None:
+            contact_ids = np.array(contact_ids)[chans_saved]
+
     probe = Probe(ndim=2, si_units="um")
     probe.set_contacts(
         positions=positions,
@@ -1523,8 +1543,8 @@ def read_openephys(
         probe_serial_number=np_probe.attrib["probe_serial_number"],
     )
 
-    if np_probe_info['contact_ids'] is not None:
-        probe.set_contact_ids(np_probe_info['contact_ids'])
+    if contact_ids is not None:
+        probe.set_contact_ids(contact_ids)
 
     polygon = polygon_description["default"]
     if shank_ids is None:
@@ -1542,6 +1562,69 @@ def read_openephys(
     probe.set_device_channel_indices(np.arange(positions.shape[0]))
 
     return probe
+
+
+def get_saved_channel_indices_from_openephys_settings(settings_file, stream_name):
+    """
+    Returns an array with the subset of saved channels indices (if used)
+
+    Parameters
+    ----------
+    settings_file : str or Path
+        The path to the settings file
+    stream_name : str
+        The stream name that contains the probe name
+        For example, "Record Node 100#ProbeA-AP" will select the AP stream of ProbeA.
+
+    Returns
+    -------
+    chans_saved
+        np.array of saved channel indices or None
+    """
+    # check if subset of channels
+    ET = import_safely("xml.etree.ElementTree")
+    # parse xml
+    tree = ET.parse(str(settings_file))
+    root = tree.getroot()
+
+    signal_chain = root.find("SIGNALCHAIN")
+    record_node = None
+    for processor in signal_chain:
+        if "PROCESSOR" == processor.tag:
+            name = processor.attrib["name"]
+            if "Record Node" in name:
+                record_node = processor
+                break
+    chans_saved = None
+    if record_node is not None:
+        custom_params = record_node.find("CUSTOM_PARAMETERS")
+        if custom_params is not None:
+            custom_streams = custom_params.findall("STREAM")
+            custom_stream_names = [stream.attrib["name"] for stream in custom_streams]
+            if len(custom_streams) > 0:
+                recording_states = [stream.attrib.get("recording_state", None) for stream in custom_streams]
+                has_custom_states = False
+                for rs in recording_states:
+                    if rs is not None and rs != "ALL":
+                        has_custom_states = True
+                if has_custom_states:
+                    if len(custom_streams) > 1:
+                        assert stream_name is not None, \
+                                (f"More than one stream found with custom parameters: {custom_stream_names}. "
+                                f"Use the `stream_name` argument to choose the correct stream")
+                        possible_custom_streams = [stream for stream in custom_streams
+                                                   if stream.attrib["name"] in stream_name]
+                        if len(possible_custom_streams) > 1:
+                            warnings.warn(f"More than one custom parameters associated to {stream_name} "
+                                          f"found. Using fisrt one")
+                        custom_stream = possible_custom_streams[0]
+                    else:
+                        custom_stream = custom_streams[0]
+                    recording_state = custom_stream.attrib.get("recording_state", None)
+                    if recording_state is not None:
+                        if recording_state != "ALL":
+                            chans_saved = np.array([chan for chan, r in enumerate(recording_state) if int(r) == 1])
+    return chans_saved
 
 
 def read_mearec(file: Union[str, Path]) -> Probe:
