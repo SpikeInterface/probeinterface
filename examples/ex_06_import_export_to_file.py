@@ -12,7 +12,7 @@ It also supports reading (and sometimes writing) from these formats:
 
   * PRB (.prb) : used by klusta/spyking-circus/tridesclous
   * CSV (.csv): 2 or 3 columns locations in text file
-  * mearec (.h5) : mearec handles the geometry 
+  * mearec (.h5) : mearec handles the geometry
   * spikeglx (.meta) : spikeglx also handles the geometry
 
 """

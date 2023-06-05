@@ -54,7 +54,7 @@ def test_NP_phase3A():
     assert probe.ndim == 2
     assert probe.get_shank_count() == 1
     assert probe.get_contact_count() == 384
-    
+
     # Test contact geometry
     contact_width = 12.0
     contact_shape = "square"
@@ -68,11 +68,11 @@ def test_NP2_4_shanks():
     assert probe.annotations["name"] == "Neuropixels 2.0 - Four Shank"
     assert probe.annotations["manufacturer"] == "IMEC"
     assert probe.annotations["probe_type"] == 24
-    
+
     assert probe.ndim == 2
     assert probe.get_shank_count() == 4
     assert probe.get_contact_count() == 384
-    
+
     # Test contact geometry
     contact_width = 12.0
     contact_shape = "square"
@@ -92,24 +92,24 @@ def test_NP2_4_shanks_with_different_electrodes_saved():
     assert probe.annotations["name"] == "Neuropixels 2.0 - Four Shank"
     assert probe.annotations["manufacturer"] == "IMEC"
     assert probe.annotations["probe_type"] == 24
-    
+
     assert probe.ndim == 2
     assert probe.get_shank_count() == 4
     assert probe.get_contact_count() == 384
-    
+
     # Test contact geometry
     contact_width = 12.0
     contact_shape = "square"
 
     assert np.all(probe.contact_shape_params == {"width": contact_width})
     assert np.all(probe.contact_shapes == contact_shape)
-    
+
     # This file does not save the channnels from 0 as the one above (NP2_4_shanks_g0_t0.imec0.ap.meta)
     ypos = probe.contact_positions[:, 1]
     assert np.min(ypos) == pytest.approx(2880.0)
     assert np.max(ypos) == pytest.approx(5745.0)
 
-        
+
 def test_NP1_large_depth_span():
     # Data provided by Tom Bugnon NP1 with large Depth span
     probe = read_spikeglx(data_path / "allan-longcol_g0_t0.imec0.ap.meta")
@@ -139,7 +139,7 @@ def tes_NP1_384_channels():
 def test_NPH_long_staggered():
     # Data provided by Nate Dolensek
     probe = read_spikeglx(data_path / "non_human_primate_long_staggered.imec0.ap.meta")
-    
+
     assert probe.annotations["name"] == "Neuropixels 1.0-NHP - long SOI90 staggered"
     assert probe.annotations["manufacturer"] == "IMEC"
     assert probe.annotations["probe_type"] == 1030
@@ -178,7 +178,7 @@ def test_NPH_long_staggered():
     every_second_contact = y[::2]
     increase = np.diff(every_second_contact)
     assert np.allclose(increase, y_pitch)
-    
+
     # Test vector annotaitons
     ap_gains = probe.contact_annotations["ap_gains"]
     lf_gains = probe.contact_annotations["lf_gains"]
@@ -192,9 +192,9 @@ def test_NPH_long_staggered():
     assert np.allclose(filters, 1)
 
 def test_NPH_short_linear_probe_type_0():
-    # Data provided by Jonathan A Michaels 
+    # Data provided by Jonathan A Michaels
     probe = read_spikeglx(data_path / "non_human_primate_short_linear_probe_type_0.meta")
-    
+
     assert probe.annotations["name"] == "Neuropixels 1.0-NHP - short"
     assert probe.annotations["manufacturer"] == "IMEC"
     assert probe.annotations["probe_type"] == 1015
@@ -202,27 +202,27 @@ def test_NPH_short_linear_probe_type_0():
     assert probe.ndim == 2
     assert probe.get_shank_count() == 1
     assert probe.get_contact_count() == 384
-    
+
 
     # Test contact geometry
     x_pitch = 56.0
     y_pitch = 20.0
     contact_width = 12.0
     contact_shape = "square"
-    
+
     assert np.all(probe.contact_shape_params == {"width": contact_width})
     assert np.all(probe.contact_shapes == contact_shape)
-        
+
     contact_positions = probe.contact_positions
     x = contact_positions[:, 0]
     y = contact_positions[:, 1]
-    
+
     # Every second contact the x position should increase by x_pitch
     increase = np.diff(x)
     every_second_increase = increase[::2]
     x_pitch = 32
     assert np.allclose(every_second_increase, x_pitch)
-        
+
     # Every second contact should increase by y_pitch
     y_pitch = 20.0
     every_second_contact = y[::2]
@@ -240,8 +240,8 @@ def test_NPH_short_linear_probe_type_0():
     assert np.allclose(banks, 0)
     assert np.allclose(references, 0)
     assert np.allclose(filters, 1)
-    
-    
+
+
 def test_ultra_probe():
     # Data provided by Alessio
     probe = read_spikeglx(data_path / "npUltra.meta")
@@ -256,18 +256,15 @@ def test_ultra_probe():
 
     assert np.all(probe.contact_shape_params == {"width": contact_width})
     assert np.all(probe.contact_shapes == contact_shape)
-    
+
     contact_positions = probe.contact_positions
     x = contact_positions[:, 0]
     y = contact_positions[:, 1]
-    
+
     expected_electrode_columns = 8
     unique_x_values = np.unique(x)
     assert unique_x_values.size == expected_electrode_columns
-    
+
     expected_electode_rows = 48
     unique_y_values = np.unique(y)
     assert unique_y_values.size == expected_electode_rows
-    
-    
-    

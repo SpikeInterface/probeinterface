@@ -24,7 +24,6 @@ from .probegroup import ProbeGroup
 from .utils import import_safely
 
 
-
 def _probeinterface_format_check_version(d):
     """
     Check format version of probeinterface JSON file
@@ -133,9 +132,7 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> P
     # Identify source files for probes and contacts information
     if prefix is None:
         probes_files = [f for f in folder.iterdir() if f.name.endswith("probes.tsv")]
-        contacts_files = [
-            f for f in folder.iterdir() if f.name.endswith("contacts.tsv")
-        ]
+        contacts_files = [f for f in folder.iterdir() if f.name.endswith("contacts.tsv")]
         if len(probes_files) != 1 or len(contacts_files) != 1:
             raise ValueError("Did not find one probes.tsv and one contacts.tsv file")
         probes_file = probes_files[0]
@@ -161,9 +158,7 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> P
         "width": float,
         "height": float,
     }
-    df = pd.read_csv(
-        contacts_file, sep="\t", header=0, keep_default_na=False, converters=converters
-    )  #  dtype=str,
+    df = pd.read_csv(contacts_file, sep="\t", header=0, keep_default_na=False, converters=converters)  #  dtype=str,
     df.replace(to_replace={"n/a": ""}, inplace=True)
     df.rename(columns=tsv_label_map_to_probeinterface, inplace=True)
 
@@ -180,31 +175,23 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> P
         if "contact_shapes" not in df_probe:
             df_probe["contact_shapes"] = "circle"
             df_probe["radius"] = 1
-            print(
-                f"There is no contact shape provided for probe {probe_id}, a "
-                f"dummy circle with 1um is created"
-            )
+            print(f"There is no contact shape provided for probe {probe_id}, a " f"dummy circle with 1um is created")
 
         if "x" not in df_probe:
             df_probe["x"] = np.arange(len(df_probe.index), dtype=float)
             print(
-                f"There is no x coordinate provided for probe {probe_id}, a "
-                f"dummy linear x coordinate is created."
+                f"There is no x coordinate provided for probe {probe_id}, a " f"dummy linear x coordinate is created."
             )
 
         if "y" not in df_probe:
             df_probe["y"] = 0.0
             print(
-                f"There is no y coordinate provided for probe {probe_id}, a "
-                f"dummy constant y coordinate is created."
+                f"There is no y coordinate provided for probe {probe_id}, a " f"dummy constant y coordinate is created."
             )
 
         if "si_units" not in df_probe:
             df_probe["si_units"] = "um"
-            print(
-                f"There is no SI units provided for probe {probe_id}, a "
-                f"dummy SI unit (um) is created."
-            )
+            print(f"There is no SI units provided for probe {probe_id}, a " f"dummy SI unit (um) is created.")
 
         # create probe object and register with probegroup
         probe = Probe.from_dataframe(df=df_probe)
@@ -268,7 +255,6 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> P
         for probe_id, probe_info in probes_dict["ProbeId"].items():
             probe = probes[probe_id]
             for probe_param, param_value in probe_info.items():
-
                 if probe_param == "contour":
                     probe.probe_planar_contour = np.array(param_value)
 
@@ -276,9 +262,7 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> P
                     if probe.si_units is None:
                         probe.si_units = param_value
                     elif probe.si_units != param_value:
-                        raise ValueError(
-                            f"Inconsistent si_units for probe " f"{probe_id}"
-                        )
+                        raise ValueError(f"Inconsistent si_units for probe " f"{probe_id}")
                 else:
                     probe.annotate(**{probe_param: param_value})
 
@@ -291,9 +275,7 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> P
 
     if "ContactId" in contacts_dict:
         # collect all contact parameters used in this file
-        contact_params = [
-            k for v in contacts_dict["ContactId"].values() for k in v.keys()
-        ]
+        contact_params = [k for v in contacts_dict["ContactId"].values() for k in v.keys()]
         contact_params = np.unique(contact_params)
 
         # collect contact information for each probe_id
@@ -301,18 +283,14 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> P
             contact_ids = probe.contact_ids
             for contact_param in contact_params:
                 # collect parameters across contact ids to add to probe
-                value_list = [
-                    contacts_dict["ContactId"][str(c)].get(contact_param, None)
-                    for c in contact_ids
-                ]
+                value_list = [contacts_dict["ContactId"][str(c)].get(contact_param, None) for c in contact_ids]
 
                 probe.annotate(**{contact_param: value_list})
 
     return probegroup
 
 
-def write_BIDS_probe(folder: Union[str, Path], probe_or_probegroup: Union[Probe, ProbeGroup], 
-                     prefix=""):
+def write_BIDS_probe(folder: Union[str, Path], probe_or_probegroup: Union[Probe, ProbeGroup], prefix=""):
     """
     Write to probe and contact formats as proposed
     for ephy BIDS extension (tsv & json based).
@@ -331,7 +309,7 @@ def write_BIDS_probe(folder: Union[str, Path], probe_or_probegroup: Union[Probe,
     """
 
     pd = import_safely("pandas")
-    
+
     if isinstance(probe_or_probegroup, Probe):
         probe = probe_or_probegroup
         probegroup = ProbeGroup()
@@ -364,9 +342,7 @@ def write_BIDS_probe(folder: Union[str, Path], probe_or_probegroup: Union[Probe,
             )
         if "type" not in probe.annotations:
             raise ValueError(
-                "Export to BIDS probe format requires "
-                "the probe type to be specified as an "
-                "annotation (type)"
+                "Export to BIDS probe format requires " "the probe type to be specified as an " "annotation (type)"
             )
 
     # extract all used annotation keys
@@ -482,9 +458,7 @@ def read_prb(file: Union[str, Path]) -> ProbeGroup:
         chans = np.array(group["channels"], dtype="int64")
         positions = np.array([group["geometry"][c] for c in chans], dtype="float64")
 
-        probe.set_contacts(
-            positions=positions, shapes="circle", shape_params={"radius": 5}
-        )
+        probe.set_contacts(positions=positions, shapes="circle", shape_params={"radius": 5})
         probe.create_auto_shape(probe_type="tip")
 
         probe.set_device_channel_indices(chans)
@@ -493,9 +467,7 @@ def read_prb(file: Union[str, Path]) -> ProbeGroup:
     return probegroup
 
 
-def read_maxwell(
-    file: Union[str, Path], well_name: str = "well000", rec_name: str = "rec0000"
-) -> Probe:
+def read_maxwell(file: Union[str, Path], well_name: str = "well000", rec_name: str = "rec0000") -> Probe:
     """
     Read a maxwell file and return a Probe object. The Maxwell file format can be
     either Maxone (and thus just the file name is needed), or MaxTwo. In case
@@ -525,7 +497,6 @@ def read_maxwell(
     file = Path(file).absolute()
     assert file.is_file()
 
-    
     h5py = import_safely("h5py")
     my_file = h5py.File(file, mode="r")
 
@@ -552,26 +523,18 @@ def read_maxwell(
     probe = Probe(ndim=2, si_units="um")
 
     chans = np.array(prb["channel_groups"][1]["channels"], dtype="int64")
-    positions = np.array(
-        [prb["channel_groups"][1]["geometry"][c] for c in chans], dtype="float64"
-    )
+    positions = np.array([prb["channel_groups"][1]["geometry"][c] for c in chans], dtype="float64")
 
-    probe.set_contacts(
-        positions=positions, shapes="rect", shape_params={"width": 5.45, "height": 9.3}
-    )
+    probe.set_contacts(positions=positions, shapes="rect", shape_params={"width": 5.45, "height": 9.3})
     probe.annotate_contacts(electrode=electrodes)
-    probe.set_planar_contour(
-        ([-12.5, -12.5], [3845, -12.5], [3845, 2095], [-12.5, 2095])
-    )
+    probe.set_planar_contour(([-12.5, -12.5], [3845, -12.5], [3845, 2095], [-12.5, 2095]))
 
     probe.set_device_channel_indices(np.arange(positions.shape[0]))
 
     return probe
 
 
-def read_3brain(
-    file: Union[str, Path], mea_pitch: float = 42, electrode_width: float = 21
-) -> Probe:
+def read_3brain(file: Union[str, Path], mea_pitch: float = 42, electrode_width: float = 21) -> Probe:
     """
     Read a 3brain file and return a Probe object. The 3brain file format can be
     either an .h5 file or a .brw
@@ -605,9 +568,7 @@ def read_3brain(
     positions = np.vstack((rows, cols)).T * mea_pitch
 
     probe = Probe(ndim=2, si_units="um")
-    probe.set_contacts(
-        positions=positions, shapes="square", shape_params={"width": electrode_width}
-    )
+    probe.set_contacts(positions=positions, shapes="square", shape_params={"width": electrode_width})
     probe.annotate_contacts(row=rows)
     probe.annotate_contacts(col=cols)
     probe.create_auto_shape(probe_type="rect", margin=mea_pitch)
@@ -616,9 +577,7 @@ def read_3brain(
     return probe
 
 
-def write_prb(
-    file, probegroup, total_nb_channels=None, radius=None, group_mode="by_probe"
-):
+def write_prb(file, probegroup, total_nb_channels=None, radius=None, group_mode="by_probe"):
     """
     Write ProbeGroup into a prb file.
 
@@ -934,7 +893,7 @@ probe_number_to_probe_type = {
     None: 0,
 }
 
-    
+
 def read_imro(file_path: Union[str, Path]) -> Probe:
     """
     Read probe position from the imro file used in input of SpikeGlx and Open-Ephys for neuropixels probes.
@@ -952,7 +911,7 @@ def read_imro(file_path: Union[str, Path]) -> Probe:
     # the input is an imro file
     meta_file = Path(file_path)
     assert meta_file.suffix == ".imro", "'file' should point to the .imro file"
-    with meta_file.open(mode='r') as f:
+    with meta_file.open(mode="r") as f:
         imro_str = str(f.read())
     return _read_imro_string(imro_str)
 
@@ -979,35 +938,34 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
 
     """
     imro_table_header_str, *imro_table_values_list, _ = imro_str.strip().split(")")
-    
-    imro_table_header = tuple(map(int, imro_table_header_str[1:].split(',')))
+
+    imro_table_header = tuple(map(int, imro_table_header_str[1:].split(",")))
     if len(imro_table_header) == 3:
-        # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently. 
+        # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently.
         probe_serial_number, probe_option, num_contact = imro_table_header
-        imDatPrb_type = 'Phase3a'
+        imDatPrb_type = "Phase3a"
     elif len(imro_table_header) == 2:
         imDatPrb_type, num_contact = imro_table_header
     else:
-        raise ValueError(f'read_imro error, the header has a strange length: {imro_table_header}')
-    
+        raise ValueError(f"read_imro error, the header has a strange length: {imro_table_header}")
 
     if imDatPrb_type in [0, None]:
-        imDatPrb_type = probe_number_to_probe_type[imDatPrb_pn] 
-    
+        imDatPrb_type = probe_number_to_probe_type[imDatPrb_pn]
+
     probe_description = npx_probe[imDatPrb_type]
     fields = probe_description["fields_in_imro_table"]
-    contact_info = {k: [] for k in fields}      
-    for field_values_str in imro_table_values_list: # Imro table values look like '(value, value, value, ... '
-        values = tuple(map(int, field_values_str[1:].split(' '))) 
+    contact_info = {k: [] for k in fields}
+    for field_values_str in imro_table_values_list:  # Imro table values look like '(value, value, value, ... '
+        values = tuple(map(int, field_values_str[1:].split(" ")))
         # Split them by space to get (int('value'), int('value'), int('value'), ...)
         for field, field_value in zip(fields, values):
             contact_info[field].append(field_value)
-    
-    channel_ids = np.array(contact_info['channel_ids'])
+
+    channel_ids = np.array(contact_info["channel_ids"])
     if "elect_ids" in contact_info:
-        elec_ids = np.array(contact_info['elect_ids'])
-    else:        
-        banks = np.array(contact_info['banks'])
+        elec_ids = np.array(contact_info["elect_ids"])
+    else:
+        banks = np.array(contact_info["banks"])
         elec_ids = banks * 384 + channel_ids
 
     # compute position
@@ -1019,16 +977,16 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     x_pos = x_idx * x_pitch + stagger
     y_pos = y_idx * y_pitch
     positions = np.stack((x_pos, y_pos), axis=1)
-    
+
     if imDatPrb_type == 24:
-        shank_ids = np.array(contact_info['shank_id'])
-        contact_ids = [f's{shank_id}e{elec_id}' for shank_id, elec_id in zip(shank_ids, elec_ids)]
+        shank_ids = np.array(contact_info["shank_id"])
+        contact_ids = [f"s{shank_id}e{elec_id}" for shank_id, elec_id in zip(shank_ids, elec_ids)]
     else:
-        shank_ids = None 
-        contact_ids = [f'e{elec_id}' for elec_id in elec_ids]
+        shank_ids = None
+        contact_ids = [f"e{elec_id}" for elec_id in elec_ids]
 
     # construct Probe object
-    probe = Probe(ndim=2, si_units='um')
+    probe = Probe(ndim=2, si_units="um")
     probe.set_contacts(
         positions=positions,
         shapes="square",
@@ -1049,7 +1007,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     # shift
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
-    
+
     # this is scalar annotations
     probe_name = probe_description["probe_name"]
     probe.annotate(
@@ -1057,12 +1015,12 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
         manufacturer="IMEC",
         probe_type=imDatPrb_type,
     )
-    
+
     # this is vector annotations
-    vector_properties = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
-    vector_properties_available = {k: v  for k, v in contact_info.items() if k in vector_properties}
+    vector_properties = ("channel_ids", "banks", "references", "ap_gains", "lf_gains", "ap_hp_filters")
+    vector_properties_available = {k: v for k, v in contact_info.items() if k in vector_properties}
     probe.annotate_contacts(**vector_properties_available)
-    
+
     # wire it
     probe.set_device_channel_indices(np.arange(positions.shape[0]))
 
@@ -1083,27 +1041,32 @@ def write_imro(file, probe):
     probe_type = probe.annotations["probe_type"]
     data = probe.to_dataframe(complete=True).sort_values("device_channel_indices")
     annotations = probe.contact_annotations
-    ret = [f'({probe_type},{len(data)})']
+    ret = [f"({probe_type},{len(data)})"]
 
     if probe_type == 0:
         for ch in range(len(data)):
-            ret.append(f"({ch} 0 {annotations['references'][ch]} {annotations['ap_gains'][ch]} "
-                       f"{annotations['lf_gains'][ch]} {annotations['ap_hp_filters'][ch]})")
+            ret.append(
+                f"({ch} 0 {annotations['references'][ch]} {annotations['ap_gains'][ch]} "
+                f"{annotations['lf_gains'][ch]} {annotations['ap_hp_filters'][ch]})"
+            )
 
     elif probe_type == 21:
         for ch in range(len(data)):
-            ret.append(f"({data['device_channel_indices'][ch]} {annotations['banks'][ch]} "
-                       f"{annotations['references'][ch]} {data['contact_ids'][ch][1:]})")
+            ret.append(
+                f"({data['device_channel_indices'][ch]} {annotations['banks'][ch]} "
+                f"{annotations['references'][ch]} {data['contact_ids'][ch][1:]})"
+            )
 
     elif probe_type == 24:
         for ch in range(len(data)):
             ret.append(
                 f"({data['device_channel_indices'][ch]} {data['shank_ids'][ch]} {annotations['banks'][ch]} "
-                f"{annotations['references'][ch]} {data['contact_ids'][ch][3:]})")
+                f"{annotations['references'][ch]} {data['contact_ids'][ch][3:]})"
+            )
     else:
-        raise ValueError(f'unknown imro type : {probe_type}')
+        raise ValueError(f"unknown imro type : {probe_type}")
     with open(file, "w") as f:
-        f.write(''.join(ret))
+        f.write("".join(ret))
 
 
 def read_spikeglx(file: Union[str, Path]) -> Probe:
@@ -1116,7 +1079,7 @@ def read_spikeglx(file: Union[str, Path]) -> Probe:
     The shape is auto generated as a shank.
 
     Now reads:
-      * NP0.0 (=phase3A) 
+      * NP0.0 (=phase3A)
       * NP1.0 (=phase3B2)
       * NP2.0 with 4 shank
       * NP1.0-NHP
@@ -1133,16 +1096,16 @@ def read_spikeglx(file: Union[str, Path]) -> Probe:
     """
 
     meta_file = Path(file)
-    assert (meta_file.suffix == ".meta"), "'meta_file' should point to the .meta SpikeGLX file"
-    
+    assert meta_file.suffix == ".meta", "'meta_file' should point to the .meta SpikeGLX file"
+
     meta = parse_spikeglx_meta(meta_file)
-    
+
     assert "imroTbl" in meta, "Could not find imroTbl field in meta file!"
-    imro_table = meta['imroTbl']
+    imro_table = meta["imroTbl"]
     imDatPrb_pn = meta.get("imDatPrb_pn", None)
-    
+
     probe = _read_imro_string(imro_str=imro_table, imDatPrb_pn=imDatPrb_pn)
-    
+
     # sometimes we need to slice the probe when not all channels are saved
     saved_chans = get_saved_channel_indices_from_spikeglx_meta(meta_file)
     # remove the SYS chans
@@ -1162,46 +1125,45 @@ def parse_spikeglx_meta(meta_file: Union[str, Path]) -> dict:
     meta_file = Path(meta_file)
     with meta_file.open(mode="r") as f:
         lines = f.read().splitlines()
-    
+
     meta = {}
     for line in lines:
-        key, val = line.split('=')
-        if key.startswith('~'):
+        key, val = line.split("=")
+        if key.startswith("~"):
             key = key[1:]
         meta[key] = val
-        
+
     return meta
-    
+
 
 def get_saved_channel_indices_from_spikeglx_meta(meta_file: Union[str, Path]) -> np.array:
     """
     Utils function to get the saved channels.
-    
+
     It uses the 'snsSaveChanSubset' field in  the meta file, which is as follows:
     snsSaveChanSubset=0:10,50:55,100
     with chan1:chan2 chan2 inclusive
-    
+
     This function come from here Jennifer Colonell
     https://github.com/jenniferColonell/ecephys_spike_sorting/blob/master/ecephys_spike_sorting/common/SGLXMetaToCoords.py#L65
     """
     meta_file = Path(meta_file)
     meta = parse_spikeglx_meta(meta_file)
-    chans_txt = meta['snsSaveChanSubset']
-    
-    if chans_txt == 'all':
-        chans = np.arange(int(meta['nSavedChans']))
+    chans_txt = meta["snsSaveChanSubset"]
+
+    if chans_txt == "all":
+        chans = np.arange(int(meta["nSavedChans"]))
     else:
         chans = []
-        for e in chans_txt.split(','):
-            if ':' in e:
-                start, stop = e.split(':')
-                start, stop = int(start), int(stop) +1 
+        for e in chans_txt.split(","):
+            if ":" in e:
+                start, stop = e.split(":")
+                start, stop = int(start), int(stop) + 1
                 chans.extend(np.arange(start, stop))
             else:
                 chans.append(int(e))
-    chans = np.array(chans, dtype='int64')
+    chans = np.array(chans, dtype="int64")
     return chans
-    
 
 
 def read_openephys(
@@ -1216,9 +1178,9 @@ def read_openephys(
     Read probe positions from Open Ephys folder when using the Neuropix-PXI plugin.
     The reader assumes that the NP_PROBE fields are available in the settings file.
     Open Ephys versions 0.5.x and 0.6.x are supported:
-    * For version 0.6.x, the probe names are inferred from the STREAM field. Probe 
+    * For version 0.6.x, the probe names are inferred from the STREAM field. Probe
       information is then populated sequentially with the NP_PROBE fields.
-    * For version 0.5.x, STREAMs are not available. In this case, if multiple probes 
+    * For version 0.5.x, STREAMs are not available. In this case, if multiple probes
       are available, they are named sequentially based on the nodeId. E.g. "100.0",
       "100.1". These substrings are used for selection.
 
@@ -1275,9 +1237,7 @@ def read_openephys(
 
     if neuropix_pxi is None:
         if raise_error:
-            raise Exception(
-                "Open Ephys can only be read when the Neuropix-PXI plugin is used"
-            )
+            raise Exception("Open Ephys can only be read when the Neuropix-PXI plugin is used")
         return None
 
     if "NodeId" in neuropix_pxi.attrib:
@@ -1289,9 +1249,7 @@ def read_openephys(
     neuropix_pxi_version = parse(neuropix_pxi.attrib["libraryVersion"])
     if neuropix_pxi_version < parse("0.3.3"):
         if raise_error:
-            raise Exception(
-                "Electrode locations are available from Neuropix-PXI version 0.3.3"
-            )
+            raise Exception("Electrode locations are available from Neuropix-PXI version 0.3.3")
         return None
 
     # read STREAM fields if present (>=0.6.x)
@@ -1324,8 +1282,9 @@ def read_openephys(
         # make sure we have at least as many NP_PROBE as the number of used probes
         if len(np_probes) < len(probe_names_used):
             if raise_error:
-                raise Exception(f"Not enough NP_PROBE entries ({len(np_probes)}) "
-                                f"for used probes: {probe_names_used}")
+                raise Exception(
+                    f"Not enough NP_PROBE entries ({len(np_probes)}) " f"for used probes: {probe_names_used}"
+                )
             return None
 
     # now load probe info from NP_PROBE fields
@@ -1379,7 +1338,7 @@ def read_openephys(
         elif "Ultra" in pname:
             ptype = 1100
             x_shift = -8
-        else: # Probe type unknown
+        else:  # Probe type unknown
             ptype = None
             x_shift = 0
 
@@ -1394,27 +1353,31 @@ def read_openephys(
                 contact_ids = None
                 break
 
-            stagger = np.mod(pos[1] / npx_probe[ptype]["y_pitch"] + 1, 2) * npx_probe[ptype]["stagger"]            
+            stagger = np.mod(pos[1] / npx_probe[ptype]["y_pitch"] + 1, 2) * npx_probe[ptype]["stagger"]
             shank_id = shank_ids[0] if ptype == 24 else 0
-            
-            contact_id = int((pos[0] - stagger - npx_probe[ptype]["shank_pitch"] * shank_id) / \
-                npx_probe[ptype]["x_pitch"] + npx_probe[ptype]["ncol"] * pos[1] / npx_probe[ptype]["y_pitch"])
+
+            contact_id = int(
+                (pos[0] - stagger - npx_probe[ptype]["shank_pitch"] * shank_id) / npx_probe[ptype]["x_pitch"]
+                + npx_probe[ptype]["ncol"] * pos[1] / npx_probe[ptype]["y_pitch"]
+            )
             if ptype == 24:
                 contact_ids.append(f"s{shank_id}e{contact_id}")
             else:
                 contact_ids.append(f"e{contact_id}")
 
-        np_probe_dict = {'channel_names': channel_names,
-                         'shank_ids': shank_ids,
-                         'contact_ids': contact_ids,
-                         'positions': positions,
-                         'slot': slot,
-                         'port': port,
-                         'dock': dock,
-                         'serial_number': np_serial_number,
-                         'ptype': ptype}
+        np_probe_dict = {
+            "channel_names": channel_names,
+            "shank_ids": shank_ids,
+            "contact_ids": contact_ids,
+            "positions": positions,
+            "slot": slot,
+            "port": port,
+            "dock": dock,
+            "serial_number": np_serial_number,
+            "ptype": ptype,
+        }
         # Sequentially assign probe names
-        np_probe_dict.update({'name': probe_names_used[probe_idx]})
+        np_probe_dict.update({"name": probe_names_used[probe_idx]})
         np_probes_info.append(np_probe_dict)
 
     # now select correct probe (if multiple)
@@ -1426,7 +1389,7 @@ def read_openephys(
                 "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
             )
             for probe_idx, probe_info in enumerate(np_probes_info):
-                if probe_info['name'] in stream_name:
+                if probe_info["name"] in stream_name:
                     found = True
                     break
             if not found:
@@ -1440,25 +1403,23 @@ def read_openephys(
                 "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
             )
             for probe_idx, probe_info in enumerate(np_probes_info):
-                if probe_info['name'] == probe_name:
+                if probe_info["name"] == probe_name:
                     found = True
                     break
             if not found:
                 if raise_error:
-                    raise Exception(
-                        f"The provided {probe_name} is not in the available probes: {probe_names_used}"
-                    )
+                    raise Exception(f"The provided {probe_name} is not in the available probes: {probe_names_used}")
                 return None
         elif serial_number is not None:
             assert stream_name is None and probe_name is None, (
                 "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
             )
             for probe_idx, probe_info in enumerate(np_probes_info):
-                if probe_info['serial_number'] == str(serial_number):
+                if probe_info["serial_number"] == str(serial_number):
                     found = True
                     break
             if not found:
-                np_serial_numbers = [p['serial_number'] for p in probe_info]
+                np_serial_numbers = [p["serial_number"] for p in probe_info]
                 if raise_error:
                     raise Exception(
                         f"The provided {serial_number} is not in the available serial numbers: {np_serial_numbers}"
@@ -1472,8 +1433,8 @@ def read_openephys(
     else:
         # in case of a single probe, make sure it is consistent with optional
         # stream_name, probe_name, or serial number
-        available_probe_name = np_probes_info[0]['name']
-        available_serial_number = np_probes_info[0]['serial_number']
+        available_probe_name = np_probes_info[0]["name"]
+        available_serial_number = np_probes_info[0]["serial_number"]
 
         if stream_name:
             if available_probe_name not in stream_name:
@@ -1503,19 +1464,19 @@ def read_openephys(
 
     np_probe_info = np_probes_info[probe_idx]
     np_probe = np_probes[probe_idx]
-    positions = np_probe_info['positions']
-    shank_ids = np_probe_info['shank_ids']
-    pname = np_probe.attrib['probe_name']
+    positions = np_probe_info["positions"]
+    shank_ids = np_probe_info["shank_ids"]
+    pname = np_probe.attrib["probe_name"]
 
-    ptype = np_probe_info['ptype']
+    ptype = np_probe_info["ptype"]
     if ptype in npx_probe:
-        contact_width = npx_probe[ptype]['contact_width']
-        shank_pitch = npx_probe[ptype]['shank_pitch']
+        contact_width = npx_probe[ptype]["contact_width"]
+        shank_pitch = npx_probe[ptype]["shank_pitch"]
     else:
         contact_width = 12
         shank_pitch = 250
 
-    contact_ids = np_probe_info['contact_ids'] if np_probe_info['contact_ids'] is not None else None
+    contact_ids = np_probe_info["contact_ids"] if np_probe_info["contact_ids"] is not None else None
 
     # check if subset of channels
     chans_saved = get_saved_channel_indices_from_openephys_settings(settings_file, stream_name=stream_name)
@@ -1609,14 +1570,18 @@ def get_saved_channel_indices_from_openephys_settings(settings_file, stream_name
                         has_custom_states = True
                 if has_custom_states:
                     if len(custom_streams) > 1:
-                        assert stream_name is not None, \
-                                (f"More than one stream found with custom parameters: {custom_stream_names}. "
-                                f"Use the `stream_name` argument to choose the correct stream")
-                        possible_custom_streams = [stream for stream in custom_streams
-                                                   if stream.attrib["name"] in stream_name]
+                        assert stream_name is not None, (
+                            f"More than one stream found with custom parameters: {custom_stream_names}. "
+                            f"Use the `stream_name` argument to choose the correct stream"
+                        )
+                        possible_custom_streams = [
+                            stream for stream in custom_streams if stream.attrib["name"] in stream_name
+                        ]
                         if len(possible_custom_streams) > 1:
-                            warnings.warn(f"More than one custom parameters associated to {stream_name} "
-                                          f"found. Using fisrt one")
+                            warnings.warn(
+                                f"More than one custom parameters associated to {stream_name} "
+                                f"found. Using fisrt one"
+                            )
                         custom_stream = possible_custom_streams[0]
                     else:
                         custom_stream = custom_streams[0]
@@ -1670,7 +1635,7 @@ def read_mearec(file: Union[str, Path]) -> Probe:
     if "plane" in electrodes_info_keys:
         plane = electrodes_info["plane"][()]
         plane = plane.decode("utf-8") if isinstance(plane, bytes) else plane
-    
+
     plane_to_columns = {"xy": [0, 1], "xz": [0, 2], "yz": [1, 2]}
     columns = plane_to_columns[plane]
     positions_2d = positions[()][:, columns]

@@ -21,7 +21,7 @@ from probeinterface.plotting import plot_probe, plot_probe_group
 
 ##############################################################################
 # Generate 4 tetrodes:
-# 
+#
 
 from probeinterface import generate_tetrode
 
@@ -39,7 +39,7 @@ plot_probe_group(probegroup, with_channel_index=True, same_axes=True)
 
 ##############################################################################
 # Generate a linear probe:
-# 
+#
 
 from probeinterface import generate_linear_probe
 
@@ -48,7 +48,7 @@ plot_probe(linear_probe, with_channel_index=True)
 
 ##############################################################################
 # Generate a multi-column probe:
-# 
+#
 
 from probeinterface import generate_multi_columns_probe
 
@@ -61,7 +61,7 @@ plot_probe(multi_columns, with_channel_index=True, )
 
 ##############################################################################
 # Generate a square probe:
-# 
+#
 
 square_probe = generate_multi_columns_probe(num_columns=12,
                                             num_contact_per_column=12,

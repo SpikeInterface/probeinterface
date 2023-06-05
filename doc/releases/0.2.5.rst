@@ -5,4 +5,3 @@ September, 14 2021
 
 * vector annotations added to numpy representation
 * add "electrode" to annotations from read_maxwell
-

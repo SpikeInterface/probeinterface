@@ -6,4 +6,3 @@ July, 30 2021
 * expose read_maxwell function
 * vector annotations
 * changes to BIDS format
-

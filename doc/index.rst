@@ -17,19 +17,19 @@ The :code:`probeinterface` package also provides:
   * basic plotting functions with matplotlib
   * input/output functions to several formats (PRB, NWB, CSV, MEArec, SpikeGLX, ...)
 
-Here is a schema for the naming used in the package:  
+Here is a schema for the naming used in the package:
 
 .. image:: img/probeinterface_naming.png
     :width: 400 px
 
 
-  
+
 .. include:: examples/index.rst
-   
+
 .. toctree::
    :caption: Contents:
    :maxdepth: 1
-   
+
    overview
    examples/index.rst
    format_spec

@@ -3,6 +3,9 @@ Automatically set the `Probe.device_channel_indices` field.
 """
 import numpy as np
 
+
+# This code will not be formatted by Black
+# fmt: off
 pathways = {
     # this is the neuronexus H32 with omnetics connected to the intantec RHD headstage
     'H32>RHD2132': [
@@ -44,6 +47,7 @@ pathways = {
         63, 62, 61, 60, 59, 58, 57, 56, 7, 6, 5, 4, 3, 2, 1, 0
     ]
 }
+# fmt: on
 
 
 def get_available_pathways():
@@ -70,13 +74,12 @@ def wire_probe(probe, pathway, channel_offset=0):
         An optional offset to add to the device_channel_indices, by default 0
     """
     assert pathway in pathways
-    chan_indices = np.array(pathways[pathway], dtype='int64') + channel_offset
+    chan_indices = np.array(pathways[pathway], dtype="int64") + channel_offset
     assert chan_indices.size == probe.get_contact_count()
     probe.set_device_channel_indices(chan_indices)
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     for pathway, chan_indices in pathways.items():
         chan_indices = np.array(chan_indices)
         print(pathway, chan_indices.size)

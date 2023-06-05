@@ -5,6 +5,4 @@ probeinterface 0.2.7
 March, 1 2022
 
 * add read_3brain to io
-* annotate spikeGLX with probe version 
-
-
+* annotate spikeGLX with probe version

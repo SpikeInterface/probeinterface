@@ -33,7 +33,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 packages = ["probeinterface"]
-package-dir = {"probeinterface" = "probeinterface"}
+package-dir = {"probeinterface" = "src/probeinterface"}
 
 
 [project.optional-dependencies]
@@ -59,3 +59,7 @@ docs = [
 omit = [
     "tests/*",
 ]
+
+
+[tool.black]
+line-length = 120

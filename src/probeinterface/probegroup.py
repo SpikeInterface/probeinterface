@@ -15,9 +15,7 @@ class ProbeGroup:
         self.probes = []
 
     def add_probe(self, probe):
-        """
-
-        """
+        """ """
         if len(self.probes) > 0:
             self._check_compatible(probe)
 
@@ -56,7 +54,7 @@ class ProbeGroup:
         probe_arr = []
 
         # loop over probes to get all fields
-        dtype = [('probe_index', 'int64')]
+        dtype = [("probe_index", "int64")]
         fields = []
         for probe_index, probe in enumerate(self.probes):
             arr = probe.to_numpy(complete=complete)
@@ -70,7 +68,7 @@ class ProbeGroup:
         for probe_index, probe in enumerate(self.probes):
             arr = probe_arr[probe_index]
             arr_ext = np.zeros(probe.get_contact_count(), dtype=dtype)
-            arr_ext['probe_index'] = probe_index
+            arr_ext["probe_index"] = probe_index
             for k in fields:
                 if k in arr.dtype.fields:
                     arr_ext[k] = arr[k]
@@ -82,18 +80,20 @@ class ProbeGroup:
     @staticmethod
     def from_numpy(arr):
         from .probe import Probe
-        probes_indices = np.unique(arr['probe_index'])
+
+        probes_indices = np.unique(arr["probe_index"])
         probegroup = ProbeGroup()
         for probe_index in probes_indices:
-            mask = arr['probe_index'] == probe_index
+            mask = arr["probe_index"] == probe_index
             probe = Probe.from_numpy(arr[mask])
             probegroup.add_probe(probe)
         return probegroup
 
     def to_dataframe(self, complete=False):
         import pandas as pd
+
         df = pd.DataFrame(self.to_numpy(complete=complete))
-        df.index = np.arange(df.shape[0], dtype='int64')
+        df.index = np.arange(df.shape[0], dtype="int64")
         return df
 
     def to_dict(self, array_as_list=False):
@@ -110,10 +110,10 @@ class ProbeGroup:
             The dictionary representation of the probegroup
         """
         d = {}
-        d['probes'] = []
+        d["probes"] = []
         for probe_ind, probe in enumerate(self.probes):
             probe_dict = probe.to_dict(array_as_list=array_as_list)
-            d['probes'].append(probe_dict)
+            d["probes"].append(probe_dict)
         return d
 
     @staticmethod
@@ -131,7 +131,7 @@ class ProbeGroup:
             The instantiated ProbeGroup object
         """
         probegroup = ProbeGroup()
-        for probe_dict in d['probes']:
+        for probe_dict in d["probes"]:
             probe = Probe.from_dict(probe_dict)
             probegroup.add_probe(probe)
         return probegroup
@@ -145,10 +145,10 @@ class ProbeGroup:
             channel -1 means not connected
         """
         total_chan = self.get_channel_count()
-        channels = np.zeros(total_chan, dtype=[('probe_index', 'int64'), ('device_channel_indices', 'int64')])
+        channels = np.zeros(total_chan, dtype=[("probe_index", "int64"), ("device_channel_indices", "int64")])
         arr = self.to_numpy(complete=True)
-        channels['probe_index'] = arr['probe_index']
-        channels['device_channel_indices'] = arr['device_channel_indices']
+        channels["probe_index"] = arr["probe_index"]
+        channels["device_channel_indices"] = arr["device_channel_indices"]
         return channels
 
     def set_global_device_channel_indices(self, channels):
@@ -157,7 +157,7 @@ class ProbeGroup:
         """
         channels = np.asarray(channels)
         if channels.size != self.get_channel_count():
-            raise ValueError('Wrong channels size')
+            raise ValueError("Wrong channels size")
 
         # first reset previsous indices
         for i, probe in enumerate(self.probes):
@@ -168,32 +168,32 @@ class ProbeGroup:
         ind = 0
         for i, probe in enumerate(self.probes):
             n = probe.get_contact_count()
-            probe.set_device_channel_indices(channels[ind:ind + n])
+            probe.set_device_channel_indices(channels[ind : ind + n])
             ind += n
 
     def get_global_contact_ids(self):
         """
         get all contact ids concatenated across probes
         """
-        contact_ids = self.to_numpy(complete=True)['contact_ids']
+        contact_ids = self.to_numpy(complete=True)["contact_ids"]
         return contact_ids
 
     def check_global_device_wiring_and_ids(self):
         # check unique device_channel_indices for !=-1
         chans = self.get_global_device_channel_indices()
-        keep = chans['device_channel_indices'] >= 0
-        valid_chans = chans[keep]['device_channel_indices']
+        keep = chans["device_channel_indices"] >= 0
+        valid_chans = chans[keep]["device_channel_indices"]
 
         if valid_chans.size != np.unique(valid_chans).size:
-            raise ValueError('channel device index are not unique across probes')
+            raise ValueError("channel device index are not unique across probes")
 
         # check unique ids for != ''
         all_ids = self.get_global_contact_ids()
-        keep = [e != '' for e in all_ids]
+        keep = [e != "" for e in all_ids]
         valid_ids = all_ids[keep]
 
         if valid_ids.size != np.unique(valid_ids).size:
-            raise ValueError('contact_ids are not unique across probes')
+            raise ValueError("contact_ids are not unique across probes")
 
     def auto_generate_probe_ids(self, *args, **kwargs):
         """
@@ -206,8 +206,8 @@ class ProbeGroup:
             `probeinterface.utils.generate_unique_ids`
         """
 
-        if any('probe_id' in p.annotations for p in self.probes):
-            raise ValueError('Probe does already have a `probe_id` annotation.')
+        if any("probe_id" in p.annotations for p in self.probes):
+            raise ValueError("Probe does already have a `probe_id` annotation.")
 
         if not args:
             args = 1e7, 1e8
@@ -231,8 +231,7 @@ class ProbeGroup:
         """
 
         if any(p.contact_ids is not None for p in self.probes):
-            raise ValueError('Some contacts already have contact ids '
-                             'assigned.')
+            raise ValueError("Some contacts already have contact ids " "assigned.")
 
         if not args:
             args = 1e7, 1e8
@@ -242,7 +241,5 @@ class ProbeGroup:
         contact_ids = generate_unique_ids(*args, **kwargs).astype(str)
 
         for probe in self.probes:
-            el_ids, contact_ids = np.split(contact_ids,
-                                             [probe.get_contact_count()])
+            el_ids, contact_ids = np.split(contact_ids, [probe.get_contact_count()])
             probe.set_contact_ids(el_ids)
-

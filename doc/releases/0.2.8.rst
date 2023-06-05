@@ -8,7 +8,4 @@ March, 23rd 2022
 * expose function select_dimensions (2d>3d and 3d>2d)
 * add to_dict/from_dict in ProbeGroup
 * Add "text_on_contact" in plot_probe()
-* Add read_openephys function for Neuropux-PXI plugin 
-
-
-
+* Add read_openephys function for Neuropux-PXI plugin

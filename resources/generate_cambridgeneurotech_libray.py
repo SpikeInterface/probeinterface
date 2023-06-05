@@ -24,7 +24,7 @@ see repos https://github.com/SpikeInterface/probeinterface
 In the 'Probe Maps 2020Final.xlsx'
 '''
 
-import pandas as pd 
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -77,8 +77,8 @@ def get_channel_index(connector, probe_type):
     """
 
     # first part of the function to opne the proper connector based on connector name
-    
-    # header [0,1] is used to create a mutliindex 
+
+    # header [0,1] is used to create a mutliindex
     df = pd.read_excel(probe_map_file, sheet_name=connector, header=[0,1])
 
     # second part to get the proper channel in the
@@ -150,7 +150,7 @@ def generate_CN_multi_shank(probe_info):
         sub_probe = generate_CN_probe(probe_info, probeIdx)
         sub_probe.move([probe_info['shankSpacing_um']*probeIdx, 0])
         sub_probes.append(sub_probe)
-        
+
     multi_shank_probe = combine_probes(sub_probes)
     return multi_shank_probe
 
@@ -160,8 +160,8 @@ def create_CN_figure(probe_name, probe):
     Create custum figire for CN with custum colors + logo
     """
     fig, ax = plt.subplots()
-    fig.set_size_inches(18.5, 10.5)    
-    
+    fig.set_size_inches(18.5, 10.5)
+
     n = probe.get_contact_count()
     plot_probe(probe, ax=ax,
             contacts_colors = ['#5bc5f2'] * n,  # made change to default color
@@ -174,16 +174,16 @@ def create_CN_figure(probe_name, probe):
     ax.spines['top'].set_visible(False) #remove external axis
 
     ax.set_title('\n' +'CambridgeNeuroTech' +'\n'+  probe.annotations.get('name'), fontsize = 24)
-    
+
     fig.tight_layout() #modif tight layout
-    
+
     im = plt.imread(work_dir / 'CN_logo-01.jpg')
     newax = fig.add_axes([0.8,0.85,0.2,0.1], anchor='NW', zorder=0)
     newax.imshow(im)
     newax.axis('off')
-    
+
     return fig
-    
+
 
 def export_one_probe(probe_name, probe):
     """
@@ -193,16 +193,16 @@ def export_one_probe(probe_name, probe):
     probe_folder.mkdir(exist_ok=True, parents=True)
     probe_file = probe_folder / (probe_name + '.json')
     figure_file = probe_folder / (probe_name + '.png')
-    
+
     write_probeinterface(probe_file, probe)
-    
+
     fig = create_CN_figure(probe_name, probe)
     fig.savefig(figure_file)
-    
+
     # plt.show()
     # avoid memory error
     plt.close(fig)
-    
+
 
 def generate_all_probes():
     """
@@ -211,31 +211,31 @@ def generate_all_probes():
     """
     probe_info_table = pd.read_csv(probe_info_table_file)
     #~ print(probe_info_list)
-    
+
     for i, probe_info in probe_info_table.iterrows():
         print(i, probe_info['part'])
-        
-        
+
+
         if probe_info['shanks_n'] == 1:
             # one shank
             probe_unordered = generate_CN_probe(probe_info, 0)
-        else: 
+        else:
             # multi shank
             probe_unordered = generate_CN_multi_shank(probe_info)
-        
+
         # loop over connector case that re order the probe contact index
         for connector in list(probe_info[probe_info.index.str.contains('ASSY')].dropna().index):
             probe_name = connector+'-'+probe_info['part']
             print('  ', probe_name)
-            
+
             channelIndex = get_channel_index(connector = connector, probe_type = probe_info['part'])
             order = np.argsort(channelIndex)
             probe = probe_unordered.get_slice(order)
 
             probe.annotate(name=probe_name,
                             manufacturer='cambridgeneurotech',
-                            first_index=1) 
-            
+                            first_index=1)
+
             # one based in cambridge neurotech
             contact_ids = np.arange(order.size) + 1
             contact_ids =contact_ids.astype(str)

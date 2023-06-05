@@ -28,6 +28,3 @@ TODO: explain with more details
   5. Ask for an account
   6. Push to a branch with gin client
   7. Make a pull request on the gin portal (like a github PR)
-
-
-

@@ -2,7 +2,7 @@ import numpy as np
 
 from .shank import Shank
 
-_possible_contact_shapes = ['circle', 'square', 'rect']
+_possible_contact_shapes = ["circle", "square", "rect"]
 
 
 class Probe:
@@ -14,7 +14,8 @@ class Probe:
     contacts and the shape of the probe.
 
     """
-    def __init__(self, ndim=2, si_units='um'):
+
+    def __init__(self, ndim=2, si_units="um"):
         """
         Some attributes are protected and have to be set with setters:
           * set_contacts(...)
@@ -57,7 +58,7 @@ class Probe:
 
         # annotation:  a dict that contains all meta information about
         # the probe (name, manufacturor, date of production, ...)
-        self.annotations = dict(name='')
+        self.annotations = dict(name="")
         # same idea but handle in vector way for contacts
         self.contact_annotations = dict()
 
@@ -91,18 +92,18 @@ class Probe:
 
     def get_title(self):
         if self.contact_positions is None:
-            txt = 'Undefined probe'
+            txt = "Undefined probe"
         else:
             n = self.get_contact_count()
-            name = self.annotations.get('name', '')
-            manufacturer = self.annotations.get('manufacturer', '')
+            name = self.annotations.get("name", "")
+            manufacturer = self.annotations.get("manufacturer", "")
             if len(name) > 0 or len(manufacturer):
-                txt = f'{manufacturer} - {name} - {n}ch'
+                txt = f"{manufacturer} - {name} - {n}ch"
             else:
-                txt = f'Probe - {n}ch'
+                txt = f"Probe - {n}ch"
             if self.shank_ids is not None:
                 num_shank = self.get_shank_count()
-                txt += f' - {num_shank}shanks'
+                txt += f" - {num_shank}shanks"
         return txt
 
     def __repr__(self):
@@ -121,14 +122,14 @@ class Probe:
     def annotate_contacts(self, **kwargs):
         n = self.get_contact_count()
         for k, values in kwargs.items():
-            assert len(values) == n, 'annotate_contacts need list or array as values'
+            assert len(values) == n, "annotate_contacts need list or array as values"
             values = np.asarray(values)
             self.contact_annotations[k] = values
 
     def check_annotations(self):
         d = self.annotations
-        if 'first_index' in d:
-            assert d['first_index'] in (0, 1)
+        if "first_index" in d:
+            assert d["first_index"] in (0, 1)
 
     def get_contact_count(self):
         """
@@ -145,13 +146,11 @@ class Probe:
         n = len(np.unique(self.shank_ids))
         return n
 
-    def set_contacts(self, positions,
-                     shapes='circle', shape_params={'radius': 10},
-                     plane_axes=None, shank_ids=None):
+    def set_contacts(self, positions, shapes="circle", shape_params={"radius": 10}, plane_axes=None, shank_ids=None):
         """Sets contacts to a Probe.
-        
-        This sets four attributes of the probe: 
-            contact_positions, 
+
+        This sets four attributes of the probe:
+            contact_positions,
             contact_shapes,
             contact_shape_params,
             _contact_plane_axes
@@ -172,7 +171,7 @@ class Probe:
         """
         positions = np.array(positions)
         if positions.shape[1] != self.ndim:
-            raise ValueError('posistions.shape[1] and ndim do not match!')
+            raise ValueError("posistions.shape[1] and ndim do not match!")
 
         self._contact_positions = positions
         n = positions.shape[0]
@@ -181,7 +180,7 @@ class Probe:
         # For 2D we make auto
         if plane_axes is None:
             if self.ndim == 3:
-                raise ValueError('you need to give plane_axes')
+                raise ValueError("you need to give plane_axes")
             else:
                 plane_axes = np.zeros((n, 2, self.ndim))
                 plane_axes[:, 0, 0] = 1
@@ -194,16 +193,16 @@ class Probe:
         else:
             self._shank_ids = np.asarray(shank_ids).astype(str)
             if self.shank_ids.size != n:
-                raise ValueError('shan_ids have wring size')
+                raise ValueError("shan_ids have wring size")
 
         # shape
         if isinstance(shapes, str):
             shapes = [shapes] * n
         shapes = np.array(shapes)
         if not np.all(np.in1d(shapes, _possible_contact_shapes)):
-            raise ValueError(f'contacts shape must be in {_possible_contact_shapes}')
+            raise ValueError(f"contacts shape must be in {_possible_contact_shapes}")
         if shapes.shape[0] != n:
-            raise ValueError('contacts shape must have same length as posistions')
+            raise ValueError("contacts shape must have same length as posistions")
         self._contact_shapes = np.array(shapes)
 
         # shape params
@@ -221,10 +220,10 @@ class Probe:
         """
         contour_polygon = np.asarray(contour_polygon)
         if contour_polygon.shape[1] != self.ndim:
-            raise ValueError('contour_polygon.shape[1] and ndim do not match!')
+            raise ValueError("contour_polygon.shape[1] and ndim do not match!")
         self.probe_planar_contour = contour_polygon
 
-    def create_auto_shape(self, probe_type='tip', margin=20.):
+    def create_auto_shape(self, probe_type="tip", margin=20.0):
         """Create planar contour automatically based on probe contact positions.
 
         Parameters
@@ -236,10 +235,10 @@ class Probe:
 
         """
         if self.ndim != 2:
-            raise ValueError('Auto shape is supported only for 2d')
+            raise ValueError("Auto shape is supported only for 2d")
 
         if self._shank_ids is None:
-            shank_ids = np.zeros((self.get_contact_count()), dtype='int64')
+            shank_ids = np.zeros((self.get_contact_count()), dtype="int64")
         else:
             shank_ids = self._shank_ids
 
@@ -258,11 +257,22 @@ class Probe:
             y0 -= margin
             y1 += margin
 
-            if probe_type == 'rect':
-                polygon += [(x0, y1), (x0, y0), (x1, y0), (x1, y1), ]
-            elif probe_type == 'tip':
+            if probe_type == "rect":
+                polygon += [
+                    (x0, y1),
+                    (x0, y0),
+                    (x1, y0),
+                    (x1, y1),
+                ]
+            elif probe_type == "tip":
                 tip = ((x0 + x1) * 0.5, y0 - margin * 4)
-                polygon += [(x0, y1), (x0, y0), tip, (x1, y0), (x1, y1), ]
+                polygon += [
+                    (x0, y1),
+                    (x0, y0),
+                    tip,
+                    (x1, y0),
+                    (x1, y1),
+                ]
             else:
                 raise ValueError()
 
@@ -281,7 +291,7 @@ class Probe:
         """
         channel_indices = np.asarray(channel_indices, dtype=int)
         if channel_indices.size != self.get_contact_count():
-            ValueError('channel_indices have not the same size as contact')
+            ValueError("channel_indices have not the same size as contact")
         self.device_channel_indices = channel_indices
         if self._probe_group is not None:
             self._probe_group.check_global_device_wiring_and_ids()
@@ -299,6 +309,7 @@ class Probe:
            The pathway. E.g. 'H32>RHD'
         """
         from .wiring import wire_probe
+
         wire_probe(self, pathway, channel_offset=channel_offset)
 
     def set_contact_ids(self, contact_ids):
@@ -316,10 +327,10 @@ class Probe:
         contact_ids = np.asarray(contact_ids)
 
         if contact_ids.size != self.get_contact_count():
-            ValueError('channel_indices have not the same size as contact')
+            ValueError("channel_indices have not the same size as contact")
 
-        if contact_ids.dtype.kind != 'U':
-            contact_ids = contact_ids.astype('U')
+        if contact_ids.dtype.kind != "U":
+            contact_ids = contact_ids.astype("U")
 
         self._contact_ids = contact_ids
         if self._probe_group is not None:
@@ -336,8 +347,9 @@ class Probe:
         """
         shank_ids = np.asarray(shank_ids).astype(str)
         if shank_ids.size != self.get_contact_count():
-            raise ValueError(f'shank_ids have wrong size. Has to match number '
-                             f'of contacts: {self.get_contact_count()}')
+            raise ValueError(
+                f"shank_ids have wrong size. Has to match number " f"of contacts: {self.get_contact_count()}"
+            )
         self._shank_ids = shank_ids
 
     def get_shanks(self):
@@ -363,13 +375,14 @@ class Probe:
             positions=self.contact_positions.copy(),
             plane_axes=self.contact_plane_axes.copy(),
             shapes=self.contact_shapes.copy(),
-            shape_params=self.contact_shape_params.copy())
+            shape_params=self.contact_shape_params.copy(),
+        )
         if self.probe_planar_contour is not None:
             other.set_planar_contour(self.probe_planar_contour.copy())
         # channel_indices are not copied
         return other
 
-    def to_3d(self, axes='xz'):
+    def to_3d(self, axes="xz"):
         """
         Transform 2d probe to 3d probe.
 
@@ -393,7 +406,8 @@ class Probe:
             positions=positions,
             plane_axes=plane_axes,
             shapes=self.contact_shapes.copy(),
-            shape_params=self.contact_shape_params.copy())
+            shape_params=self.contact_shape_params.copy(),
+        )
 
         # shape
         if self.probe_planar_contour is not None:
@@ -405,7 +419,7 @@ class Probe:
 
         return probe3d
 
-    def to_2d(self, axes='xy'):
+    def to_2d(self, axes="xy"):
         """
         Transform 3d probe to 2d probe.
 
@@ -423,9 +437,8 @@ class Probe:
         # contacts
         positions = _3d_to_2d(self.contact_positions, axes)
         probe2d.set_contacts(
-            positions=positions,
-            shapes=self.contact_shapes.copy(),
-            shape_params=self.contact_shape_params.copy())
+            positions=positions, shapes=self.contact_shapes.copy(), shape_params=self.contact_shape_params.copy()
+        )
 
         # shape
         if self.probe_planar_contour is not None:
@@ -448,13 +461,13 @@ class Probe:
             shape_param = self.contact_shape_params[i]
             plane_axe = self.contact_plane_axes[i]
             pos = self.contact_positions[i]
-            if shape == 'circle':
-                r = shape_param['radius']
+            if shape == "circle":
+                r = shape_param["radius"]
                 theta = np.linspace(0, 2 * np.pi, 360)
                 theta = np.tile(theta[:, np.newaxis], [1, self.ndim])
                 one_vertice = pos + r * np.cos(theta) * plane_axe[0] + r * np.sin(theta) * plane_axe[1]
-            elif shape == 'square':
-                w = shape_param['width']
+            elif shape == "square":
+                w = shape_param["width"]
                 one_vertice = [
                     pos - w / 2 * plane_axe[0] - w / 2 * plane_axe[1],
                     pos - w / 2 * plane_axe[0] + w / 2 * plane_axe[1],
@@ -462,9 +475,9 @@ class Probe:
                     pos + w / 2 * plane_axe[0] - w / 2 * plane_axe[1],
                 ]
                 one_vertice = np.array(one_vertice)
-            elif shape == 'rect':
-                w = shape_param['width']
-                h = shape_param['height']
+            elif shape == "rect":
+                w = shape_param["width"]
+                h = shape_param["height"]
                 one_vertice = [
                     pos - w / 2 * plane_axe[0] - h / 2 * plane_axe[1],
                     pos - w / 2 * plane_axe[0] + h / 2 * plane_axe[1],
@@ -522,18 +535,19 @@ class Probe:
         theta = np.deg2rad(theta)
 
         if self.ndim == 2:
-            assert axis is None, 'axis must be None for 2d probes'
+            assert axis is None, "axis must be None for 2d probes"
             R = _rotation_matrix_2d(theta)
         elif self.ndim == 3:
-            assert axis is not None, 'axis must be specified for 3d probes'
+            assert axis is not None, "axis must be specified for 3d probes"
             R = _rotation_matrix_3d(axis, theta).T
 
         new_positions = (self.contact_positions - center) @ R + center
 
         new_plane_axes = np.zeros_like(self.contact_plane_axes)
         for i in range(2):
-            new_plane_axes[:, i, :] = (self.contact_plane_axes[:, i,
-                                       :] - center + self.contact_positions) @ R + center - new_positions
+            new_plane_axes[:, i, :] = (
+                (self.contact_plane_axes[:, i, :] - center + self.contact_positions) @ R + center - new_positions
+            )
 
         self._contact_positions = new_positions
         self._contact_plane_axes = new_plane_axes
@@ -556,12 +570,12 @@ class Probe:
         """
 
         if self.ndim == 3:
-            raise ValueError('By contact rotation is implemented only for 2d')
+            raise ValueError("By contact rotation is implemented only for 2d")
 
         n = self.get_contact_count()
 
         if isinstance(thetas, (int, float)):
-            thetas = np.array([thetas] * n, dtype='float64')
+            thetas = np.array([thetas] * n, dtype="float64")
 
         thetas = np.deg2rad(thetas)
 
@@ -570,11 +584,20 @@ class Probe:
             for i in range(2):
                 self.contact_plane_axes[e, i, :] = self.contact_plane_axes[e, i, :] @ R
 
-    _dump_attr_names = ['ndim', 'si_units', 'annotations', 'contact_annotations',
-                        '_contact_positions', '_contact_plane_axes',
-                        '_contact_shapes', '_contact_shape_params',
-                        'probe_planar_contour', 'device_channel_indices',
-                        '_contact_ids', '_shank_ids']
+    _dump_attr_names = [
+        "ndim",
+        "si_units",
+        "annotations",
+        "contact_annotations",
+        "_contact_positions",
+        "_contact_plane_axes",
+        "_contact_shapes",
+        "_contact_shape_params",
+        "probe_planar_contour",
+        "device_channel_indices",
+        "_contact_ids",
+        "_shank_ids",
+    ]
 
     def to_dict(self, array_as_list=False):
         """Create a dictionary of all necessary attributes.
@@ -600,7 +623,7 @@ class Probe:
             if array_as_list and v is not None and isinstance(v, np.ndarray):
                 v = v.tolist()
             if v is not None:
-                if k.startswith('_'):
+                if k.startswith("_"):
                     d[k[1:]] = v
                 else:
                     d[k] = v
@@ -620,34 +643,35 @@ class Probe:
         probe : Probe
             The instantiated Probe object
         """
-        probe = Probe(ndim=d['ndim'], si_units=d['si_units'])
+        probe = Probe(ndim=d["ndim"], si_units=d["si_units"])
 
         probe.set_contacts(
-            positions=d['contact_positions'],
-            plane_axes=d['contact_plane_axes'],
-            shapes=d['contact_shapes'],
-            shape_params=d['contact_shape_params'])
+            positions=d["contact_positions"],
+            plane_axes=d["contact_plane_axes"],
+            shapes=d["contact_shapes"],
+            shape_params=d["contact_shape_params"],
+        )
 
-        v = d.get('probe_planar_contour', None)
+        v = d.get("probe_planar_contour", None)
         if v is not None:
             probe.set_planar_contour(v)
 
-        v = d.get('device_channel_indices', None)
+        v = d.get("device_channel_indices", None)
         if v is not None:
             probe.set_device_channel_indices(v)
 
-        v = d.get('shank_ids', None)
+        v = d.get("shank_ids", None)
         if v is not None:
             probe.set_shank_ids(v)
 
-        v = d.get('contact_ids', None)
+        v = d.get("contact_ids", None)
         if v is not None:
             probe.set_contact_ids(v)
 
-        if 'annotations' in d:
-            probe.annotate(**d['annotations'])
-        if 'contact_annotations' in d:
-            probe.annotate_contacts(**d['contact_annotations'])
+        if "annotations" in d:
+            probe.annotate(**d["annotations"])
+        if "contact_annotations" in d:
+            probe.annotate_contacts(**d["contact_annotations"])
 
         return probe
 
@@ -672,59 +696,59 @@ class Probe:
             With complex dtype
         """
 
-        dtype = [('x', 'float64'), ('y', 'float64')]
+        dtype = [("x", "float64"), ("y", "float64")]
         if self.ndim == 3:
-            dtype += [('z', 'float64')]
-        dtype += [('contact_shapes', 'U64')]
+            dtype += [("z", "float64")]
+        dtype += [("contact_shapes", "U64")]
         param_shape = []
         for i, p in enumerate(self.contact_shape_params):
             for k, v in p.items():
                 if k not in param_shape:
                     param_shape.append(k)
         for k in param_shape:
-            dtype += [(k, 'float64')]
-        dtype += [('shank_ids', 'U64'), ('contact_ids', 'U64')]
+            dtype += [(k, "float64")]
+        dtype += [("shank_ids", "U64"), ("contact_ids", "U64")]
 
         if complete:
-            dtype += [('device_channel_indices', 'int64')]
-            dtype += [('si_units', 'U64')]
+            dtype += [("device_channel_indices", "int64")]
+            dtype += [("si_units", "U64")]
             for i in range(self.ndim):
-                dim = ['x', 'y', 'z'][i]
-                dtype += [(f'plane_axis_{dim}_0', 'float64')]
-                dtype += [(f'plane_axis_{dim}_1', 'float64')]
+                dim = ["x", "y", "z"][i]
+                dtype += [(f"plane_axis_{dim}_0", "float64")]
+                dtype += [(f"plane_axis_{dim}_1", "float64")]
             for k, v in self.contact_annotations.items():
-                dtype += [(f'{k}', np.dtype(v[0]))]
+                dtype += [(f"{k}", np.dtype(v[0]))]
 
         arr = np.zeros(self.get_contact_count(), dtype=dtype)
-        arr['x'] = self.contact_positions[:, 0]
-        arr['y'] = self.contact_positions[:, 1]
+        arr["x"] = self.contact_positions[:, 0]
+        arr["y"] = self.contact_positions[:, 1]
         if self.ndim == 3:
-            arr['z'] = self.contact_positions[:, 2]
-        arr['contact_shapes'] = self.contact_shapes
+            arr["z"] = self.contact_positions[:, 2]
+        arr["contact_shapes"] = self.contact_shapes
         for i, p in enumerate(self.contact_shape_params):
             for k, v in p.items():
                 arr[k][i] = v
 
-        arr['shank_ids'] = self.shank_ids
+        arr["shank_ids"] = self.shank_ids
 
         if self.contact_ids is None:
-            arr['contact_ids'] = [''] * self.get_contact_count()
+            arr["contact_ids"] = [""] * self.get_contact_count()
         else:
-            arr['contact_ids'] = self.contact_ids
+            arr["contact_ids"] = self.contact_ids
 
         if complete:
-            arr['si_units'] = self.si_units
+            arr["si_units"] = self.si_units
 
             # (num_contacts, 2, ndim)
             for i in range(self.ndim):
-                dim = ['x', 'y', 'z'][i]
-                arr[f'plane_axis_{dim}_0'] = self.contact_plane_axes[:, 0, i]
-                arr[f'plane_axis_{dim}_1'] = self.contact_plane_axes[:, 1, i]
+                dim = ["x", "y", "z"][i]
+                arr[f"plane_axis_{dim}_0"] = self.contact_plane_axes[:, 0, i]
+                arr[f"plane_axis_{dim}_1"] = self.contact_plane_axes[:, 1, i]
 
             if self.device_channel_indices is None:
-                arr['device_channel_indices'] = -1
+                arr["device_channel_indices"] = -1
             else:
-                arr['device_channel_indices'] = self.device_channel_indices
+                arr["device_channel_indices"] = self.device_channel_indices
 
             for k, v in self.contact_annotations.items():
                 arr[k] = v
@@ -750,61 +774,56 @@ class Probe:
 
         fields = list(arr.dtype.fields)
 
-        if 'z' in fields:
+        if "z" in fields:
             ndim = 3
         else:
             ndim = 2
 
-        assert 'x' in fields
-        assert 'y' in fields
-        if 'si_units' in fields:
-            assert np.unique(arr['si_units']).size == 1
-            si_units = np.unique(arr['si_units'])[0]
+        assert "x" in fields
+        assert "y" in fields
+        if "si_units" in fields:
+            assert np.unique(arr["si_units"]).size == 1
+            si_units = np.unique(arr["si_units"])[0]
         else:
-            si_units = 'um'
+            si_units = "um"
         probe = Probe(ndim=ndim, si_units=si_units)
 
         # contacts
-        positions = np.zeros((arr.size, ndim), dtype='float64')
-        for i, dim in enumerate(['x', 'y', 'z'][:ndim]):
+        positions = np.zeros((arr.size, ndim), dtype="float64")
+        for i, dim in enumerate(["x", "y", "z"][:ndim]):
             positions[:, i] = arr[dim]
-        shapes = arr['contact_shapes']
+        shapes = arr["contact_shapes"]
         shape_params = []
         for i, shape in enumerate(shapes):
-            if shape == 'circle':
-                p = {'radius': float(arr['radius'][i])}
-            elif shape == 'square':
-                p = {'width': float(arr['width'][i])}
-            elif shape == 'rect':
-                p = {'width': float(arr['width'][i]),
-                     'height': float(arr['height'][i])}
+            if shape == "circle":
+                p = {"radius": float(arr["radius"][i])}
+            elif shape == "square":
+                p = {"width": float(arr["width"][i])}
+            elif shape == "rect":
+                p = {"width": float(arr["width"][i]), "height": float(arr["height"][i])}
             else:
-                raise ValueError('You are in bad shape')
+                raise ValueError("You are in bad shape")
             shape_params.append(p)
 
-        if 'plane_axis_x_0' in fields:
+        if "plane_axis_x_0" in fields:
             # (num_contacts, 2, ndim)
             plane_axes = np.zeros((arr.size, 2, ndim))
             for i in range(ndim):
-                dim = ['x', 'y', 'z'][i]
-                plane_axes[:, 0, i] = arr[f'plane_axis_{dim}_0']
-                plane_axes[:, 1, i] = arr[f'plane_axis_{dim}_1']
+                dim = ["x", "y", "z"][i]
+                plane_axes[:, 0, i] = arr[f"plane_axis_{dim}_0"]
+                plane_axes[:, 1, i] = arr[f"plane_axis_{dim}_1"]
         else:
             plane_axes = None
 
-        probe.set_contacts(
-            positions=positions,
-            plane_axes=plane_axes,
-            shapes=shapes,
-            shape_params=shape_params)
+        probe.set_contacts(positions=positions, plane_axes=plane_axes, shapes=shapes, shape_params=shape_params)
 
-        if 'device_channel_indices' in fields:
-            dev_channel_indices = arr['device_channel_indices']
+        if "device_channel_indices" in fields:
+            dev_channel_indices = arr["device_channel_indices"]
             probe.set_device_channel_indices(dev_channel_indices)
-        if 'shank_ids' in fields:
-            probe.set_shank_ids(arr['shank_ids'])
-        if 'contact_ids' in fields:
-            probe.set_contact_ids(arr['contact_ids'])
+        if "shank_ids" in fields:
+            probe.set_shank_ids(arr["shank_ids"])
+        if "contact_ids" in fields:
+            probe.set_contact_ids(arr["contact_ids"])
 
         return probe
 
@@ -825,9 +844,10 @@ class Probe:
         """
 
         import pandas as pd
+
         arr = self.to_numpy(complete=complete)
         df = pd.DataFrame.from_records(arr)
-        df.index = np.arange(df.shape[0], dtype='int64')
+        df.index = np.arange(df.shape[0], dtype="int64")
         return df
 
     @staticmethod
@@ -849,8 +869,7 @@ class Probe:
         arr = df.to_records(index=False)
         return Probe.from_numpy(arr)
 
-    def to_image(self, values, pixel_size=0.5, num_pixel=None, method='linear',
-                 xlims=None, ylims=None):
+    def to_image(self, values, pixel_size=0.5, num_pixel=None, method="linear", xlims=None, ylims=None):
         """
         Generated a 2d (image) from a values vector which an interpolation
         into a grid mesh.
@@ -884,7 +903,7 @@ class Probe:
         except ImportError:
             raise ImportError("to_image() requires the scipy package")
         assert self.ndim == 2
-        assert values.shape == (self.get_contact_count(), ), 'Bad boy: values must have size equal contact count'
+        assert values.shape == (self.get_contact_count(),), "Bad boy: values must have size equal contact count"
 
         if xlims is None:
             x0 = np.min(self.contact_positions[:, 0])
@@ -905,9 +924,9 @@ class Probe:
         grid_x, grid_y = np.meshgrid(np.arange(x0, x1, pixel_size), np.arange(y0, y1, pixel_size))
         image = griddata(self.contact_positions, values, (grid_x, grid_y), method=method)
 
-        if method == 'nearest':
+        if method == "nearest":
             # hack to force nan when nereast to avoid interpolation in the full rectangle
-            image2, _, _ = self.to_image(values, pixel_size=pixel_size, method='linear', xlims=xlims, ylims=ylims)
+            image2, _, _ = self.to_image(values, pixel_size=pixel_size, method="linear", xlims=xlims, ylims=ylims)
             image[np.isnan(image2)] = np.nan
 
         return image, xlims, ylims
@@ -927,25 +946,25 @@ class Probe:
         n = self.get_contact_count()
 
         selection = np.asarray(selection)
-        if selection.dtype == 'bool':
-            assert selection.shape == (n, )
-        elif selection.dtype.kind == 'i':
+        if selection.dtype == "bool":
+            assert selection.shape == (n,)
+        elif selection.dtype.kind == "i":
             assert np.unique(selection).size == selection.size
             assert 0 <= np.min(selection) < n
             assert 0 <= np.max(selection) < n
         else:
-            raise ValueError('selection must be bool array or int array')
+            raise ValueError("selection must be bool array or int array")
 
         d = self.to_dict(array_as_list=False)
         for k, v in d.items():
-            if k == 'probe_planar_contour':
+            if k == "probe_planar_contour":
                 continue
 
             if isinstance(v, np.ndarray):
                 assert v.shape[0] == n
                 d[k] = v[selection].copy()
 
-            if k == 'contact_annotations':
+            if k == "contact_annotations":
                 d[k] = {}
                 for kk, vv in v.items():
                     d[k][kk] = vv[selection].copy()
@@ -971,13 +990,13 @@ def _2d_to_3d(data2d, axes):
         shape (n, 3)
     """
     data3d = np.zeros((data2d.shape[0], 3), dtype=data2d.dtype)
-    dims = np.array(['xyz'.index(axis) for axis in axes])
-    assert len(axes) == 2, '_2d_to_3d: axes should contain 2 dimensions!'
+    dims = np.array(["xyz".index(axis) for axis in axes])
+    assert len(axes) == 2, "_2d_to_3d: axes should contain 2 dimensions!"
     data3d[:, dims] = data2d
     return data3d
 
 
-def select_axes(data, axes='xy'):
+def select_axes(data, axes="xy"):
     """
     Select axes in a 3d or 2d array.
 
@@ -992,13 +1011,13 @@ def select_axes(data, axes='xy'):
     data3d
         shape (n, 3)
     """
-    assert np.all([axes.count(axis) == 1 for axis in axes]), 'select_axes : axes must be unique.'
-    dims = np.array(['xyz'.index(axis) for axis in axes])
+    assert np.all([axes.count(axis) == 1 for axis in axes]), "select_axes : axes must be unique."
+    dims = np.array(["xyz".index(axis) for axis in axes])
     assert data.shape[1] >= max(dims), "Inconsistent shapes between positions and axes"
     return data[:, dims]
 
 
-def _3d_to_2d(data3d, axes='xy'):
+def _3d_to_2d(data3d, axes="xy"):
     """
     Reduce 3d array to 2d array on given axes.
     """
@@ -1027,7 +1046,7 @@ def _rotation_matrix_2d(theta):
 
 
 def _rotation_matrix_3d(axis, theta):
-    '''
+    """
     Returns 3D rotation matrix
 
     Copy/paste from MEAutility
@@ -1044,7 +1063,7 @@ def _rotation_matrix_3d(axis, theta):
     R : np.array
         3D rotation matrix
 
-    '''
+    """
     axis = np.asarray(axis)
     theta = np.asarray(theta)
     axis = axis / np.linalg.norm(axis)
@@ -1052,7 +1071,11 @@ def _rotation_matrix_3d(axis, theta):
     b, c, d = -axis * np.sin(theta / 2.0)
     aa, bb, cc, dd = a * a, b * b, c * c, d * d
     bc, ad, ac, ab, bd, cd = b * c, a * d, a * c, a * b, b * d, c * d
-    R = np.array([[aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)],
-                  [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
-                  [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]])
+    R = np.array(
+        [
+            [aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)],
+            [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
+            [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc],
+        ]
+    )
     return R
