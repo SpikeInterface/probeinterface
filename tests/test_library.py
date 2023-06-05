@@ -35,6 +35,3 @@ if __name__ == '__main__':
     test_download_probeinterface_file()
     test_get_from_cache()
     test_get_probe()
-
-
-

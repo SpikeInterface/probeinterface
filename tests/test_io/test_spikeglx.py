@@ -268,6 +268,3 @@ def test_ultra_probe():
     expected_electode_rows = 48
     unique_y_values = np.unique(y)
     assert unique_y_values.size == expected_electode_rows
-
-
-
