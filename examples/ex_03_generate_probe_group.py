@@ -18,7 +18,7 @@ from probeinterface import generate_dummy_probe
 
 ##############################################################################
 # Generate 2 dummy `Probe` objects with the utils function:
-# 
+#
 
 probe0 = generate_dummy_probe(elec_shapes='square')
 probe1 = generate_dummy_probe(elec_shapes='circle')

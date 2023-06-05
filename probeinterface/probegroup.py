@@ -245,4 +245,3 @@ class ProbeGroup:
             el_ids, contact_ids = np.split(contact_ids,
                                              [probe.get_contact_count()])
             probe.set_contact_ids(el_ids)
-

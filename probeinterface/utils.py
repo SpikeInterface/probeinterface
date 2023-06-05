@@ -110,11 +110,11 @@ def generate_unique_ids(min, max, n, trials=20):
 
     Parameters
     ----------
-    min : int 
+    min : int
         Minimun value permitted for an identifier
     max : int
         Maximum value permitted for an identifier
-    n : int 
+    n : int
         Number of identifiers to create
     trials : int
         Maximal number of attempts for generating

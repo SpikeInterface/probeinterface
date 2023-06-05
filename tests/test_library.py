@@ -20,10 +20,10 @@ def test_get_from_cache():
     download_probeinterface_file(manufacturer, probe_name)
     probe = get_from_cache(manufacturer, probe_name)
     assert isinstance(probe, Probe)
-    
+
     probe = get_from_cache('yep', 'yop')
     assert probe is None
-    
+
 
 def test_get_probe():
     probe = get_probe(manufacturer, probe_name)
@@ -36,5 +36,5 @@ if __name__ == '__main__':
     test_get_from_cache()
     test_get_probe()
 
-    
-    
+
+

@@ -32,7 +32,7 @@ probe_2d.create_auto_shape(probe_type='tip')
 
 ##############################################################################
 # Let's transform it into a 3d probe.
-# 
+#
 # Here the axes are 'xz' so y will be 0 for all contacts.
 # The shape of probe_3d.contact_positions is now (n_elec, 3)
 

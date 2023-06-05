@@ -58,7 +58,7 @@ This package also provide:
   * generator functions to create user-defined probes
 
 
-Goal 1 
+Goal 1
 ---------
 
 This common interface could be used by several projects for spike sorting and electrophysiology analysis:

@@ -10,4 +10,4 @@ September, 1st 2022
 * implement read_imro() / write_imro()
 * Add new wiring : 'ASSY-77>Adpt.A64-Om32_2x-sm>two_RHD2132'
 * Handle OpenEphys NPIX with multiple probes
-* Add cross-checked ASSY-116>RHD2132 mapping 
+* Add cross-checked ASSY-116>RHD2132 mapping

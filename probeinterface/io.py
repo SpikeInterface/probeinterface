@@ -311,7 +311,7 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> P
     return probegroup
 
 
-def write_BIDS_probe(folder: Union[str, Path], probe_or_probegroup: Union[Probe, ProbeGroup], 
+def write_BIDS_probe(folder: Union[str, Path], probe_or_probegroup: Union[Probe, ProbeGroup],
                      prefix=""):
     """
     Write to probe and contact formats as proposed
@@ -331,7 +331,7 @@ def write_BIDS_probe(folder: Union[str, Path], probe_or_probegroup: Union[Probe,
     """
 
     pd = import_safely("pandas")
-    
+
     if isinstance(probe_or_probegroup, Probe):
         probe = probe_or_probegroup
         probegroup = ProbeGroup()
@@ -525,7 +525,7 @@ def read_maxwell(
     file = Path(file).absolute()
     assert file.is_file()
 
-    
+
     h5py = import_safely("h5py")
     my_file = h5py.File(file, mode="r")
 
@@ -934,7 +934,7 @@ probe_number_to_probe_type = {
     None: 0,
 }
 
-    
+
 def read_imro(file_path: Union[str, Path]) -> Probe:
     """
     Read probe position from the imro file used in input of SpikeGlx and Open-Ephys for neuropixels probes.
@@ -979,34 +979,34 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
 
     """
     imro_table_header_str, *imro_table_values_list, _ = imro_str.strip().split(")")
-    
+
     imro_table_header = tuple(map(int, imro_table_header_str[1:].split(',')))
     if len(imro_table_header) == 3:
-        # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently. 
+        # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently.
         probe_serial_number, probe_option, num_contact = imro_table_header
         imDatPrb_type = 'Phase3a'
     elif len(imro_table_header) == 2:
         imDatPrb_type, num_contact = imro_table_header
     else:
         raise ValueError(f'read_imro error, the header has a strange length: {imro_table_header}')
-    
+
 
     if imDatPrb_type in [0, None]:
-        imDatPrb_type = probe_number_to_probe_type[imDatPrb_pn] 
-    
+        imDatPrb_type = probe_number_to_probe_type[imDatPrb_pn]
+
     probe_description = npx_probe[imDatPrb_type]
     fields = probe_description["fields_in_imro_table"]
-    contact_info = {k: [] for k in fields}      
+    contact_info = {k: [] for k in fields}
     for field_values_str in imro_table_values_list: # Imro table values look like '(value, value, value, ... '
-        values = tuple(map(int, field_values_str[1:].split(' '))) 
+        values = tuple(map(int, field_values_str[1:].split(' ')))
         # Split them by space to get (int('value'), int('value'), int('value'), ...)
         for field, field_value in zip(fields, values):
             contact_info[field].append(field_value)
-    
+
     channel_ids = np.array(contact_info['channel_ids'])
     if "elect_ids" in contact_info:
         elec_ids = np.array(contact_info['elect_ids'])
-    else:        
+    else:
         banks = np.array(contact_info['banks'])
         elec_ids = banks * 384 + channel_ids
 
@@ -1019,12 +1019,12 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     x_pos = x_idx * x_pitch + stagger
     y_pos = y_idx * y_pitch
     positions = np.stack((x_pos, y_pos), axis=1)
-    
+
     if imDatPrb_type == 24:
         shank_ids = np.array(contact_info['shank_id'])
         contact_ids = [f's{shank_id}e{elec_id}' for shank_id, elec_id in zip(shank_ids, elec_ids)]
     else:
-        shank_ids = None 
+        shank_ids = None
         contact_ids = [f'e{elec_id}' for elec_id in elec_ids]
 
     # construct Probe object
@@ -1049,7 +1049,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     # shift
     contour = np.array(contour) - [11, 11]
     probe.set_planar_contour(contour)
-    
+
     # this is scalar annotations
     probe_name = probe_description["probe_name"]
     probe.annotate(
@@ -1057,12 +1057,12 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
         manufacturer="IMEC",
         probe_type=imDatPrb_type,
     )
-    
+
     # this is vector annotations
     vector_properties = ('channel_ids', 'banks', 'references', 'ap_gains', 'lf_gains', 'ap_hp_filters')
     vector_properties_available = {k: v  for k, v in contact_info.items() if k in vector_properties}
     probe.annotate_contacts(**vector_properties_available)
-    
+
     # wire it
     probe.set_device_channel_indices(np.arange(positions.shape[0]))
 
@@ -1116,7 +1116,7 @@ def read_spikeglx(file: Union[str, Path]) -> Probe:
     The shape is auto generated as a shank.
 
     Now reads:
-      * NP0.0 (=phase3A) 
+      * NP0.0 (=phase3A)
       * NP1.0 (=phase3B2)
       * NP2.0 with 4 shank
       * NP1.0-NHP
@@ -1134,15 +1134,15 @@ def read_spikeglx(file: Union[str, Path]) -> Probe:
 
     meta_file = Path(file)
     assert (meta_file.suffix == ".meta"), "'meta_file' should point to the .meta SpikeGLX file"
-    
+
     meta = parse_spikeglx_meta(meta_file)
-    
+
     assert "imroTbl" in meta, "Could not find imroTbl field in meta file!"
     imro_table = meta['imroTbl']
     imDatPrb_pn = meta.get("imDatPrb_pn", None)
-    
+
     probe = _read_imro_string(imro_str=imro_table, imDatPrb_pn=imDatPrb_pn)
-    
+
     # sometimes we need to slice the probe when not all channels are saved
     saved_chans = get_saved_channel_indices_from_spikeglx_meta(meta_file)
     # remove the SYS chans
@@ -1162,32 +1162,32 @@ def parse_spikeglx_meta(meta_file: Union[str, Path]) -> dict:
     meta_file = Path(meta_file)
     with meta_file.open(mode="r") as f:
         lines = f.read().splitlines()
-    
+
     meta = {}
     for line in lines:
         key, val = line.split('=')
         if key.startswith('~'):
             key = key[1:]
         meta[key] = val
-        
+
     return meta
-    
+
 
 def get_saved_channel_indices_from_spikeglx_meta(meta_file: Union[str, Path]) -> np.array:
     """
     Utils function to get the saved channels.
-    
+
     It uses the 'snsSaveChanSubset' field in  the meta file, which is as follows:
     snsSaveChanSubset=0:10,50:55,100
     with chan1:chan2 chan2 inclusive
-    
+
     This function come from here Jennifer Colonell
     https://github.com/jenniferColonell/ecephys_spike_sorting/blob/master/ecephys_spike_sorting/common/SGLXMetaToCoords.py#L65
     """
     meta_file = Path(meta_file)
     meta = parse_spikeglx_meta(meta_file)
     chans_txt = meta['snsSaveChanSubset']
-    
+
     if chans_txt == 'all':
         chans = np.arange(int(meta['nSavedChans']))
     else:
@@ -1195,13 +1195,13 @@ def get_saved_channel_indices_from_spikeglx_meta(meta_file: Union[str, Path]) ->
         for e in chans_txt.split(','):
             if ':' in e:
                 start, stop = e.split(':')
-                start, stop = int(start), int(stop) +1 
+                start, stop = int(start), int(stop) +1
                 chans.extend(np.arange(start, stop))
             else:
                 chans.append(int(e))
     chans = np.array(chans, dtype='int64')
     return chans
-    
+
 
 
 def read_openephys(
@@ -1216,9 +1216,9 @@ def read_openephys(
     Read probe positions from Open Ephys folder when using the Neuropix-PXI plugin.
     The reader assumes that the NP_PROBE fields are available in the settings file.
     Open Ephys versions 0.5.x and 0.6.x are supported:
-    * For version 0.6.x, the probe names are inferred from the STREAM field. Probe 
+    * For version 0.6.x, the probe names are inferred from the STREAM field. Probe
       information is then populated sequentially with the NP_PROBE fields.
-    * For version 0.5.x, STREAMs are not available. In this case, if multiple probes 
+    * For version 0.5.x, STREAMs are not available. In this case, if multiple probes
       are available, they are named sequentially based on the nodeId. E.g. "100.0",
       "100.1". These substrings are used for selection.
 
@@ -1394,9 +1394,9 @@ def read_openephys(
                 contact_ids = None
                 break
 
-            stagger = np.mod(pos[1] / npx_probe[ptype]["y_pitch"] + 1, 2) * npx_probe[ptype]["stagger"]            
+            stagger = np.mod(pos[1] / npx_probe[ptype]["y_pitch"] + 1, 2) * npx_probe[ptype]["stagger"]
             shank_id = shank_ids[0] if ptype == 24 else 0
-            
+
             contact_id = int((pos[0] - stagger - npx_probe[ptype]["shank_pitch"] * shank_id) / \
                 npx_probe[ptype]["x_pitch"] + npx_probe[ptype]["ncol"] * pos[1] / npx_probe[ptype]["y_pitch"])
             if ptype == 24:
@@ -1670,7 +1670,7 @@ def read_mearec(file: Union[str, Path]) -> Probe:
     if "plane" in electrodes_info_keys:
         plane = electrodes_info["plane"][()]
         plane = plane.decode("utf-8") if isinstance(plane, bytes) else plane
-    
+
     plane_to_columns = {"xy": [0, 1], "xz": [0, 2], "yz": [1, 2]}
     columns = plane_to_columns[plane]
     positions_2d = positions[()][:, columns]

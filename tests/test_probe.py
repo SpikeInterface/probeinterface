@@ -14,11 +14,11 @@ def _dummy_position():
     positions *= 20
     positions[8:16, 1] -= 10
     return positions
-    
+
 
 def test_probe():
     positions = _dummy_position()
-    
+
     probe = Probe(ndim=2, si_units='um')
     probe.set_contacts(positions=positions, shapes='circle', shape_params={'radius': 5})
     probe.set_contacts(positions=positions, shapes='square', shape_params={'width': 5})
@@ -29,30 +29,30 @@ def test_probe():
     # shape of the probe
     vertices = [(-20, -30), (20, -110), (60, -30), (60, 190), (-20, 190)]
     probe.set_planar_contour(vertices)
-        
+
     # auto shape
     probe.create_auto_shape()
-    
+
     # annotation
     probe.annotate(manufacturer='me')
     assert 'manufacturer' in probe.annotations
     probe.annotate_contacts(impedance=np.random.rand(24)*1000)
     assert 'impedance' in probe.contact_annotations
-    
+
     # device channel
     chans = np.arange(0, 24, dtype='int')
     np.random.shuffle(chans)
     probe.set_device_channel_indices(chans)
-    
+
     # contact_ids int or str
     elec_ids = np.arange(24)
     probe.set_contact_ids(elec_ids)
     elec_ids = [f'elec #{e}' for e in range(24)]
     probe.set_contact_ids(elec_ids)
-    
+
     # copy
     probe2 = probe.copy()
-    
+
     # move rotate
     probe.move([20, 50])
     probe.rotate(theta=40, center=[0, 0], axis=None)
@@ -60,9 +60,9 @@ def test_probe():
     # make annimage
     values = np.random.randn(24)
     image, xlims, ylims = probe.to_image(values, method='cubic')
-    
+
     image2, xlims, ylims = probe.to_image(values, method='cubic', num_pixel=16)
-    
+
     #~ from probeinterface.plotting import plot_probe_group, plot_probe
     #~ import matplotlib.pyplot as plt
     #~ fig, ax = plt.subplots()
@@ -70,12 +70,12 @@ def test_probe():
     #~ ax.imshow(image, extent=xlims+ylims, origin='lower')
     #~ ax.imshow(image2, extent=xlims+ylims, origin='lower')
     #~ plt.show()
-    
-    
+
+
     # 3d
     probe_3d = probe.to_3d()
     probe_3d.rotate(theta=60, center=[0, 0, 0], axis=[0, 1, 0])
-    
+
     # 3d-2d
     probe_3d = probe.to_3d()
     probe_2d = probe_3d.to_2d(axes="xz")
@@ -91,11 +91,11 @@ def test_probe():
         pass
         # print(shank)
         # print(shank.contact_positions)
-        
+
     # get dict and df
     d = probe.to_dict()
     other = Probe.from_dict(d)
-    
+
     # export to/from numpy
     arr = probe.to_numpy(complete=False)
     other = Probe.from_numpy(arr)
@@ -103,7 +103,7 @@ def test_probe():
     other2 = Probe.from_numpy(arr)
     arr = probe_3d.to_numpy(complete=True)
     other_3d = Probe.from_numpy(arr)
-    
+
     # export to/from DataFrame
     df = probe.to_dataframe(complete=True)
     other = Probe.from_dataframe(df)
@@ -120,18 +120,18 @@ def test_probe():
     sliced_probe = probe.get_slice(selection)
     assert sliced_probe.get_contact_count() == 9
     assert sliced_probe.contact_annotations['impedance'].shape == (9, )
-    
+
     #~ from probeinterface.plotting import plot_probe_group, plot_probe
     #~ import matplotlib.pyplot as plt
     #~ plot_probe(probe)
     #~ plot_probe(sliced_probe)
-    
+
     selection = np.ones(24, dtype='bool')
     selection[::2] = False
     sliced_probe = probe.get_slice(selection)
     assert sliced_probe.get_contact_count() == 12
     assert sliced_probe.contact_annotations['impedance'].shape == (12, )
-    
+
     #~ plot_probe(probe)
     #~ plot_probe(sliced_probe)
     #~ plt.show()
@@ -143,7 +143,7 @@ def test_set_shanks():
             positions= np.arange(20).reshape(10, 2),
             shapes='circle',
             shape_params={'radius' : 5})
-    
+
 
     # for simplicity each contact is on separate shank
     shank_ids = np.arange(10)
@@ -154,7 +154,5 @@ def test_set_shanks():
 
 if __name__ == '__main__':
     test_probe()
-    
+
     test_set_shanks()
-
-

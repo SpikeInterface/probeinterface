@@ -7,4 +7,3 @@ April, 4 2021
 * write_prb handle group_mode
 * add wriring RDH2164
 * doc improvement
-

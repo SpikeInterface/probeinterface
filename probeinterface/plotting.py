@@ -139,12 +139,12 @@ def plot_probe(probe, ax=None, contacts_colors=None,
             ax.add_collection3d(poly_contour)
     else:
         poly_contour = None
-    
+
     if text_on_contact is not None:
         text_on_contact = np.asarray(text_on_contact)
         assert text_on_contact.size == probe.get_contact_count()
-        
-    
+
+
     if with_channel_index or with_contact_id or with_device_index or text_on_contact is not None:
         if probe.ndim == 3:
             raise NotImplementedError('Channel index is 2d only')
@@ -160,7 +160,7 @@ def plot_probe(probe, ax=None, contacts_colors=None,
                 txt.append(f'dev{chan_ind}')
             if text_on_contact is not None:
                 txt.append(f'{text_on_contact[i]}')
-            
+
             txt = '\n'.join(txt)
             x, y = probe.contact_positions[i]
             ax.text(x, y, txt, ha='center', va='center', clip_on=True)

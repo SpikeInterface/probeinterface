@@ -19,7 +19,7 @@ def generate_dummy_probe(elec_shapes='circle'):
     ----------
     elec_shapes : str, optional
         Shape of the electrodes, by default 'circle'
-        
+
     Returns
     -------
     probe : Probe
