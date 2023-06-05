@@ -17,7 +17,7 @@ from .io import read_probeinterface
 public_url = "https://web.gin.g-node.org/spikeinterface/probeinterface_library/raw/master/"
 
 # check this for windows and osx
-cache_folder = Path(os.path.expanduser("~")) / '.config' / 'probeinterface' / 'library'
+cache_folder = Path(os.path.expanduser("~")) / ".config" / "probeinterface" / "library"
 
 
 def download_probeinterface_file(manufacturer, probe_name):
@@ -33,10 +33,10 @@ def download_probeinterface_file(manufacturer, probe_name):
         The probe name
     """
     os.makedirs(cache_folder / manufacturer, exist_ok=True)
-    localfile = cache_folder / manufacturer / (probe_name + '.json')
-    distantfile = public_url + f'{manufacturer}/{probe_name}/{probe_name}.json'
+    localfile = cache_folder / manufacturer / (probe_name + ".json")
+    distantfile = public_url + f"{manufacturer}/{probe_name}/{probe_name}.json"
     dist = urlopen(distantfile)
-    with open(localfile, 'wb') as f:
+    with open(localfile, "wb") as f:
         f.write(dist.read())
 
 
@@ -57,7 +57,7 @@ def get_from_cache(manufacturer, probe_name):
 
     """
 
-    localfile = cache_folder / manufacturer / (probe_name + '.json')
+    localfile = cache_folder / manufacturer / (probe_name + ".json")
     if not localfile.is_file():
         return None
     else:

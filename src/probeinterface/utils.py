@@ -8,6 +8,7 @@ import numpy as np
 
 from .probe import Probe
 
+
 def import_safely(module: str) -> ModuleType:
     """
     Safely import a module with importlib and return the imported module object.
@@ -45,6 +46,7 @@ def import_safely(module: str) -> ModuleType:
 
     return module_obj
 
+
 def combine_probes(probes, connect_shape=True):
     """
     Combine several Probe objects into a unique
@@ -76,14 +78,12 @@ def combine_probes(probes, connect_shape=True):
     assert probes[0].ndim == 2
 
     kwargs = {}
-    for k in ('contact_positions', 'contact_plane_axes',
-              'contact_shapes', 'contact_shape_params'):
+    for k in ("contact_positions", "contact_plane_axes", "contact_shapes", "contact_shape_params"):
         v = np.concatenate([getattr(p, k) for p in probes], axis=0)
-        kwargs[k.replace('contact_', '')] = v
+        kwargs[k.replace("contact_", "")] = v
 
-    shank_ids = np.concatenate([np.ones(p.get_contact_count(), dtype='int64') * i
-                                for i, p in enumerate(probes)])
-    kwargs['shank_ids'] = shank_ids
+    shank_ids = np.concatenate([np.ones(p.get_contact_count(), dtype="int64") * i for i, p in enumerate(probes)])
+    kwargs["shank_ids"] = shank_ids
 
     # TODO deal with contact_ids/device_channel_indices
 
@@ -133,6 +133,5 @@ def generate_unique_ids(min, max, n, trials=20):
         ids = np.random.randint(min, max, n)
 
     if len(np.unique(ids)) != len(ids):
-        raise ValueError(f'Can not generate {n} unique ids between {min} '
-                         f'and {max} in {trials} trials')
+        raise ValueError(f"Can not generate {n} unique ids between {min} " f"and {max} in {trials} trials")
     return ids

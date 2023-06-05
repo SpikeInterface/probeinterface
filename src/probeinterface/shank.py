@@ -8,12 +8,13 @@ class Shank:
     A Shank object is a sub-component of a Probe object.
 
     """
+
     def __init__(self, probe, shank_id):
         self.probe = probe
         self.shank_id = shank_id
 
     def get_indices(self):
-        inds, = np.nonzero(self.probe.shank_ids == self.shank_id)
+        (inds,) = np.nonzero(self.probe.shank_ids == self.shank_id)
         return inds
 
     def get_contact_count(self):

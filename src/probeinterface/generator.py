@@ -10,7 +10,7 @@ from .probegroup import ProbeGroup
 from .utils import combine_probes
 
 
-def generate_dummy_probe(elec_shapes='circle'):
+def generate_dummy_probe(elec_shapes="circle"):
     """
     Generate a dummy probe with 3 columns and 32 contacts.
     Mainly used for testing and examples.
@@ -26,20 +26,25 @@ def generate_dummy_probe(elec_shapes='circle'):
         The generated probe
     """
 
-    if elec_shapes == 'circle':
-        contact_shape_params = {'radius': 6}
-    elif elec_shapes == 'square':
-        contact_shape_params = {'width': 7}
-    elif elec_shapes == 'rect':
-        contact_shape_params = {'width': 6, 'height': 4.5}
+    if elec_shapes == "circle":
+        contact_shape_params = {"radius": 6}
+    elif elec_shapes == "square":
+        contact_shape_params = {"width": 7}
+    elif elec_shapes == "rect":
+        contact_shape_params = {"width": 6, "height": 4.5}
 
-    probe = generate_multi_columns_probe(num_columns=3,
-                                         num_contact_per_column=[10, 12, 10],
-                                         xpitch=25, ypitch=25, y_shift_per_column=[0, -12.5, 0],
-                                         contact_shapes=elec_shapes, contact_shape_params=contact_shape_params)
+    probe = generate_multi_columns_probe(
+        num_columns=3,
+        num_contact_per_column=[10, 12, 10],
+        xpitch=25,
+        ypitch=25,
+        y_shift_per_column=[0, -12.5, 0],
+        contact_shapes=elec_shapes,
+        contact_shape_params=contact_shape_params,
+    )
 
-    probe.annotate(manufacturer='me')
-    probe.annotate_contacts(quality=np.ones(32) * 1000.)
+    probe.annotate(manufacturer="me")
+    probe.annotate_contacts(quality=np.ones(32) * 1000.0)
 
     return probe
 
@@ -56,7 +61,7 @@ def generate_dummy_probe_group():
     """
 
     probe0 = generate_dummy_probe()
-    probe1 = generate_dummy_probe(elec_shapes='rect')
+    probe1 = generate_dummy_probe(elec_shapes="rect")
     probe1.move([150, -50])
 
     # probe group
@@ -76,16 +81,22 @@ def generate_tetrode(r=10):
     probe : Probe
         The generated probe
     """
-    probe = Probe(ndim=2, si_units='um')
+    probe = Probe(ndim=2, si_units="um")
     phi = np.arange(0, np.pi * 2, np.pi / 2)[:, None]
     positions = np.hstack([np.cos(phi), np.sin(phi)]) * r
-    probe.set_contacts(positions=positions, shapes='circle', shape_params={'radius': 6})
+    probe.set_contacts(positions=positions, shapes="circle", shape_params={"radius": 6})
     return probe
 
 
-def generate_multi_columns_probe(num_columns=3, num_contact_per_column=10,
-                                 xpitch=20, ypitch=20, y_shift_per_column=None,
-                                 contact_shapes='circle', contact_shape_params={'radius': 6}):
+def generate_multi_columns_probe(
+    num_columns=3,
+    num_contact_per_column=10,
+    xpitch=20,
+    ypitch=20,
+    y_shift_per_column=None,
+    contact_shapes="circle",
+    contact_shape_params={"radius": 6},
+):
     """Generate a Probe with several columns.
 
     Parameters
@@ -124,16 +135,14 @@ def generate_multi_columns_probe(num_columns=3, num_contact_per_column=10,
         positions.append(np.hstack((x[:, None], y[:, None])))
     positions = np.vstack(positions)
 
-    probe = Probe(ndim=2, si_units='um')
-    probe.set_contacts(positions=positions, shapes=contact_shapes,
-                       shape_params=contact_shape_params)
-    probe.create_auto_shape(probe_type='tip', margin=25)
+    probe = Probe(ndim=2, si_units="um")
+    probe.set_contacts(positions=positions, shapes=contact_shapes, shape_params=contact_shape_params)
+    probe.create_auto_shape(probe_type="tip", margin=25)
 
     return probe
 
 
-def generate_linear_probe(num_elec=16, ypitch=20,
-                          contact_shapes='circle', contact_shape_params={'radius': 6}):
+def generate_linear_probe(num_elec=16, ypitch=20, contact_shapes="circle", contact_shape_params={"radius": 6}):
     """Generate a one-column linear probe.
 
     Parameters
@@ -153,9 +162,14 @@ def generate_linear_probe(num_elec=16, ypitch=20,
         The generated probe
     """
 
-    probe = generate_multi_columns_probe(num_columns=1, num_contact_per_column=num_elec,
-                                         xpitch=0, ypitch=ypitch, contact_shapes=contact_shapes,
-                                         contact_shape_params=contact_shape_params)
+    probe = generate_multi_columns_probe(
+        num_columns=1,
+        num_contact_per_column=num_elec,
+        xpitch=0,
+        ypitch=ypitch,
+        contact_shapes=contact_shapes,
+        contact_shape_params=contact_shape_params,
+    )
     return probe
 
 
