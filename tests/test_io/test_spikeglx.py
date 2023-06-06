@@ -268,3 +268,7 @@ def test_ultra_probe():
     expected_electode_rows = 48
     unique_y_values = np.unique(y)
     assert unique_y_values.size == expected_electode_rows
+
+def test_CatGT_NP1():
+    probe = read_spikeglx(data_path / "catgt.meta")
+    assert "1.0" in probe.annotations["name"]

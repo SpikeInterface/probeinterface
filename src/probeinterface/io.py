@@ -1128,7 +1128,9 @@ def parse_spikeglx_meta(meta_file: Union[str, Path]) -> dict:
 
     meta = {}
     for line in lines:
-        key, val = line.split("=")
+        split_str = line.split("=")
+        key = split_str[0]
+        val = "=".join(split_str[1:])
         if key.startswith("~"):
             key = key[1:]
         meta[key] = val
