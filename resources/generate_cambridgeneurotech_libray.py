@@ -1,5 +1,5 @@
 '''
-202-01-07 CambridgeNeurotech
+2021-01-07 CambridgeNeurotech
 Original script:
   * contact: Thal Holtzman
   * email: info@cambridgeneurotech.com
@@ -14,6 +14,9 @@ The script have been modified by Smauel Garcia (samuel.garcia@cnrs.fr):
 2021-04-02
 Samuel Garcia:
   * add "contact_id" one based in Probe.
+  
+2023-06-14
+generate new library
 
 Derive probes to be used with SpikeInterface base on Cambridgeneurotech databases
 Probe library to match and add on
@@ -38,12 +41,13 @@ from pathlib import Path
 # work_dir = '.'
 # work_dir = '/home/samuel/Documents/SpikeInterface/2021-03-01-probeinterface_CambridgeNeurotech/'
 # work_dir = '/home/samuel/Documents/SpikeInterface/2022-05-20-probeinterface_CambridgeNeurotech/'
-work_dir = '/home/samuel/Documents/SpikeInterface/2022-10-18-probeinterface_CambridgeNeurotech/'
+# work_dir = '/home/samuel/Documents/SpikeInterface/2022-10-18-probeinterface_CambridgeNeurotech/'
+work_dir = '/home/samuel/OwnCloudCNRS/probeinterface/2023-06-14-probeinterface-CambridgeNeurotech/'
 work_dir = Path(work_dir).absolute()
 
-export_folder = work_dir / 'export_2022_10_18'
-probe_map_file = work_dir /  'Probe Maps 2020Final_patch2022_July.xlsx'
-probe_info_table_file = work_dir  / 'ProbesDataBase.csv'
+export_folder = work_dir / 'export_2023_06_14'
+probe_map_file = work_dir /  'ProbeMaps_Final2023.xlsx'
+probe_info_table_file = work_dir  / 'ProbesDataBase_Final2023.csv'
 
 
 # graphing parameters
@@ -227,8 +231,12 @@ def generate_all_probes():
         for connector in list(probe_info[probe_info.index.str.contains('ASSY')].dropna().index):
             probe_name = connector+'-'+probe_info['part']
             print('  ', probe_name)
-
-            channelIndex = get_channel_index(connector = connector, probe_type = probe_info['part'])
+            
+            try:
+                channelIndex = get_channel_index(connector = connector, probe_type = probe_info['part'])
+            except:
+                print('ERROR')
+                continue
             order = np.argsort(channelIndex)
             probe = probe_unordered.get_slice(order)
 
