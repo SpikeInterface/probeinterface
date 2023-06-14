@@ -14,7 +14,7 @@ The script have been modified by Smauel Garcia (samuel.garcia@cnrs.fr):
 2021-04-02
 Samuel Garcia:
   * add "contact_id" one based in Probe.
-  
+
 2023-06-14
 generate new library
 
@@ -231,7 +231,7 @@ def generate_all_probes():
         for connector in list(probe_info[probe_info.index.str.contains('ASSY')].dropna().index):
             probe_name = connector+'-'+probe_info['part']
             print('  ', probe_name)
-            
+
             try:
                 channelIndex = get_channel_index(connector = connector, probe_type = probe_info['part'])
             except:
