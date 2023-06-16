@@ -97,7 +97,7 @@ def get_channel_index(connector, probe_type):
 
     if probe_type == 'H5' or probe_type == 'H9':
         probe_type = 'H5 & H9'
-    
+
     #~ print(df[probe_type])
     tmpList = []
     for i in df[probe_type].columns:
@@ -131,7 +131,7 @@ def generate_CN_probe(probe_info, probeIdx):
 
     else:
         y_shift_per_column = convert_contact_shape(probe_info['electrode_yShiftCol'])
-        
+
         if ' ' in probe_info['electrode_rows_n']:
             num_contact_per_column = [ int(e) for e in probe_info['electrode_rows_n'].split(' ')]
             assert len(y_shift_per_column) == len(num_contact_per_column)
@@ -239,7 +239,7 @@ def generate_all_probes():
         # loop over connector case that re order the probe contact index
         for connector in list(probe_info[probe_info.index.str.contains('ASSY')].dropna().index):
             probe_name = connector+'-'+probe_info['part']
-            
+
             #~ if probe_name != 'ASSY-77-H10':
                 #~ continue
             print('  ', probe_name)
