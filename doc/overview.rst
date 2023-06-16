@@ -69,7 +69,6 @@ This common interface could be used by several projects for spike sorting and el
   * `Phy <https://github.com/cortex-lab/phy>`_: integrate for probe display
   * `SpyKING Circus <https://github.com/spyking-circus/spyking-circus>`_: handle probe with this package
   * `Kilosort <https://github.com/MouseLand/Kilosort>`_: handle probe with this package
-  * `Tridesclous <https://github.com/tridesclous/tridesclous>`_: handle probe with this package
   * ...and more
 
 
@@ -79,10 +78,9 @@ Goal 2
 Implement and maintain a collection of widely used probes in Neuroscience, for example:
 
   * `Neuronexus <https://neuronexus.com/support/mapping-and-wiring/probe-mapping/>`_
-  * `IMEC <https://www.imec-int.com/en/expertise/lifesciences/neural-probes>`_
   * `Cambridge Neurotech <https://www.cambridgeneurotech.com/neural-probes>`_
 
-We have started a work-in-progess repo with a `probe library <https://gin.g-node.org/spikeinterface/probeinterface_library>`_
+We have started a work-in-progess repo with a `probe library <https://github.com/SpikeInterface/probeinterface_library>`_
 
 
 Existing projects

@@ -2,8 +2,8 @@
 Get probe from library
 ----------------------
 
-`probeinterface` provides a library of probes from several manufacturers on the gin platform:
-https://gin.g-node.org/spikeinterface/probeinterface_library
+`probeinterface` provides a library of probes from several manufacturers on the GitHub platform:
+https://github.com/SpikeInterface/probeinterface_library
 
 Users and manufacturers are welcome to contribute to it.
 
