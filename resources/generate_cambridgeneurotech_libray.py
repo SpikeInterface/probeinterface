@@ -1,7 +1,7 @@
 '''
-202-01-07 CambridgeNeurotech
+2021-01-07 CambridgeNeurotech
 Original script:
-  * contact: Thal Holtzman
+  * contact: Tahl Holtzman
   * email: info@cambridgeneurotech.com
 
 2021-03-01
@@ -14,6 +14,9 @@ The script have been modified by Smauel Garcia (samuel.garcia@cnrs.fr):
 2021-04-02
 Samuel Garcia:
   * add "contact_id" one based in Probe.
+
+2023-06-14
+generate new library
 
 Derive probes to be used with SpikeInterface base on Cambridgeneurotech databases
 Probe library to match and add on
@@ -38,12 +41,13 @@ from pathlib import Path
 # work_dir = '.'
 # work_dir = '/home/samuel/Documents/SpikeInterface/2021-03-01-probeinterface_CambridgeNeurotech/'
 # work_dir = '/home/samuel/Documents/SpikeInterface/2022-05-20-probeinterface_CambridgeNeurotech/'
-work_dir = '/home/samuel/Documents/SpikeInterface/2022-10-18-probeinterface_CambridgeNeurotech/'
+# work_dir = '/home/samuel/Documents/SpikeInterface/2022-10-18-probeinterface_CambridgeNeurotech/'
+work_dir = '/home/samuel/OwnCloudCNRS/probeinterface/2023-06-14-probeinterface-CambridgeNeurotech/'
 work_dir = Path(work_dir).absolute()
 
-export_folder = work_dir / 'export_2022_10_18'
-probe_map_file = work_dir /  'Probe Maps 2020Final_patch2022_July.xlsx'
-probe_info_table_file = work_dir  / 'ProbesDataBase.csv'
+export_folder = work_dir / 'export_2023_06_14'
+probe_map_file = work_dir /  'ProbeMaps_Final2023.xlsx'
+probe_info_table_file = work_dir  / 'ProbesDataBase_Final2023.csv'
 
 
 # graphing parameters
@@ -94,6 +98,7 @@ def get_channel_index(connector, probe_type):
     if probe_type == 'H5' or probe_type == 'H9':
         probe_type = 'H5 & H9'
 
+    #~ print(df[probe_type])
     tmpList = []
     for i in df[probe_type].columns:
         if len(df[probe_type].columns) == 1:
@@ -125,9 +130,17 @@ def generate_CN_probe(probe_info, probeIdx):
         probe.set_planar_contour(convert_probe_shape(probe_info['probeShape']))
 
     else:
+        y_shift_per_column = convert_contact_shape(probe_info['electrode_yShiftCol'])
+
+        if ' ' in probe_info['electrode_rows_n']:
+            num_contact_per_column = [ int(e) for e in probe_info['electrode_rows_n'].split(' ')]
+            assert len(y_shift_per_column) == len(num_contact_per_column)
+        else:
+            num_contact_per_column = int(probe_info['electrode_rows_n'])
+
         probe = generate_multi_columns_probe(
                 num_columns=probe_info['electrode_cols_n'],
-                num_contact_per_column=int(probe_info['electrode_rows_n']),
+                num_contact_per_column=num_contact_per_column,
                 xpitch=float(probe_info['electrodeSpacingWidth_um']),
                 ypitch=probe_info['electrodeSpacingHeight_um'],
                  y_shift_per_column=convert_contact_shape(probe_info['electrode_yShiftCol']),
@@ -226,9 +239,13 @@ def generate_all_probes():
         # loop over connector case that re order the probe contact index
         for connector in list(probe_info[probe_info.index.str.contains('ASSY')].dropna().index):
             probe_name = connector+'-'+probe_info['part']
+
+            #~ if probe_name != 'ASSY-77-H10':
+                #~ continue
             print('  ', probe_name)
 
             channelIndex = get_channel_index(connector = connector, probe_type = probe_info['part'])
+
             order = np.argsort(channelIndex)
             probe = probe_unordered.get_slice(order)
 

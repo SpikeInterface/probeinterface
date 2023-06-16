@@ -14,7 +14,11 @@ from urllib.request import urlopen
 
 from .io import read_probeinterface
 
-public_url = "https://web.gin.g-node.org/spikeinterface/probeinterface_library/raw/master/"
+# OLD URL on gin
+# public_url = "https://web.gin.g-node.org/spikeinterface/probeinterface_library/raw/master/"
+
+# Now on github since 2023/06/15
+public_url = "https://raw.githubusercontent.com/SpikeInterface/probeinterface_library/main/"
 
 # check this for windows and osx
 cache_folder = Path(os.path.expanduser("~")) / ".config" / "probeinterface" / "library"
