@@ -1,7 +1,7 @@
 '''
 2021-01-07 CambridgeNeurotech
 Original script:
-  * contact: Thal Holtzman
+  * contact: Tahl Holtzman
   * email: info@cambridgeneurotech.com
 
 2021-03-01
