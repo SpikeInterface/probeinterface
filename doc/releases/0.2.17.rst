@@ -1,0 +1,38 @@
+probeinterface 0.2.17
+---------------------
+
+Thanks a lot to Ramon Herberto Mayorquin who did the most a change and strong improvement for this release.
+
+
+June, 26th 2023
+
+* Move libray from https://gin.g-node.org/spikeinterface/probeinterface_library to https://github.com/SpikeInterface/probeinterface_library
+* move to code to src/structure
+* Map NP1010 probe to the usual NP1 geometry
+* Plotting bug fix
+* Add test for shank
+* Open Ephys: Support subselection of channels in Record Node
+* Add imro tests 
+* Add ultra probe testing data for spikeglx
+* Add mearec test data
+* Add safe import utils
+* Consolidate neuropixel information in one place
+* Add type hints in IO module
+* Add Maxwel and 3brain to tests
+* fix code coverage 
+* Cron job and manual trigger for CI tests 
+* Add second nhp probe test data
+* Add badges and code coverage to actions
+* Add refactor to planar contour
+* Refactor stagger
+* Add nph probe spikeglx support
+* Handle temporary files in the test suite
+* Reorganize testing directory
+* Update test workflow to use latest version of actions 
+* added support for NP 1.0-NHP probes for SpikeGLX recordings 
+* Mearec description to string 
+* Improve Documentation
+
+
+
+
