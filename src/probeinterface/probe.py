@@ -163,8 +163,9 @@ class Probe:
             Shape of each contact ('circle'/'square'/'rect').
         shape_params : dict or list of dict
             Contains kwargs for shapes ("radius" for circle, "width" for square, "width/height" for rect)
-        plane_axes : (num_contacts, 2, ndim)
-            Defines the axes of the contact plane (2d or 3d)
+        plane_axes : np.array (num_contacts, 2, ndim)
+            Defines the two axes of the contact plane for each electrode. 
+            The third dimension corresponds to the probe `ndim` (2d or 3d).
         shank_ids : None or array of str
             Defines the shank ids for the contacts. If None, then
             these are assigned to a unique Shank.
