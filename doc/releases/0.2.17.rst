@@ -6,7 +6,7 @@ Thanks a lot to Ramon Heberto Mayorquin, who did the most the changes for this r
 June, 26th 2023
 
 Packaging / Documentation / Testing
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Move probe libray from `GIN <https://gin.g-node.org/spikeinterface/probeinterface_library>`_ to `GitHub <https://github.com/SpikeInterface/probeinterface_library>`_ (#195)
 * Restructure repo to follow :code:`src/probeinterface` convention
@@ -29,7 +29,7 @@ Features
 ^^^^^^^^
 
 * Extended support for Neuropixels probes:
-  * Fix CatGT parsin (#193) 
+  * Fix CatGT parsin (#193)
   * Map NP1010 probe to the usual NP1 geometry (#188)
   * Open Ephys: Support subselection of channels in Record Node (#180)
   * Add NP-ultra probe testing data for spikeglx (#177)
@@ -52,4 +52,3 @@ Testing
 * Add MEArec test data (#176)
 * Add Maxwel and 3brain to tests (#172)
 * Add test for shank (#181)
-
