@@ -1,0 +1,54 @@
+probeinterface 0.2.17
+---------------------
+
+Thanks a lot to Ramon Heberto Mayorquin, who did the most the changes for this release.
+
+June, 26th 2023
+
+Packaging / Documentation / Testing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* Move probe libray from `GIN <https://gin.g-node.org/spikeinterface/probeinterface_library>`_ to `GitHub <https://github.com/SpikeInterface/probeinterface_library>`_ (#195)
+* Restructure repo to follow :code:`src/probeinterface` convention
+* Black formatting anf pre-commit CI (#190-#191)
+* Add safe import utils (#175)
+* Add type hints in IO module (#173)
+* Fix code coverage (#171)
+* Cron job and manual trigger for CI tests (#170)
+* Add badges and code coverage to actions (#168)
+* Handle temporary files in the test suite (#164)
+* Reorganize testing directory (#163)
+* Update test workflow to use latest version of actions (#162)
+* Add MEArec test data (#176)
+* Add Maxwel and 3brain to tests (#172)
+* Add test for shank (#181)
+* Improve Documentation (#157 / 158)
+
+
+Features
+^^^^^^^^
+
+* Extended support for Neuropixels probes:
+  * Fix CatGT parsin (#193)
+  * Map NP1010 probe to the usual NP1 geometry (#188)
+  * Open Ephys: Support subselection of channels in Record Node (#180)
+  * Add NP-ultra probe testing data for spikeglx (#177)
+  * Add IMRO tests (#179)
+  * Consolidate Neuropixels information in one place (#174)
+  * Refactor NP information (#166-#167)
+  * Add NHP probe support for SpikeGLX (#169-#165-#160-#156)
+
+
+Bug fixes
+^^^^^^^^^
+
+* Fix DeprecrationWarning: invalid escape sequence \m (#183)
+* Mearec description to string (#159)
+
+
+Testing
+^^^^^^^
+
+* Add MEArec test data (#176)
+* Add Maxwel and 3brain to tests (#172)
+* Add test for shank (#181)
