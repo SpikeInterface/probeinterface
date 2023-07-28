@@ -1680,11 +1680,11 @@ def read_mearec(file: Union[str, Path]) -> Probe:
     return probe
 
 
-def read_nwb(nwbfile: Union[Path, str])->List[Probe]:
+def read_nwb(nwbfile: Union[Path, str]) -> List[Probe]:
     """
-    Load ndx_probeinterface.Probe as 
+    Load ndx_probeinterface.Probe as
     probeinterface.Probe objects from an NWB file
-    
+
     Parameters
     ----------
     nwbfile : Path or str
@@ -1700,13 +1700,13 @@ def read_nwb(nwbfile: Union[Path, str])->List[Probe]:
         import pynwb
     except ImportError:
         raise ImportError("Missing `ndx_probeinterface` or `pynwb`")
-    
-    with pynwb.NWBHDF5IO(nwbfile, mode='r', load_namespaces=True) as io:
+
+    with pynwb.NWBHDF5IO(nwbfile, mode="r", load_namespaces=True) as io:
         nwbf = io.read()
         ndx_probes = []
         for device in nwbf.devices:
             if isinstance(device, ndx_probeinterface.Probe):
-               ndx_probes.append(device)
+                ndx_probes.append(device)
         if not ndx_probes:
             core_probe = _from_nwb_ElectrodeTable(nwbf.electrodes)
             return core_probe
@@ -1716,30 +1716,31 @@ def read_nwb(nwbfile: Union[Path, str])->List[Probe]:
 
     return probes
 
+
 def _from_nwb_ElectrodeTable(nwbf_electrodes):
     # infer dimension by
     # 1. checking for columns with names 'rel_x', 'rel_y', 'rel_z'
     # 2. checking how many of these columns have elements that are not all zero
-    rel_present = [rel for rel in ['rel_x', 'rel_y', 'rel_z'] if rel in nwbf_electrodes.columns]
+    rel_present = [rel for rel in ["rel_x", "rel_y", "rel_z"] if rel in nwbf_electrodes.columns]
     true_rel_present = []
     for rel in rel_present:
-        if (nwbf_electrodes[rel][:]==0).all()==False:
+        if (nwbf_electrodes[rel][:] == 0).all() == False:
             true_rel_present.append(rel)
     ndim = len(true_rel_present)
-    assert ndim>=1, "Insufficient position information to generate Probe object."
-    
+    assert ndim >= 1, "Insufficient position information to generate Probe object."
+
     # no way to read units when only ElectrodeTable is present; just assume microns
     unit = "um"
-    
+
     # create Probe
     probeinterface_probe = Probe(ndim=ndim, si_units=unit)
-    
+
     # infer positions
     n_contacts = len(nwbf_electrodes)
-    positions = np.zeros((n_contacts,ndim))
+    positions = np.zeros((n_contacts, ndim))
     for i in range(ndim):
-        positions[:,i]= nwbf_electrodes[true_rel_present[i]][:]
-        
+        positions[:, i] = nwbf_electrodes[true_rel_present[i]][:]
+
     # set contacts
     probeinterface_probe.set_contacts(
         positions=positions,
