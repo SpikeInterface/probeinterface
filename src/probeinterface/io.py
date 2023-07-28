@@ -1692,8 +1692,8 @@ def read_nwb(nwbfile: Union[Path, str])->List[Probe]:
 
     Returns
     -------
-    probe : Probe object
-
+    probe : List[Probe]
+        List of Probe objects
     """
     try:
         import ndx_probeinterface
