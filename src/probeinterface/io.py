@@ -1709,7 +1709,7 @@ def read_nwb(nwbfile: Union[Path, str]) -> List[Probe]:
                 ndx_probes.append(device)
         if not ndx_probes:
             core_probe = _from_nwb_ElectrodeTable(nwbf.electrodes)
-            return core_probe
+            return [core_probe]
     probes = []
     for ndx_probe in ndx_probes:
         probes.append(ndx_probeinterface.to_probeinterface(ndx_probe))
