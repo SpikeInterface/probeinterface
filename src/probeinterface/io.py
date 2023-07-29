@@ -1708,7 +1708,7 @@ def read_nwb(nwbfile: Union[Path, str]) -> List[Probe]:
             if isinstance(device, ndx_probeinterface.Probe):
                 ndx_probes.append(device)
         if not ndx_probes:
-            core_probe = _from_nwb_ElectrodeTable(nwbf.electrodes)
+            core_probe = _from_nwb_ElectrodeTable(nwbf.electrodes[:])
             return [core_probe]
     probes = []
     for ndx_probe in ndx_probes:
@@ -1718,6 +1718,20 @@ def read_nwb(nwbfile: Union[Path, str]) -> List[Probe]:
 
 
 def _from_nwb_ElectrodeTable(nwbf_electrodes):
+    """
+    Load NWB core ElectrodeTable as probeinterface.Probe object
+    Warning: makes some assumptions
+
+    Parameters
+    ----------
+    nwbfile : Path or str
+        The path to nwbfile
+        
+    Returns
+    -------
+    probeinterface_probe : Probe
+    """
+    
     # infer dimension by
     # 1. checking for columns with names 'rel_x', 'rel_y', 'rel_z'
     # 2. checking how many of these columns have elements that are not all zero
