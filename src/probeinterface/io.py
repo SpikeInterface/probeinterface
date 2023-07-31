@@ -942,10 +942,11 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     imro_table_header = tuple(map(int, imro_table_header_str[1:].split(",")))
     if len(imro_table_header) == 3:
         # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently.
-        probe_serial_number, probe_option, num_contact = imro_table_header
+        serial_number, probe_option, num_contact = imro_table_header
         imDatPrb_type = "Phase3a"
     elif len(imro_table_header) == 2:
         imDatPrb_type, num_contact = imro_table_header
+        serial_number = None
     else:
         raise ValueError(f"read_imro error, the header has a strange length: {imro_table_header}")
 
@@ -953,6 +954,8 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
         imDatPrb_type = probe_number_to_probe_type[imDatPrb_pn]
 
     probe_description = npx_probe[imDatPrb_type]
+    probe_name = probe_description["probe_name"]
+
     fields = probe_description["fields_in_imro_table"]
     contact_info = {k: [] for k in fields}
     for field_values_str in imro_table_values_list:  # Imro table values look like '(value, value, value, ... '
@@ -986,7 +989,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
         contact_ids = [f"e{elec_id}" for elec_id in elec_ids]
 
     # construct Probe object
-    probe = Probe(ndim=2, si_units="um")
+    probe = Probe(ndim=2, si_units="um", model_name=probe_name, manufacturer="IMEC", serial_number=serial_number)
     probe.set_contacts(
         positions=positions,
         shapes="square",
@@ -1009,10 +1012,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     probe.set_planar_contour(contour)
 
     # this is scalar annotations
-    probe_name = probe_description["probe_name"]
     probe.annotate(
-        name=probe_name,
-        manufacturer="IMEC",
         probe_type=imDatPrb_type,
     )
 
@@ -1295,7 +1295,8 @@ def read_openephys(
         slot = np_probe.attrib["slot"]
         port = np_probe.attrib["port"]
         dock = np_probe.attrib["dock"]
-        np_serial_number = np_probe.attrib["probe_serial_number"]
+        part_number = np_probe.attrib["part_number"]
+        serial_number = np_probe.attrib["probe_serial_number"]
         # read channels
         channels = np_probe.find("CHANNELS")
         channel_names = np.array(list(channels.attrib.keys()))
@@ -1368,14 +1369,15 @@ def read_openephys(
                 contact_ids.append(f"e{contact_id}")
 
         np_probe_dict = {
-            "channel_names": channel_names,
+            "model_name": pname,
             "shank_ids": shank_ids,
             "contact_ids": contact_ids,
             "positions": positions,
             "slot": slot,
             "port": port,
             "dock": dock,
-            "serial_number": np_serial_number,
+            "serial_number": serial_number,
+            "part_number": part_number,
             "ptype": ptype,
         }
         # Sequentially assign probe names
@@ -1468,7 +1470,7 @@ def read_openephys(
     np_probe = np_probes[probe_idx]
     positions = np_probe_info["positions"]
     shank_ids = np_probe_info["shank_ids"]
-    pname = np_probe.attrib["probe_name"]
+    pname = np_probes_info["name"]
 
     ptype = np_probe_info["ptype"]
     if ptype in npx_probe:
@@ -1491,7 +1493,14 @@ def read_openephys(
         if contact_ids is not None:
             contact_ids = np.array(contact_ids)[chans_saved]
 
-    probe = Probe(ndim=2, si_units="um")
+    probe = Probe(
+        ndim=2,
+        si_units="um",
+        name=np_probe_info["name"],
+        serial_number=np_probe_info["serial_number"],
+        manufacturer="IMEC",
+        model_name=np_probe_info["model_name"],
+    )
     probe.set_contacts(
         positions=positions,
         shapes="square",
@@ -1499,11 +1508,10 @@ def read_openephys(
         shape_params={"width": contact_width},
     )
     probe.annotate(
-        name=pname,
-        manufacturer="IMEC",
-        probe_name=pname,
-        probe_part_number=np_probe.attrib["probe_part_number"],
-        probe_serial_number=np_probe.attrib["probe_serial_number"],
+        part_number=np_probe.attrib["part_number"],
+        slot=np_probe.attrib["slot"],
+        dock=np_probe.attrib["dock"],
+        port=np_probe.attrib["port"],
     )
 
     if contact_ids is not None:
