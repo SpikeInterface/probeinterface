@@ -71,7 +71,7 @@ def get_from_cache(manufacturer, probe_name):
         return probe
 
 
-def get_probe(manufacturer, probe_name):
+def get_probe(manufacturer, probe_name, name=None):
     """
     Get probe from ProbeInterface library
 
@@ -81,6 +81,8 @@ def get_probe(manufacturer, probe_name):
         The probe manufacturer (e.g. 'cambridgeneurotech')
     probe_name : str
         The probe name
+    name : str or None
+        Optional name for the probe
 
     Returns
     ----------
@@ -93,5 +95,9 @@ def get_probe(manufacturer, probe_name):
     if probe is None:
         download_probeinterface_file(manufacturer, probe_name)
         probe = get_from_cache(manufacturer, probe_name)
+    if probe.annotations["manufacturer"] == "":
+        probe.annotations["manufacturer"] = manufacturer
+    if name is not None:
+        probe.annotations["name"] = name
 
     return probe

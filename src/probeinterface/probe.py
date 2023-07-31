@@ -73,7 +73,7 @@ class Probe:
         self.annotate(
             name=name if name is not None else "",
             serial_number=serial_number if serial_number is not None else "",
-            model=model_name if model_name is not None else "",
+            model_name=model_name if model_name is not None else "",
             manufacturer=manufacturer if manufacturer is not None else "",
         )
         # same idea but handle in vector way for contacts
@@ -947,7 +947,9 @@ class Probe:
         except ImportError:
             raise ImportError("to_image() requires the scipy package")
         assert self.ndim == 2
-        assert values.shape == (self.get_contact_count(),), "Bad boy: values must have size equal contact count"
+        assert values.shape == (
+            self.get_contact_count(),
+        ), "Shape mismatch: values must have the same size as contact count"
 
         if xlims is None:
             x0 = np.min(self.contact_positions[:, 0])
