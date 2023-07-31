@@ -976,14 +976,17 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     stagger = np.mod(y_idx + 1, 2) * probe_description["stagger"]
     x_pos = x_idx * x_pitch + stagger
     y_pos = y_idx * y_pitch
-    positions = np.stack((x_pos, y_pos), axis=1)
 
     if imDatPrb_type == 24:
         shank_ids = np.array(contact_info["shank_id"])
+        shank_pitch = probe_description["shank_pitch"]
         contact_ids = [f"s{shank_id}e{elec_id}" for shank_id, elec_id in zip(shank_ids, elec_ids)]
+        x_pos += np.array(shank_ids).astype(int) * shank_pitch
     else:
         shank_ids = None
         contact_ids = [f"e{elec_id}" for elec_id in elec_ids]
+
+    positions = np.stack((x_pos, y_pos), axis=1)
 
     # construct Probe object
     probe = Probe(ndim=2, si_units="um")
