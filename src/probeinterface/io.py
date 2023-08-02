@@ -962,8 +962,8 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
             contact_info[field].append(field_value)
 
     channel_ids = np.array(contact_info["channel_ids"])
-    if "elect_ids" in contact_info:
-        elec_ids = np.array(contact_info["elect_ids"])
+    if "elec_ids" in contact_info:
+        elec_ids = np.array(contact_info["elec_ids"])
     else:
         banks = np.array(contact_info["banks"])
         elec_ids = banks * 384 + channel_ids
