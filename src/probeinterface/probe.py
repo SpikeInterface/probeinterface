@@ -70,12 +70,15 @@ class Probe:
         # annotation:  a dict that contains all meta information about
         # the probe (name, manufacturor, date of production, ...)
         self.annotations = dict()
-        self.annotate(
-            name=name if name is not None else "",
-            serial_number=serial_number if serial_number is not None else "",
-            model_name=model_name if model_name is not None else "",
-            manufacturer=manufacturer if manufacturer is not None else "",
-        )
+        if name is not None:
+            self.annotate(name=name)
+        if serial_number is not None:
+            self.annotate(serial_number=serial_number)
+        if model_name is not None:
+            self.annotate(model_name=model_name)
+        if manufacturer is not None:
+            self.annotate(manufacturer=manufacturer)
+
         # same idea but handle in vector way for contacts
         self.contact_annotations = dict()
 
