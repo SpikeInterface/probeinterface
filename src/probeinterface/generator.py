@@ -109,8 +109,8 @@ def generate_multi_columns_probe(
         Pitch in x direction, by default 20
     ypitch : float, optional
         Pitch in y direction, by default 20
-    y_shift_per_column : float, optional
-        Shift in y direction per column, by default None
+    y_shift_per_column : array-like, optional
+        Shift in y direction per column. It needs to have the same length as num_columns, by default None
     contact_shapes : str, optional
         Shape of the contacts ('circle', 'rect', 'square'), by default 'circle'
     contact_shape_params : dict, optional
@@ -127,6 +127,8 @@ def generate_multi_columns_probe(
 
     if y_shift_per_column is None:
         y_shift_per_column = [0] * num_columns
+
+    assert len(y_shift_per_column) == num_columns, "y_shift_per_column must have the same length as num_columns"
 
     positions = []
     for i in range(num_columns):
