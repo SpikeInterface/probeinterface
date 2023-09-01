@@ -32,7 +32,7 @@ def _probeinterface_format_check_version(d):
     pass
 
 
-def read_probeinterface(file:Union[str, Path])-> ProbeGroup:
+def read_probeinterface(file: Union[str, Path]) -> ProbeGroup:
     """
     Read probeinterface JSON-based format.
 
@@ -175,7 +175,10 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> P
         if "contact_shapes" not in df_probe:
             df_probe["contact_shapes"] = "circle"
             df_probe["radius"] = 1
-            print(f"There is no contact shape provided for probe {probe_id}, a " f"dummy circle with 1um radius will be used.")
+            print(
+                f"There is no contact shape provided for probe {probe_id}, a "
+                f"dummy circle with 1um radius will be used."
+            )
 
         if "x" not in df_probe:
             df_probe["x"] = np.arange(len(df_probe.index), dtype=float)
@@ -186,7 +189,8 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> P
         if "y" not in df_probe:
             df_probe["y"] = 0.0
             print(
-                f"There is no y coordinate provided for probe {probe_id}, a " f"dummy constant y coordinate will be used."
+                f"There is no y coordinate provided for probe {probe_id}, a "
+                f"dummy constant y coordinate will be used."
             )
 
         if "si_units" not in df_probe:
@@ -290,7 +294,7 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> P
     return probegroup
 
 
-def write_BIDS_probe(folder: Union[str, Path], probe_or_probegroup: Union[Probe, ProbeGroup], prefix:str=""):
+def write_BIDS_probe(folder: Union[str, Path], probe_or_probegroup: Union[Probe, ProbeGroup], prefix: str = ""):
     """
     Write to probe and contact formats as proposed
     for ephy BIDS extension (tsv & json based).
@@ -577,7 +581,13 @@ def read_3brain(file: Union[str, Path], mea_pitch: float = 42, electrode_width: 
     return probe
 
 
-def write_prb(file:str, probegroup:ProbeGroup, total_nb_channels:Optional[int]=None, radius:Optional[float]=None, group_mode:str="by_probe"):
+def write_prb(
+    file: str,
+    probegroup: ProbeGroup,
+    total_nb_channels: Optional[int] = None,
+    radius: Optional[float] = None,
+    group_mode: str = "by_probe",
+):
     """
     Write ProbeGroup into a prb file.
 
@@ -656,7 +666,7 @@ def write_prb(file:str, probegroup:ProbeGroup, total_nb_channels:Optional[int]=N
         f.write("}\n")
 
 
-def read_csv(file:Union[str, Path]):
+def read_csv(file: Union[str, Path]):
     """
     Return a 2 or 3 columns csv file with contact positions
     """

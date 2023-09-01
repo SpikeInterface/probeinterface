@@ -50,7 +50,7 @@ pathways = {
 # fmt: on
 
 
-def get_available_pathways()->list:
+def get_available_pathways() -> list:
     """Return available pathways
 
     Returns
@@ -61,7 +61,7 @@ def get_available_pathways()->list:
     return list(pathways.keys())
 
 
-def wire_probe(probe:"Probe", pathway:str, channel_offset:int=0):
+def wire_probe(probe: "Probe", pathway: str, channel_offset: int = 0):
     """Inplace wiring for a Probe using a pathway
 
     Parameters

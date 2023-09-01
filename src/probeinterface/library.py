@@ -25,7 +25,7 @@ public_url = "https://raw.githubusercontent.com/SpikeInterface/probeinterface_li
 cache_folder = Path(os.path.expanduser("~")) / ".config" / "probeinterface" / "library"
 
 
-def download_probeinterface_file(manufacturer:str, probe_name:str):
+def download_probeinterface_file(manufacturer: str, probe_name: str):
     """Download the probeinterface file to the cache directory.
     Note that the file is itself a ProbeGroup but on the repo each file
     represents one probe.
@@ -45,7 +45,7 @@ def download_probeinterface_file(manufacturer:str, probe_name:str):
         f.write(dist.read())
 
 
-def get_from_cache(manufacturer:str, probe_name:str)-> Optional["Probe"]:
+def get_from_cache(manufacturer: str, probe_name: str) -> Optional["Probe"]:
     """
     Get Probe from local cache
 
@@ -72,7 +72,7 @@ def get_from_cache(manufacturer:str, probe_name:str)-> Optional["Probe"]:
         return probe
 
 
-def get_probe(manufacturer:str, probe_name:str)-> "Probe":
+def get_probe(manufacturer: str, probe_name: str) -> "Probe":
     """
     Get probe from ProbeInterface library
 

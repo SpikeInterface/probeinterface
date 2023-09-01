@@ -47,7 +47,7 @@ def import_safely(module: str) -> ModuleType:
     return module_obj
 
 
-def combine_probes(probes:Probe, connect_shape:bool=True):
+def combine_probes(probes: Probe, connect_shape: bool = True):
     """
     Combine several Probe objects into a unique
     multi-shank Probe object.
@@ -102,7 +102,7 @@ def combine_probes(probes:Probe, connect_shape:bool=True):
     return multi_shank
 
 
-def generate_unique_ids(min:int, max:int, n:int, trials:int=20)-> np.array:
+def generate_unique_ids(min: int, max: int, n: int, trials: int = 20) -> np.array:
     """
     Create n unique identifiers.
     Creates `n` unique integer identifiers between `min` and `max` within a
