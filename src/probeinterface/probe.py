@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Sequence, Union, Optional
 
 from .shank import Shank
 
@@ -15,7 +16,7 @@ class Probe:
 
     """
 
-    def __init__(self, ndim=2, si_units="um"):
+    def __init__(self, ndim:int=2, si_units:int="um"):
         """
         Some attributes are protected and have to be set with setters:
           * set_contacts(...)
@@ -90,7 +91,7 @@ class Probe:
     def shank_ids(self):
         return self._shank_ids
 
-    def get_title(self):
+    def get_title(self)->str:
         if self.contact_positions is None:
             txt = "Undefined probe"
         else:
@@ -131,14 +132,14 @@ class Probe:
         if "first_index" in d:
             assert d["first_index"] in (0, 1)
 
-    def get_contact_count(self):
+    def get_contact_count(self)->int:
         """
         Return the number of contacts on the probe.
         """
         assert self.contact_positions is not None
         return len(self.contact_positions)
 
-    def get_shank_count(self):
+    def get_shank_count(self)->int:
         """
         Return the number of shanks for this probe.
         """
@@ -194,7 +195,7 @@ class Probe:
         else:
             self._shank_ids = np.asarray(shank_ids).astype(str)
             if self.shank_ids.size != n:
-                raise ValueError("shan_ids have wring size")
+                raise ValueError("shank_ids have wrong size")
 
         # shape
         if isinstance(shapes, str):
@@ -203,7 +204,7 @@ class Probe:
         if not np.all(np.in1d(shapes, _possible_contact_shapes)):
             raise ValueError(f"contacts shape must be in {_possible_contact_shapes}")
         if shapes.shape[0] != n:
-            raise ValueError("contacts shape must have same length as posistions")
+            raise ValueError("contacts shape must have same length as positions")
         self._contact_shapes = np.array(shapes)
 
         # shape params
@@ -211,7 +212,7 @@ class Probe:
             shape_params = [shape_params] * n
         self._contact_shape_params = np.array(shape_params)
 
-    def set_planar_contour(self, contour_polygon):
+    def set_planar_contour(self, contour_polygon:list):
         """Set the planar countour (the shape) of the probe.
 
         Parameters
@@ -224,15 +225,15 @@ class Probe:
             raise ValueError("contour_polygon.shape[1] and ndim do not match!")
         self.probe_planar_contour = contour_polygon
 
-    def create_auto_shape(self, probe_type="tip", margin=20.0):
+    def create_auto_shape(self, probe_type:str="tip", margin:float=20.0):
         """Create planar contour automatically based on probe contact positions.
 
         Parameters
         ----------
-        probe_type : str, optional
-            The probe type ('tip' or 'rect'), by default 'tip'
-        margin : float, optional
-            The margin to add to the contact positions, by default 20
+        probe_type : str, by default 'tip'
+            The probe type ('tip' or 'rect')
+        margin : float, by default 20.0
+            The margin to add to the contact positions
 
         """
         if self.ndim != 2:
@@ -279,7 +280,7 @@ class Probe:
 
         self.set_planar_contour(polygon)
 
-    def set_device_channel_indices(self, channel_indices):
+    def set_device_channel_indices(self, channel_indices:Sequence[int]):
         """
         Manually set the device channel indices.
 
@@ -297,7 +298,7 @@ class Probe:
         if self._probe_group is not None:
             self._probe_group.check_global_device_wiring_and_ids()
 
-    def wiring_to_device(self, pathway, channel_offset=0):
+    def wiring_to_device(self, pathway:str, channel_offset:int=0):
         """
         Automatically set device_channel_indices based on a pathway.
 
@@ -305,15 +306,16 @@ class Probe:
 
         Parameters
         ----------
-
         pathway : str
            The pathway. E.g. 'H32>RHD'
+        channel_offset: int, default 0
+            An optional offset to add to the device_channel_indices
         """
         from .wiring import wire_probe
 
         wire_probe(self, pathway, channel_offset=channel_offset)
 
-    def set_contact_ids(self, contact_ids):
+    def set_contact_ids(self, contact_ids:Sequence[Union[int, float, str]]):
         """
         Set contact ids. Channel ids are converted to strings.
         Contact ids must be **unique** for the **Probe**
@@ -328,7 +330,7 @@ class Probe:
         contact_ids = np.asarray(contact_ids)
 
         if contact_ids.size != self.get_contact_count():
-            ValueError("channel_indices have not the same size as contact")
+            ValueError("channel_indices do not have the same size as contact")
 
         if contact_ids.dtype.kind != "U":
             contact_ids = contact_ids.astype("U")
@@ -337,14 +339,14 @@ class Probe:
         if self._probe_group is not None:
             self._probe_group.check_global_device_wiring_and_ids()
 
-    def set_shank_ids(self, shank_ids):
+    def set_shank_ids(self, shank_ids:Sequence[Union[int, float, str]]):
         """
         Set shank ids.
 
         Parameters
         ----------
         shank_ids : list or array
-            Array with shank ids
+            Array with shank ids, if int or float converted to strings
         """
         shank_ids = np.asarray(shank_ids).astype(str)
         if shank_ids.size != self.get_contact_count():
@@ -383,7 +385,7 @@ class Probe:
         # channel_indices are not copied
         return other
 
-    def to_3d(self, axes="xz"):
+    def to_3d(self, axes:str="xz"):
         """
         Transform 2d probe to 3d probe.
 
@@ -391,7 +393,7 @@ class Probe:
 
         Parameters
         ----------
-        axes : str
+        axes : str, default "xz"
             The axes that define the plane on which the 2D probe is defined. 'xy', 'yz' ', xz'
         """
         assert self.ndim == 2
@@ -420,7 +422,7 @@ class Probe:
 
         return probe3d
 
-    def to_2d(self, axes="xy"):
+    def to_2d(self, axes:str="xy"):
         """
         Transform 3d probe to 2d probe.
 
@@ -451,7 +453,7 @@ class Probe:
 
         return probe2d
 
-    def get_contact_vertices(self):
+    def get_contact_vertices(self)->list:
         """
         Return a list of contact vertices.
         """
@@ -491,7 +493,7 @@ class Probe:
             vertices.append(one_vertice)
         return vertices
 
-    def move(self, translation_vector):
+    def move(self, translation_vector:Sequence[int]):
         """
         Translate the probe in one direction.
 
@@ -509,7 +511,7 @@ class Probe:
         if self.probe_planar_contour is not None:
             self.probe_planar_contour += translation_vector
 
-    def rotate(self, theta, center=None, axis=None):
+    def rotate(self, theta:float, center=None, axis=None):
         """
         Rotate the probe around a specified axis.
 
@@ -557,15 +559,15 @@ class Probe:
             new_vertices = (self.probe_planar_contour - center) @ R + center
             self.probe_planar_contour = new_vertices
 
-    def rotate_contacts(self, thetas):
+    def rotate_contacts(self, thetas:Union[float, Sequence[float]]):
         """
         Rotate each contact of the probe.
-        Internaly, it modifies the contact_plane_axes.
+        Internally, it modifies the contact_plane_axes.
 
         Parameters
         ----------
         thetas : array of float
-            Rotation angle in degree.
+            Rotation angle in degrees.
             If scalar, then it is applied to all contacts.
 
         """
@@ -600,14 +602,14 @@ class Probe:
         "_shank_ids",
     ]
 
-    def to_dict(self, array_as_list=False):
+    def to_dict(self, array_as_list:bool=False)->dict:
         """Create a dictionary of all necessary attributes.
         Useful for dumping and saving to json.
 
         Parameters
         ----------
-        array_as_list : bool, optional
-            If True, arrays are converted to lists, by default False
+        array_as_list : bool, default False
+            If True, arrays are converted to lists
 
         Returns
         -------
@@ -631,7 +633,7 @@ class Probe:
         return d
 
     @staticmethod
-    def from_dict(d):
+    def from_dict(d:dict):
         """Instantiate a Probe from a dictionary
 
         Parameters
@@ -676,7 +678,7 @@ class Probe:
 
         return probe
 
-    def to_numpy(self, complete=False):
+    def to_numpy(self, complete:bool=False)->np.array:
         """
         Export to a numpy vector (structured array).
         This vector handles all contact attributes.
@@ -687,9 +689,9 @@ class Probe:
 
         Parameters
         ----------
-        complete : bool
+        complete : bool, default False
             If True, export complete information about the probe,
-            including contact_plane_axes/si_units/device_channel_indices (default False)
+            including contact_plane_axes/si_units/device_channel_indices
 
         returns
         ---------
@@ -757,7 +759,7 @@ class Probe:
         return arr
 
     @staticmethod
-    def from_numpy(arr):
+    def from_numpy(arr:np.ndarray):
         """
         Create Probe from a complex numpy array
         see Probe.to_numpy()
@@ -780,8 +782,8 @@ class Probe:
         else:
             ndim = 2
 
-        assert "x" in fields
-        assert "y" in fields
+        assert "x" in fields, "arr must contain a .dtype.fields of x"
+        assert "y" in fields, "arr must contain a .dtype.fields of y"
         if "si_units" in fields:
             assert np.unique(arr["si_units"]).size == 1
             si_units = np.unique(arr["si_units"])[0]
@@ -828,13 +830,13 @@ class Probe:
 
         return probe
 
-    def to_dataframe(self, complete=False):
+    def to_dataframe(self, complete:bool=False)-> "pandas.DataFrame":
         """
         Export the probe to a pandas dataframe
 
         Parameters
         ----------
-        complete : bool
+        complete : bool, default False
             If True, export complete information about the probe,
             including the probe plane axis.
 
@@ -852,7 +854,7 @@ class Probe:
         return df
 
     @staticmethod
-    def from_dataframe(df):
+    def from_dataframe(df:"pandas.DataFrame"):
         """
         Create Probe from a pandas.DataFrame
         see Probe.to_dataframe()
@@ -870,9 +872,9 @@ class Probe:
         arr = df.to_records(index=False)
         return Probe.from_numpy(arr)
 
-    def to_image(self, values, pixel_size=0.5, num_pixel=None, method="linear", xlims=None, ylims=None):
+    def to_image(self, values:Sequence, pixel_size:float=0.5, num_pixel:Optional[int]=None, method:str="linear", xlims:Optional[tuple]=None, ylims:Optional[tuple]=None)-> tuple[np.ndarray, tuple, tuple]:
         """
-        Generated a 2d (image) from a values vector which an interpolation
+        Generated a 2d (image) from a values vector with an interpolation
         into a grid mesh.
 
         Parameters
@@ -883,10 +885,11 @@ class Probe:
             size of one pixel in micrometers
         num_pixel :
             alternative to pixel_size give pixel number of the image width
-        method : 'linear' or 'nearest' or 'cubic'
-        xlims : tuple or None
+        method : str, default 'linear'
+            One of the options: 'linear' or 'nearest' or 'cubic'
+        xlims : Optional[tuple], default None
             Force image xlims
-        ylims : tuple or None
+        ylims : Optional[tuple], default None
             Force image ylims
 
         Returns
@@ -932,7 +935,7 @@ class Probe:
 
         return image, xlims, ylims
 
-    def get_slice(self, selection):
+    def get_slice(self, selection:np.ndarray[Union[bool, int]]):
         """
         Get a copy of the Probe with a sub selection of contacts.
 
@@ -941,6 +944,13 @@ class Probe:
         Parameters
         ----------
         selection : np.array of bool or int (for index)
+            Either an np.array of bool for desired selection of contacts
+            or the indices of the desired contacts
+
+        Returns
+        -------
+        sliced_probe: Probe
+            The sliced probe
 
         """
 
@@ -975,7 +985,7 @@ class Probe:
         return sliced_probe
 
 
-def _2d_to_3d(data2d, axes):
+def _2d_to_3d(data2d:np.ndarray, axes:str)-> np.ndarray:
     """
     Add a third dimension
 
@@ -997,7 +1007,7 @@ def _2d_to_3d(data2d, axes):
     return data3d
 
 
-def select_axes(data, axes="xy"):
+def select_axes(data:np.ndarray, axes:str="xy")->np.ndarray:
     """
     Select axes in a 3d or 2d array.
 
@@ -1005,7 +1015,7 @@ def select_axes(data, axes="xy"):
     ----------
     data: np.array
         shape (n, 2) or (n, 3)
-    axes: str
+    axes: str, default 'xy'
         'xy', 'yz' 'xz' or 'xyz'
     Returns
     -------
@@ -1018,24 +1028,35 @@ def select_axes(data, axes="xy"):
     return data[:, dims]
 
 
-def _3d_to_2d(data3d, axes="xy"):
+def _3d_to_2d(data3d:np.ndarray, axes:str="xy")-> np.ndarray:
     """
     Reduce 3d array to 2d array on given axes.
+
+    Parameters
+    ----------
+    data: np.ndarray
+        The data with shape (n,3)
+    axes: str, default 'xy'
+        The axes over which to reduce the 2d array
+
+    Returns
+    -------
+    reduced_data: np.ndarray
+        The reduced data array
     """
     assert data3d.shape[1] == 3
     assert len(axes) == 2
     return select_axes(data3d, axes=axes)
 
 
-def _rotation_matrix_2d(theta):
+def _rotation_matrix_2d(theta:float)->np.ndarray:
     """
     Returns 2D rotation matrix
 
     Parameters
     ----------
     theta : float
-        Angle in radians for rotation (anti-clockwise)
-
+        Angle in radians for rotation (anti-clockwise/counterclockwise)
     Returns
     -------
     R : np.array
@@ -1046,7 +1067,7 @@ def _rotation_matrix_2d(theta):
     return R
 
 
-def _rotation_matrix_3d(axis, theta):
+def _rotation_matrix_3d(axis:Sequence, theta:float)->np.ndarray:
     """
     Returns 3D rotation matrix
 
@@ -1057,7 +1078,7 @@ def _rotation_matrix_3d(axis, theta):
     axis : np.array or list
         3D axis of rotation
     theta : float
-        Angle in radians for rotation anti-clockwise
+        Angle in radians for rotation anti-clockwise/counterclockwise
 
     Returns
     -------

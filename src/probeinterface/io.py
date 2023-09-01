@@ -32,7 +32,7 @@ def _probeinterface_format_check_version(d):
     pass
 
 
-def read_probeinterface(file):
+def read_probeinterface(file:Union[str, Path])-> ProbeGroup:
     """
     Read probeinterface JSON-based format.
 
@@ -80,7 +80,7 @@ def write_probeinterface(file: Union[str, Path], probe_or_probegroup: Union[Prob
     elif isinstance(probe_or_probegroup, ProbeGroup):
         probegroup = probe_or_probegroup
     else:
-        raise ValueError("write_probeinterface : need probe or probegroup")
+        raise ValueError("write_probeinterface : needs a probe or probegroup")
 
     file = Path(file)
 
@@ -175,23 +175,23 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> P
         if "contact_shapes" not in df_probe:
             df_probe["contact_shapes"] = "circle"
             df_probe["radius"] = 1
-            print(f"There is no contact shape provided for probe {probe_id}, a " f"dummy circle with 1um is created")
+            print(f"There is no contact shape provided for probe {probe_id}, a " f"dummy circle with 1um radius will be used.")
 
         if "x" not in df_probe:
             df_probe["x"] = np.arange(len(df_probe.index), dtype=float)
             print(
-                f"There is no x coordinate provided for probe {probe_id}, a " f"dummy linear x coordinate is created."
+                f"There is no x coordinate provided for probe {probe_id}, a " f"dummy linear x coordinate will be used."
             )
 
         if "y" not in df_probe:
             df_probe["y"] = 0.0
             print(
-                f"There is no y coordinate provided for probe {probe_id}, a " f"dummy constant y coordinate is created."
+                f"There is no y coordinate provided for probe {probe_id}, a " f"dummy constant y coordinate will be used."
             )
 
         if "si_units" not in df_probe:
             df_probe["si_units"] = "um"
-            print(f"There is no SI units provided for probe {probe_id}, a " f"dummy SI unit (um) is created.")
+            print(f"There is no SI unit provided for probe {probe_id}, a " f"dummy SI unit (um) will be used")
 
         # create probe object and register with probegroup
         probe = Probe.from_dataframe(df=df_probe)
@@ -290,7 +290,7 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> P
     return probegroup
 
 
-def write_BIDS_probe(folder: Union[str, Path], probe_or_probegroup: Union[Probe, ProbeGroup], prefix=""):
+def write_BIDS_probe(folder: Union[str, Path], probe_or_probegroup: Union[Probe, ProbeGroup], prefix:str=""):
     """
     Write to probe and contact formats as proposed
     for ephy BIDS extension (tsv & json based).
@@ -577,7 +577,7 @@ def read_3brain(file: Union[str, Path], mea_pitch: float = 42, electrode_width: 
     return probe
 
 
-def write_prb(file, probegroup, total_nb_channels=None, radius=None, group_mode="by_probe"):
+def write_prb(file:str, probegroup:ProbeGroup, total_nb_channels:Optional[int]=None, radius:Optional[float]=None, group_mode:str="by_probe"):
     """
     Write ProbeGroup into a prb file.
 
@@ -595,6 +595,19 @@ def write_prb(file, probegroup, total_nb_channels=None, radius=None, group_mode=
       * "total_nb_channels" is needed by spyking-circus
       * "radius" is needed by spyking-circus
       * "graph" is not handled
+
+    Parameters
+    ----------
+    file: str
+        The name of the file to be written
+    probegroup: ProbeGroup
+        The Probegroup to be used for writing
+    total_nb_channels: Optional[int], default None
+        ***to do
+    radius: Optional[float], default None
+        *** to do
+    group_mode: str
+        One of "by_probe" or "by_shank
 
     """
     assert group_mode in ("by_probe", "by_shank")
@@ -643,7 +656,7 @@ def write_prb(file, probegroup, total_nb_channels=None, radius=None, group_mode=
         f.write("}\n")
 
 
-def read_csv(file):
+def read_csv(file:Union[str, Path]):
     """
     Return a 2 or 3 columns csv file with contact positions
     """

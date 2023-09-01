@@ -10,15 +10,15 @@ from .probegroup import ProbeGroup
 from .utils import combine_probes
 
 
-def generate_dummy_probe(elec_shapes="circle"):
+def generate_dummy_probe(elec_shapes:str ="circle"):
     """
     Generate a dummy probe with 3 columns and 32 contacts.
     Mainly used for testing and examples.
 
     Parameters
     ----------
-    elec_shapes : str, optional
-        Shape of the electrodes, by default 'circle'
+    elec_shapes : str, , by default 'circle'
+        Shape of the electrodes with possibilities of ('circle', 'square', 'rect')
 
     Returns
     -------
@@ -72,10 +72,13 @@ def generate_dummy_probe_group():
     return probegroup
 
 
-def generate_tetrode(r=10):
+def generate_tetrode(r:float=10):
     """
     Generate a tetrode Probe.
-
+    Parameters
+    ----------
+    r: float
+        The distance multiplier for the positions
     Returns
     -------
     probe : Probe
@@ -89,32 +92,35 @@ def generate_tetrode(r=10):
 
 
 def generate_multi_columns_probe(
-    num_columns=3,
-    num_contact_per_column=10,
-    xpitch=20,
-    ypitch=20,
+    num_columns:int=3,
+    num_contact_per_column:int =10,
+    xpitch:float=20,
+    ypitch:float=20,
     y_shift_per_column=None,
-    contact_shapes="circle",
-    contact_shape_params={"radius": 6},
+    contact_shapes:str="circle",
+    contact_shape_params:dict={"radius": 6},
 ):
     """Generate a Probe with several columns.
 
     Parameters
     ----------
-    num_columns : int, optional
-        Number of columns, by default 3
-    num_contact_per_column : int, optional
-        Number of contacts per column, by default 10
-    xpitch : float, optional
-        Pitch in x direction, by default 20
-    ypitch : float, optional
-        Pitch in y direction, by default 20
+    num_columns : int, by default 3
+        Number of columns
+    num_contact_per_column : int, by default 10
+        Number of contacts per column
+    xpitch : float, by default 20
+        Pitch in x direction
+    ypitch : float, by default 20
+        Pitch in y direction
     y_shift_per_column : array-like, optional
         Shift in y direction per column. It needs to have the same length as num_columns, by default None
-    contact_shapes : str, optional
-        Shape of the contacts ('circle', 'rect', 'square'), by default 'circle'
-    contact_shape_params : dict, optional
-        Parameters for the shape, by default {'radius': 6}
+    contact_shapes : str, by default 'circle'
+        Shape of the contacts ('circle', 'rect', 'square')
+    contact_shape_params : dict, default {'radius': 6}
+        Parameters for the shape.
+        For circle: {"radius": float}
+        For square: {"width": float}
+        For rectangle: {"width": float, "height": float}
 
     Returns
     -------
@@ -144,19 +150,22 @@ def generate_multi_columns_probe(
     return probe
 
 
-def generate_linear_probe(num_elec=16, ypitch=20, contact_shapes="circle", contact_shape_params={"radius": 6}):
+def generate_linear_probe(num_elec: int =16, ypitch:float=20, contact_shapes:str="circle", contact_shape_params:dict={"radius": 6}):
     """Generate a one-column linear probe.
 
     Parameters
     ----------
-    num_elec : int, optional
+    num_elec : int
         Number of electrodes, by default 16
-    ypitch : float, optional
+    ypitch : float
         Pitch in y direction, by default 20
-    contact_shapes : str, optional
-        Shape of the contacts ('circle', 'rect', 'square'), by default 'circle'
-    contact_shape_params : dict, optional
-        Parameters for the shape, by default {'radius': 6}
+    contact_shapes : str, default 'circle'
+        Shape of the contacts ('circle', 'rect', 'square')
+    contact_shape_params : dict, default {'radius': 6}
+        Parameters for the shape.
+        For circle: {"radius": float}
+        For square: {"width": float}
+        For rectangle: {"width": float, "height": float}
 
     Returns
     -------
@@ -175,15 +184,15 @@ def generate_linear_probe(num_elec=16, ypitch=20, contact_shapes="circle", conta
     return probe
 
 
-def generate_multi_shank(num_shank=2, shank_pitch=[150, 0], **kargs):
+def generate_multi_shank(num_shank:int=2, shank_pitch:list=[150, 0], **kargs):
     """Generate a multi-shank probe.
     Internally, calls generate_multi_columns_probe and combine_probes.
 
     Parameters
     ----------
-    num_shank : int, optional
-        Number of shanks, by default 2
-    shank_pitch : list, optional
+    num_shank : int, default 2
+        Number of shanks
+    shank_pitch : list, default [150,0]
         Distance between shanks, by default [150, 0]
 
     Returns

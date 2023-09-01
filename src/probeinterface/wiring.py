@@ -50,7 +50,7 @@ pathways = {
 # fmt: on
 
 
-def get_available_pathways():
+def get_available_pathways()->list:
     """Return available pathways
 
     Returns
@@ -61,7 +61,7 @@ def get_available_pathways():
     return list(pathways.keys())
 
 
-def wire_probe(probe, pathway, channel_offset=0):
+def wire_probe(probe:"Probe", pathway:str, channel_offset:int=0):
     """Inplace wiring for a Probe using a pathway
 
     Parameters
@@ -70,10 +70,10 @@ def wire_probe(probe, pathway, channel_offset=0):
         The probe to wire
     pathway : str
         The pathway to use
-    channel_offset : int, optional
-        An optional offset to add to the device_channel_indices, by default 0
+    channel_offset : int, default 0
+        An optional offset to add to the device_channel_indices
     """
-    assert pathway in pathways
+    assert pathway in pathways, f"{pathway} is not a currently supported pathway"
     chan_indices = np.array(pathways[pathway], dtype="int64") + channel_offset
     assert chan_indices.size == probe.get_contact_count()
     probe.set_device_channel_indices(chan_indices)

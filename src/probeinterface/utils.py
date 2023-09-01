@@ -47,7 +47,7 @@ def import_safely(module: str) -> ModuleType:
     return module_obj
 
 
-def combine_probes(probes, connect_shape=True):
+def combine_probes(probes:Probe, connect_shape:bool=True):
     """
     Combine several Probe objects into a unique
     multi-shank Probe object.
@@ -63,8 +63,8 @@ def combine_probes(probes, connect_shape=True):
     ----------
     probes : list
         List of Probe objects
-    connect_shape : bool (default True)
-        Connect all shapes togother.
+    connect_shape : bool, default True
+        Connect all shapes together.
         Be careful, as this can lead to strange probe shape....
 
     Return
@@ -102,7 +102,7 @@ def combine_probes(probes, connect_shape=True):
     return multi_shank
 
 
-def generate_unique_ids(min, max, n, trials=20):
+def generate_unique_ids(min:int, max:int, n:int, trials:int=20)-> np.array:
     """
     Create n unique identifiers.
     Creates `n` unique integer identifiers between `min` and `max` within a
@@ -116,7 +116,7 @@ def generate_unique_ids(min, max, n, trials=20):
         Maximum value permitted for an identifier
     n : int
         Number of identifiers to create
-    trials : int
+    trials : int, default 20
         Maximal number of attempts for generating
         the set of identifiers
 
