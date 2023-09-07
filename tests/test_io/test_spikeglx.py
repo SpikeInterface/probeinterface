@@ -65,7 +65,7 @@ def test_NP_phase3A():
 def test_NP2_4_shanks():
     probe = read_spikeglx(data_path / "NP2_4_shanks.imec0.ap.meta")
 
-    assert probe.annotations["name"] == "Neuropixels 2.0 - Four Shank"
+    assert probe.annotations["name"] == "Neuropixels 2.0 - Four Shank - Prototype"
     assert probe.annotations["manufacturer"] == "IMEC"
     assert probe.annotations["probe_type"] == 24
 
@@ -89,7 +89,7 @@ def test_NP2_4_shanks_with_different_electrodes_saved():
     # Data provided by Jennifer Colonell
     probe = read_spikeglx(data_path / "NP2_4_shanks_save_different_electrodes.imec0.ap.meta")
 
-    assert probe.annotations["name"] == "Neuropixels 2.0 - Four Shank"
+    assert probe.annotations["name"] == "Neuropixels 2.0 - Four Shank - Prototype"
     assert probe.annotations["manufacturer"] == "IMEC"
     assert probe.annotations["probe_type"] == 24
 
