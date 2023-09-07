@@ -706,8 +706,40 @@ npx_probe = {
             "ap_hp_filters",
         ),
     },
-    # Neuropixels 2.0 - Single Shank
+    # Neuropixels 2.0 - Single Shank - Prototype
     21: {
+        "probe_name": "Neuropixels 2.0 - Single Shank - Prototype",
+        "x_pitch": 32,
+        "y_pitch": 15,
+        "contact_width": 12,
+        "stagger": 0.0,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 2,
+        "polygon": polygon_description["default"],
+        "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
+    },
+    # Neuropixels 2.0 - Four Shank - Prototype
+    24: {
+        "probe_name": "Neuropixels 2.0 - Four Shank - Prototype",
+        "x_pitch": 32,
+        "y_pitch": 15,
+        "contact_width": 12,
+        "stagger": 0.0,
+        "shank_pitch": 250,
+        "shank_number": 4,
+        "ncol": 2,
+        "polygon": polygon_description["default"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "shank_id",
+            "banks",
+            "references",
+            "elec_ids",
+        ),
+    },
+    # Neuropixels 2.0 - Single Shank - Commercial without metal cap
+    2003: {
         "probe_name": "Neuropixels 2.0 - Single Shank",
         "x_pitch": 32,
         "y_pitch": 15,
@@ -719,8 +751,40 @@ npx_probe = {
         "polygon": polygon_description["default"],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
     },
-    # Neuropixels 2.0 - Four Shank
-    24: {
+    # Neuropixels 2.0 - Single Shank - Commercial with metal cap
+    2004: {
+        "probe_name": "Neuropixels 2.0 - Single Shank",
+        "x_pitch": 32,
+        "y_pitch": 15,
+        "contact_width": 12,
+        "stagger": 0.0,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 2,
+        "polygon": polygon_description["default"],
+        "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
+    },
+    # Neuropixels 2.0 - Four Shank - Commercial without metal cap
+    2013: {
+        "probe_name": "Neuropixels 2.0 - Four Shank",
+        "x_pitch": 32,
+        "y_pitch": 15,
+        "contact_width": 12,
+        "stagger": 0.0,
+        "shank_pitch": 250,
+        "shank_number": 4,
+        "ncol": 2,
+        "polygon": polygon_description["default"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "shank_id",
+            "banks",
+            "references",
+            "elec_ids",
+        ),
+    },
+    # Neuropixels 2.0 - Four Shank - Commercial with metal cap
+    2014: {
         "probe_name": "Neuropixels 2.0 - Four Shank",
         "x_pitch": 32,
         "y_pitch": 15,
@@ -1116,6 +1180,8 @@ def read_spikeglx(file: Union[str, Path]) -> Probe:
     if saved_chans.size != probe.get_contact_count():
         # slice if needed
         probe = probe.get_slice(saved_chans)
+    # wire it
+    probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
 
     return probe
 
