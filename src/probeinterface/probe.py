@@ -72,7 +72,7 @@ class Probe:
         self.annotations = dict()
 
         # set key properties
-        self.name  = name
+        self.name = name
         self.serial_number = serial_number
         self.model_name = model_name
         self.manufacturer = manufacturer
