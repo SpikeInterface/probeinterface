@@ -70,14 +70,12 @@ class Probe:
         # annotation:  a dict that contains all meta information about
         # the probe (name, manufacturor, date of production, ...)
         self.annotations = dict()
-        if name is not None:
-            self.annotate(name=name)
-        if serial_number is not None:
-            self.annotate(serial_number=serial_number)
-        if model_name is not None:
-            self.annotate(model_name=model_name)
-        if manufacturer is not None:
-            self.annotate(manufacturer=manufacturer)
+
+        # set key properties
+        self.name  = name
+        self.serial_number = serial_number
+        self.model_name = model_name
+        self.manufacturer = manufacturer
 
         # same idea but handle in vector way for contacts
         self.contact_annotations = dict()
@@ -114,17 +112,37 @@ class Probe:
     def name(self):
         return self.annotations.get("name", "")
 
+    @name.setter
+    def name(self, value):
+        if value is not None:
+            self.annotate(name=value)
+
     @property
     def serial_number(self):
         return self.annotations.get("serial_number", "")
+
+    @serial_number.setter
+    def serial_number(self, value):
+        if value is not None:
+            self.annotate(serial_number=value)
 
     @property
     def model_name(self):
         return self.annotations.get("model_name", "")
 
+    @model_name.setter
+    def model_name(self, value):
+        if value is not None:
+            self.annotate(model_name=value)
+
     @property
     def manufacturer(self):
         return self.annotations.get("manufacturer", "")
+
+    @manufacturer.setter
+    def manufacturer(self, value):
+        if value is not None:
+            self.annotate(manufacturer=value)
 
     def get_title(self):
         if self.contact_positions is None:
