@@ -9,6 +9,7 @@ Read/write probe info using a variety of formats:
   * Neurodata Without Borders (.nwb)
 
 """
+from __future__ import annotations
 from pathlib import Path
 from typing import Union, Optional
 import re
@@ -32,7 +33,7 @@ def _probeinterface_format_check_version(d):
     pass
 
 
-def read_probeinterface(file):
+def read_probeinterface(file: str | Path) -> ProbeGroup:
     """
     Read probeinterface JSON-based format.
 
@@ -58,7 +59,7 @@ def read_probeinterface(file):
     return ProbeGroup.from_dict(d)
 
 
-def write_probeinterface(file: Union[str, Path], probe_or_probegroup: Union[Probe, ProbeGroup]):
+def write_probeinterface(file: str | Path, probe_or_probegroup: Probe | ProbeGroup):
     """
     Write a probeinterface JSON file.
 
@@ -80,7 +81,7 @@ def write_probeinterface(file: Union[str, Path], probe_or_probegroup: Union[Prob
     elif isinstance(probe_or_probegroup, ProbeGroup):
         probegroup = probe_or_probegroup
     else:
-        raise ValueError("write_probeinterface : need probe or probegroup")
+        raise ValueError("write_probeinterface : needs a probe or probegroup")
 
     file = Path(file)
 
@@ -103,7 +104,7 @@ tsv_label_map_to_BIDS = {
 tsv_label_map_to_probeinterface = {v: k for k, v in tsv_label_map_to_BIDS.items()}
 
 
-def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> ProbeGroup:
+def read_BIDS_probe(folder: str | Path, prefix: Optional[str] = None) -> ProbeGroup:
     """
     Read to BIDS probe format.
 
@@ -175,23 +176,27 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> P
         if "contact_shapes" not in df_probe:
             df_probe["contact_shapes"] = "circle"
             df_probe["radius"] = 1
-            print(f"There is no contact shape provided for probe {probe_id}, a " f"dummy circle with 1um is created")
+            print(
+                f"There is no contact shape provided for probe {probe_id}, a "
+                f"dummy circle with 1um radius will be used."
+            )
 
         if "x" not in df_probe:
             df_probe["x"] = np.arange(len(df_probe.index), dtype=float)
             print(
-                f"There is no x coordinate provided for probe {probe_id}, a " f"dummy linear x coordinate is created."
+                f"There is no x coordinate provided for probe {probe_id}, a " f"dummy linear x coordinate will be used."
             )
 
         if "y" not in df_probe:
             df_probe["y"] = 0.0
             print(
-                f"There is no y coordinate provided for probe {probe_id}, a " f"dummy constant y coordinate is created."
+                f"There is no y coordinate provided for probe {probe_id}, a "
+                f"dummy constant y coordinate will be used."
             )
 
         if "si_units" not in df_probe:
             df_probe["si_units"] = "um"
-            print(f"There is no SI units provided for probe {probe_id}, a " f"dummy SI unit (um) is created.")
+            print(f"There is no SI unit provided for probe {probe_id}, a " f"dummy SI unit (um) will be used")
 
         # create probe object and register with probegroup
         probe = Probe.from_dataframe(df=df_probe)
@@ -290,7 +295,7 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> P
     return probegroup
 
 
-def write_BIDS_probe(folder: Union[str, Path], probe_or_probegroup: Union[Probe, ProbeGroup], prefix=""):
+def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup, prefix: str = ""):
     """
     Write to probe and contact formats as proposed
     for ephy BIDS extension (tsv & json based).
@@ -419,7 +424,7 @@ def write_BIDS_probe(folder: Union[str, Path], probe_or_probegroup: Union[Probe,
         json.dump({"ContactId": contacts_dict}, f, indent=4)
 
 
-def read_prb(file: Union[str, Path]) -> ProbeGroup:
+def read_prb(file: str | Path) -> ProbeGroup:
     """
     Read a PRB file and return a ProbeGroup object.
 
@@ -467,7 +472,7 @@ def read_prb(file: Union[str, Path]) -> ProbeGroup:
     return probegroup
 
 
-def read_maxwell(file: Union[str, Path], well_name: str = "well000", rec_name: str = "rec0000") -> Probe:
+def read_maxwell(file: str | Path, well_name: str = "well000", rec_name: str = "rec0000") -> Probe:
     """
     Read a maxwell file and return a Probe object. The Maxwell file format can be
     either Maxone (and thus just the file name is needed), or MaxTwo. In case
@@ -534,7 +539,7 @@ def read_maxwell(file: Union[str, Path], well_name: str = "well000", rec_name: s
     return probe
 
 
-def read_3brain(file: Union[str, Path], mea_pitch: float = 42, electrode_width: float = 21) -> Probe:
+def read_3brain(file: str | Path, mea_pitch: float = 42, electrode_width: float = 21) -> Probe:
     """
     Read a 3brain file and return a Probe object. The 3brain file format can be
     either an .h5 file or a .brw
@@ -577,7 +582,13 @@ def read_3brain(file: Union[str, Path], mea_pitch: float = 42, electrode_width: 
     return probe
 
 
-def write_prb(file, probegroup, total_nb_channels=None, radius=None, group_mode="by_probe"):
+def write_prb(
+    file: str,
+    probegroup: ProbeGroup,
+    total_nb_channels: Optional[int] = None,
+    radius: Optional[float] = None,
+    group_mode: str = "by_probe",
+):
     """
     Write ProbeGroup into a prb file.
 
@@ -595,6 +606,19 @@ def write_prb(file, probegroup, total_nb_channels=None, radius=None, group_mode=
       * "total_nb_channels" is needed by spyking-circus
       * "radius" is needed by spyking-circus
       * "graph" is not handled
+
+    Parameters
+    ----------
+    file: str
+        The name of the file to be written
+    probegroup: ProbeGroup
+        The Probegroup to be used for writing
+    total_nb_channels: Optional[int], default None
+        ***to do
+    radius: Optional[float], default None
+        *** to do
+    group_mode: str
+        One of "by_probe" or "by_shank
 
     """
     assert group_mode in ("by_probe", "by_shank")
@@ -643,7 +667,7 @@ def write_prb(file, probegroup, total_nb_channels=None, radius=None, group_mode=
         f.write("}\n")
 
 
-def read_csv(file):
+def read_csv(file: str | Path):
     """
     Return a 2 or 3 columns csv file with contact positions
     """
@@ -1030,7 +1054,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     return probe
 
 
-def write_imro(file, probe):
+def write_imro(file: str | Path, probe: Probe):
     """
     save imro file (`.imrc`, imec readout) in a file.
     https://github.com/open-ephys-plugins/neuropixels-pxi/blob/master/Source/Formats/IMRO.h
@@ -1040,6 +1064,7 @@ def write_imro(file, probe):
     file : Path or str
         The file path
     probe : Probe object
+
     """
     probe_type = probe.annotations["probe_type"]
     data = probe.to_dataframe(complete=True).sort_values("device_channel_indices")
@@ -1072,7 +1097,7 @@ def write_imro(file, probe):
         f.write("".join(ret))
 
 
-def read_spikeglx(file: Union[str, Path]) -> Probe:
+def read_spikeglx(file: str | Path) -> Probe:
     """
     Read probe position for the meta file generated by SpikeGLX
 
@@ -1120,7 +1145,7 @@ def read_spikeglx(file: Union[str, Path]) -> Probe:
     return probe
 
 
-def parse_spikeglx_meta(meta_file: Union[str, Path]) -> dict:
+def parse_spikeglx_meta(meta_file: str | Path) -> dict:
     """
     Parse the "meta" file from spikeglx into a dict.
     All fiields are kept in txt format and must also parsed themself.
@@ -1141,7 +1166,7 @@ def parse_spikeglx_meta(meta_file: Union[str, Path]) -> dict:
     return meta
 
 
-def get_saved_channel_indices_from_spikeglx_meta(meta_file: Union[str, Path]) -> np.array:
+def get_saved_channel_indices_from_spikeglx_meta(meta_file: str | Path) -> np.array:
     """
     Utils function to get the saved channels.
 
@@ -1151,6 +1176,7 @@ def get_saved_channel_indices_from_spikeglx_meta(meta_file: Union[str, Path]) ->
 
     This function come from here Jennifer Colonell
     https://github.com/jenniferColonell/ecephys_spike_sorting/blob/master/ecephys_spike_sorting/common/SGLXMetaToCoords.py#L65
+
     """
     meta_file = Path(meta_file)
     meta = parse_spikeglx_meta(meta_file)
@@ -1172,7 +1198,7 @@ def get_saved_channel_indices_from_spikeglx_meta(meta_file: Union[str, Path]) ->
 
 
 def read_openephys(
-    settings_file: Union[str, Path],
+    settings_file: str | Path,
     stream_name: Optional[str] = None,
     probe_name: Optional[str] = None,
     serial_number: Optional[str] = None,
@@ -1530,7 +1556,9 @@ def read_openephys(
     return probe
 
 
-def get_saved_channel_indices_from_openephys_settings(settings_file, stream_name):
+def get_saved_channel_indices_from_openephys_settings(
+    settings_file: str | Path, stream_name: str
+) -> Optional[np.array]:
     """
     Returns an array with the subset of saved channels indices (if used)
 
@@ -1597,7 +1625,7 @@ def get_saved_channel_indices_from_openephys_settings(settings_file, stream_name
     return chans_saved
 
 
-def read_mearec(file: Union[str, Path]) -> Probe:
+def read_mearec(file: str | Path) -> Probe:
     """
     Read probe position, and contact shape from a MEArec file.
 
