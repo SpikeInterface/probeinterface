@@ -1,5 +1,7 @@
+from __future__ import annotations
 import numpy as np
-from typing import Sequence, Union, Optional
+from typing import Optional
+
 
 from .shank import Shank
 
@@ -280,7 +282,7 @@ class Probe:
 
         self.set_planar_contour(polygon)
 
-    def set_device_channel_indices(self, channel_indices: Sequence[int]):
+    def set_device_channel_indices(self, channel_indices: np.array | list):
         """
         Manually set the device channel indices.
 
@@ -315,7 +317,7 @@ class Probe:
 
         wire_probe(self, pathway, channel_offset=channel_offset)
 
-    def set_contact_ids(self, contact_ids: Sequence[Union[int, float, str]]):
+    def set_contact_ids(self, contact_ids: np.array | list):
         """
         Set contact ids. Channel ids are converted to strings.
         Contact ids must be **unique** for the **Probe**
@@ -330,7 +332,7 @@ class Probe:
         contact_ids = np.asarray(contact_ids)
 
         if contact_ids.size != self.get_contact_count():
-            ValueError("channel_indices do not have the same size as contact")
+            ValueError(f"channel_indices do not have the same size as number of contacts")
 
         if contact_ids.dtype.kind != "U":
             contact_ids = contact_ids.astype("U")
@@ -339,7 +341,7 @@ class Probe:
         if self._probe_group is not None:
             self._probe_group.check_global_device_wiring_and_ids()
 
-    def set_shank_ids(self, shank_ids: Sequence[Union[int, float, str]]):
+    def set_shank_ids(self, shank_ids: np.array | list):
         """
         Set shank ids.
 
@@ -493,7 +495,7 @@ class Probe:
             vertices.append(one_vertice)
         return vertices
 
-    def move(self, translation_vector: Sequence[int]):
+    def move(self, translation_vector: np.array | list):
         """
         Translate the probe in one direction.
 
@@ -559,7 +561,7 @@ class Probe:
             new_vertices = (self.probe_planar_contour - center) @ R + center
             self.probe_planar_contour = new_vertices
 
-    def rotate_contacts(self, thetas: Union[float, Sequence[float]]):
+    def rotate_contacts(self, thetas: float | np.array[float] | list[float]):
         """
         Rotate each contact of the probe.
         Internally, it modifies the contact_plane_axes.
@@ -633,7 +635,7 @@ class Probe:
         return d
 
     @staticmethod
-    def from_dict(d: dict):
+    def from_dict(d:dict) -> "Probe":
         """Instantiate a Probe from a dictionary
 
         Parameters
@@ -844,6 +846,7 @@ class Probe:
         -------
         df : pandas.DataFrame
             The dataframe representation of the probe
+
         """
 
         import pandas as pd
@@ -868,19 +871,12 @@ class Probe:
         -------
         probe : Probe
             The instantiated Probe object
+
         """
         arr = df.to_records(index=False)
         return Probe.from_numpy(arr)
 
-    def to_image(
-        self,
-        values: Sequence,
-        pixel_size: float = 0.5,
-        num_pixel: Optional[int] = None,
-        method: str = "linear",
-        xlims: Optional[tuple] = None,
-        ylims: Optional[tuple] = None,
-    ) -> tuple[np.ndarray, tuple, tuple]:
+    def to_image(self, values: np.array | list, pixel_size:float=0.5, num_pixel:Optional[int]=None, method:str="linear", xlims:Optional[tuple]=None, ylims:Optional[tuple]=None)-> tuple[np.ndarray, tuple, tuple]:
         """
         Generated a 2d (image) from a values vector with an interpolation
         into a grid mesh.
@@ -943,7 +939,7 @@ class Probe:
 
         return image, xlims, ylims
 
-    def get_slice(self, selection: np.ndarray[Union[bool, int]]):
+    def get_slice(self, selection:np.ndarray[bool|int]):
         """
         Get a copy of the Probe with a sub selection of contacts.
 
@@ -1003,10 +999,12 @@ def _2d_to_3d(data2d: np.ndarray, axes: str) -> np.ndarray:
         shape (n, 2)
     axes: str
         The axes that define the plane where electrodes lie on. E.g. 'xy', 'yz' or 'xz'
+
     Returns
     -------
     data3d
         shape (n, 3)
+
     """
     data3d = np.zeros((data2d.shape[0], 3), dtype=data2d.dtype)
     dims = np.array(["xyz".index(axis) for axis in axes])
@@ -1025,10 +1023,12 @@ def select_axes(data: np.ndarray, axes: str = "xy") -> np.ndarray:
         shape (n, 2) or (n, 3)
     axes: str, default 'xy'
         'xy', 'yz' 'xz' or 'xyz'
+
     Returns
     -------
     data3d
         shape (n, 3)
+
     """
     assert np.all([axes.count(axis) == 1 for axis in axes]), "select_axes : axes must be unique."
     dims = np.array(["xyz".index(axis) for axis in axes])
@@ -1051,6 +1051,7 @@ def _3d_to_2d(data3d: np.ndarray, axes: str = "xy") -> np.ndarray:
     -------
     reduced_data: np.ndarray
         The reduced data array
+
     """
     assert data3d.shape[1] == 3
     assert len(axes) == 2
@@ -1065,6 +1066,7 @@ def _rotation_matrix_2d(theta: float) -> np.ndarray:
     ----------
     theta : float
         Angle in radians for rotation (anti-clockwise/counterclockwise)
+
     Returns
     -------
     R : np.array
@@ -1075,7 +1077,7 @@ def _rotation_matrix_2d(theta: float) -> np.ndarray:
     return R
 
 
-def _rotation_matrix_3d(axis: Sequence, theta: float) -> np.ndarray:
+def _rotation_matrix_3d(axis: np.array | list, theta:float)->np.ndarray:
     """
     Returns 3D rotation matrix
 

@@ -2,15 +2,17 @@
 This module contains useful helper functions for generating probes.
 
 """
-
+from __future__ import annotations
 import numpy as np
+
+from typing import Optional
 
 from .probe import Probe
 from .probegroup import ProbeGroup
 from .utils import combine_probes
 
 
-def generate_dummy_probe(elec_shapes: str = "circle"):
+def generate_dummy_probe(elec_shapes:str ="circle") -> Probe:
     """
     Generate a dummy probe with 3 columns and 32 contacts.
     Mainly used for testing and examples.
@@ -49,7 +51,7 @@ def generate_dummy_probe(elec_shapes: str = "circle"):
     return probe
 
 
-def generate_dummy_probe_group():
+def generate_dummy_probe_group() -> ProbeGroup:
     """
     Generate a ProbeGroup with 2 probes.
     Mainly used for testing and examples.
@@ -72,7 +74,7 @@ def generate_dummy_probe_group():
     return probegroup
 
 
-def generate_tetrode(r: float = 10):
+def generate_tetrode(r: float = 10)-> Probe:
     """
     Generate a tetrode Probe.
     Parameters
@@ -92,14 +94,14 @@ def generate_tetrode(r: float = 10):
 
 
 def generate_multi_columns_probe(
-    num_columns: int = 3,
-    num_contact_per_column: int = 10,
-    xpitch: float = 20,
-    ypitch: float = 20,
-    y_shift_per_column=None,
-    contact_shapes: str = "circle",
-    contact_shape_params: dict = {"radius": 6},
-):
+    num_columns:int=3,
+    num_contact_per_column:int=10,
+    xpitch:float=20,
+    ypitch:float=20,
+    y_shift_per_column: Optional[np.array | list]=None,
+    contact_shapes:str="circle",
+    contact_shape_params:dict={"radius": 6},
+) -> Probe:
     """Generate a Probe with several columns.
 
     Parameters
@@ -150,9 +152,7 @@ def generate_multi_columns_probe(
     return probe
 
 
-def generate_linear_probe(
-    num_elec: int = 16, ypitch: float = 20, contact_shapes: str = "circle", contact_shape_params: dict = {"radius": 6}
-):
+def generate_linear_probe(num_elec: int =16, ypitch:float=20, contact_shapes:str="circle", contact_shape_params:dict={"radius": 6}) -> Probe:
     """Generate a one-column linear probe.
 
     Parameters
@@ -186,7 +186,7 @@ def generate_linear_probe(
     return probe
 
 
-def generate_multi_shank(num_shank: int = 2, shank_pitch: list = [150, 0], **kargs):
+def generate_multi_shank(num_shank:int=2, shank_pitch:list=[150, 0], **kargs) -> Probe:
     """Generate a multi-shank probe.
     Internally, calls generate_multi_columns_probe and combine_probes.
 
