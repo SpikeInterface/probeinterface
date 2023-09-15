@@ -99,7 +99,7 @@ def test_BIDS_format(tmp_path):
         assert probe_orig.annotations.items() <= probe_read.annotations.items()
         # check if the same attribute lists are present (independent of order)
         assert len(probe_orig.contact_ids) == len(probe_read.contact_ids)
-        assert all(np.in1d(probe_orig.contact_ids, probe_read.contact_ids))
+        assert all(np.isin(probe_orig.contact_ids, probe_read.contact_ids))
 
         # the transformation of contact order between the two probes
         t = np.array(
