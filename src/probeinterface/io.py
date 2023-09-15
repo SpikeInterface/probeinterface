@@ -33,7 +33,7 @@ def _probeinterface_format_check_version(d):
     pass
 
 
-def read_probeinterface(file: str | Path)-> ProbeGroup:
+def read_probeinterface(file: str | Path) -> ProbeGroup:
     """
     Read probeinterface JSON-based format.
 
@@ -295,7 +295,7 @@ def read_BIDS_probe(folder: str | Path, prefix: Optional[str] = None) -> ProbeGr
     return probegroup
 
 
-def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup, prefix:str=""):
+def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup, prefix: str = ""):
     """
     Write to probe and contact formats as proposed
     for ephy BIDS extension (tsv & json based).
@@ -539,7 +539,7 @@ def read_maxwell(file: str | Path, well_name: str = "well000", rec_name: str = "
     return probe
 
 
-def read_3brain(file: str| Path, mea_pitch: float = 42, electrode_width: float = 21) -> Probe:
+def read_3brain(file: str | Path, mea_pitch: float = 42, electrode_width: float = 21) -> Probe:
     """
     Read a 3brain file and return a Probe object. The 3brain file format can be
     either an .h5 file or a .brw
@@ -1556,7 +1556,9 @@ def read_openephys(
     return probe
 
 
-def get_saved_channel_indices_from_openephys_settings(settings_file: str | Path, stream_name: str) -> Optional[np.array]:
+def get_saved_channel_indices_from_openephys_settings(
+    settings_file: str | Path, stream_name: str
+) -> Optional[np.array]:
     """
     Returns an array with the subset of saved channels indices (if used)
 

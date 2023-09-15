@@ -47,7 +47,7 @@ def import_safely(module: str) -> ModuleType:
     return module_obj
 
 
-def combine_probes(probes:Probe, connect_shape:bool=True) -> Probe:
+def combine_probes(probes: Probe, connect_shape: bool = True) -> Probe:
     """
     Combine several Probe objects into a unique
     multi-shank Probe object.

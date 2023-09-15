@@ -635,7 +635,7 @@ class Probe:
         return d
 
     @staticmethod
-    def from_dict(d:dict) -> "Probe":
+    def from_dict(d: dict) -> "Probe":
         """Instantiate a Probe from a dictionary
 
         Parameters
@@ -876,7 +876,15 @@ class Probe:
         arr = df.to_records(index=False)
         return Probe.from_numpy(arr)
 
-    def to_image(self, values: np.array | list, pixel_size:float=0.5, num_pixel:Optional[int]=None, method:str="linear", xlims:Optional[tuple]=None, ylims:Optional[tuple]=None)-> tuple[np.ndarray, tuple, tuple]:
+    def to_image(
+        self,
+        values: np.array | list,
+        pixel_size: float = 0.5,
+        num_pixel: Optional[int] = None,
+        method: str = "linear",
+        xlims: Optional[tuple] = None,
+        ylims: Optional[tuple] = None,
+    ) -> tuple[np.ndarray, tuple, tuple]:
         """
         Generated a 2d (image) from a values vector with an interpolation
         into a grid mesh.
@@ -939,7 +947,7 @@ class Probe:
 
         return image, xlims, ylims
 
-    def get_slice(self, selection:np.ndarray[bool|int]):
+    def get_slice(self, selection: np.ndarray[bool | int]):
         """
         Get a copy of the Probe with a sub selection of contacts.
 
@@ -1077,7 +1085,7 @@ def _rotation_matrix_2d(theta: float) -> np.ndarray:
     return R
 
 
-def _rotation_matrix_3d(axis: np.array | list, theta:float)->np.ndarray:
+def _rotation_matrix_3d(axis: np.array | list, theta: float) -> np.ndarray:
     """
     Returns 3D rotation matrix
 
