@@ -203,7 +203,7 @@ class Probe:
         if isinstance(shapes, str):
             shapes = [shapes] * n
         shapes = np.array(shapes)
-        if not np.all(np.in1d(shapes, _possible_contact_shapes)):
+        if not np.all(np.isin(shapes, _possible_contact_shapes)):
             raise ValueError(f"contacts shape must be in {_possible_contact_shapes}")
         if shapes.shape[0] != n:
             raise ValueError("contacts shape must have same length as positions")
