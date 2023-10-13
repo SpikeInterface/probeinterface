@@ -1503,9 +1503,11 @@ def read_openephys(
     if ptype in npx_probe:
         contact_width = npx_probe[ptype]["contact_width"]
         shank_pitch = npx_probe[ptype]["shank_pitch"]
+        num_shanks = npx_probe[ptype]["shank_number"]
     else:
         contact_width = 12
         shank_pitch = 250
+        num_shanks = 1
 
     contact_ids = np_probe_info["contact_ids"] if np_probe_info["contact_ids"] is not None else None
 
@@ -1543,7 +1545,7 @@ def read_openephys(
         contour = polygon
     else:
         contour = []
-        for i, shank_id in enumerate(np.unique(shank_ids)):
+        for i in range(num_shanks):
             contour += list(np.array(polygon) + [shank_pitch * i, 0])
 
     # shift
