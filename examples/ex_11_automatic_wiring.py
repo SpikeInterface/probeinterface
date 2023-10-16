@@ -56,3 +56,16 @@ plot_probe(probe, with_channel_index=True, with_device_index=True, ax=ax)
 
 
 plt.show()
+
+"""
+Available wiring "pathways"
+---------------------------
+
+The available pathways can be found in the `probeinterface.wiring <>`_ module.
+
+The following pathways are available:
+"""
+
+from probeinterface import get_available_pathways
+
+print(get_available_pathways())

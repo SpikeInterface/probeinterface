@@ -18,10 +18,10 @@ How to contribute
 
 TODO: explain with more details
 
-  1. Generate the JSON file with probeinterface function (or directly
+  1. Generate the JSON file with probeinterface (or directly
       with another language)
-  2. Generate an image with `plot_probe`
-  3. Clone with gin client the `probeinterface_library repo <https://github.com/SpikeInterface/probeinterface_library>`_
-  4. Put files in the right place.
-  5. Push to a branch with git client
-  6. Make a pull request on the gin portal (like a github PR)
+  2. Generate an image of the probe with the `plot_probe` function in probeinterface
+  3. Clone the `probeinterface_library repo <https://github.com/SpikeInterface/probeinterface_library>`_
+  4. Put the JSON file and image into the correct folder or make a new folder (following the format of the repo)
+  5. Push to one of your branches with a git client
+  6. Make a pull request to the main repo

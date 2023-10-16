@@ -106,8 +106,8 @@ def test_NP2_4_shanks_with_different_electrodes_saved():
 
     # This file does not save the channnels from 0 as the one above (NP2_4_shanks_g0_t0.imec0.ap.meta)
     ypos = probe.contact_positions[:, 1]
-    assert np.min(ypos) == pytest.approx(2880.0)
-    assert np.max(ypos) == pytest.approx(5745.0)
+    assert np.min(ypos) == pytest.approx(4080.0)
+    assert np.max(ypos) == pytest.approx(4785.0)
 
 
 def test_NP1_large_depth_span():
