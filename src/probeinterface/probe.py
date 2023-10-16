@@ -18,7 +18,15 @@ class Probe:
 
     """
 
-    def __init__(self, ndim: int = 2, si_units: int = "um"):
+    def __init__(
+        self,
+        ndim: int = 2,
+        si_units: str = "um",
+        name: Optional[str] = None,
+        serial_number: Optional[str] = None,
+        model_name: Optional[str] = None,
+        manufacturer: Optional[str] = None,
+    ):
         """
         Some attributes are protected and have to be set with setters:
           * set_contacts(...)
@@ -30,7 +38,18 @@ class Probe:
             Handles 2D or 3D probe
         si_units: str
             'um', 'mm', 'm'
+        name: str
+            The name of the probe
+        serial_number: str
+            The serial number of the probe
+        model_name: str
+            The model of the probe
+        manufacturer: str
+            The manufacturer of the probe
 
+        Returns
+        -------
+        Probe: instance of Probe
         """
 
         assert ndim in (2, 3)
@@ -61,7 +80,14 @@ class Probe:
 
         # annotation:  a dict that contains all meta information about
         # the probe (name, manufacturor, date of production, ...)
-        self.annotations = dict(name="")
+        self.annotations = dict()
+
+        # set key properties
+        self.name = name
+        self.serial_number = serial_number
+        self.model_name = model_name
+        self.manufacturer = manufacturer
+
         # same idea but handle in vector way for contacts
         self.contact_annotations = dict()
 
@@ -93,17 +119,63 @@ class Probe:
     def shank_ids(self):
         return self._shank_ids
 
+    @property
+    def name(self):
+        return self.annotations.get("name", "")
+
+    @name.setter
+    def name(self, value):
+        if value is not None:
+            self.annotate(name=value)
+
+    @property
+    def serial_number(self):
+        return self.annotations.get("serial_number", "")
+
+    @serial_number.setter
+    def serial_number(self, value):
+        if value is not None:
+            self.annotate(serial_number=value)
+
+    @property
+    def model_name(self):
+        return self.annotations.get("model_name", "")
+
+    @model_name.setter
+    def model_name(self, value):
+        if value is not None:
+            self.annotate(model_name=value)
+
+    @property
+    def manufacturer(self):
+        return self.annotations.get("manufacturer", "")
+
+    @manufacturer.setter
+    def manufacturer(self, value):
+        if value is not None:
+            self.annotate(manufacturer=value)
+
     def get_title(self) -> str:
         if self.contact_positions is None:
             txt = "Undefined probe"
         else:
             n = self.get_contact_count()
-            name = self.annotations.get("name", "")
-            manufacturer = self.annotations.get("manufacturer", "")
-            if len(name) > 0 or len(manufacturer):
-                txt = f"{manufacturer} - {name} - {n}ch"
+            name = self.name
+            serial_number = self.serial_number
+            model_name = self.model_name
+            manufacturer = self.manufacturer
+            txt = ""
+            if len(name) > 0:
+                txt += f"{name}"
             else:
-                txt = f"Probe - {n}ch"
+                txt += f"Probe"
+            if len(manufacturer) > 0:
+                txt += f" - {manufacturer}"
+            if len(model_name) > 0:
+                txt += f" - {model_name}"
+            if len(serial_number) > 0:
+                txt += f" - {serial_number}"
+            txt += f" - {n}ch"
             if self.shank_ids is not None:
                 num_shank = self.get_shank_count()
                 txt += f" - {num_shank}shanks"
@@ -919,7 +991,9 @@ class Probe:
         except ImportError:
             raise ImportError("to_image() requires the scipy package")
         assert self.ndim == 2
-        assert values.shape == (self.get_contact_count(),), "Bad boy: values must have size equal contact count"
+        assert values.shape == (
+            self.get_contact_count(),
+        ), "Shape mismatch: values must have the same size as contact count"
 
         if xlims is None:
             x0 = np.min(self.contact_positions[:, 0])

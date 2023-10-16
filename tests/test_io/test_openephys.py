@@ -13,7 +13,7 @@ def test_NP2():
     # NP2
     probe = read_openephys(data_path / "OE_Neuropix-PXI" / "settings.xml")
     assert probe.get_shank_count() == 1
-    assert "2.0 - Single Shank" in probe.annotations["name"]
+    assert "2.0 - Single Shank" in probe.model_name
 
 
 def test_NP1_subset():
@@ -23,7 +23,7 @@ def test_NP1_subset():
     )
 
     assert probe_ap.get_shank_count() == 1
-    assert "1.0" in probe_ap.annotations["name"]
+    assert "1.0" in probe_ap.model_name
     assert len(probe_ap.contact_positions) == 200
 
     probe_lf = read_openephys(
@@ -31,7 +31,7 @@ def test_NP1_subset():
     )
 
     assert probe_lf.get_shank_count() == 1
-    assert "1.0" in probe_lf.annotations["name"]
+    assert "1.0" in probe_lf.model_name
     assert len(probe_lf.contact_positions) == 200
 
     # Not specifying the stream_name should raise an Exception, because both the ProbeA-AP and
@@ -47,7 +47,7 @@ def test_multiple_probes():
     )
 
     assert probeA.get_shank_count() == 1
-    assert "1.0" in probeA.annotations["name"]
+    assert "1.0" in probeA.model_name
 
     probeB = read_openephys(
         data_path / "OE_Neuropix-PXI-multi-probe" / "settings.xml",
@@ -69,10 +69,10 @@ def test_multiple_probes():
 
     assert probeD.get_shank_count() == 1
 
-    assert probeA.annotations["probe_serial_number"] == "17131307831"
-    assert probeB.annotations["probe_serial_number"] == "20403311724"
-    assert probeC.annotations["probe_serial_number"] == "20403311714"
-    assert probeD.annotations["probe_serial_number"] == "21144108671"
+    assert probeA.serial_number == "17131307831"
+    assert probeB.serial_number == "20403311724"
+    assert probeC.serial_number == "20403311714"
+    assert probeD.serial_number == "21144108671"
 
     probeA2 = read_openephys(
         data_path / "OE_Neuropix-PXI-multi-probe" / "settings_2.xml",
@@ -89,7 +89,7 @@ def test_multiple_probes():
     )
 
     assert probeB2.get_shank_count() == 1
-    assert "2.0 - Multishank" in probeB2.annotations["name"]
+    assert "2.0 - Multishank" in probeB2.model_name
 
     ypos = probeB2.contact_positions[:, 1]
     assert np.min(ypos) >= 0
@@ -103,10 +103,11 @@ def test_older_than_06_format():
     )
 
     assert probe.get_shank_count() == 4
-    assert "2.0 - Multishank" in probe.annotations["name"]
+    assert "2.0 - Multishank" in probe.model_name
     ypos = probe.contact_positions[:, 1]
     assert np.min(ypos) >= 0
 
 
 if __name__ == "__main__":
-    test_NP1_subset()
+    test_multiple_probes()
+    test_older_than_06_format()

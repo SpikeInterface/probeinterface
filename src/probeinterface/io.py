@@ -525,7 +525,7 @@ def read_maxwell(file: str | Path, well_name: str = "well000", rec_name: str = "
     prb["channel_groups"][1]["geometry"] = geometry
     prb["channel_groups"][1]["channels"] = channels
 
-    probe = Probe(ndim=2, si_units="um")
+    probe = Probe(ndim=2, si_units="um", manufacturer="Maxwell Biosystems")
 
     chans = np.array(prb["channel_groups"][1]["channels"], dtype="int64")
     positions = np.array([prb["channel_groups"][1]["geometry"][c] for c in chans], dtype="float64")
@@ -572,7 +572,7 @@ def read_3brain(file: str | Path, mea_pitch: float = 42, electrode_width: float 
     cols = channels["Col"] - 1
     positions = np.vstack((rows, cols)).T * mea_pitch
 
-    probe = Probe(ndim=2, si_units="um")
+    probe = Probe(ndim=2, si_units="um", manufacturer="3Brain")
     probe.set_contacts(positions=positions, shapes="square", shape_params={"width": electrode_width})
     probe.annotate_contacts(row=rows)
     probe.annotate_contacts(col=cols)
@@ -624,7 +624,7 @@ def write_prb(
     assert group_mode in ("by_probe", "by_shank")
 
     if len(probegroup.probes) == 0:
-        raise ValueError("Bad boy")
+        raise ValueError("The probe group must have at least one probe")
 
     for probe in probegroup.probes:
         if probe.device_channel_indices is None:
@@ -977,6 +977,8 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
         imDatPrb_type = probe_number_to_probe_type[imDatPrb_pn]
 
     probe_description = npx_probe[imDatPrb_type]
+    probe_name = probe_description["probe_name"]
+
     fields = probe_description["fields_in_imro_table"]
     contact_info = {k: [] for k in fields}
     for field_values_str in imro_table_values_list:  # Imro table values look like '(value, value, value, ... '
@@ -1013,7 +1015,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     positions = np.stack((x_pos, y_pos), axis=1)
 
     # construct Probe object
-    probe = Probe(ndim=2, si_units="um")
+    probe = Probe(ndim=2, si_units="um", model_name=probe_name, manufacturer="IMEC")
     probe.set_contacts(
         positions=positions,
         shapes="square",
@@ -1036,10 +1038,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     probe.set_planar_contour(contour)
 
     # this is scalar annotations
-    probe_name = probe_description["probe_name"]
     probe.annotate(
-        name=probe_name,
-        manufacturer="IMEC",
         probe_type=imDatPrb_type,
     )
 
@@ -1130,9 +1129,26 @@ def read_spikeglx(file: str | Path) -> Probe:
 
     assert "imroTbl" in meta, "Could not find imroTbl field in meta file!"
     imro_table = meta["imroTbl"]
+
+    # read serial number
+    imDatPrb_serial_number = meta.get("imDatPrb_sn", None)
+    if imDatPrb_serial_number is None:  # this is for Phase3A
+        imDatPrb_serial_number = meta.get("imProbeSN", None)
+
+    # read other metadata
     imDatPrb_pn = meta.get("imDatPrb_pn", None)
+    imDatPrb_port = meta.get("imDatPrb_port", None)
+    imDatPrb_slot = meta.get("imDatPrb_slot", None)
+    imDatPrb_part_number = meta.get("imDatPrb_pn", None)
 
     probe = _read_imro_string(imro_str=imro_table, imDatPrb_pn=imDatPrb_pn)
+
+    # add serial number and other annotations
+    probe.annotate(serial_number=imDatPrb_serial_number)
+    probe.annotate(part_number=imDatPrb_part_number)
+    probe.annotate(port=imDatPrb_port)
+    probe.annotate(slot=imDatPrb_slot)
+    probe.annotate(serial_number=imDatPrb_serial_number)
 
     # sometimes we need to slice the probe when not all channels are saved
     saved_chans = get_saved_channel_indices_from_spikeglx_meta(meta_file)
@@ -1324,7 +1340,8 @@ def read_openephys(
         slot = np_probe.attrib["slot"]
         port = np_probe.attrib["port"]
         dock = np_probe.attrib["dock"]
-        np_serial_number = np_probe.attrib["probe_serial_number"]
+        probe_part_number = np_probe.attrib["probe_part_number"]
+        probe_serial_number = np_probe.attrib["probe_serial_number"]
         # read channels
         channels = np_probe.find("CHANNELS")
         channel_names = np.array(list(channels.attrib.keys()))
@@ -1397,14 +1414,15 @@ def read_openephys(
                 contact_ids.append(f"e{contact_id}")
 
         np_probe_dict = {
-            "channel_names": channel_names,
+            "model_name": pname,
             "shank_ids": shank_ids,
             "contact_ids": contact_ids,
             "positions": positions,
             "slot": slot,
             "port": port,
             "dock": dock,
-            "serial_number": np_serial_number,
+            "serial_number": probe_serial_number,
+            "part_number": probe_part_number,
             "ptype": ptype,
         }
         # Sequentially assign probe names
@@ -1497,7 +1515,7 @@ def read_openephys(
     np_probe = np_probes[probe_idx]
     positions = np_probe_info["positions"]
     shank_ids = np_probe_info["shank_ids"]
-    pname = np_probe.attrib["probe_name"]
+    pname = np_probe_info["name"]
 
     ptype = np_probe_info["ptype"]
     if ptype in npx_probe:
@@ -1522,7 +1540,14 @@ def read_openephys(
         if contact_ids is not None:
             contact_ids = np.array(contact_ids)[chans_saved]
 
-    probe = Probe(ndim=2, si_units="um")
+    probe = Probe(
+        ndim=2,
+        si_units="um",
+        name=np_probe_info["name"],
+        serial_number=np_probe_info["serial_number"],
+        manufacturer="IMEC",
+        model_name=np_probe_info["model_name"],
+    )
     probe.set_contacts(
         positions=positions,
         shapes="square",
@@ -1530,11 +1555,10 @@ def read_openephys(
         shape_params={"width": contact_width},
     )
     probe.annotate(
-        name=pname,
-        manufacturer="IMEC",
-        probe_name=pname,
-        probe_part_number=np_probe.attrib["probe_part_number"],
-        probe_serial_number=np_probe.attrib["probe_serial_number"],
+        part_number=np_probe_info["part_number"],
+        slot=np_probe_info["slot"],
+        dock=np_probe_info["dock"],
+        port=np_probe_info["port"],
     )
 
     if contact_ids is not None:
@@ -1664,7 +1688,7 @@ def read_mearec(file: str | Path) -> Probe:
         description = electrodes_info["description"][()]
         mearec_description = description.decode("utf-8") if isinstance(description, bytes) else description
 
-    probe = Probe(ndim=2, si_units="um")
+    probe = Probe(ndim=2, si_units="um", model_name=mearec_name)
 
     plane = "yz"  # default
     if "plane" in electrodes_info_keys:
