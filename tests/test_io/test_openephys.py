@@ -96,7 +96,7 @@ def test_multiple_probes():
 
 
 def test_np_otpo_with_sync():
-    probe = read_openephys(data_path / "OE_Neuropix-PXI-with-sync" / "settings.xml")
+    probe = read_openephys(data_path / "OE_Neuropix-PXI-opto-with-sync" / "settings.xml")
     assert probe.model_name == "Neuropixels Opto"
     assert probe.get_shank_count() == 1
     assert probe.get_contact_count() == 384
