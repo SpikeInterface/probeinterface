@@ -45,37 +45,68 @@
 
 A Python package to handle the layout, geometry, and wiring of silicon probes for extracellular electrophysiology experiments.
 
-Documentation : https://probeinterface.readthedocs.io/
+Please [Star](https://github.com/SpikeInterface/probeinterface/stargazers) the project to support us and [Watch](https://github.com/SpikeInterface/probeinterface/subscription) to always stay up-to-date!
 
 
 ## Goals
 
-Make a lightweight package to handle:
+ProbeInterface aims to provide a common framework to handle probe information across neuroscience experiments.
+
+ProbeInterface is used by the [SpikeInterface](https://github.com/SpikeInterface/spikeinterface) package to attach a probe information to a recordng object.
+You can find detailed documentation in the [SpikeInterface documentation](https://spikeinterface.readthedocs.io/en/latest/modules/core.html#handling-probes).
+
+In practice, ProbeInterface is a lightweight package to handle:
 
   * probe contact geometry (both 2D and 3D layouts)
-  * probe shape (contour of the probe, shape of channel contact, ...)
-  * probe wiring to device (the physical layout often doesn't match the channel ordering)
-  * combining several probes into a device with global geometry + global wiring
-  * exporting probe geometry data into JSON files
-  * loading existing probe geometry files (Neuronexus, imec, Cambridge Neurotech...) [Started here](https://gin.g-node.org/spikeinterface/probeinterface_library)
+  * probe shape (contour of the probe, shape of channel contacts, etc.)
+  * probe wiring to a device (the physical layout often doesn't match the channel ordering)
+  * combining several probes into a device, with probe groups and a global wiring
+  * exporting probe data into a common JSON file format
+  * loading existing probe geometry files (Cambridge Neurotech, NeuroNexus, etc.) from the [probeinterface_library](https://github.com/SpikeInterface/probeinterface_library)
 
-Bonus :
+In addition, ProbeInterface also offers the following features:
 
-  * optional plotting (based on `matplotlib`)
-  * load/save geometry using common formats (PRB, CSV, NWB, ...)
-  * handle SI length units correctly um/mm/...
-
-
-Target users/projet :
-
-  * spikeinterface team : integrate this into spikeextractor for channel location
-  * neo team : handle array_annotations for AnalogSignal
-  * spikeforest team : use this package for ploting probe activity
-  * phy team: integrate for probe display
-  * spyking-circus team : handle probe with this package
-  * kilosort team : handle probe with this package
-  * tridesclous team : handle probe with this package
-  * open ephys team : automatically generate channel map configuration files
+  * `matplotlib`-based plotting functions
+  * loading/saving probes using common formats (PRB, CSV, NWB, ...)
+  * correctly handling SI units (um, mm)
 
 
- Author: Samuel Garcia
+## Documentation
+
+Detailed documentation of the latest PyPI release of ProbeInterface can be found [here](https://probeinterface.readthedocs.io/en/0.2.18).
+
+Detailed documentation of the development version of ProbeInterface can be found [here](https://probeinterface.readthedocs.io/en/latest).
+
+## How to install probeinterface
+
+You can install the latest version of `probeinterface` version with pip:
+
+```bash
+pip install probeinterface
+```
+
+To get the latest updates, you can install `probeinterface` from source:
+
+```bash
+git clone https://github.com/SpikeInterface/probeinterface.git
+cd probeinterface
+pip install -e .
+cd ..
+```
+
+
+## Citation
+
+If you find ProbeInterface useful in your research, please cite:
+
+```bibtex
+@article{garcia2022probeinterface,
+  title={ProbeInterface: a unified framework for probe handling in extracellular electrophysiology},
+  author={Garcia, Samuel and Sprenger, Julia and Holtzman, Tahl and Buccino, Alessio P},
+  journal={Frontiers in Neuroinformatics},
+  volume={16},
+  pages={823056},
+  year={2022},
+  publisher={Frontiers Media SA}
+}
+```
