@@ -9,6 +9,7 @@ Read/write probe info using a variety of formats:
   * Neurodata Without Borders (.nwb)
 
 """
+from __future__ import annotations
 from pathlib import Path
 from typing import Union, Optional
 import re
@@ -32,7 +33,7 @@ def _probeinterface_format_check_version(d):
     pass
 
 
-def read_probeinterface(file):
+def read_probeinterface(file: str | Path) -> ProbeGroup:
     """
     Read probeinterface JSON-based format.
 
@@ -58,7 +59,7 @@ def read_probeinterface(file):
     return ProbeGroup.from_dict(d)
 
 
-def write_probeinterface(file: Union[str, Path], probe_or_probegroup: Union[Probe, ProbeGroup]):
+def write_probeinterface(file: str | Path, probe_or_probegroup: Probe | ProbeGroup):
     """
     Write a probeinterface JSON file.
 
@@ -80,7 +81,7 @@ def write_probeinterface(file: Union[str, Path], probe_or_probegroup: Union[Prob
     elif isinstance(probe_or_probegroup, ProbeGroup):
         probegroup = probe_or_probegroup
     else:
-        raise ValueError("write_probeinterface : need probe or probegroup")
+        raise ValueError("write_probeinterface : needs a probe or probegroup")
 
     file = Path(file)
 
@@ -103,7 +104,7 @@ tsv_label_map_to_BIDS = {
 tsv_label_map_to_probeinterface = {v: k for k, v in tsv_label_map_to_BIDS.items()}
 
 
-def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> ProbeGroup:
+def read_BIDS_probe(folder: str | Path, prefix: Optional[str] = None) -> ProbeGroup:
     """
     Read to BIDS probe format.
 
@@ -175,23 +176,27 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> P
         if "contact_shapes" not in df_probe:
             df_probe["contact_shapes"] = "circle"
             df_probe["radius"] = 1
-            print(f"There is no contact shape provided for probe {probe_id}, a " f"dummy circle with 1um is created")
+            print(
+                f"There is no contact shape provided for probe {probe_id}, a "
+                f"dummy circle with 1um radius will be used."
+            )
 
         if "x" not in df_probe:
             df_probe["x"] = np.arange(len(df_probe.index), dtype=float)
             print(
-                f"There is no x coordinate provided for probe {probe_id}, a " f"dummy linear x coordinate is created."
+                f"There is no x coordinate provided for probe {probe_id}, a " f"dummy linear x coordinate will be used."
             )
 
         if "y" not in df_probe:
             df_probe["y"] = 0.0
             print(
-                f"There is no y coordinate provided for probe {probe_id}, a " f"dummy constant y coordinate is created."
+                f"There is no y coordinate provided for probe {probe_id}, a "
+                f"dummy constant y coordinate will be used."
             )
 
         if "si_units" not in df_probe:
             df_probe["si_units"] = "um"
-            print(f"There is no SI units provided for probe {probe_id}, a " f"dummy SI unit (um) is created.")
+            print(f"There is no SI unit provided for probe {probe_id}, a " f"dummy SI unit (um) will be used")
 
         # create probe object and register with probegroup
         probe = Probe.from_dataframe(df=df_probe)
@@ -290,7 +295,7 @@ def read_BIDS_probe(folder: Union[str, Path], prefix: Optional[str] = None) -> P
     return probegroup
 
 
-def write_BIDS_probe(folder: Union[str, Path], probe_or_probegroup: Union[Probe, ProbeGroup], prefix=""):
+def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup, prefix: str = ""):
     """
     Write to probe and contact formats as proposed
     for ephy BIDS extension (tsv & json based).
@@ -419,7 +424,7 @@ def write_BIDS_probe(folder: Union[str, Path], probe_or_probegroup: Union[Probe,
         json.dump({"ContactId": contacts_dict}, f, indent=4)
 
 
-def read_prb(file: Union[str, Path]) -> ProbeGroup:
+def read_prb(file: str | Path) -> ProbeGroup:
     """
     Read a PRB file and return a ProbeGroup object.
 
@@ -467,7 +472,7 @@ def read_prb(file: Union[str, Path]) -> ProbeGroup:
     return probegroup
 
 
-def read_maxwell(file: Union[str, Path], well_name: str = "well000", rec_name: str = "rec0000") -> Probe:
+def read_maxwell(file: str | Path, well_name: str = "well000", rec_name: str = "rec0000") -> Probe:
     """
     Read a maxwell file and return a Probe object. The Maxwell file format can be
     either Maxone (and thus just the file name is needed), or MaxTwo. In case
@@ -520,7 +525,7 @@ def read_maxwell(file: Union[str, Path], well_name: str = "well000", rec_name: s
     prb["channel_groups"][1]["geometry"] = geometry
     prb["channel_groups"][1]["channels"] = channels
 
-    probe = Probe(ndim=2, si_units="um")
+    probe = Probe(ndim=2, si_units="um", manufacturer="Maxwell Biosystems")
 
     chans = np.array(prb["channel_groups"][1]["channels"], dtype="int64")
     positions = np.array([prb["channel_groups"][1]["geometry"][c] for c in chans], dtype="float64")
@@ -534,7 +539,7 @@ def read_maxwell(file: Union[str, Path], well_name: str = "well000", rec_name: s
     return probe
 
 
-def read_3brain(file: Union[str, Path], mea_pitch: float = 42, electrode_width: float = 21) -> Probe:
+def read_3brain(file: str | Path, mea_pitch: float = 42, electrode_width: float = 21) -> Probe:
     """
     Read a 3brain file and return a Probe object. The 3brain file format can be
     either an .h5 file or a .brw
@@ -567,7 +572,7 @@ def read_3brain(file: Union[str, Path], mea_pitch: float = 42, electrode_width: 
     cols = channels["Col"] - 1
     positions = np.vstack((rows, cols)).T * mea_pitch
 
-    probe = Probe(ndim=2, si_units="um")
+    probe = Probe(ndim=2, si_units="um", manufacturer="3Brain")
     probe.set_contacts(positions=positions, shapes="square", shape_params={"width": electrode_width})
     probe.annotate_contacts(row=rows)
     probe.annotate_contacts(col=cols)
@@ -577,7 +582,13 @@ def read_3brain(file: Union[str, Path], mea_pitch: float = 42, electrode_width: 
     return probe
 
 
-def write_prb(file, probegroup, total_nb_channels=None, radius=None, group_mode="by_probe"):
+def write_prb(
+    file: str,
+    probegroup: ProbeGroup,
+    total_nb_channels: Optional[int] = None,
+    radius: Optional[float] = None,
+    group_mode: str = "by_probe",
+):
     """
     Write ProbeGroup into a prb file.
 
@@ -596,11 +607,24 @@ def write_prb(file, probegroup, total_nb_channels=None, radius=None, group_mode=
       * "radius" is needed by spyking-circus
       * "graph" is not handled
 
+    Parameters
+    ----------
+    file: str
+        The name of the file to be written
+    probegroup: ProbeGroup
+        The Probegroup to be used for writing
+    total_nb_channels: Optional[int], default None
+        ***to do
+    radius: Optional[float], default None
+        *** to do
+    group_mode: str
+        One of "by_probe" or "by_shank
+
     """
     assert group_mode in ("by_probe", "by_shank")
 
     if len(probegroup.probes) == 0:
-        raise ValueError("Bad boy")
+        raise ValueError("The probe group must have at least one probe")
 
     for probe in probegroup.probes:
         if probe.device_channel_indices is None:
@@ -643,7 +667,7 @@ def write_prb(file, probegroup, total_nb_channels=None, radius=None, group_mode=
         f.write("}\n")
 
 
-def read_csv(file):
+def read_csv(file: str | Path):
     """
     Return a 2 or 3 columns csv file with contact positions
     """
@@ -1017,6 +1041,8 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
         imDatPrb_type = probe_number_to_probe_type[imDatPrb_pn]
 
     probe_description = npx_probe[imDatPrb_type]
+    probe_name = probe_description["probe_name"]
+
     fields = probe_description["fields_in_imro_table"]
     contact_info = {k: [] for k in fields}
     for field_values_str in imro_table_values_list:  # Imro table values look like '(value, value, value, ... '
@@ -1053,7 +1079,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     positions = np.stack((x_pos, y_pos), axis=1)
 
     # construct Probe object
-    probe = Probe(ndim=2, si_units="um")
+    probe = Probe(ndim=2, si_units="um", model_name=probe_name, manufacturer="IMEC")
     probe.set_contacts(
         positions=positions,
         shapes="square",
@@ -1076,10 +1102,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     probe.set_planar_contour(contour)
 
     # this is scalar annotations
-    probe_name = probe_description["probe_name"]
     probe.annotate(
-        name=probe_name,
-        manufacturer="IMEC",
         probe_type=imDatPrb_type,
     )
 
@@ -1094,7 +1117,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     return probe
 
 
-def write_imro(file, probe):
+def write_imro(file: str | Path, probe: Probe):
     """
     save imro file (`.imrc`, imec readout) in a file.
     https://github.com/open-ephys-plugins/neuropixels-pxi/blob/master/Source/Formats/IMRO.h
@@ -1104,6 +1127,7 @@ def write_imro(file, probe):
     file : Path or str
         The file path
     probe : Probe object
+
     """
     probe_type = probe.annotations["probe_type"]
     data = probe.to_dataframe(complete=True).sort_values("device_channel_indices")
@@ -1136,7 +1160,7 @@ def write_imro(file, probe):
         f.write("".join(ret))
 
 
-def read_spikeglx(file: Union[str, Path]) -> Probe:
+def read_spikeglx(file: str | Path) -> Probe:
     """
     Read probe position for the meta file generated by SpikeGLX
 
@@ -1169,9 +1193,26 @@ def read_spikeglx(file: Union[str, Path]) -> Probe:
 
     assert "imroTbl" in meta, "Could not find imroTbl field in meta file!"
     imro_table = meta["imroTbl"]
+
+    # read serial number
+    imDatPrb_serial_number = meta.get("imDatPrb_sn", None)
+    if imDatPrb_serial_number is None:  # this is for Phase3A
+        imDatPrb_serial_number = meta.get("imProbeSN", None)
+
+    # read other metadata
     imDatPrb_pn = meta.get("imDatPrb_pn", None)
+    imDatPrb_port = meta.get("imDatPrb_port", None)
+    imDatPrb_slot = meta.get("imDatPrb_slot", None)
+    imDatPrb_part_number = meta.get("imDatPrb_pn", None)
 
     probe = _read_imro_string(imro_str=imro_table, imDatPrb_pn=imDatPrb_pn)
+
+    # add serial number and other annotations
+    probe.annotate(serial_number=imDatPrb_serial_number)
+    probe.annotate(part_number=imDatPrb_part_number)
+    probe.annotate(port=imDatPrb_port)
+    probe.annotate(slot=imDatPrb_slot)
+    probe.annotate(serial_number=imDatPrb_serial_number)
 
     # sometimes we need to slice the probe when not all channels are saved
     saved_chans = get_saved_channel_indices_from_spikeglx_meta(meta_file)
@@ -1186,7 +1227,7 @@ def read_spikeglx(file: Union[str, Path]) -> Probe:
     return probe
 
 
-def parse_spikeglx_meta(meta_file: Union[str, Path]) -> dict:
+def parse_spikeglx_meta(meta_file: str | Path) -> dict:
     """
     Parse the "meta" file from spikeglx into a dict.
     All fiields are kept in txt format and must also parsed themself.
@@ -1207,7 +1248,7 @@ def parse_spikeglx_meta(meta_file: Union[str, Path]) -> dict:
     return meta
 
 
-def get_saved_channel_indices_from_spikeglx_meta(meta_file: Union[str, Path]) -> np.array:
+def get_saved_channel_indices_from_spikeglx_meta(meta_file: str | Path) -> np.array:
     """
     Utils function to get the saved channels.
 
@@ -1217,6 +1258,7 @@ def get_saved_channel_indices_from_spikeglx_meta(meta_file: Union[str, Path]) ->
 
     This function come from here Jennifer Colonell
     https://github.com/jenniferColonell/ecephys_spike_sorting/blob/master/ecephys_spike_sorting/common/SGLXMetaToCoords.py#L65
+
     """
     meta_file = Path(meta_file)
     meta = parse_spikeglx_meta(meta_file)
@@ -1238,7 +1280,7 @@ def get_saved_channel_indices_from_spikeglx_meta(meta_file: Union[str, Path]) ->
 
 
 def read_openephys(
-    settings_file: Union[str, Path],
+    settings_file: str | Path,
     stream_name: Optional[str] = None,
     probe_name: Optional[str] = None,
     serial_number: Optional[str] = None,
@@ -1364,7 +1406,8 @@ def read_openephys(
         slot = np_probe.attrib["slot"]
         port = np_probe.attrib["port"]
         dock = np_probe.attrib["dock"]
-        np_serial_number = np_probe.attrib["probe_serial_number"]
+        probe_part_number = np_probe.attrib["probe_part_number"]
+        probe_serial_number = np_probe.attrib["probe_serial_number"]
         # read channels
         channels = np_probe.find("CHANNELS")
         channel_names = np.array(list(channels.attrib.keys()))
@@ -1437,14 +1480,15 @@ def read_openephys(
                 contact_ids.append(f"e{contact_id}")
 
         np_probe_dict = {
-            "channel_names": channel_names,
+            "model_name": pname,
             "shank_ids": shank_ids,
             "contact_ids": contact_ids,
             "positions": positions,
             "slot": slot,
             "port": port,
             "dock": dock,
-            "serial_number": np_serial_number,
+            "serial_number": probe_serial_number,
+            "part_number": probe_part_number,
             "ptype": ptype,
         }
         # Sequentially assign probe names
@@ -1537,15 +1581,17 @@ def read_openephys(
     np_probe = np_probes[probe_idx]
     positions = np_probe_info["positions"]
     shank_ids = np_probe_info["shank_ids"]
-    pname = np_probe.attrib["probe_name"]
+    pname = np_probe_info["name"]
 
     ptype = np_probe_info["ptype"]
     if ptype in npx_probe:
         contact_width = npx_probe[ptype]["contact_width"]
         shank_pitch = npx_probe[ptype]["shank_pitch"]
+        num_shanks = npx_probe[ptype]["shank_number"]
     else:
         contact_width = 12
         shank_pitch = 250
+        num_shanks = 1
 
     contact_ids = np_probe_info["contact_ids"] if np_probe_info["contact_ids"] is not None else None
 
@@ -1560,7 +1606,14 @@ def read_openephys(
         if contact_ids is not None:
             contact_ids = np.array(contact_ids)[chans_saved]
 
-    probe = Probe(ndim=2, si_units="um")
+    probe = Probe(
+        ndim=2,
+        si_units="um",
+        name=np_probe_info["name"],
+        serial_number=np_probe_info["serial_number"],
+        manufacturer="IMEC",
+        model_name=np_probe_info["model_name"],
+    )
     probe.set_contacts(
         positions=positions,
         shapes="square",
@@ -1568,11 +1621,10 @@ def read_openephys(
         shape_params={"width": contact_width},
     )
     probe.annotate(
-        name=pname,
-        manufacturer="IMEC",
-        probe_name=pname,
-        probe_part_number=np_probe.attrib["probe_part_number"],
-        probe_serial_number=np_probe.attrib["probe_serial_number"],
+        part_number=np_probe_info["part_number"],
+        slot=np_probe_info["slot"],
+        dock=np_probe_info["dock"],
+        port=np_probe_info["port"],
     )
 
     if contact_ids is not None:
@@ -1583,7 +1635,7 @@ def read_openephys(
         contour = polygon
     else:
         contour = []
-        for i, shank_id in enumerate(np.unique(shank_ids)):
+        for i in range(num_shanks):
             contour += list(np.array(polygon) + [shank_pitch * i, 0])
 
     # shift
@@ -1596,7 +1648,9 @@ def read_openephys(
     return probe
 
 
-def get_saved_channel_indices_from_openephys_settings(settings_file, stream_name):
+def get_saved_channel_indices_from_openephys_settings(
+    settings_file: str | Path, stream_name: str
+) -> Optional[np.array]:
     """
     Returns an array with the subset of saved channels indices (if used)
 
@@ -1663,7 +1717,7 @@ def get_saved_channel_indices_from_openephys_settings(settings_file, stream_name
     return chans_saved
 
 
-def read_mearec(file: Union[str, Path]) -> Probe:
+def read_mearec(file: str | Path) -> Probe:
     """
     Read probe position, and contact shape from a MEArec file.
 
@@ -1700,7 +1754,7 @@ def read_mearec(file: Union[str, Path]) -> Probe:
         description = electrodes_info["description"][()]
         mearec_description = description.decode("utf-8") if isinstance(description, bytes) else description
 
-    probe = Probe(ndim=2, si_units="um")
+    probe = Probe(ndim=2, si_units="um", model_name=mearec_name)
 
     plane = "yz"  # default
     if "plane" in electrodes_info_keys:

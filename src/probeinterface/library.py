@@ -11,6 +11,7 @@ The gin platform enables contributions from users.
 import os
 from pathlib import Path
 from urllib.request import urlopen
+from typing import Optional
 
 from .io import read_probeinterface
 
@@ -24,7 +25,7 @@ public_url = "https://raw.githubusercontent.com/SpikeInterface/probeinterface_li
 cache_folder = Path(os.path.expanduser("~")) / ".config" / "probeinterface" / "library"
 
 
-def download_probeinterface_file(manufacturer, probe_name):
+def download_probeinterface_file(manufacturer: str, probe_name: str):
     """Download the probeinterface file to the cache directory.
     Note that the file is itself a ProbeGroup but on the repo each file
     represents one probe.
@@ -44,14 +45,14 @@ def download_probeinterface_file(manufacturer, probe_name):
         f.write(dist.read())
 
 
-def get_from_cache(manufacturer, probe_name):
+def get_from_cache(manufacturer: str, probe_name: str) -> Optional["Probe"]:
     """
     Get Probe from local cache
 
     Parameters
     ----------
     manufacturer : str
-        The probe manufacturer (e.g. 'cambridgeneurotech')
+        The probe manufacturer (e.g. 'cambridgeneurotech', 'neuronexus')
     probe_name : str
         The probe name
 
@@ -71,16 +72,18 @@ def get_from_cache(manufacturer, probe_name):
         return probe
 
 
-def get_probe(manufacturer, probe_name):
+def get_probe(manufacturer: str, probe_name: str, name: Optional[str] = None) -> "Probe":
     """
     Get probe from ProbeInterface library
 
     Parameters
     ----------
     manufacturer : str
-        The probe manufacturer (e.g. 'cambridgeneurotech')
+        The probe manufacturer (e.g. 'cambridgeneurotech', 'neuronexus')
     probe_name : str
         The probe name
+    name : str or None
+        Optional name for the probe
 
     Returns
     ----------
@@ -93,5 +96,9 @@ def get_probe(manufacturer, probe_name):
     if probe is None:
         download_probeinterface_file(manufacturer, probe_name)
         probe = get_from_cache(manufacturer, probe_name)
+    if probe.manufacturer == "":
+        probe.manufacturer = manufacturer
+    if name is not None:
+        probe.name = name
 
     return probe
