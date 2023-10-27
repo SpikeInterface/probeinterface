@@ -37,12 +37,6 @@ def test_NP1():
     assert "1.0" in probe.model_name
 
 
-def test_NP2_1_shanks():
-    probe = read_spikeglx(data_path / "p2_g0_t0.imec0.ap.meta")
-    assert "2.0" in probe.model_name
-    assert probe.get_shank_count() == 1
-
-
 def test_NP_phase3A():
     # Data provided by rtraghavan
     probe = read_spikeglx(data_path / "phase3a.imec.ap.meta")
@@ -62,10 +56,17 @@ def test_NP_phase3A():
     assert np.all(probe.contact_shape_params == {"width": contact_width})
     assert np.all(probe.contact_shapes == contact_shape)
 
+
+def test_NP2_1_shanks():
+    probe = read_spikeglx(data_path / "p2_g0_t0.imec0.ap.meta")
+    assert "2.0" in probe.model_name
+    assert probe.get_shank_count() == 1
+
+
 def test_NP2_4_shanks():
     probe = read_spikeglx(data_path / "NP2_4_shanks.imec0.ap.meta")
 
-    assert probe.model_name == "Neuropixels 2.0 - Four Shank"
+    assert probe.model_name == "Neuropixels 2.0 - Four Shank - Prototype"
     assert probe.manufacturer == "IMEC"
     assert probe.annotations["probe_type"] == 24
 
@@ -85,11 +86,61 @@ def test_NP2_4_shanks():
     assert np.min(ypos) == pytest.approx(0)
 
 
+def test_NP2_2013_all():
+    # Data provided by Jennifer Colonell
+    probe = read_spikeglx(data_path / "NP2_2013_all_channels.imec0.ap.meta")
+
+    assert probe.model_name == "Neuropixels 2.0 - Four Shank"
+    assert probe.manufacturer == "IMEC"
+    assert probe.annotations["probe_type"] == 2013
+
+    assert probe.ndim == 2
+    # all channels are from the first shank
+    assert probe.get_shank_count() == 1
+    assert probe.get_contact_count() == 384
+
+    # Test contact geometry
+    contact_width = 12.0
+    contact_shape = "square"
+
+    assert np.all(probe.contact_shape_params == {"width": contact_width})
+    assert np.all(probe.contact_shapes == contact_shape)
+
+    # This file does not save the channnels from 0 as the one above (NP2_4_shanks_g0_t0.imec0.ap.meta)
+    ypos = probe.contact_positions[:, 1]
+    assert np.min(ypos) == pytest.approx(0)
+
+
+def test_NP2_2013_subset():
+    # Data provided by Jennifer Colonell
+    probe = read_spikeglx(data_path / "NP2_2013_subset_channels.imec0.ap.meta")
+
+    assert probe.model_name == "Neuropixels 2.0 - Four Shank"
+    assert probe.manufacturer == "IMEC"
+    assert probe.annotations["probe_type"] == 2013
+
+    assert probe.ndim == 2
+    # all channels are from the first shank
+    assert probe.get_shank_count() == 1
+    assert probe.get_contact_count() == 120
+
+    # Test contact geometry
+    contact_width = 12.0
+    contact_shape = "square"
+
+    assert np.all(probe.contact_shape_params == {"width": contact_width})
+    assert np.all(probe.contact_shapes == contact_shape)
+
+    # This file does not save the channnels from 0 as the one above (NP2_4_shanks_g0_t0.imec0.ap.meta)
+    ypos = probe.contact_positions[:, 1]
+    assert np.min(ypos) == pytest.approx(0)
+
+
 def test_NP2_4_shanks_with_different_electrodes_saved():
     # Data provided by Jennifer Colonell
     probe = read_spikeglx(data_path / "NP2_4_shanks_save_different_electrodes.imec0.ap.meta")
 
-    assert probe.model_name == "Neuropixels 2.0 - Four Shank"
+    assert probe.model_name == "Neuropixels 2.0 - Four Shank - Prototype"
     assert probe.manufacturer == "IMEC"
     assert probe.annotations["probe_type"] == 24
 
@@ -275,4 +326,5 @@ def test_CatGT_NP1():
 
 
 if __name__ == "__main__":
-    test_NP1()
+    test_NP2_2013_all()
+    test_NP2_2013_subset()

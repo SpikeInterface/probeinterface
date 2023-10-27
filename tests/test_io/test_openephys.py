@@ -24,7 +24,7 @@ def test_NP1_subset():
 
     assert probe_ap.get_shank_count() == 1
     assert "1.0" in probe_ap.model_name
-    assert len(probe_ap.contact_positions) == 200
+    assert probe_ap.get_contact_count() == 200
 
     probe_lf = read_openephys(
         data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-LFP"
@@ -93,6 +93,14 @@ def test_multiple_probes():
 
     ypos = probeB2.contact_positions[:, 1]
     assert np.min(ypos) >= 0
+
+
+def test_np_otpo_with_sync():
+    probe = read_openephys(data_path / "OE_Neuropix-PXI-opto-with-sync" / "settings.xml")
+    assert probe.model_name == "Neuropixels Opto"
+    assert probe.get_shank_count() == 1
+    assert probe.get_contact_count() == 384
+
 
 
 def test_older_than_06_format():
