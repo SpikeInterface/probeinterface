@@ -52,7 +52,7 @@ Please [Star](https://github.com/SpikeInterface/probeinterface/stargazers) the p
 
 ProbeInterface aims to provide a common framework to handle probe information across neuroscience experiments.
 
-ProbeInterface is used by the [SpikeInterface](https://github.com/SpikeInterface/spikeinterface) package to attach a probe information to a recordng object.
+ProbeInterface is used by the [SpikeInterface](https://github.com/SpikeInterface/spikeinterface) package to attach probe information to a recording object.
 You can find detailed documentation in the [SpikeInterface documentation](https://spikeinterface.readthedocs.io/en/latest/modules/core.html#handling-probes).
 
 In practice, ProbeInterface is a lightweight package to handle:
