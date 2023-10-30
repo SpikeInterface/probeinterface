@@ -29,7 +29,7 @@ probe = generate_multi_columns_probe(num_columns=3,
                                      xpitch=75, ypitch=75, y_shift_per_column=[0, -37.5, 0],
                                      contact_shapes='circle', contact_shape_params={'radius': 12})
 
-plot_probe(probe, with_channel_index=True)
+plot_probe(probe, with_contact_id=True)
 
 ##############################################################################
 # The Probe is not connected to any device yet:
@@ -51,7 +51,7 @@ print(probe.device_channel_indices)
 #  * the prbXX is the contact index ordered from 0 to N
 #  * the devXX is the channel index on the device (with the second half reversed)
 
-plot_probe(probe, with_channel_index=True, with_device_index=True)
+plot_probe(probe, with_contact_id=True, with_device_index=True)
 
 ##############################################################################
 # Very often we have several probes on the device and this can lead to even
@@ -85,6 +85,6 @@ print(probegroup.get_global_device_channel_indices())
 # The indices of the probe group can also be plotted:
 
 fig, ax = plt.subplots()
-plot_probe_group(probegroup, with_channel_index=True, same_axes=True, ax=ax)
+plot_probe_group(probegroup, with_contact_id=True, same_axes=True, ax=ax)
 
 plt.show()

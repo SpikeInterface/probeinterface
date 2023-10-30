@@ -11,7 +11,6 @@ import pytest
 def test_plot_probe():
     probe = generate_dummy_probe()
     plot_probe(probe)
-    plot_probe(probe, with_channel_index=True)
     plot_probe(probe, with_contact_id=True)
     plot_probe(probe, with_device_index=True)
     plot_probe(probe, text_on_contact=['abcde'[i%5] for i in range(probe.get_contact_count())])
@@ -33,7 +32,7 @@ def test_plot_probe():
 def test_plot_probe_group():
     probegroup = generate_dummy_probe_group()
 
-    plot_probe_group(probegroup, same_axes=True, with_channel_index=True)
+    plot_probe_group(probegroup, same_axes=True, with_contact_id=True)
     plot_probe_group(probegroup, same_axes=False)
 
     # 3d

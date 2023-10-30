@@ -117,5 +117,5 @@ def test_older_than_06_format():
 
 
 if __name__ == "__main__":
-    test_multiple_probes()
+    # test_multiple_probes()
     test_older_than_06_format()

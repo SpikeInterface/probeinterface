@@ -13,11 +13,9 @@ def plot_probe(
     probe,
     ax=None,
     contacts_colors=None,
-    with_channel_index=False,
     with_contact_id=False,
     with_device_index=False,
     text_on_contact=None,
-    first_index="auto",
     contacts_values=None,
     cmap="viridis",
     title=True,
@@ -39,16 +37,12 @@ def plot_probe(
         The axis to plot the probe on. If None, an axis is created, by default None
     contacts_colors : matplotlib color, optional
         The color of the contacts, by default None
-    with_channel_index : bool, optional
-        If True, channel indices are displayed on top of the channels, by default False
     with_contact_id : bool, optional
         If True, channel ids are displayed on top of the channels, by default False
     with_device_index : bool, optional
         If True, device channel indices are displayed on top of the channels, by default False
     text_on_contact: None or list or numpy.array
         Addintional text to plot on each contact
-    first_index : str, optional
-        The first index of the contacts, by default 'auto' (taken from channel ids)
     contacts_values : np.array, optional
         Values to color the contacts with, by default None
     cmap : str, optional
@@ -91,16 +85,6 @@ def plot_probe(
             ax = fig.add_subplot(1, 1, 1, projection="3d")
     else:
         fig = ax.get_figure()
-
-    if first_index == "auto":
-        if "first_index" in probe.annotations:
-            first_index = probe.annotations["first_index"]
-        elif probe.annotations.get("manufacturer", None) == "neuronexus":
-            # neuronexus is one based indexing
-            first_index = 1
-        else:
-            first_index = 0
-    assert first_index in (0, 1)
 
     _probe_shape_kwargs = dict(facecolor="green", edgecolor="k", lw=0.5, alpha=0.3)
     _probe_shape_kwargs.update(probe_shape_kwargs)
@@ -154,13 +138,11 @@ def plot_probe(
         text_on_contact = np.asarray(text_on_contact)
         assert text_on_contact.size == probe.get_contact_count()
 
-    if with_channel_index or with_contact_id or with_device_index or text_on_contact is not None:
+    if with_contact_id or with_device_index or text_on_contact is not None:
         if probe.ndim == 3:
             raise NotImplementedError("Channel index is 2d only")
         for i in range(n):
             txt = []
-            if with_channel_index:
-                txt.append(f"{i + first_index}")
             if with_contact_id and probe.contact_ids is not None:
                 contact_id = probe.contact_ids[i]
                 txt.append(f"id{contact_id}")

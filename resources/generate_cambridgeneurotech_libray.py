@@ -74,7 +74,7 @@ def convert_contact_shape(listCoord):
     listCoord = [float(s) for s in listCoord.split(' ')]
     return listCoord
 
-def get_channel_index(connector, probe_type):
+def get_contact_order(connector, probe_type):
     """
     Get the channel index given a connector and a probe_type.
     This will help to re-order the probe contact later on.
@@ -179,7 +179,7 @@ def create_CN_figure(probe_name, probe):
     plot_probe(probe, ax=ax,
             contacts_colors = ['#5bc5f2'] * n,  # made change to default color
             probe_shape_kwargs = dict(facecolor='#6f6f6e', edgecolor='k', lw=0.5, alpha=0.3), # made change to default color
-            with_channel_index=True)
+            with_contact_id=True)
 
     ax.set_xlabel(u'Width (\u03bcm)') #modif to legend
     ax.set_ylabel(u'Height (\u03bcm)') #modif to legend
@@ -244,18 +244,16 @@ def generate_all_probes():
                 #~ continue
             print('  ', probe_name)
 
-            channelIndex = get_channel_index(connector = connector, probe_type = probe_info['part'])
+            contact_order = get_contact_order(connector = connector, probe_type = probe_info['part'])
 
-            order = np.argsort(channelIndex)
-            probe = probe_unordered.get_slice(order)
+            sorted_indices = np.argsort(contact_order)
+            probe = probe_unordered.get_slice(sorted_indices)
 
-            probe.annotate(name=probe_name,
-                            manufacturer='cambridgeneurotech',
-                            first_index=1)
+            probe.annotate(name=probe_name, manufacturer='cambridgeneurotech')
 
             # one based in cambridge neurotech
-            contact_ids = np.arange(order.size) + 1
-            contact_ids =contact_ids.astype(str)
+            contact_ids = np.arange(sorted_indices.size) + 1
+            contact_ids = contact_ids.astype(str)
             probe.set_contact_ids(contact_ids)
 
             export_one_probe(probe_name, probe)

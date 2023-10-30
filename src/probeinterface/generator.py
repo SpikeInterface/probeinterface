@@ -148,6 +148,7 @@ def generate_multi_columns_probe(
     probe = Probe(ndim=2, si_units="um")
     probe.set_contacts(positions=positions, shapes=contact_shapes, shape_params=contact_shape_params)
     probe.create_auto_shape(probe_type="tip", margin=25)
+    probe.set_contact_ids(np.arange(positions.shape[0]).astype("str"))
 
     return probe
 
