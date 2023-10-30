@@ -18,6 +18,10 @@ Samuel Garcia:
 2023-06-14
 generate new library
 
+2023-10-30
+Generate new library with some fixes
+
+
 Derive probes to be used with SpikeInterface base on Cambridgeneurotech databases
 Probe library to match and add on
 https://gin.g-node.org/spikeinterface/probeinterface_library/src/master/cambridgeneurotech
@@ -36,16 +40,26 @@ from probeinterface import generate_multi_columns_probe, combine_probes, write_p
 
 from pathlib import Path
 
+import json
+import shutil
+
 
 # work_dir = r"C:\Users\Windows\Dropbox (Scripps Research)\2021-01-SpikeInterface_CambridgeNeurotech"
 # work_dir = '.'
 # work_dir = '/home/samuel/Documents/SpikeInterface/2021-03-01-probeinterface_CambridgeNeurotech/'
 # work_dir = '/home/samuel/Documents/SpikeInterface/2022-05-20-probeinterface_CambridgeNeurotech/'
 # work_dir = '/home/samuel/Documents/SpikeInterface/2022-10-18-probeinterface_CambridgeNeurotech/'
-work_dir = '/home/samuel/OwnCloudCNRS/probeinterface/2023-06-14-probeinterface-CambridgeNeurotech/'
+# work_dir = '/home/samuel/OwnCloudCNRS/probeinterface/2023-06-14-probeinterface-CambridgeNeurotech/'
+work_dir = '/home/samuel/OwnCloudCNRS/probeinterface/2023-10-30-probeinterface-CambridgeNeurotech/'
+
+
+library_folder = '/home/samuel/Documents/SpikeInterface/probeinterface_library/cambridgeneurotech/'
+
+library_folder = Path(library_folder)
+
 work_dir = Path(work_dir).absolute()
 
-export_folder = work_dir / 'export_2023_06_14'
+export_folder = work_dir / 'export_2023_10_30'
 probe_map_file = work_dir /  'ProbeMaps_Final2023.xlsx'
 probe_info_table_file = work_dir  / 'ProbesDataBase_Final2023.csv'
 
@@ -259,5 +273,42 @@ def generate_all_probes():
             export_one_probe(probe_name, probe)
 
 
+def synchronize_library():
+
+    for source_probe_file in export_folder.glob('**/*.json'):
+        # print()
+        print(source_probe_file.stem)
+        target_probe_file = library_folder / source_probe_file.parent.stem / source_probe_file.name
+        # print(target_probe_file)
+        with open(source_probe_file, mode='r')as source:
+            source_dict = json.load(source)
+
+        with open(target_probe_file, mode='r')as target:
+            target_dict = json.load(target)
+
+        source_dict.pop('version')
+        
+        target_dict.pop('version')
+
+        # this was needed between version 0.2.17 > 0.2.18
+        # target_dict["probes"][0]["annotations"].pop("first_index")
+        
+        same = source_dict == target_dict
+
+        # copy the json
+        shutil.copyfile(source_probe_file, target_probe_file)
+        if not same:
+            # copy the png
+            shutil.copyfile(source_probe_file.parent / (source_probe_file.stem + '.png'), 
+                            target_probe_file.parent / (target_probe_file.stem + '.png')                      )
+        
+
+
+
+
+
+    # library_folder
+
 if __name__ == '__main__':
-    generate_all_probes()
+    # generate_all_probes()
+    synchronize_library()
