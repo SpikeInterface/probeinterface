@@ -34,7 +34,7 @@ probegroup.add_probe(probe1)
 
 print('probe0.get_contact_count()', probe0.get_contact_count())
 print('probe1.get_contact_count()', probe1.get_contact_count())
-print('probegroup.get_channel_count()', probegroup.get_channel_count())
+print('probegroup.get_contact_count()', probegroup.get_contact_count())
 
 ##############################################################################
 #  We can now plot all probes in the same axis:
