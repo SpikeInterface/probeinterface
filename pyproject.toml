@@ -50,6 +50,7 @@ test = [
 docs = [
     "pillow",
     "sphinx-gallery",
+    "sphinx_rtd_theme",
     "matplotlib==3.2.2",
     "scipy",
     "pandas",

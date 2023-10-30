@@ -1,0 +1,30 @@
+probeinterface 0.2.18
+---------------------
+
+Oct, 30th 2023
+
+
+Features
+^^^^^^^^
+
+* Extend probe constructor (name, serial_number, manufacturer, model_name) (#206)
+* Extend available NP2 probe types to commercial types (20** series) (#217)
+* Remove :code:`with_channel_index` argument from :code:`plot_probe` (#229)
+* Remove checker for unique contact ids in probe group (#229)
+* Unify usage of "contact" and remove "channel" notation (except for "device_channel_index") (#229)
+
+
+Bug fixes
+^^^^^^^^^
+
+* Fix shank_pitch to NP-2.4 in SpikeGLX (#205)
+* Fix y_shift_per_column docs and add assertion (#212)
+* Change np.in1d to np.isin as the former will be deprecated (#220)
+* Fix contour of NP2.0 for Open Ephys Neuropixels (#224)
+
+Docs
+^^^^
+
+* Add available pathways in 'Automatic wiring' docs (#213)
+* Add Typing and Update Docstrings (#214)
+* Add more details to how to contribute (#222)
