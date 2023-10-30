@@ -9,6 +9,9 @@ Features
 
 * Extend probe constructor (name, serial_number, manufacturer, model_name) (#206)
 * Extend available NP2 probe types to commercial types (20** series) (#217)
+* Remove :code:`with_channel_index` argument from :code:`plot_probe` (#229)
+* Remove checker for unique contact ids in probe group (#229)
+* Unify usage of "contact" and remove "channel" notation (except for "device_channel_index") (#229)
 
 
 Bug fixes
