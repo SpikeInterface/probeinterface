@@ -27,7 +27,7 @@ def test_generate():
 
     #~ from probeinterface.plotting import plot_probe_group, plot_probe
     #~ import matplotlib.pyplot as plt
-    #~ plot_probe(multi_shank, with_channel_index=True,)
+    #~ plot_probe(multi_shank, with_contact_id=True,)
     #~ plt.show()
 
 if __name__ == '__main__':

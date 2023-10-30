@@ -98,6 +98,6 @@ with open('two_tetrodes.prb', 'w') as f:
     f.write(prb_two_tetrodes)
 
 two_tetrode = read_prb('two_tetrodes.prb')
-plot_probe_group(two_tetrode, same_axes=False, with_channel_index=True)
+plot_probe_group(two_tetrode, same_axes=False, with_contact_id=True)
 
 plt.show()

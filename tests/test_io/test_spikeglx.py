@@ -96,7 +96,7 @@ def test_NP2_2013_all():
 
     assert probe.ndim == 2
     # all channels are from the first shank
-    assert probe.get_shank_count() == 1
+    assert probe.get_shank_count() == 4
     assert probe.get_contact_count() == 384
 
     # Test contact geometry
@@ -121,7 +121,7 @@ def test_NP2_2013_subset():
 
     assert probe.ndim == 2
     # all channels are from the first shank
-    assert probe.get_shank_count() == 1
+    assert probe.get_shank_count() == 4
     assert probe.get_contact_count() == 120
 
     # Test contact geometry

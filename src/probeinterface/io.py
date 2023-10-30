@@ -1067,7 +1067,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     x_pos = x_idx * x_pitch + stagger
     y_pos = y_idx * y_pitch
 
-    if imDatPrb_type == 24:
+    if probe_description["shank_number"] > 1:
         shank_ids = np.array(contact_info["shank_id"])
         shank_pitch = probe_description["shank_pitch"]
         contact_ids = [f"s{shank_id}e{elec_id}" for shank_id, elec_id in zip(shank_ids, elec_ids)]
@@ -1468,13 +1468,13 @@ def read_openephys(
                 break
 
             stagger = np.mod(pos[1] / npx_probe[ptype]["y_pitch"] + 1, 2) * npx_probe[ptype]["stagger"]
-            shank_id = shank_ids[0] if ptype == 24 else 0
+            shank_id = shank_ids[i] if npx_probe[ptype]["shank_number"] > 1 else 0
 
             contact_id = int(
                 (pos[0] - stagger - npx_probe[ptype]["shank_pitch"] * shank_id) / npx_probe[ptype]["x_pitch"]
                 + npx_probe[ptype]["ncol"] * pos[1] / npx_probe[ptype]["y_pitch"]
             )
-            if ptype == 24:
+            if npx_probe[ptype]["shank_number"] > 1:
                 contact_ids.append(f"s{shank_id}e{contact_id}")
             else:
                 contact_ids.append(f"e{contact_id}")
