@@ -15,7 +15,7 @@ def test_wire_probe():
 
     probe.wiring_to_device('H32>RHD2132')
 
-    plot_probe(probe, with_channel_index=True)
+    plot_probe(probe, with_contact_id=True)
 
     manufacturer = 'cambridgeneurotech'
     probe_name = 'ASSY-156-P-1'
@@ -23,7 +23,7 @@ def test_wire_probe():
 
     probe.wiring_to_device('ASSY-156>RHD2164')
 
-    plot_probe(probe, with_channel_index=True)
+    plot_probe(probe, with_contact_id=True)
 
 
 if __name__ == '__main__':

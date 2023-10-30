@@ -39,8 +39,8 @@ def test_probeinterface_format(tmp_path):
 
     # ~ from probeinterface.plotting import plot_probe_group
     # ~ import matplotlib.pyplot as plt
-    # ~ plot_probe_group(probegroup, with_channel_index=True, same_axes=False)
-    # ~ plot_probe_group(probegroup2, with_channel_index=True, same_axes=False)
+    # ~ plot_probe_group(probegroup, with_contact_id=True, same_axes=False)
+    # ~ plot_probe_group(probegroup2, with_contact_id=True, same_axes=False)
     # ~ plt.show()
 
 def test_writeprobeinterface(tmp_path):
@@ -210,7 +210,7 @@ def test_prb(tmp_path):
 
     # ~ from probeinterface.plotting import plot_probe_group
     # ~ import matplotlib.pyplot as plt
-    # ~ plot_probe_group(probegroup, with_channel_index=True, same_axes=False)
+    # ~ plot_probe_group(probegroup, with_contact_id=True, same_axes=False)
     # ~ plt.show()
 
     # from probeinterface.plotting import plot_probe

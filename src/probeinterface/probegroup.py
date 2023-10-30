@@ -24,7 +24,7 @@ class ProbeGroup:
 
     def _check_compatible(self, probe):
         if probe._probe_group is not None:
-            raise ValueError("This probe is already attached to another ProbeGroup")
+            raise ValueError("This probe is already attached to another ProbeGroup. Use probe.copy() to attach it to another ProbeGroup")
 
         if probe.ndim != self.probes[-1].ndim:
             raise ValueError("ndim are not compatible")
@@ -38,7 +38,7 @@ class ProbeGroup:
     def ndim(self):
         return self.probes[0].ndim
 
-    def get_channel_count(self):
+    def get_contact_count(self):
         """
         Total number of channels.
         """
@@ -144,7 +144,7 @@ class ProbeGroup:
         Note:
             channel -1 means not connected
         """
-        total_chan = self.get_channel_count()
+        total_chan = self.get_contact_count()
         channels = np.zeros(total_chan, dtype=[("probe_index", "int64"), ("device_channel_indices", "int64")])
         arr = self.to_numpy(complete=True)
         channels["probe_index"] = arr["probe_index"]
@@ -156,7 +156,7 @@ class ProbeGroup:
         Set global indices for all probes
         """
         channels = np.asarray(channels)
-        if channels.size != self.get_channel_count():
+        if channels.size != self.get_contact_count():
             raise ValueError("Wrong channels size")
 
         # first reset previsous indices
@@ -186,14 +186,6 @@ class ProbeGroup:
 
         if valid_chans.size != np.unique(valid_chans).size:
             raise ValueError("channel device index are not unique across probes")
-
-        # check unique ids for != ''
-        all_ids = self.get_global_contact_ids()
-        keep = [e != "" for e in all_ids]
-        valid_ids = all_ids[keep]
-
-        if valid_ids.size != np.unique(valid_ids).size:
-            raise ValueError("contact_ids are not unique across probes")
 
     def auto_generate_probe_ids(self, *args, **kwargs):
         """
@@ -230,13 +222,10 @@ class ProbeGroup:
             `probeinterface.utils.generate_unique_ids`
         """
 
-        if any(p.contact_ids is not None for p in self.probes):
-            raise ValueError("Some contacts already have contact ids " "assigned.")
-
         if not args:
             args = 1e7, 1e8
         # 3rd argument has to be the number of probes
-        args = args[:2] + (self.get_channel_count(),)
+        args = args[:2] + (self.get_contact_count(),)
 
         contact_ids = generate_unique_ids(*args, **kwargs).astype(str)
 

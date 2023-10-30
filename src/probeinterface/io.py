@@ -1067,7 +1067,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     x_pos = x_idx * x_pitch + stagger
     y_pos = y_idx * y_pitch
 
-    if imDatPrb_type == 24:
+    if probe_description["shank_number"] > 1:
         shank_ids = np.array(contact_info["shank_id"])
         shank_pitch = probe_description["shank_pitch"]
         contact_ids = [f"s{shank_id}e{elec_id}" for shank_id, elec_id in zip(shank_ids, elec_ids)]

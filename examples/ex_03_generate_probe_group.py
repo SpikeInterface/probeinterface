@@ -44,6 +44,6 @@ plot_probe_group(probegroup, same_axes=True)
 ##############################################################################
 #  or in separate axes:
 
-plot_probe_group(probegroup, same_axes=False, with_channel_index=True)
+plot_probe_group(probegroup, same_axes=False, with_contact_id=True)
 
 plt.show()

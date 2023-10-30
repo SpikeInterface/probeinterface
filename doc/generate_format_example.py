@@ -33,7 +33,7 @@ d = probe.to_dict()
 print(d.keys())
 
 fig, ax = plt.subplots(figsize=(8, 8))
-plot_probe(probe, with_channel_index=True, ax=ax)
+plot_probe(probe, ax=ax)
 ax.set_xlim(-50, 200)
 ax.set_ylim(-150, 120)
 
