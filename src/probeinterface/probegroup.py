@@ -24,7 +24,9 @@ class ProbeGroup:
 
     def _check_compatible(self, probe):
         if probe._probe_group is not None:
-            raise ValueError("This probe is already attached to another ProbeGroup. Use probe.copy() to attach it to another ProbeGroup")
+            raise ValueError(
+                "This probe is already attached to another ProbeGroup. Use probe.copy() to attach it to another ProbeGroup"
+            )
 
         if probe.ndim != self.probes[-1].ndim:
             raise ValueError("ndim are not compatible")

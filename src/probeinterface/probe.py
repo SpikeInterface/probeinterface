@@ -221,8 +221,9 @@ class Probe:
         n = len(np.unique(self.shank_ids))
         return n
 
-    def set_contacts(self, positions, shapes="circle", shape_params={"radius": 10}, plane_axes=None,
-                     contact_ids=None, shank_ids=None):
+    def set_contacts(
+        self, positions, shapes="circle", shape_params={"radius": 10}, plane_axes=None, contact_ids=None, shank_ids=None
+    ):
         """Sets contacts to a Probe.
 
         This sets four attributes of the probe:
@@ -291,8 +292,6 @@ class Probe:
         if isinstance(shape_params, dict):
             shape_params = [shape_params] * n
         self._contact_shape_params = np.array(shape_params)
-
-            
 
     def set_planar_contour(self, contour_polygon: list):
         """Set the planar countour (the shape) of the probe.
