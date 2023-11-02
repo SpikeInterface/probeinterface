@@ -287,21 +287,21 @@ def synchronize_library():
             target_dict = json.load(target)
 
         source_dict.pop('version')
-        
+
         target_dict.pop('version')
 
         # this was needed between version 0.2.17 > 0.2.18
         # target_dict["probes"][0]["annotations"].pop("first_index")
-        
+
         same = source_dict == target_dict
 
         # copy the json
         shutil.copyfile(source_probe_file, target_probe_file)
         if not same:
             # copy the png
-            shutil.copyfile(source_probe_file.parent / (source_probe_file.stem + '.png'), 
+            shutil.copyfile(source_probe_file.parent / (source_probe_file.stem + '.png'),
                             target_probe_file.parent / (target_probe_file.stem + '.png')                      )
-        
+
 
 
 
