@@ -1003,6 +1003,8 @@ npx_probe = {
 }
 
 
+# TODO: unify implementation with https://github.com/jenniferColonell/SGLXMetaToCoords/blob/main/SGLXMetaToCoords.py
+
 # Map imDatPrb_pn (probe number) to imDatPrb_type (probe type) when the latter is missing
 probe_part_number_to_probe_type = {
     # NP1.0
@@ -1025,8 +1027,8 @@ probe_part_number_to_probe_type = {
     "NP2004": "2004",
     "PRB2_1_2_0640_0": "21",
     # Other probes
-    "NP1100": "1100",  # Ultra probe
-    "NP1110": "1100",  # Ultra probe (Switchable)
+    "NP1100": "1100",  # Ultra probe - 1 bank
+    "NP1110": "1100",  # Ultra probe - 16 banks
     "NP1300": "1300",  # Opto probe
 }
 
