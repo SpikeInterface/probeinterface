@@ -1483,7 +1483,6 @@ def read_openephys(
         ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])
         positions = np.array([xpos, ypos]).T
 
-        contact_ids = []
         probe_part_number = np_probe.get("probe_part_number", "")
         ptype = probe_number_to_probe_type.get(probe_part_number, None)
         x_shift = npx_probe[ptype]["x_shift"] if ptype is not None else 0
@@ -1494,6 +1493,7 @@ def read_openephys(
         # x offset
         positions[:, 0] += x_shift
 
+        contact_ids = []
         for i, pos in enumerate(positions):
             if ptype is None:
                 contact_ids = None
