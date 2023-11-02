@@ -965,6 +965,26 @@ npx_probe = {
             "ap_hp_filters",
         ),
     },
+    # NP-Opto
+    "opto": {
+        "probe_name": "Neuropixels Opto",
+        "x_pitch": 48,
+        "y_pitch": 20,
+        "contact_width": 12,
+        "stagger": 0.0,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 2,
+        "polygon": polygon_description["default"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+            "ap_hp_filters",
+        ),
+    },
 }
 
 
@@ -1437,6 +1457,7 @@ def read_openephys(
 
         contact_ids = []
         pname = np_probe.attrib["probe_name"]
+        headstage_part_number = np_probe.attrib.get("headstage_part_number", "")
         if "2.0" in pname:
             x_shift = -8
             if "Multishank" in pname:
@@ -1446,12 +1467,16 @@ def read_openephys(
         elif "NHP" in pname:
             ptype = 0
             x_shift = -11
-        elif "1.0" in pname:
-            ptype = 0
-            x_shift = -11
         elif "Ultra" in pname:
             ptype = 1100
             x_shift = -8
+        elif "1.0" in pname and "OPTO" in headstage_part_number:
+            # take care of OE NPIX v<0.4.1, where Opto probes were named 1.0
+            ptype = "opto"
+            x_shift = -11 
+        elif "1.0" in pname:
+            ptype = 0
+            x_shift = -11
         else:  # Probe type unknown
             ptype = None
             x_shift = 0
@@ -1479,8 +1504,9 @@ def read_openephys(
             else:
                 contact_ids.append(f"e{contact_id}")
 
+        model_name = npx_probe[ptype]["probe_name"] if ptype is not None else pname
         np_probe_dict = {
-            "model_name": pname,
+            "model_name": model_name,
             "shank_ids": shank_ids,
             "contact_ids": contact_ids,
             "positions": positions,
