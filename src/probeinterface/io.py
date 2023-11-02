@@ -1026,6 +1026,7 @@ probe_part_number_to_probe_type = {
     "PRB2_1_2_0640_0": "21",
     # Other probes
     "NP1100": "1100",  # Ultra probe
+    "NP1110": "1100",  # Ultra probe (Switchable)
     "NP1300": "1300",  # Opto probe
 }
 
