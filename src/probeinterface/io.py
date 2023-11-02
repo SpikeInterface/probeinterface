@@ -729,7 +729,7 @@ npx_probe = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "x_shift": -11
+        "x_shift": -11,
     },
     # Neuropixels 2.0 - Single Shank - Prototype
     "21": {
@@ -743,7 +743,7 @@ npx_probe = {
         "ncol": 2,
         "polygon": polygon_description["default"],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
-        "x_shift": -8
+        "x_shift": -8,
     },
     # Neuropixels 2.0 - Four Shank - Prototype
     "24": {
@@ -763,7 +763,7 @@ npx_probe = {
             "references",
             "elec_ids",
         ),
-        "x_shift": -8
+        "x_shift": -8,
     },
     # Neuropixels 2.0 - Single Shank - Commercial without metal cap
     "2003": {
@@ -777,7 +777,7 @@ npx_probe = {
         "ncol": 2,
         "polygon": polygon_description["default"],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
-        "x_shift": -8
+        "x_shift": -8,
     },
     # Neuropixels 2.0 - Single Shank - Commercial with metal cap
     "2004": {
@@ -791,7 +791,7 @@ npx_probe = {
         "ncol": 2,
         "polygon": polygon_description["default"],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
-        "x_shift": -8
+        "x_shift": -8,
     },
     # Neuropixels 2.0 - Four Shank - Commercial without metal cap
     "2013": {
@@ -811,7 +811,7 @@ npx_probe = {
             "references",
             "elec_ids",
         ),
-        "x_shift": -8
+        "x_shift": -8,
     },
     # Neuropixels 2.0 - Four Shank - Commercial with metal cap
     "2014": {
@@ -831,7 +831,7 @@ npx_probe = {
             "references",
             "elec_ids",
         ),
-        "x_shift": -8
+        "x_shift": -8,
     },
     # Experimental probes previous to 1.0
     "Phase3a": {
@@ -851,7 +851,7 @@ npx_probe = {
             "ap_gains",
             "lf_gains",
         ),
-        "x_shift": -11
+        "x_shift": -11,
     },
     # Neuropixels 1.0-NHP Short (10mm)
     "1015": {
@@ -872,7 +872,7 @@ npx_probe = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "x_shift": -11
+        "x_shift": -11,
     },
     # Neuropixels 1.0-NHP Medium (25mm)
     "1022": {
@@ -893,7 +893,7 @@ npx_probe = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "x_shift": -11
+        "x_shift": -11,
     },
     # Neuropixels 1.0-NHP 45mm SOI90 - NHP long 90um wide, staggered contacts
     "1030": {
@@ -914,7 +914,7 @@ npx_probe = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "x_shift": -11
+        "x_shift": -11,
     },
     # Neuropixels 1.0-NHP 45mm SOI125 - NHP long 125um wide, staggered contacts
     "1031": {
@@ -935,7 +935,7 @@ npx_probe = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "x_shift": -11
+        "x_shift": -11,
     },
     # 1.0-NHP 45mm SOI115 / 125 linear - NHP long 125um wide, linear contacts
     "1032": {
@@ -956,7 +956,7 @@ npx_probe = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "x_shift": -11
+        "x_shift": -11,
     },
     # Ultra probe
     "1100": {
@@ -977,7 +977,7 @@ npx_probe = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "x_shift": -8
+        "x_shift": -8,
     },
     # NP-Opto
     "1300": {
@@ -998,7 +998,7 @@ npx_probe = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "x_shift": -11
+        "x_shift": -11,
     },
 }
 
@@ -1009,7 +1009,7 @@ probe_number_to_probe_type = {
     "PRB_1_4_0480_1": "0",
     "PRB_1_4_0480_1_C": "0",
     "NP1010": "0",
-    None: "0", # for old version without a probe number we assume 1.0
+    None: "0",  # for old version without a probe number we assume 1.0
     # NHP probes
     "NP1015": "1015",
     "NP1022": "1022",
@@ -1025,9 +1025,10 @@ probe_number_to_probe_type = {
     "NP2004": "2004",
     "PRB2_1_2_0640_0": "21",
     # Other probes
-    "NP1100": "1100", # Ultra probe
-    "NP1300": "1300", # Opto probe
+    "NP1100": "1100",  # Ultra probe
+    "NP1300": "1300",  # Opto probe
 }
+
 
 def read_imro(file_path: Union[str, Path]) -> Probe:
     """
