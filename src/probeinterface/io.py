@@ -1182,7 +1182,7 @@ def write_imro(file: str | Path, probe: Probe):
     annotations = probe.contact_annotations
     ret = [f"({probe_type},{len(data)})"]
 
-    if probe_type in (0, "0"):
+    if probe_type == "0":
         for ch in range(len(data)):
             ret.append(
                 f"({ch} 0 {annotations['references'][ch]} {annotations['ap_gains'][ch]} "
