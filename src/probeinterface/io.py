@@ -1473,7 +1473,7 @@ def read_openephys(
         elif "1.0" in pname and "OPTO" in headstage_part_number:
             # take care of OE NPIX v<0.4.1, where Opto probes were named 1.0
             ptype = "opto"
-            x_shift = -11 
+            x_shift = -11
         elif "1.0" in pname:
             ptype = 0
             x_shift = -11
