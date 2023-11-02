@@ -1004,7 +1004,7 @@ npx_probe = {
 
 
 # Map imDatPrb_pn (probe number) to imDatPrb_type (probe type) when the latter is missing
-probe_number_to_probe_type = {
+probe_part_number_to_probe_type = {
     # NP1.0
     "PRB_1_4_0480_1": "0",
     "PRB_1_4_0480_1_C": "0",
@@ -1087,7 +1087,9 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
             raise ValueError(f"read_imro error, the header has a strange length: {imro_table_header}")
         imDatPrb_type = str(imDatPrb_type)
     else:
-        imDatPrb_type = probe_number_to_probe_type[imDatPrb_pn]
+        if imDatPrb_pn not in probe_part_number_to_probe_type:
+            raise NotImplementedError(f"Probe part number {imDatPrb_pn} is not supported yet")
+        imDatPrb_type = probe_part_number_to_probe_type[imDatPrb_pn]
 
     probe_description = npx_probe[imDatPrb_type]
     model_name = probe_description["model_name"]
@@ -1484,8 +1486,10 @@ def read_openephys(
         ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])
         positions = np.array([xpos, ypos]).T
 
-        probe_part_number = np_probe.get("probe_part_number", "")
-        ptype = probe_number_to_probe_type.get(probe_part_number, None)
+        probe_part_number = np_probe.get("probe_part_number", None)
+        if probe_part_number not in probe_part_number_to_probe_type:
+            raise NotImplementedError(f"Probe part number {probe_part_number} is not supported yet")
+        ptype = probe_part_number_to_probe_type[probe_part_number]
         x_shift = npx_probe[ptype]["x_shift"] if ptype is not None else 0
 
         if fix_x_position_for_oe_5 and oe_version < parse("0.6.0") and shank_ids is not None:
