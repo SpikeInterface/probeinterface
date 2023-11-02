@@ -711,8 +711,8 @@ polygon_description = {
 npx_probe = {
     # Neuropixels 1.0
     # This probably should be None or something else because NOT ONLY the neuropixels 1.0 have that imDatPrb_type
-    0: {
-        "probe_name": "Neuropixels 1.0",
+    "0": {
+        "model_name": "Neuropixels 1.0",
         "x_pitch": 32,
         "y_pitch": 20,
         "contact_width": 12,
@@ -729,10 +729,11 @@ npx_probe = {
             "lf_gains",
             "ap_hp_filters",
         ),
+        "x_shift": -11,
     },
     # Neuropixels 2.0 - Single Shank - Prototype
-    21: {
-        "probe_name": "Neuropixels 2.0 - Single Shank - Prototype",
+    "21": {
+        "model_name": "Neuropixels 2.0 - Single Shank - Prototype",
         "x_pitch": 32,
         "y_pitch": 15,
         "contact_width": 12,
@@ -742,10 +743,11 @@ npx_probe = {
         "ncol": 2,
         "polygon": polygon_description["default"],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
+        "x_shift": -8,
     },
     # Neuropixels 2.0 - Four Shank - Prototype
-    24: {
-        "probe_name": "Neuropixels 2.0 - Four Shank - Prototype",
+    "24": {
+        "model_name": "Neuropixels 2.0 - Four Shank - Prototype",
         "x_pitch": 32,
         "y_pitch": 15,
         "contact_width": 12,
@@ -761,10 +763,11 @@ npx_probe = {
             "references",
             "elec_ids",
         ),
+        "x_shift": -8,
     },
     # Neuropixels 2.0 - Single Shank - Commercial without metal cap
-    2003: {
-        "probe_name": "Neuropixels 2.0 - Single Shank",
+    "2003": {
+        "model_name": "Neuropixels 2.0 - Single Shank",
         "x_pitch": 32,
         "y_pitch": 15,
         "contact_width": 12,
@@ -774,10 +777,11 @@ npx_probe = {
         "ncol": 2,
         "polygon": polygon_description["default"],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
+        "x_shift": -8,
     },
     # Neuropixels 2.0 - Single Shank - Commercial with metal cap
-    2004: {
-        "probe_name": "Neuropixels 2.0 - Single Shank",
+    "2004": {
+        "model_name": "Neuropixels 2.0 - Single Shank",
         "x_pitch": 32,
         "y_pitch": 15,
         "contact_width": 12,
@@ -787,10 +791,11 @@ npx_probe = {
         "ncol": 2,
         "polygon": polygon_description["default"],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
+        "x_shift": -8,
     },
     # Neuropixels 2.0 - Four Shank - Commercial without metal cap
-    2013: {
-        "probe_name": "Neuropixels 2.0 - Four Shank",
+    "2013": {
+        "model_name": "Neuropixels 2.0 - Four Shank",
         "x_pitch": 32,
         "y_pitch": 15,
         "contact_width": 12,
@@ -806,10 +811,11 @@ npx_probe = {
             "references",
             "elec_ids",
         ),
+        "x_shift": -8,
     },
     # Neuropixels 2.0 - Four Shank - Commercial with metal cap
-    2014: {
-        "probe_name": "Neuropixels 2.0 - Four Shank",
+    "2014": {
+        "model_name": "Neuropixels 2.0 - Four Shank",
         "x_pitch": 32,
         "y_pitch": 15,
         "contact_width": 12,
@@ -825,10 +831,11 @@ npx_probe = {
             "references",
             "elec_ids",
         ),
+        "x_shift": -8,
     },
     # Experimental probes previous to 1.0
     "Phase3a": {
-        "probe_name": "Phase3a",
+        "model_name": "Phase3a",
         "x_pitch": 32,
         "y_pitch": 20,
         "contact_width": 12,
@@ -844,10 +851,11 @@ npx_probe = {
             "ap_gains",
             "lf_gains",
         ),
+        "x_shift": -11,
     },
     # Neuropixels 1.0-NHP Short (10mm)
-    1015: {
-        "probe_name": "Neuropixels 1.0-NHP - short",
+    "1015": {
+        "model_name": "Neuropixels 1.0-NHP - short",
         "x_pitch": 32,
         "y_pitch": 20,
         "contact_width": 12,
@@ -864,10 +872,11 @@ npx_probe = {
             "lf_gains",
             "ap_hp_filters",
         ),
+        "x_shift": -11,
     },
     # Neuropixels 1.0-NHP Medium (25mm)
-    1022: {
-        "probe_name": "Neuropixels 1.0-NHP - medium",
+    "1022": {
+        "model_name": "Neuropixels 1.0-NHP - medium",
         "x_pitch": 103,
         "y_pitch": 20,
         "contact_width": 12,
@@ -884,10 +893,11 @@ npx_probe = {
             "lf_gains",
             "ap_hp_filters",
         ),
+        "x_shift": -11,
     },
     # Neuropixels 1.0-NHP 45mm SOI90 - NHP long 90um wide, staggered contacts
-    1030: {
-        "probe_name": "Neuropixels 1.0-NHP - long SOI90 staggered",
+    "1030": {
+        "model_name": "Neuropixels 1.0-NHP - long SOI90 staggered",
         "x_pitch": 56,
         "y_pitch": 20,
         "stagger": 12,
@@ -904,10 +914,11 @@ npx_probe = {
             "lf_gains",
             "ap_hp_filters",
         ),
+        "x_shift": -11,
     },
     # Neuropixels 1.0-NHP 45mm SOI125 - NHP long 125um wide, staggered contacts
-    1031: {
-        "probe_name": "Neuropixels 1.0-NHP - long SOI125 staggered",
+    "1031": {
+        "model_name": "Neuropixels 1.0-NHP - long SOI125 staggered",
         "x_pitch": 91,
         "y_pitch": 20,
         "contact_width": 12,
@@ -924,10 +935,11 @@ npx_probe = {
             "lf_gains",
             "ap_hp_filters",
         ),
+        "x_shift": -11,
     },
     # 1.0-NHP 45mm SOI115 / 125 linear - NHP long 125um wide, linear contacts
-    1032: {
-        "probe_name": "Neuropixels 1.0-NHP - long SOI125 linear",
+    "1032": {
+        "model_name": "Neuropixels 1.0-NHP - long SOI125 linear",
         "x_pitch": 103,
         "y_pitch": 20,
         "contact_width": 12,
@@ -944,10 +956,11 @@ npx_probe = {
             "lf_gains",
             "ap_hp_filters",
         ),
+        "x_shift": -11,
     },
     # Ultra probe
-    1100: {
-        "probe_name": "Ultra probe",
+    "1100": {
+        "model_name": "Neuropixels Ultra",
         "x_pitch": 6,
         "y_pitch": 6,
         "contact_width": 5,
@@ -964,21 +977,59 @@ npx_probe = {
             "lf_gains",
             "ap_hp_filters",
         ),
+        "x_shift": -8,
+    },
+    # NP-Opto
+    "1300": {
+        "model_name": "Neuropixels Opto",
+        "x_pitch": 48,
+        "y_pitch": 20,
+        "contact_width": 12,
+        "stagger": 0.0,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 2,
+        "polygon": polygon_description["default"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+            "ap_hp_filters",
+        ),
+        "x_shift": -11,
     },
 }
 
 
+# TODO: unify implementation with https://github.com/jenniferColonell/SGLXMetaToCoords/blob/main/SGLXMetaToCoords.py
+
 # Map imDatPrb_pn (probe number) to imDatPrb_type (probe type) when the latter is missing
-probe_number_to_probe_type = {
-    "PRB_1_4_0480_1": 0,
-    "PRB_1_4_0480_1_C": 0,
-    "NP1010": 0,
-    "NP1015": 1015,
-    "NP1022": 1022,
-    "NP1030": 1030,
-    "NP1031": 1031,
-    "NP1032": 1032,
-    None: 0,
+probe_part_number_to_probe_type = {
+    # NP1.0
+    "PRB_1_4_0480_1": "0",
+    "PRB_1_4_0480_1_C": "0",
+    "NP1010": "0",
+    None: "0",  # for old version without a probe number we assume 1.0
+    # NHP probes
+    "NP1015": "1015",
+    "NP1022": "1022",
+    "NP1030": "1030",
+    "NP1031": "1031",
+    "NP1032": "1032",
+    # NP2.0
+    "NP2000": "21",
+    "NP2010": "24",
+    "NP2013": "2013",
+    "NP2014": "2014",
+    "NP2003": "2003",
+    "NP2004": "2004",
+    "PRB2_1_2_0640_0": "21",
+    # Other probes
+    "NP1100": "1100",  # Ultra probe - 1 bank
+    "NP1110": "1100",  # Ultra probe - 16 banks
+    "NP1300": "1300",  # Opto probe
 }
 
 
@@ -1026,22 +1077,25 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
 
     """
     imro_table_header_str, *imro_table_values_list, _ = imro_str.strip().split(")")
-
     imro_table_header = tuple(map(int, imro_table_header_str[1:].split(",")))
-    if len(imro_table_header) == 3:
-        # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently.
-        probe_serial_number, probe_option, num_contact = imro_table_header
-        imDatPrb_type = "Phase3a"
-    elif len(imro_table_header) == 2:
-        imDatPrb_type, num_contact = imro_table_header
-    else:
-        raise ValueError(f"read_imro error, the header has a strange length: {imro_table_header}")
 
-    if imDatPrb_type in [0, None]:
-        imDatPrb_type = probe_number_to_probe_type[imDatPrb_pn]
+    if imDatPrb_pn is None:
+        if len(imro_table_header) == 3:
+            # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently.
+            probe_serial_number, probe_option, num_contact = imro_table_header
+            imDatPrb_type = "Phase3a"
+        elif len(imro_table_header) == 2:
+            imDatPrb_type, num_contact = imro_table_header
+        else:
+            raise ValueError(f"read_imro error, the header has a strange length: {imro_table_header}")
+        imDatPrb_type = str(imDatPrb_type)
+    else:
+        if imDatPrb_pn not in probe_part_number_to_probe_type:
+            raise NotImplementedError(f"Probe part number {imDatPrb_pn} is not supported yet")
+        imDatPrb_type = probe_part_number_to_probe_type[imDatPrb_pn]
 
     probe_description = npx_probe[imDatPrb_type]
-    probe_name = probe_description["probe_name"]
+    model_name = probe_description["model_name"]
 
     fields = probe_description["fields_in_imro_table"]
     contact_info = {k: [] for k in fields}
@@ -1079,7 +1133,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     positions = np.stack((x_pos, y_pos), axis=1)
 
     # construct Probe object
-    probe = Probe(ndim=2, si_units="um", model_name=probe_name, manufacturer="IMEC")
+    probe = Probe(ndim=2, si_units="um", model_name=model_name, manufacturer="IMEC")
     probe.set_contacts(
         positions=positions,
         shapes="square",
@@ -1134,21 +1188,21 @@ def write_imro(file: str | Path, probe: Probe):
     annotations = probe.contact_annotations
     ret = [f"({probe_type},{len(data)})"]
 
-    if probe_type == 0:
+    if probe_type == "0":
         for ch in range(len(data)):
             ret.append(
                 f"({ch} 0 {annotations['references'][ch]} {annotations['ap_gains'][ch]} "
                 f"{annotations['lf_gains'][ch]} {annotations['ap_hp_filters'][ch]})"
             )
 
-    elif probe_type == 21:
+    elif probe_type in ("21", "2003", "2004"):
         for ch in range(len(data)):
             ret.append(
                 f"({data['device_channel_indices'][ch]} {annotations['banks'][ch]} "
                 f"{annotations['references'][ch]} {data['contact_ids'][ch][1:]})"
             )
 
-    elif probe_type == 24:
+    elif probe_type in ("24", "2013", "2014"):
         for ch in range(len(data)):
             ret.append(
                 f"({data['device_channel_indices'][ch]} {data['shank_ids'][ch]} {annotations['banks'][ch]} "
@@ -1435,26 +1489,11 @@ def read_openephys(
         ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])
         positions = np.array([xpos, ypos]).T
 
-        contact_ids = []
-        pname = np_probe.attrib["probe_name"]
-        if "2.0" in pname:
-            x_shift = -8
-            if "Multishank" in pname:
-                ptype = 24
-            else:
-                ptype = 21
-        elif "NHP" in pname:
-            ptype = 0
-            x_shift = -11
-        elif "1.0" in pname:
-            ptype = 0
-            x_shift = -11
-        elif "Ultra" in pname:
-            ptype = 1100
-            x_shift = -8
-        else:  # Probe type unknown
-            ptype = None
-            x_shift = 0
+        probe_part_number = np_probe.get("probe_part_number", None)
+        if probe_part_number not in probe_part_number_to_probe_type:
+            raise NotImplementedError(f"Probe part number {probe_part_number} is not supported yet")
+        ptype = probe_part_number_to_probe_type[probe_part_number]
+        x_shift = npx_probe[ptype]["x_shift"] if ptype is not None else 0
 
         if fix_x_position_for_oe_5 and oe_version < parse("0.6.0") and shank_ids is not None:
             positions[:, 1] = positions[:, 1] - npx_probe[ptype]["shank_pitch"] * shank_ids
@@ -1462,6 +1501,7 @@ def read_openephys(
         # x offset
         positions[:, 0] += x_shift
 
+        contact_ids = []
         for i, pos in enumerate(positions):
             if ptype is None:
                 contact_ids = None
@@ -1479,8 +1519,9 @@ def read_openephys(
             else:
                 contact_ids.append(f"e{contact_id}")
 
+        model_name = npx_probe[ptype]["model_name"] if ptype is not None else "Unknown"
         np_probe_dict = {
-            "model_name": pname,
+            "model_name": model_name,
             "shank_ids": shank_ids,
             "contact_ids": contact_ids,
             "positions": positions,

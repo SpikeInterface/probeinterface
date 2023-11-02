@@ -50,3 +50,7 @@ def test_raising_error_when_writing_with_wrong_type(tmp_path):
 def test_non_standard_file():
     with pytest.raises(ValueError):
         probe = read_imro(data_path / "test_non_standard.imro")
+
+
+if __name__ == "__main__":
+    test_reading_old_imro(Path("tmp"))

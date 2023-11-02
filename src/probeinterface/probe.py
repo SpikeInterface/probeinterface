@@ -409,7 +409,7 @@ class Probe:
 
         """
         contact_ids = np.asarray(contact_ids)
-        if np.all(contact_ids == ""):
+        if np.all([c == "" for c in contact_ids]):
             self._contact_ids = None
             return
 

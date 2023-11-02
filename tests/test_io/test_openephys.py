@@ -16,6 +16,14 @@ def test_NP2():
     assert "2.0 - Single Shank" in probe.model_name
 
 
+def test_NP2_four_shank():
+    # NP2
+    probe = read_openephys(data_path / "OE_Neuropix-PXI-NP2-4shank" / "settings.xml")
+    # on this case, only shanks 2-3 are used
+    assert probe.get_shank_count() == 2
+    assert "2.0 - Four Shank" in probe.model_name
+
+
 def test_NP1_subset():
     # NP1 - 200 channels selected by recording_state in Record Node
     probe_ap = read_openephys(
@@ -89,13 +97,13 @@ def test_multiple_probes():
     )
 
     assert probeB2.get_shank_count() == 1
-    assert "2.0 - Multishank" in probeB2.model_name
+    assert "2.0 - Four Shank" in probeB2.model_name
 
     ypos = probeB2.contact_positions[:, 1]
     assert np.min(ypos) >= 0
 
 
-def test_np_otpo_with_sync():
+def test_np_opto_with_sync():
     probe = read_openephys(data_path / "OE_Neuropix-PXI-opto-with-sync" / "settings.xml")
     assert probe.model_name == "Neuropixels Opto"
     assert probe.get_shank_count() == 1
@@ -111,7 +119,7 @@ def test_older_than_06_format():
     )
 
     assert probe.get_shank_count() == 4
-    assert "2.0 - Multishank" in probe.model_name
+    assert "2.0 - Four Shank" in probe.model_name
     ypos = probe.contact_positions[:, 1]
     assert np.min(ypos) >= 0
 
