@@ -221,7 +221,9 @@ class Probe:
         n = len(np.unique(self.shank_ids))
         return n
 
-    def set_contacts(self, positions, shapes="circle", shape_params={"radius": 10}, plane_axes=None, shank_ids=None):
+    def set_contacts(
+        self, positions, shapes="circle", shape_params={"radius": 10}, plane_axes=None, contact_ids=None, shank_ids=None
+    ):
         """Sets contacts to a Probe.
 
         This sets four attributes of the probe:
@@ -241,6 +243,8 @@ class Probe:
         plane_axes : np.array (num_contacts, 2, ndim)
             Defines the two axes of the contact plane for each electrode.
             The third dimension corresponds to the probe `ndim` (2d or 3d).
+        contact_ids: None or array of str
+            Defines the contact ids for the contacts. If None, contact ids are not assigned.
         shank_ids : None or array of str
             Defines the shank ids for the contacts. If None, then
             these are assigned to a unique Shank.
@@ -263,6 +267,9 @@ class Probe:
                 plane_axes[:, 1, 1] = 1
         plane_axes = np.array(plane_axes)
         self._contact_plane_axes = plane_axes
+
+        if contact_ids is not None:
+            self.set_contact_ids(contact_ids)
 
         if shank_ids is None:
             self._shank_ids = np.zeros(n, dtype=str)
@@ -402,9 +409,14 @@ class Probe:
 
         """
         contact_ids = np.asarray(contact_ids)
+        if np.all([c == "" for c in contact_ids]):
+            self._contact_ids = None
+            return
+
+        assert np.unique(contact_ids).size == contact_ids.size, "Contact ids have to be unique within a Probe"
 
         if contact_ids.size != self.get_contact_count():
-            ValueError(f"channel_indices do not have the same size as number of contacts")
+            ValueError(f"contact_ids do not have the same size as number of contacts")
 
         if contact_ids.dtype.kind != "U":
             contact_ids = contact_ids.astype("U")

@@ -68,7 +68,7 @@ def test_NP2_4_shanks():
 
     assert probe.model_name == "Neuropixels 2.0 - Four Shank - Prototype"
     assert probe.manufacturer == "IMEC"
-    assert probe.annotations["probe_type"] == 24
+    assert probe.annotations["probe_type"] == "24"
 
     assert probe.ndim == 2
     assert probe.get_shank_count() == 4
@@ -92,11 +92,11 @@ def test_NP2_2013_all():
 
     assert probe.model_name == "Neuropixels 2.0 - Four Shank"
     assert probe.manufacturer == "IMEC"
-    assert probe.annotations["probe_type"] == 2013
+    assert probe.annotations["probe_type"] == "2013"
 
     assert probe.ndim == 2
     # all channels are from the first shank
-    assert probe.get_shank_count() == 1
+    assert probe.get_shank_count() == 4
     assert probe.get_contact_count() == 384
 
     # Test contact geometry
@@ -117,11 +117,11 @@ def test_NP2_2013_subset():
 
     assert probe.model_name == "Neuropixels 2.0 - Four Shank"
     assert probe.manufacturer == "IMEC"
-    assert probe.annotations["probe_type"] == 2013
+    assert probe.annotations["probe_type"] == "2013"
 
     assert probe.ndim == 2
     # all channels are from the first shank
-    assert probe.get_shank_count() == 1
+    assert probe.get_shank_count() == 4
     assert probe.get_contact_count() == 120
 
     # Test contact geometry
@@ -142,7 +142,7 @@ def test_NP2_4_shanks_with_different_electrodes_saved():
 
     assert probe.model_name == "Neuropixels 2.0 - Four Shank - Prototype"
     assert probe.manufacturer == "IMEC"
-    assert probe.annotations["probe_type"] == 24
+    assert probe.annotations["probe_type"] == "24"
 
     assert probe.ndim == 2
     assert probe.get_shank_count() == 4
@@ -193,7 +193,7 @@ def test_NPH_long_staggered():
 
     assert probe.model_name == "Neuropixels 1.0-NHP - long SOI90 staggered"
     assert probe.manufacturer == "IMEC"
-    assert probe.annotations["probe_type"] == 1030
+    assert probe.annotations["probe_type"] == "1030"
 
     assert probe.ndim == 2
     assert probe.get_shank_count() == 1
@@ -248,7 +248,7 @@ def test_NPH_short_linear_probe_type_0():
 
     assert probe.model_name == "Neuropixels 1.0-NHP - short"
     assert probe.manufacturer == "IMEC"
-    assert probe.annotations["probe_type"] == 1015
+    assert probe.annotations["probe_type"] == "1015"
 
     assert probe.ndim == 2
     assert probe.get_shank_count() == 1
@@ -297,9 +297,9 @@ def test_ultra_probe():
     # Data provided by Alessio
     probe = read_spikeglx(data_path / "npUltra.meta")
 
-    assert probe.model_name == "Ultra probe"
+    assert probe.model_name == "Neuropixels Ultra"
     assert probe.manufacturer == "IMEC"
-    assert probe.annotations["probe_type"] == 1100
+    assert probe.annotations["probe_type"] == "1100"
 
     # Test contact geometry
     contact_width = 5.0
@@ -326,5 +326,4 @@ def test_CatGT_NP1():
 
 
 if __name__ == "__main__":
-    test_NP2_2013_all()
-    test_NP2_2013_subset()
+    test_NP2_1_shanks()

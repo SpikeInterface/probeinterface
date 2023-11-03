@@ -39,7 +39,7 @@ pprint(probe.annotations)
 # When plotting, the channel indices are automatically displayed with
 # one-based notation (even if internally everything is still zero based):
 
-plot_probe(probe, with_channel_index=True)
+plot_probe(probe, with_contact_id=True)
 
 ##############################################################################
 

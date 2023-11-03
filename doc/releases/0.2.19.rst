@@ -1,0 +1,10 @@
+probeinterface 0.2.19
+---------------------
+
+Nov, 2nd 2023
+
+
+Features
+^^^^^^^^
+
+* Unify NP reading with probe part number (#232)

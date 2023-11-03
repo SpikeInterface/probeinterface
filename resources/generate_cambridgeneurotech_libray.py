@@ -18,6 +18,10 @@ Samuel Garcia:
 2023-06-14
 generate new library
 
+2023-10-30
+Generate new library with some fixes
+
+
 Derive probes to be used with SpikeInterface base on Cambridgeneurotech databases
 Probe library to match and add on
 https://gin.g-node.org/spikeinterface/probeinterface_library/src/master/cambridgeneurotech
@@ -36,16 +40,26 @@ from probeinterface import generate_multi_columns_probe, combine_probes, write_p
 
 from pathlib import Path
 
+import json
+import shutil
+
 
 # work_dir = r"C:\Users\Windows\Dropbox (Scripps Research)\2021-01-SpikeInterface_CambridgeNeurotech"
 # work_dir = '.'
 # work_dir = '/home/samuel/Documents/SpikeInterface/2021-03-01-probeinterface_CambridgeNeurotech/'
 # work_dir = '/home/samuel/Documents/SpikeInterface/2022-05-20-probeinterface_CambridgeNeurotech/'
 # work_dir = '/home/samuel/Documents/SpikeInterface/2022-10-18-probeinterface_CambridgeNeurotech/'
-work_dir = '/home/samuel/OwnCloudCNRS/probeinterface/2023-06-14-probeinterface-CambridgeNeurotech/'
+# work_dir = '/home/samuel/OwnCloudCNRS/probeinterface/2023-06-14-probeinterface-CambridgeNeurotech/'
+work_dir = '/home/samuel/OwnCloudCNRS/probeinterface/2023-10-30-probeinterface-CambridgeNeurotech/'
+
+
+library_folder = '/home/samuel/Documents/SpikeInterface/probeinterface_library/cambridgeneurotech/'
+
+library_folder = Path(library_folder)
+
 work_dir = Path(work_dir).absolute()
 
-export_folder = work_dir / 'export_2023_06_14'
+export_folder = work_dir / 'export_2023_10_30'
 probe_map_file = work_dir /  'ProbeMaps_Final2023.xlsx'
 probe_info_table_file = work_dir  / 'ProbesDataBase_Final2023.csv'
 
@@ -74,7 +88,7 @@ def convert_contact_shape(listCoord):
     listCoord = [float(s) for s in listCoord.split(' ')]
     return listCoord
 
-def get_channel_index(connector, probe_type):
+def get_contact_order(connector, probe_type):
     """
     Get the channel index given a connector and a probe_type.
     This will help to re-order the probe contact later on.
@@ -179,7 +193,7 @@ def create_CN_figure(probe_name, probe):
     plot_probe(probe, ax=ax,
             contacts_colors = ['#5bc5f2'] * n,  # made change to default color
             probe_shape_kwargs = dict(facecolor='#6f6f6e', edgecolor='k', lw=0.5, alpha=0.3), # made change to default color
-            with_channel_index=True)
+            with_contact_id=True)
 
     ax.set_xlabel(u'Width (\u03bcm)') #modif to legend
     ax.set_ylabel(u'Height (\u03bcm)') #modif to legend
@@ -244,22 +258,57 @@ def generate_all_probes():
                 #~ continue
             print('  ', probe_name)
 
-            channelIndex = get_channel_index(connector = connector, probe_type = probe_info['part'])
+            contact_order = get_contact_order(connector = connector, probe_type = probe_info['part'])
 
-            order = np.argsort(channelIndex)
-            probe = probe_unordered.get_slice(order)
+            sorted_indices = np.argsort(contact_order)
+            probe = probe_unordered.get_slice(sorted_indices)
 
-            probe.annotate(name=probe_name,
-                            manufacturer='cambridgeneurotech',
-                            first_index=1)
+            probe.annotate(name=probe_name, manufacturer='cambridgeneurotech')
 
             # one based in cambridge neurotech
-            contact_ids = np.arange(order.size) + 1
-            contact_ids =contact_ids.astype(str)
+            contact_ids = np.arange(sorted_indices.size) + 1
+            contact_ids = contact_ids.astype(str)
             probe.set_contact_ids(contact_ids)
 
             export_one_probe(probe_name, probe)
 
 
+def synchronize_library():
+
+    for source_probe_file in export_folder.glob('**/*.json'):
+        # print()
+        print(source_probe_file.stem)
+        target_probe_file = library_folder / source_probe_file.parent.stem / source_probe_file.name
+        # print(target_probe_file)
+        with open(source_probe_file, mode='r')as source:
+            source_dict = json.load(source)
+
+        with open(target_probe_file, mode='r')as target:
+            target_dict = json.load(target)
+
+        source_dict.pop('version')
+
+        target_dict.pop('version')
+
+        # this was needed between version 0.2.17 > 0.2.18
+        # target_dict["probes"][0]["annotations"].pop("first_index")
+
+        same = source_dict == target_dict
+
+        # copy the json
+        shutil.copyfile(source_probe_file, target_probe_file)
+        if not same:
+            # copy the png
+            shutil.copyfile(source_probe_file.parent / (source_probe_file.stem + '.png'),
+                            target_probe_file.parent / (target_probe_file.stem + '.png')                      )
+
+
+
+
+
+
+    # library_folder
+
 if __name__ == '__main__':
-    generate_all_probes()
+    # generate_all_probes()
+    synchronize_library()
