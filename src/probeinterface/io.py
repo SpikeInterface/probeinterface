@@ -1732,7 +1732,7 @@ def get_saved_channel_indices_from_openephys_settings(
                 recording_states = [stream.attrib.get("recording_state", None) for stream in custom_streams]
                 has_custom_states = False
                 for rs in recording_states:
-                    if rs is not None and rs != "ALL":
+                    if rs is not None and rs not in ("ALL", "NONE"):
                         has_custom_states = True
                 if has_custom_states:
                     if len(custom_streams) > 1:
@@ -1753,7 +1753,7 @@ def get_saved_channel_indices_from_openephys_settings(
                         custom_stream = custom_streams[0]
                     recording_state = custom_stream.attrib.get("recording_state", None)
                     if recording_state is not None:
-                        if recording_state != "ALL":
+                        if recording_state not in ("ALL", "NONE"):
                             chans_saved = np.array([chan for chan, r in enumerate(recording_state) if int(r) == 1])
     return chans_saved
 
