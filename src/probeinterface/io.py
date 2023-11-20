@@ -577,7 +577,7 @@ def read_3brain(file: Union[str, Path], mea_pitch: float = 42, electrode_width: 
                     "No Well found in the file")
         if num_channels_x * num_channels_y != num_channels:
             raise RuntimeError(
-                    f'Cannot determine structure of the MEA plate with {n_channels} channels')
+                    f'Cannot determine structure of the MEA plate with {num_channels} channels')
         rows = np.repeat(range(num_channels_x), num_channels_y)
         cols = np.tile(range(num_channels_y), num_channels_x)
 
