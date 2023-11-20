@@ -560,24 +560,22 @@ def read_3brain(file: Union[str, Path], mea_pitch: float = 42, electrode_width: 
 
     h5py = import_safely("h5py")
     rf = h5py.File(file, "r")
-    if '3BRecInfo' in rf.keys(): # brw v3.x
+    if "3BRecInfo" in rf.keys():  # brw v3.x
         # get channel positions
         channels = rf["3BRecInfo/3BMeaStreams/Raw/Chs"][:]
         rows = channels["Row"] - 1
         cols = channels["Col"] - 1
-    else: # brw v4.x
+    else:  # brw v4.x
         for key in rf:
-            if key[:5] == 'Well_':
-                num_channels = len(rf[key]['StoredChIdxs'])
+            if key[:5] == "Well_":
+                num_channels = len(rf[key]["StoredChIdxs"])
                 break
         try:
             num_channels_x = num_channels_y = int(np.sqrt(num_channels))
         except NameError:
-            raise RuntimeError(
-                    "No Well found in the file")
+            raise RuntimeError("No Well found in the file")
         if num_channels_x * num_channels_y != num_channels:
-            raise RuntimeError(
-                    f'Cannot determine structure of the MEA plate with {num_channels} channels')
+            raise RuntimeError(f"Cannot determine structure of the MEA plate with {num_channels} channels")
         rows = np.repeat(range(num_channels_x), num_channels_y)
         cols = np.tile(range(num_channels_y), num_channels_x)
 
