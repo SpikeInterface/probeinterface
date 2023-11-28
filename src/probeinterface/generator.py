@@ -12,7 +12,7 @@ from .probegroup import ProbeGroup
 from .utils import combine_probes
 
 
-_default_dict = {"circle": "radius", "square": "width", "rect": "height"}
+_default_shape_to_params = {"circle": "radius", "square": "width", "rect": "height"}
 
 
 def generate_dummy_probe(elec_shapes: "circle" | "square" | "rect" = "circle") -> Probe:
@@ -136,7 +136,7 @@ def generate_multi_columns_probe(
     """
 
     assert (
-        _default_dict[contact_shapes] in contact_shape_params.keys()
+        _default_shape_to_params[contact_shapes] in contact_shape_params.keys()
     ), "contact_shapes and contact_shape_params must be coordinated see docstring"
 
     if isinstance(num_contact_per_column, int):
