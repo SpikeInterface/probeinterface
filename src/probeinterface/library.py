@@ -33,7 +33,7 @@ def download_probeinterface_file(manufacturer: str, probe_name: str):
     Parameters
     ----------
     manufacturer : "cambridgeneurotech" | "neuronexus"
-        The probe manufacturer 
+        The probe manufacturer
     probe_name : str (see probeinterface_libary for options)
         The probe name
     """
@@ -79,7 +79,7 @@ def get_probe(manufacturer: str, probe_name: str, name: Optional[str] = None) ->
     Parameters
     ----------
     manufacturer : "cambridgeneurotech" | "neuronexus"
-        The probe manufacturer 
+        The probe manufacturer
     probe_name : str (see probeinterface_libary for options)
         The probe name
     name : str | None, default: None

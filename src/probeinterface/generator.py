@@ -14,6 +14,7 @@ from .utils import combine_probes
 
 _default_dict = {"circle": "radius", "square": "width", "rect": "height"}
 
+
 def generate_dummy_probe(elec_shapes: "circle" | "square" | "rect" = "circle") -> Probe:
     """
     Generate a dummy probe with 3 columns and 32 contacts.
@@ -22,7 +23,7 @@ def generate_dummy_probe(elec_shapes: "circle" | "square" | "rect" = "circle") -
     Parameters
     ----------
     elec_shapes : "circle" | "square" | "rect", default: 'circle'
-        Shape of the electrodes 
+        Shape of the electrodes
 
     Returns
     -------
@@ -76,7 +77,7 @@ def generate_dummy_probe_group() -> ProbeGroup:
     return probegroup
 
 
-def generate_tetrode(r: float = 10.) -> Probe:
+def generate_tetrode(r: float = 10.0) -> Probe:
     """
     Generate a tetrode Probe.
 
@@ -121,7 +122,7 @@ def generate_multi_columns_probe(
     y_shift_per_column : Optional[array-like], default: None
         Shift in y direction per column. It needs to have the same length as num_columns, by default None
     contact_shapes : "circle" | "rect" | "square", default: "circle"
-        Shape of the contacts 
+        Shape of the contacts
     contact_shape_params : dict, default: {'radius': 6}
         Parameters for the shape.
         For circle: {"radius": float}
@@ -134,16 +135,19 @@ def generate_multi_columns_probe(
         The generated probe
     """
 
-    assert _default_dict[contact_shapes] in contact_shape_params.keys(), "contact_shapes and contact_shape_params must be coordinated see docstring"
-    
+    assert (
+        _default_dict[contact_shapes] in contact_shape_params.keys()
+    ), "contact_shapes and contact_shape_params must be coordinated see docstring"
+
     if isinstance(num_contact_per_column, int):
         num_contact_per_column = [num_contact_per_column] * num_columns
 
     if y_shift_per_column is None:
         y_shift_per_column = [0] * num_columns
 
-    assert len(y_shift_per_column) == num_columns, (f"y_shift_per_column {len(y_shift_per_column)} must have "
-                                                    f"the same length as num_columns {num_columns}")
+    assert len(y_shift_per_column) == num_columns, (
+        f"y_shift_per_column {len(y_shift_per_column)} must have " f"the same length as num_columns {num_columns}"
+    )
 
     positions = []
     for i in range(num_columns):
@@ -161,7 +165,10 @@ def generate_multi_columns_probe(
 
 
 def generate_linear_probe(
-    num_elec: int = 16, ypitch: float = 20, contact_shapes: "circle" | "rect" | "square" = "circle", contact_shape_params: dict = {"radius": 6}
+    num_elec: int = 16,
+    ypitch: float = 20,
+    contact_shapes: "circle" | "rect" | "square" = "circle",
+    contact_shape_params: dict = {"radius": 6},
 ) -> Probe:
     """Generate a one-column linear probe.
 
@@ -172,7 +179,7 @@ def generate_linear_probe(
     ypitch : float, default: 20
         Pitch in y direction
     contact_shapes : "circle" | "rect" | "square", default 'circle'
-        Shape of the contacts 
+        Shape of the contacts
     contact_shape_params : dict, default: {'radius': 6}
         Parameters for the shape.
         For circle: {"radius": float}
@@ -185,7 +192,9 @@ def generate_linear_probe(
         The generated probe
     """
 
-    assert _default_dict[contact_shapes] in contact_shape_params.keys(), "contact_shapes and contact_shape_params must be coordinated see docstring"
+    assert (
+        _default_dict[contact_shapes] in contact_shape_params.keys()
+    ), "contact_shapes and contact_shape_params must be coordinated see docstring"
 
     probe = generate_multi_columns_probe(
         num_columns=1,

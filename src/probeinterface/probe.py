@@ -197,8 +197,10 @@ class Probe:
     def annotate_contacts(self, **kwargs):
         n = self.get_contact_count()
         for k, values in kwargs.items():
-            assert len(values) == n, (f"annotate_contacts requires a list or array as values with length {n}, "
-                                      f"you entered a value of type: {type(values)} and length of {len(values)}")
+            assert len(values) == n, (
+                f"annotate_contacts requires a list or array as values with length {n}, "
+                f"you entered a value of type: {type(values)} and length of {len(values)}"
+            )
             values = np.asarray(values)
             self.contact_annotations[k] = values
 
@@ -307,7 +309,7 @@ class Probe:
             raise ValueError(f"contour_polygon.shape[1] {contour_polygon.shape[1]} and ndim {self.ndim} do not match!")
         self.probe_planar_contour = contour_polygon
 
-    def create_auto_shape(self, probe_type: 'tip' | 'rect' = "tip", margin: float = 20.0):
+    def create_auto_shape(self, probe_type: "tip" | "rect" = "tip", margin: float = 20.0):
         """Create planar contour automatically based on probe contact positions.
 
         Parameters
@@ -375,8 +377,10 @@ class Probe:
         """
         channel_indices = np.asarray(channel_indices, dtype=int)
         if channel_indices.size != self.get_contact_count():
-            ValueError(f"channel_indices {channel_indices.size} do not have "
-                       f"the same size as contacts {self.get_contact_count()}")
+            ValueError(
+                f"channel_indices {channel_indices.size} do not have "
+                f"the same size as contacts {self.get_contact_count()}"
+            )
         self.device_channel_indices = channel_indices
         if self._probe_group is not None:
             self._probe_group.check_global_device_wiring_and_ids()
@@ -418,8 +422,10 @@ class Probe:
         assert np.unique(contact_ids).size == contact_ids.size, "Contact ids have to be unique within a Probe"
 
         if contact_ids.size != self.get_contact_count():
-            ValueError(f"contact_ids {contact_ids.size} do not have the same size "
-                       f"as number of contacts {self.get_contact_count()}")
+            ValueError(
+                f"contact_ids {contact_ids.size} do not have the same size "
+                f"as number of contacts {self.get_contact_count()}"
+            )
 
         if contact_ids.dtype.kind != "U":
             contact_ids = contact_ids.astype("U")
@@ -474,7 +480,7 @@ class Probe:
         # channel_indices are not copied
         return other
 
-    def to_3d(self, axes: 'xy' | 'yz' | 'xz' = "xz"):
+    def to_3d(self, axes: "xy" | "yz" | "xz" = "xz"):
         """
         Transform 2d probe to 3d probe.
 
@@ -485,7 +491,7 @@ class Probe:
         axes : 'xy' | 'yz' | 'xz', default: "xz"
             The axes that define the plane on which the 2D probe is defined. 'xy', 'yz' ', xz'
         """
-        assert self.ndim == 2, 'to convert to_3d you should start with a 2d probe'
+        assert self.ndim == 2, "to convert to_3d you should start with a 2d probe"
 
         probe3d = Probe(ndim=3, si_units=self.si_units)
 
@@ -511,7 +517,7 @@ class Probe:
 
         return probe3d
 
-    def to_2d(self, axes: 'xy' | 'yz' | 'xz' = "xy"):
+    def to_2d(self, axes: "xy" | "yz" | "xz" = "xy"):
         """
         Transform 3d probe to 2d probe.
 
@@ -520,7 +526,7 @@ class Probe:
         Parameters
         ----------
         plane : "xy", "yz", "xz", default: "xy"
-            The plane on which the 2D probe is defined. 
+            The plane on which the 2D probe is defined.
         """
         assert self.ndim == 3, "To use to_2d you should start with a 3d probe"
 
@@ -600,10 +606,7 @@ class Probe:
         if self.probe_planar_contour is not None:
             self.probe_planar_contour += translation_vector
 
-    def rotate(self,
-               theta: float,
-               center: list | np.ndarray | None = None,
-               axis: "xy" | "yz" | "xz" | None = None):
+    def rotate(self, theta: float, center: list | np.ndarray | None = None, axis: "xy" | "yz" | "xz" | None = None):
         """
         Rotate the probe around a specified axis.
 
@@ -614,7 +617,7 @@ class Probe:
         center : array | None, default: None
             Center of rotation. If None, the center of probe is used
         axis : "xy" | "yz" | "xz" | None, default: None
-            Axis of rotation. 
+            Axis of rotation.
             It must be None for 2D probes
             It must be given for 3D probes
 
@@ -1009,10 +1012,10 @@ class Probe:
         except ImportError:
             raise ImportError("to_image() requires the scipy package")
         assert self.ndim == 2, "only 2d probes can be used in to_image"
-        assert values.shape == (
-            self.get_contact_count(),
-        ), (f"Shape mismatch: values {values.shape} must have the "
-            f"same size as contact count {self.get_contact_count()}")
+        assert values.shape == (self.get_contact_count(),), (
+            f"Shape mismatch: values {values.shape} must have the "
+            f"same size as contact count {self.get_contact_count()}"
+        )
 
         if xlims is None:
             x0 = np.min(self.contact_positions[:, 0])
@@ -1063,8 +1066,9 @@ class Probe:
 
         selection = np.asarray(selection)
         if selection.dtype == "bool":
-            assert selection.shape == (n,), (f"if array of bool given it must be the same size "
-                                             "as the number of contacts {selection.shape} != {n}")
+            assert selection.shape == (n,), (
+                f"if array of bool given it must be the same size " "as the number of contacts {selection.shape} != {n}"
+            )
         elif selection.dtype.kind == "i":
             assert np.unique(selection).size == selection.size
             assert 0 <= np.min(selection) < n, f"An index within your selection is out of bounds {np.min(selection)}"

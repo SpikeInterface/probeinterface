@@ -81,8 +81,10 @@ def write_probeinterface(file: str | Path, probe_or_probegroup: Probe | ProbeGro
     elif isinstance(probe_or_probegroup, ProbeGroup):
         probegroup = probe_or_probegroup
     else:
-        raise TypeError(f"write_probeinterface : needs a probe or probegroup you "
-                         f"entered an object of type: {type(probe_or_probegroup)}")
+        raise TypeError(
+            f"write_probeinterface : needs a probe or probegroup you "
+            f"entered an object of type: {type(probe_or_probegroup)}"
+        )
 
     file = Path(file)
 
@@ -323,8 +325,9 @@ def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup
     elif isinstance(probe_or_probegroup, ProbeGroup):
         probegroup = probe_or_probegroup
     else:
-        raise TypeError(f"probe_or_probegroup has to be" "of type Probe or ProbeGroup "
-                         f"not type: {type(probe_or_probegroup)}")
+        raise TypeError(
+            f"probe_or_probegroup has to be" "of type Probe or ProbeGroup " f"not type: {type(probe_or_probegroup)}"
+        )
     folder = Path(folder)
 
     # ensure that prefix and file type indicator are separated by an underscore
