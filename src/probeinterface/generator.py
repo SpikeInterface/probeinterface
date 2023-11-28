@@ -193,7 +193,7 @@ def generate_linear_probe(
     """
 
     assert (
-        _default_dict[contact_shapes] in contact_shape_params.keys()
+        _default_shape_to_params[contact_shapes] in contact_shape_params.keys()
     ), "contact_shapes and contact_shape_params must be coordinated see docstring"
 
     probe = generate_multi_columns_probe(
