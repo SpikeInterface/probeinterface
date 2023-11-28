@@ -32,9 +32,9 @@ def download_probeinterface_file(manufacturer: str, probe_name: str):
 
     Parameters
     ----------
-    manufacturer : str
-        The probe manufacturer (e.g. 'cambridgeneurotech')
-    probe_name : str
+    manufacturer : "cambridgeneurotech" | "neuronexus"
+        The probe manufacturer 
+    probe_name : str (see probeinterface_libary for options)
         The probe name
     """
     os.makedirs(cache_folder / manufacturer, exist_ok=True)
@@ -51,9 +51,9 @@ def get_from_cache(manufacturer: str, probe_name: str) -> Optional["Probe"]:
 
     Parameters
     ----------
-    manufacturer : str
-        The probe manufacturer (e.g. 'cambridgeneurotech', 'neuronexus')
-    probe_name : str
+    manufacturer : "cambridgeneurotech" | "neuronexus"
+        The probe manufacturer
+    probe_name : str (see probeinterface_libary for options)
         The probe name
 
     Returns
@@ -78,11 +78,11 @@ def get_probe(manufacturer: str, probe_name: str, name: Optional[str] = None) ->
 
     Parameters
     ----------
-    manufacturer : str
-        The probe manufacturer (e.g. 'cambridgeneurotech', 'neuronexus')
-    probe_name : str
+    manufacturer : "cambridgeneurotech" | "neuronexus"
+        The probe manufacturer 
+    probe_name : str (see probeinterface_libary for options)
         The probe name
-    name : str or None
+    name : str | None, default: None
         Optional name for the probe
 
     Returns

@@ -12,15 +12,17 @@ from .probegroup import ProbeGroup
 from .utils import combine_probes
 
 
-def generate_dummy_probe(elec_shapes: str = "circle") -> Probe:
+_default_dict = {"circle": "radius", "square": "width", "rect": "height"}
+
+def generate_dummy_probe(elec_shapes: "circle" | "square" | "rect" = "circle") -> Probe:
     """
     Generate a dummy probe with 3 columns and 32 contacts.
     Mainly used for testing and examples.
 
     Parameters
     ----------
-    elec_shapes : str, , by default 'circle'
-        Shape of the electrodes with possibilities of ('circle', 'square', 'rect')
+    elec_shapes : "circle" | "square" | "rect", default: 'circle'
+        Shape of the electrodes 
 
     Returns
     -------
@@ -74,13 +76,15 @@ def generate_dummy_probe_group() -> ProbeGroup:
     return probegroup
 
 
-def generate_tetrode(r: float = 10) -> Probe:
+def generate_tetrode(r: float = 10.) -> Probe:
     """
     Generate a tetrode Probe.
+
     Parameters
     ----------
-    r: float
+    r: float, default: 10
         The distance multiplier for the positions
+
     Returns
     -------
     probe : Probe
@@ -99,26 +103,26 @@ def generate_multi_columns_probe(
     xpitch: float = 20,
     ypitch: float = 20,
     y_shift_per_column: Optional[np.array | list] = None,
-    contact_shapes: str = "circle",
+    contact_shapes: "circle" | "rect" | "square" = "circle",
     contact_shape_params: dict = {"radius": 6},
 ) -> Probe:
     """Generate a Probe with several columns.
 
     Parameters
     ----------
-    num_columns : int, by default 3
+    num_columns : int, default: 3
         Number of columns
-    num_contact_per_column : int, by default 10
+    num_contact_per_column : int, default: 10
         Number of contacts per column
-    xpitch : float, by default 20
+    xpitch : float, default: 20
         Pitch in x direction
-    ypitch : float, by default 20
+    ypitch : float, default: 20
         Pitch in y direction
-    y_shift_per_column : array-like, optional
+    y_shift_per_column : Optional[array-like], default: None
         Shift in y direction per column. It needs to have the same length as num_columns, by default None
-    contact_shapes : str, by default 'circle'
-        Shape of the contacts ('circle', 'rect', 'square')
-    contact_shape_params : dict, default {'radius': 6}
+    contact_shapes : "circle" | "rect" | "square", default: "circle"
+        Shape of the contacts 
+    contact_shape_params : dict, default: {'radius': 6}
         Parameters for the shape.
         For circle: {"radius": float}
         For square: {"width": float}
@@ -130,13 +134,16 @@ def generate_multi_columns_probe(
         The generated probe
     """
 
+    assert _default_dict[contact_shapes] in contact_shape_params.keys(), "contact_shapes and contact_shape_params must be coordinated see docstring"
+    
     if isinstance(num_contact_per_column, int):
         num_contact_per_column = [num_contact_per_column] * num_columns
 
     if y_shift_per_column is None:
         y_shift_per_column = [0] * num_columns
 
-    assert len(y_shift_per_column) == num_columns, "y_shift_per_column must have the same length as num_columns"
+    assert len(y_shift_per_column) == num_columns, (f"y_shift_per_column {len(y_shift_per_column)} must have "
+                                                    f"the same length as num_columns {num_columns}")
 
     positions = []
     for i in range(num_columns):
@@ -154,19 +161,19 @@ def generate_multi_columns_probe(
 
 
 def generate_linear_probe(
-    num_elec: int = 16, ypitch: float = 20, contact_shapes: str = "circle", contact_shape_params: dict = {"radius": 6}
+    num_elec: int = 16, ypitch: float = 20, contact_shapes: "circle" | "rect" | "square" = "circle", contact_shape_params: dict = {"radius": 6}
 ) -> Probe:
     """Generate a one-column linear probe.
 
     Parameters
     ----------
-    num_elec : int
-        Number of electrodes, by default 16
-    ypitch : float
-        Pitch in y direction, by default 20
-    contact_shapes : str, default 'circle'
-        Shape of the contacts ('circle', 'rect', 'square')
-    contact_shape_params : dict, default {'radius': 6}
+    num_elec : int, default: 16
+        Number of electrodes
+    ypitch : float, default: 20
+        Pitch in y direction
+    contact_shapes : "circle" | "rect" | "square", default 'circle'
+        Shape of the contacts 
+    contact_shape_params : dict, default: {'radius': 6}
         Parameters for the shape.
         For circle: {"radius": float}
         For square: {"width": float}
@@ -177,6 +184,8 @@ def generate_linear_probe(
     probe : Probe
         The generated probe
     """
+
+    assert _default_dict[contact_shapes] in contact_shape_params.keys(), "contact_shapes and contact_shape_params must be coordinated see docstring"
 
     probe = generate_multi_columns_probe(
         num_columns=1,
@@ -195,10 +204,10 @@ def generate_multi_shank(num_shank: int = 2, shank_pitch: list = [150, 0], **kar
 
     Parameters
     ----------
-    num_shank : int, default 2
+    num_shank : int, default: 2
         Number of shanks
-    shank_pitch : list, default [150,0]
-        Distance between shanks, by default [150, 0]
+    shank_pitch : list, default: [150,0]
+        Distance between shanks
 
     Returns
     -------
