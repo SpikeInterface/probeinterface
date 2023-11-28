@@ -73,10 +73,13 @@ def wire_probe(probe: "Probe", pathway: str, channel_offset: int = 0):
     channel_offset : int, default: 0
         An optional offset to add to the device_channel_indices
     """
-    assert pathway in pathways, (f"{pathway} is not a currently supported pathway "
-                                 f"run `get_available_pathways to see options")
+    assert pathway in pathways, (
+        f"{pathway} is not a currently supported pathway " f"run `get_available_pathways to see options"
+    )
     chan_indices = np.array(pathways[pathway], dtype="int64") + channel_offset
-    assert chan_indices.size == probe.get_contact_count(), f"chan_indices {chan_indices.size} != contact count {probe.get_contact_count()}"
+    assert (
+        chan_indices.size == probe.get_contact_count()
+    ), f"chan_indices {chan_indices.size} != contact count {probe.get_contact_count()}"
     probe.set_device_channel_indices(chan_indices)
 
 
