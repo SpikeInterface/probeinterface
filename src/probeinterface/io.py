@@ -81,7 +81,8 @@ def write_probeinterface(file: str | Path, probe_or_probegroup: Probe | ProbeGro
     elif isinstance(probe_or_probegroup, ProbeGroup):
         probegroup = probe_or_probegroup
     else:
-        raise ValueError("write_probeinterface : needs a probe or probegroup")
+        raise TypeError(f"write_probeinterface : needs a probe or probegroup you "
+                         f"entered an object of type: {type(probe_or_probegroup)}")
 
     file = Path(file)
 
@@ -322,7 +323,8 @@ def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup
     elif isinstance(probe_or_probegroup, ProbeGroup):
         probegroup = probe_or_probegroup
     else:
-        raise ValueError("probe_or_probegroup has to be" "of type Probe or ProbeGroup")
+        raise TypeError(f"probe_or_probegroup has to be" "of type Probe or ProbeGroup "
+                         f"not type: {type(probe_or_probegroup)}")
     folder = Path(folder)
 
     # ensure that prefix and file type indicator are separated by an underscore
@@ -445,7 +447,7 @@ def read_prb(file: str | Path) -> ProbeGroup:
     """
 
     file = Path(file).absolute()
-    assert file.is_file()
+    assert file.is_file(), "'file given is not of type file"
     with file.open("r") as f:
         contents = f.read()
     contents = re.sub(r"range\(([\d,]*)\)", r"list(range(\1))", contents)
