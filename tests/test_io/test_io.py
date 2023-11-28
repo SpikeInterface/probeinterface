@@ -54,10 +54,10 @@ def test_writeprobeinterface(tmp_path):
     assert np.allclose(probe.probe_planar_contour, probe_read.probe_planar_contour)
 
 
-def test_writeproeinterface_raises_error_with_bad_input(tmp_path):
+def test_writeprobeinterface_raises_error_with_bad_input(tmp_path):
     probe = "WrongInput"
     file_path = tmp_path / "test.prb"
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         write_probeinterface(file_path, probe)
 
 

@@ -10,11 +10,13 @@ def testing_shank():
     num_columns = 1
     num_contact_per_column = 6
     contact_shapes = "square"
+    contact_shape_params: {'width': 6}
     multi_shank_probe = generate_multi_shank(
         num_shank=num_shank,
         num_columns=num_columns,
         num_contact_per_column=num_contact_per_column,
         contact_shapes=contact_shapes,
+        contact_shape_params=contact_shape_params
     )
     shank = multi_shank_probe.get_shanks()[0]
 
