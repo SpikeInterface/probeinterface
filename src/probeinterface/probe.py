@@ -242,9 +242,9 @@ class Probe:
         shapes : "circle" | "square" | "rect" | array, default: "circle"
             Shape of each contact ('circle'/'square'/'rect').
         shape_params : dict or list of dict, default: {"radius": 10}
-            Contains kwargs for shapes: 
+            Contains kwargs for shapes:
             * "radius" for circle
-            * "width" for square, 
+            * "width" for square,
             * "width/height" for rect
         plane_axes : np.array (num_contacts, 2, ndim) | None, default: None
             Defines the two axes of the contact plane for each electrode.
