@@ -1,3 +1,4 @@
+from __future__ import annotations
 import numpy as np
 from .utils import generate_unique_ids
 from .probe import Probe
@@ -197,8 +198,10 @@ class ProbeGroup:
             a numpy array vector with 2 columns
             (probe_index, device_channel_indices)
 
-        Note:
-            channel -1 means not connected
+        Notes
+        -----
+            If a channel within channels has a value of -1 this indicates that that channel
+            is disconnected
         """
         total_chan = self.get_contact_count()
         channels = np.zeros(total_chan, dtype=[("probe_index", "int64"), ("device_channel_indices", "int64")])
