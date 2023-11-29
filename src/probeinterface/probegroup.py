@@ -16,14 +16,14 @@ class ProbeGroup:
         self.probes = []
 
     def add_probe(self, probe: Probe):
-        """ 
+        """
         Add an additional probe to the ProbeGroup
 
         Parameters
         ----------
         probe: Probe
             The probe to add to the ProbeGroup
-        
+
         """
         if len(self.probes) > 0:
             self._check_compatible(probe)
@@ -38,8 +38,9 @@ class ProbeGroup:
             )
 
         if probe.ndim != self.probes[-1].ndim:
-            raise ValueError(f"ndim are not compatible: probe.ndim {probe.ndim} "
-                             f"!= probegroup ndim {self.probes[-1].ndim}")
+            raise ValueError(
+                f"ndim are not compatible: probe.ndim {probe.ndim} " f"!= probegroup ndim {self.probes[-1].ndim}"
+            )
 
         # check global channel maps
         self.probes.append(probe)
@@ -168,7 +169,7 @@ class ProbeGroup:
         return d
 
     @staticmethod
-    def from_dict(d:dict):
+    def from_dict(d: dict):
         """Instantiate a ProbeGroup from a dictionary
 
         Parameters
@@ -191,7 +192,7 @@ class ProbeGroup:
         """
         Gets the global device channels indices and returns as
         an array
-        
+
         Returns
         -------
         channels: np.ndarray
@@ -221,7 +222,9 @@ class ProbeGroup:
         """
         channels = np.asarray(channels)
         if channels.size != self.get_contact_count():
-            raise ValueError(f"Wrong channels size {channels.size} for the number of channels {self.get_contact_count()}")
+            raise ValueError(
+                f"Wrong channels size {channels.size} for the number of channels {self.get_contact_count()}"
+            )
 
         # first reset previsous indices
         for i, probe in enumerate(self.probes):
