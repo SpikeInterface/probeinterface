@@ -14,22 +14,31 @@ class ProbeGroup:
     def __init__(self):
         self.probes = []
 
-    def add_probe(self, probe):
-        """ """
+    def add_probe(self, probe: Probe):
+        """ 
+        Add an additional probe to the ProbeGroup
+
+        Parameters
+        ----------
+        probe: Probe
+            The probe to add to the ProbeGroup
+        
+        """
         if len(self.probes) > 0:
             self._check_compatible(probe)
 
         self.probes.append(probe)
         probe._probe_group = self
 
-    def _check_compatible(self, probe):
+    def _check_compatible(self, probe: Probe):
         if probe._probe_group is not None:
             raise ValueError(
                 "This probe is already attached to another ProbeGroup. Use probe.copy() to attach it to another ProbeGroup"
             )
 
         if probe.ndim != self.probes[-1].ndim:
-            raise ValueError("ndim are not compatible")
+            raise ValueError(f"ndim are not compatible: probe.ndim {probe.ndim} "
+                             f"!= probegroup ndim {self.probes[-1].ndim}")
 
         # check global channel maps
         self.probes.append(probe)
@@ -40,16 +49,27 @@ class ProbeGroup:
     def ndim(self):
         return self.probes[0].ndim
 
-    def get_contact_count(self):
+    def get_contact_count(self) -> int:
         """
         Total number of channels.
+
+        Returns
+        -------
+        n: int
+            The total number of channels
         """
         n = sum(probe.get_contact_count() for probe in self.probes)
         return n
 
-    def to_numpy(self, complete=False):
+    def to_numpy(self, complete: bool = False) -> np.ndarray:
         """
         Export all probes into a numpy array.
+
+        Parameters
+        ----------
+        complete: bool, default: False
+            If True, export complete information about the probegroup
+            including contact_plane_axes/si_units/device_channel_indices
         """
 
         fields = []
@@ -80,7 +100,20 @@ class ProbeGroup:
         return pg_arr
 
     @staticmethod
-    def from_numpy(arr):
+    def from_numpy(arr: np.ndarray) -> "ProbeGroup":
+        """Create ProbeGroup from a complex numpy array
+        see ProbeGroup.to_numpy()
+
+        Parameters
+        ----------
+        arr : np.array
+            The structured np.array representation of the probe
+
+        Returns
+        -------
+        probegroup : ProbeGroup
+            The instantiated ProbeGroup object
+        """
         from .probe import Probe
 
         probes_indices = np.unique(arr["probe_index"])
@@ -91,19 +124,34 @@ class ProbeGroup:
             probegroup.add_probe(probe)
         return probegroup
 
-    def to_dataframe(self, complete=False):
+    def to_dataframe(self, complete: bool = False) -> "pandas.DataFrame":
+        """
+        Export the probegroup to a pandas dataframe
+
+        Parameters
+        ----------
+        complete : bool, default: False
+            If True, export complete information about the probegroup,
+            including the probe plane axis.
+
+        Returns
+        -------
+        df : pandas.DataFrame
+            The dataframe representation of the probegroup
+
+        """
         import pandas as pd
 
         df = pd.DataFrame(self.to_numpy(complete=complete))
         df.index = np.arange(df.shape[0], dtype="int64")
         return df
 
-    def to_dict(self, array_as_list=False):
+    def to_dict(self, array_as_list: bool = False):
         """Create a dictionary of all necessary attributes.
 
         Parameters
         ----------
-        array_as_list : bool, optional
+        array_as_list : bool, default: False
             If True, arrays are converted to lists, by default False
 
         Returns
@@ -119,7 +167,7 @@ class ProbeGroup:
         return d
 
     @staticmethod
-    def from_dict(d):
+    def from_dict(d:dict):
         """Instantiate a ProbeGroup from a dictionary
 
         Parameters
@@ -138,10 +186,16 @@ class ProbeGroup:
             probegroup.add_probe(probe)
         return probegroup
 
-    def get_global_device_channel_indices(self):
+    def get_global_device_channel_indices(self) -> np.ndarray:
         """
-        return a numpy array vector with 2 columns
-        (probe_index, device_channel_indices)
+        Gets the global device channels indices and returns as
+        an array
+        
+        Returns
+        -------
+        channels: np.ndarray
+            a numpy array vector with 2 columns
+            (probe_index, device_channel_indices)
 
         Note:
             channel -1 means not connected
@@ -153,13 +207,18 @@ class ProbeGroup:
         channels["device_channel_indices"] = arr["device_channel_indices"]
         return channels
 
-    def set_global_device_channel_indices(self, channels):
+    def set_global_device_channel_indices(self, channels: np.array | list):
         """
         Set global indices for all probes
+
+        Parameters
+        ----------
+        channels: np.array | list
+            The device channal indices to be set
         """
         channels = np.asarray(channels)
         if channels.size != self.get_contact_count():
-            raise ValueError("Wrong channels size")
+            raise ValueError(f"Wrong channels size {channels.size} for the number of channels {self.get_contact_count()}")
 
         # first reset previsous indices
         for i, probe in enumerate(self.probes):
@@ -173,9 +232,14 @@ class ProbeGroup:
             probe.set_device_channel_indices(channels[ind : ind + n])
             ind += n
 
-    def get_global_contact_ids(self):
+    def get_global_contact_ids(self) -> np.ndarray:
         """
-        get all contact ids concatenated across probes
+        Gets all contact ids concatenated across probes
+
+        Returns
+        -------
+        contact_ids: np.ndarray
+            An array of the contaact ids across all probes
         """
         contact_ids = self.to_numpy(complete=True)["contact_ids"]
         return contact_ids
@@ -187,7 +251,7 @@ class ProbeGroup:
         valid_chans = chans[keep]["device_channel_indices"]
 
         if valid_chans.size != np.unique(valid_chans).size:
-            raise ValueError("channel device index are not unique across probes")
+            raise ValueError("channel device indices are not unique across probes")
 
     def auto_generate_probe_ids(self, *args, **kwargs):
         """
@@ -201,7 +265,7 @@ class ProbeGroup:
         """
 
         if any("probe_id" in p.annotations for p in self.probes):
-            raise ValueError("Probe does already have a `probe_id` annotation.")
+            raise ValueError("Probe already has a `probe_id` annotation.")
 
         if not args:
             args = 1e7, 1e8
