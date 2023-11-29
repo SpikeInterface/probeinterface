@@ -34,17 +34,17 @@ class Probe:
 
         Parameters
         ----------
-        ndim: 2 or 3
+        ndim: 2 or 3, default: 2
             Handles 2D or 3D probe
-        si_units: str
-            'um', 'mm', 'm'
-        name: str
+        si_units: "um" | "mm" | "m", default: "um"
+            The si units to use for the probe
+        name: str | None, default: None
             The name of the probe
-        serial_number: str
+        serial_number: str | None, default: None
             The serial number of the probe
-        model_name: str
+        model_name: str | None, default: None
             The model of the probe
-        manufacturer: str
+        manufacturer: str | None, default: None
             The manufacturer of the probe
 
         Returns
@@ -239,16 +239,19 @@ class Probe:
         ----------
         positions : array (num_contacts, ndim)
             Positions of contacts (2D or 3D depending on probe 'ndim').
-        shapes : str or array
+        shapes : "circle" | "square" | "rect" | array, default: "circle"
             Shape of each contact ('circle'/'square'/'rect').
-        shape_params : dict or list of dict
-            Contains kwargs for shapes ("radius" for circle, "width" for square, "width/height" for rect)
-        plane_axes : np.array (num_contacts, 2, ndim)
+        shape_params : dict or list of dict, default: {"radius": 10}
+            Contains kwargs for shapes: 
+            * "radius" for circle
+            * "width" for square, 
+            * "width/height" for rect
+        plane_axes : np.array (num_contacts, 2, ndim) | None, default: None
             Defines the two axes of the contact plane for each electrode.
             The third dimension corresponds to the probe `ndim` (2d or 3d).
-        contact_ids: None or array of str
+        contact_ids: array[str] | None, default: None
             Defines the contact ids for the contacts. If None, contact ids are not assigned.
-        shank_ids : None or array of str
+        shank_ids : array[str] | None, default: None
             Defines the shank ids for the contacts. If None, then
             these are assigned to a unique Shank.
         """
@@ -314,7 +317,7 @@ class Probe:
 
         Parameters
         ----------
-        probe_type : 'tip' | 'rect', default: 'tip'
+        probe_type : "tip" | "rect", default: "tip"
             The probe type ('tip' or 'rect')
         margin : float, default: 20.0
             The margin to add to the contact positions
@@ -372,7 +375,7 @@ class Probe:
 
         Parameters
         ----------
-        channel_indices : array of int
+        channel_indices : array[int] | list[int]
             The device channel indices to set
         """
         channel_indices = np.asarray(channel_indices, dtype=int)
@@ -395,7 +398,7 @@ class Probe:
         ----------
         pathway : str
            The pathway. E.g. 'H32>RHD'
-        channel_offset: int, default 0
+        channel_offset: int, default: 0
             An optional offset to add to the device_channel_indices
         """
         from .wiring import wire_probe
@@ -465,8 +468,8 @@ class Probe:
         """
         Copy to another Probe instance.
 
-        Note: device_channel_indices is not copied
-        and contact_ids is not copied
+        Note: device_channel_indices are not copied
+        and contact_ids are not copied
         """
         other = Probe()
         other.set_contacts(
@@ -488,7 +491,7 @@ class Probe:
 
         Parameters
         ----------
-        axes : 'xy' | 'yz' | 'xz', default: "xz"
+        axes : "xy" | "yz" | "xz", default: "xz"
             The axes that define the plane on which the 2D probe is defined. 'xy', 'yz' ', xz'
         """
         assert self.ndim == 2, "to convert to_3d you should start with a 2d probe"
@@ -525,7 +528,7 @@ class Probe:
 
         Parameters
         ----------
-        plane : "xy", "yz", "xz", default: "xy"
+        plane : "xy" | "yz" | "xz", default: "xy"
             The plane on which the 2D probe is defined.
         """
         assert self.ndim == 3, "To use to_2d you should start with a 3d probe"
@@ -614,7 +617,7 @@ class Probe:
         ----------
         theta : float
             In degrees, anticlockwise/counterclockwise
-        center : array | None, default: None
+        center : array | list |  None, default: None
             Center of rotation. If None, the center of probe is used
         axis : "xy" | "yz" | "xz" | None, default: None
             Axis of rotation.
@@ -661,7 +664,7 @@ class Probe:
 
         Parameters
         ----------
-        thetas : array of float
+        thetas : float | array[float] | list[float]
             Rotation angle in degrees.
             If scalar, then it is applied to all contacts.
 
@@ -974,7 +977,7 @@ class Probe:
         values: np.array | list,
         pixel_size: float = 0.5,
         num_pixel: Optional[int] = None,
-        method: str = "linear",
+        method: "linear" | "nearest" | "cubic" = "linear",
         xlims: Optional[tuple] = None,
         ylims: Optional[tuple] = None,
     ) -> tuple[np.ndarray, tuple, tuple]:
@@ -1127,7 +1130,7 @@ def select_axes(data: np.ndarray, axes: "xy" | "yz" | "xz" = "xy") -> np.ndarray
     ----------
     data: np.array
         shape (n, 2) or (n, 3)
-    axes: "xy" | "yz" | "xz" | "xyz", default: 'xy'
+    axes: "xy" | "yz" | "xz" | "xyz", default: "xy"
         The axis of selection
 
     Returns
@@ -1150,7 +1153,7 @@ def _3d_to_2d(data3d: np.ndarray, axes: "xy" | "yz" | "xz" = "xy") -> np.ndarray
     ----------
     data: np.ndarray
         The data with shape (n,3)
-    axes: "xy" | "yz" | "xz" default: 'xy'
+    axes: "xy" | "yz" | "xz" default: "xy"
         The axes over which to reduce the 2d array
 
     Returns
