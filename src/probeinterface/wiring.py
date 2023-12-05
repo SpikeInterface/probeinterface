@@ -1,6 +1,7 @@
 """
 Automatically set the `Probe.device_channel_indices` field.
 """
+from __future__ import annotations
 import numpy as np
 
 

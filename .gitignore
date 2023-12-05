@@ -24,3 +24,4 @@ doc/examples/*
 dev_*
 .coverage
 cov.xml
+.DS_Store

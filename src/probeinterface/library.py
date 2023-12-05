@@ -8,6 +8,7 @@ https://gin.g-node.org/spikeinterface/probeinterface_library
 The gin platform enables contributions from users.
 
 """
+from __future__ import annotations
 import os
 from pathlib import Path
 from urllib.request import urlopen
