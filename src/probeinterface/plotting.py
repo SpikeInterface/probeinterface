@@ -4,7 +4,7 @@ using matplotlib.
 
 Depending on Probe.ndim, the plotting is done in 2D or 3D
 """
-
+from __future__ import annotations
 import numpy as np
 from matplotlib import path as mpl_path
 
@@ -13,18 +13,18 @@ def plot_probe(
     probe,
     ax=None,
     contacts_colors=None,
-    with_contact_id=False,
-    with_device_index=False,
-    text_on_contact=None,
-    contacts_values=None,
-    cmap="viridis",
-    title=True,
-    contacts_kargs={},
-    probe_shape_kwargs={},
-    xlims=None,
-    ylims=None,
-    zlims=None,
-    show_channel_on_click=False,
+    with_contact_id: bool = False,
+    with_device_index: bool = False,
+    text_on_contact: list | np.ndarray | None = None,
+    contacts_values: np.ndarray | None = None,
+    cmap: str = "viridis",
+    title: bool = True,
+    contacts_kargs: dict = {},
+    probe_shape_kwargs: dict = {},
+    xlims: tuple | None = None,
+    ylims: tuple | None = None,
+    zlims: tuple | None = None,
+    show_channel_on_click: bool = False,
 ):
     """Plot a Probe object.
     Generates a 2D or 3D axis, depending on Probe.ndim
@@ -33,34 +33,34 @@ def plot_probe(
     ----------
     probe : Probe
         The probe object
-    ax : matplotlib.axis, optional
-        The axis to plot the probe on. If None, an axis is created, by default None
-    contacts_colors : matplotlib color, optional
-        The color of the contacts, by default None
-    with_contact_id : bool, optional
-        If True, channel ids are displayed on top of the channels, by default False
-    with_device_index : bool, optional
-        If True, device channel indices are displayed on top of the channels, by default False
-    text_on_contact: None or list or numpy.array
+    ax : matplotlib.axis | None, default: None
+        The axis to plot the probe on. If None, an axis is created
+    contacts_colors : matplotlib color | None, default: None
+        The color of the contacts
+    with_contact_id : bool, default: False
+        If True, channel ids are displayed on top of the channels
+    with_device_index : bool, default: False
+        If True, device channel indices are displayed on top of the channels
+    text_on_contact: None | list | numpy.array, default: None
         Addintional text to plot on each contact
-    contacts_values : np.array, optional
-        Values to color the contacts with, by default None
-    cmap : str, optional
-        [description], by default 'viridis'
-    title : bool, optional
-        If True, the axis title is set to the probe name, by default True
-    contacts_kargs : dict, optional
-        Dict with kwargs for contacts (e.g. alpha, edgecolor, lw), by default {}
-    probe_shape_kwargs : dict, optional
-        Dict with kwargs for probe shape (e.g. alpha, edgecolor, lw), by default {}
-    xlims : tuple, optional
-        Limits for x dimension, by default None
-    ylims : tuple, optional
-        Limits for y dimension, by default None
-    zlims : tuple, optional
-        Limits for z dimension, by default None
-    show_channel_on_click : bool, optional
-        If True, the channel information is shown upon click, by default False
+    contacts_values : np.array, default: None
+        Values to color the contacts with
+    cmap : a colormap color, default: "viridis"
+         A colormap color
+    title : bool, default: True
+        If True, the axis title is set to the probe name
+    contacts_kargs : dict, default: {}
+        Dict with kwargs for contacts (e.g. alpha, edgecolor, lw)
+    probe_shape_kwargs : dict, default: {}
+        Dict with kwargs for probe shape (e.g. alpha, edgecolor, lw)
+    xlims : tuple | None, default: None
+        Limits for x dimension
+    ylims : tuple | None, default: None
+        Limits for y dimension
+    zlims : tuple | None, default: None
+        Limits for z dimension
+    show_channel_on_click : bool, default: False
+        If True, the channel information is shown upon click
 
     Returns
     -------
@@ -182,7 +182,7 @@ def plot_probe(
     return poly, poly_contour
 
 
-def plot_probe_group(probegroup, same_axes=True, **kargs):
+def plot_probe_group(probegroup, same_axes: bool = True, **kargs):
     """Plot all probes from a ProbeGroup
     Can be in an existing set of axes or separate axes.
 
@@ -190,8 +190,10 @@ def plot_probe_group(probegroup, same_axes=True, **kargs):
     ----------
     probegroup : ProbeGroup
         The ProbeGroup to plot
-    same_axes : bool, optional
-        If True, the probes are plotted on the same axis, by default True
+    same_axes : bool, default: True
+        If True, the probes are plotted on the same axis
+    kargs: dict
+        see docstring for plot_probe for possible kargs
     """
 
     import matplotlib.pyplot as plt

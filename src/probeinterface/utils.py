@@ -1,6 +1,7 @@
 """
 Some utility functions
 """
+from __future__ import annotations
 from importlib import import_module
 from types import ModuleType
 
@@ -47,7 +48,7 @@ def import_safely(module: str) -> ModuleType:
     return module_obj
 
 
-def combine_probes(probes: Probe, connect_shape: bool = True) -> Probe:
+def combine_probes(probes: list[Probe], connect_shape: bool = True) -> Probe:
     """
     Combine several Probe objects into a unique
     multi-shank Probe object.
@@ -63,7 +64,7 @@ def combine_probes(probes: Probe, connect_shape: bool = True) -> Probe:
     ----------
     probes : list
         List of Probe objects
-    connect_shape : bool, default True
+    connect_shape : bool, default: True
         Connect all shapes together.
         Be careful, as this can lead to strange probe shape....
 
@@ -74,8 +75,8 @@ def combine_probes(probes: Probe, connect_shape: bool = True) -> Probe:
     """
 
     # check ndim
-    assert all(probes[0].ndim == p.ndim for p in probes)
-    assert probes[0].ndim == 2
+    assert all(probes[0].ndim == p.ndim for p in probes), "all probes must have the same ndim"
+    assert probes[0].ndim == 2, "All probes should be 2d"
 
     kwargs = {}
     for k in ("contact_positions", "contact_plane_axes", "contact_shapes", "contact_shape_params"):
@@ -116,7 +117,7 @@ def generate_unique_ids(min: int, max: int, n: int, trials: int = 20) -> np.arra
         Maximum value permitted for an identifier
     n : int
         Number of identifiers to create
-    trials : int, default 20
+    trials : int, default: 20
         Maximal number of attempts for generating
         the set of identifiers
 
