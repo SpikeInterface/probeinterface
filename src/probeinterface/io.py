@@ -1555,7 +1555,7 @@ def read_openephys(
             "ptype": ptype,
         }
         # Sequentially assign probe names
-        if "custom_probe_name" in np_probe.attrib:
+        if "custom_probe_name" in np_probe.attrib and np_probe.attrib["custom_probe_name"] != probe_serial_number:
             name = np_probe.attrib["custom_probe_name"]
         else:
             name = probe_names_used[probe_idx]
