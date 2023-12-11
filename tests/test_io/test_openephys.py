@@ -24,6 +24,44 @@ def test_NP2_four_shank():
     assert "2.0 - Four Shank" in probe.model_name
 
 
+def test_NP_Ultra():
+    # This dataset has 4 NP-Ultra probes (3 type 1, 1 type 2)
+    probeA = read_openephys(
+        data_path / "OE_Neuropix-PXI-NP-Ultra" / "settings.xml",
+        probe_name="ProbeA",
+    )
+    assert "Ultra" in probeA.model_name
+    assert probeA.get_shank_count() == 1
+    assert probeA.get_contact_count() == 384
+
+    probeB = read_openephys(
+        data_path / "OE_Neuropix-PXI-NP-Ultra" / "settings.xml",
+        probe_name="ProbeB",
+    )
+    assert "Ultra" in probeB.model_name
+    assert probeB.get_shank_count() == 1
+    assert probeB.get_contact_count() == 384
+
+    probeF = read_openephys(
+        data_path / "OE_Neuropix-PXI-NP-Ultra" / "settings.xml",
+        probe_name="ProbeF",
+    )
+    assert "Ultra" in probeF.model_name
+    assert probeF.get_shank_count() == 1
+    assert probeF.get_contact_count() == 384
+
+    probeD = read_openephys(
+        data_path / "OE_Neuropix-PXI-NP-Ultra" / "settings.xml",
+        probe_name="ProbeD",
+    )
+    assert "Ultra" in probeD.model_name and "Type 2" in probeD.model_name
+    assert probeD.get_shank_count() == 1
+    assert probeD.get_contact_count() == 384
+    # for this probe model, all channels are aligned
+    assert len(np.unique(probeD.contact_positions[:, 0])) == 1
+
+
+
 def test_NP1_subset():
     # NP1 - 200 channels selected by recording_state in Record Node
     probe_ap = read_openephys(
@@ -126,4 +164,4 @@ def test_older_than_06_format():
 
 if __name__ == "__main__":
     # test_multiple_probes()
-    test_older_than_06_format()
+    test_NP_Ultra()

@@ -963,7 +963,7 @@ npx_probe = {
         ),
         "x_shift": -11,
     },
-    # Ultra probe
+    # Ultra probes
     "1100": {
         "model_name": "Neuropixels Ultra",
         "x_pitch": 6,
@@ -983,6 +983,26 @@ npx_probe = {
             "ap_hp_filters",
         ),
         "x_shift": -8,
+    },
+    "1121": {
+        "model_name": "Neuropixels Ultra - Type 2",
+        "x_pitch": 6,
+        "y_pitch": 3,
+        "contact_width": 2,
+        "stagger": 0.0,
+        "shank_pitch": 0,
+        "shank_number": 1,
+        "ncol": 1,
+        "polygon": polygon_description["default"],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "banks",
+            "references",
+            "ap_gains",
+            "lf_gains",
+            "ap_hp_filters",
+        ),
+        "x_shift": 18,
     },
     # NP-Opto
     "1300": {
@@ -1031,9 +1051,11 @@ probe_part_number_to_probe_type = {
     "NP2003": "2003",
     "NP2004": "2004",
     "PRB2_1_2_0640_0": "21",
+    "PRB2_4_2_0640_0": "24",
     # Other probes
     "NP1100": "1100",  # Ultra probe - 1 bank
     "NP1110": "1100",  # Ultra probe - 16 banks
+    "NP1121": "1121",  # Ultra probe - beta configuration
     "NP1300": "1300",  # Opto probe
 }
 
@@ -1538,7 +1560,11 @@ def read_openephys(
             "ptype": ptype,
         }
         # Sequentially assign probe names
-        np_probe_dict.update({"name": probe_names_used[probe_idx]})
+        if "custom_probe_name" in np_probe.attrib and np_probe.attrib["custom_probe_name"] != probe_serial_number:
+            name = np_probe.attrib["custom_probe_name"]
+        else:
+            name = probe_names_used[probe_idx]
+        np_probe_dict.update({"name": name})
         np_probes_info.append(np_probe_dict)
 
     # now select correct probe (if multiple)
