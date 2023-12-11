@@ -1,0 +1,13 @@
+probeinterface 0.2.19
+---------------------
+
+Dec, 11th 2023
+
+
+Features
+^^^^^^^^
+
+* Fix Open Ephys recording state options (#239)
+* Make docstrings-style compliant and add assert messaging (#241)
+* Add missing NP2.4 and NP-Ultra probe part number (#243)
+* ...
