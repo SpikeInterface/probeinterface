@@ -10,4 +10,3 @@ Features
 * Fix Open Ephys recording state options (#239)
 * Make docstrings-style compliant and add assert messaging (#241)
 * Add missing NP2.4 and NP-Ultra probe part number (#243)
-* ...
