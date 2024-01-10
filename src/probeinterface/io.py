@@ -554,6 +554,10 @@ def read_3brain(file: Union[str, Path], mea_pitch: float = 42, electrode_width: 
     --------
     probe : Probe object
 
+    Notes
+    -----
+    In case of multiple wells, the function will return the probe of the first plate.
+
     """
     file = Path(file).absolute()
     assert file.is_file()
@@ -566,16 +570,19 @@ def read_3brain(file: Union[str, Path], mea_pitch: float = 42, electrode_width: 
         rows = channels["Row"] - 1
         cols = channels["Col"] - 1
     else:  # brw v4.x
+        num_channels = None
         for key in rf:
-            if key[:5] == "Well_":
+            if key.startswith("Well_"):
                 num_channels = len(rf[key]["StoredChIdxs"])
                 break
-        try:
-            num_channels_x = num_channels_y = int(np.sqrt(num_channels))
-        except NameError:
-            raise RuntimeError("No Well found in the file")
+        assert num_channels is not None, "No Well found in the file"
+
+        num_channels_x = num_channels_y = int(np.sqrt(num_channels))
         if num_channels_x * num_channels_y != num_channels:
-            raise RuntimeError(f"Cannot determine structure of the MEA plate with {num_channels} channels")
+            raise RuntimeError(
+                f"Electrode configuration is not a square. Cannot determine configuration of the MEA "
+                f"plate with {num_channels} channels"
+            )
         rows = np.repeat(range(num_channels_x), num_channels_y)
         cols = np.tile(range(num_channels_y), num_channels_x)
 
