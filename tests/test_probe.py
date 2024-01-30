@@ -149,6 +149,7 @@ def test_probe_equality_dunder():
 
     # Modify probe2
     probe2.move([1, 1])
+    assert probe1 != probe2
 
 
 def test_set_shanks():
