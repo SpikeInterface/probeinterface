@@ -978,18 +978,17 @@ class Probe:
         # Top-level attributes used to initialize a new Probe instance
         group.attrs["ndim"] = self.ndim
         group.attrs["si_units"] = self.si_units
-        
+
         # Need this behavior because the following attributes are "" (the empty string) by default
         if self.name is not "":
             group.attrs["name"] = self.name
         if self.manufacturer is not "":
             group.attrs["manufacturer"] = self.manufacturer
-        if self.model_name is not "": 
+        if self.model_name is not "":
             group.attrs["model_name"] = self.model_name
         if self.serial_number is not "":
             group.attrs["serial_number"] = self.serial_number
-            
-        
+
         # Annotations as a group
         annotations_group = group.create_group("annotations")
         for key, value in self.annotations.items():
@@ -1079,23 +1078,23 @@ class Probe:
         if "_contact_positions" in group:
             positions = group["_contact_positions"][:]
             shapes = group["_contact_shapes"][:]
-            
+
             plane_axes = group.get("_contact_plane_axes", None)
             if plane_axes is not None:
                 plane_axes = plane_axes[:]
-            
+
             contact_ids = group.get("_contact_ids", None)
             if contact_ids is not None:
                 contact_ids = contact_ids[:]
-            
+
             shank_ids = group.get("_shank_ids", None)
             if shank_ids is not None:
                 shank_ids = shank_ids[:]
-            
+
             shape_params = group.get("contact_shape_params", None)
             if shape_params is not None:
                 shape_params = np.array([json.loads(d) for d in shape_params[:]])
-            
+
             probe.set_contacts(
                 positions=positions,
                 plane_axes=plane_axes,
