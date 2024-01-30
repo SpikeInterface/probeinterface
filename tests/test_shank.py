@@ -10,13 +10,13 @@ def testing_shank():
     num_columns = 1
     num_contact_per_column = 6
     contact_shapes = "square"
-    contact_shape_params = {'width': 6}
+    contact_shape_params = {"width": 6}
     multi_shank_probe = generate_multi_shank(
         num_shank=num_shank,
         num_columns=num_columns,
         num_contact_per_column=num_contact_per_column,
         contact_shapes=contact_shapes,
-        contact_shape_params=contact_shape_params
+        contact_shape_params=contact_shape_params,
     )
     shank = multi_shank_probe.get_shanks()[0]
 
@@ -55,12 +55,8 @@ def test_contact_shapes(testing_shank):
 
 def test_contact_shape_parameters(testing_shank):
     probe = testing_shank.probe
-    expected_contact_shape_params = probe.contact_shape_params[
-        testing_shank.get_indices()
-    ]
-    assert np.array_equal(
-        testing_shank.contact_shape_params, expected_contact_shape_params
-    )
+    expected_contact_shape_params = probe.contact_shape_params[testing_shank.get_indices()]
+    assert np.array_equal(testing_shank.contact_shape_params, expected_contact_shape_params)
 
 
 def test_device_channel_indices(testing_shank):

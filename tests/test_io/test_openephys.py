@@ -61,20 +61,15 @@ def test_NP_Ultra():
     assert len(np.unique(probeD.contact_positions[:, 0])) == 1
 
 
-
 def test_NP1_subset():
     # NP1 - 200 channels selected by recording_state in Record Node
-    probe_ap = read_openephys(
-        data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-AP"
-    )
+    probe_ap = read_openephys(data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-AP")
 
     assert probe_ap.get_shank_count() == 1
     assert "1.0" in probe_ap.model_name
     assert probe_ap.get_contact_count() == 200
 
-    probe_lf = read_openephys(
-        data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-LFP"
-    )
+    probe_lf = read_openephys(data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-LFP")
 
     assert probe_lf.get_shank_count() == 1
     assert "1.0" in probe_lf.model_name
@@ -88,9 +83,7 @@ def test_NP1_subset():
 
 def test_multiple_probes():
     # multiple probes
-    probeA = read_openephys(
-        data_path / "OE_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA"
-    )
+    probeA = read_openephys(data_path / "OE_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA")
 
     assert probeA.get_shank_count() == 1
     assert "1.0" in probeA.model_name
@@ -109,9 +102,7 @@ def test_multiple_probes():
 
     assert probeC.get_shank_count() == 1
 
-    probeD = read_openephys(
-        data_path / "OE_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeD"
-    )
+    probeD = read_openephys(data_path / "OE_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeD")
 
     assert probeD.get_shank_count() == 1
 
@@ -148,13 +139,10 @@ def test_np_opto_with_sync():
     assert probe.get_contact_count() == 384
 
 
-
 def test_older_than_06_format():
     ## Test with the open ephys < 0.6 format
 
-    probe = read_openephys(
-        data_path / "OE_5_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="100.0"
-    )
+    probe = read_openephys(data_path / "OE_5_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="100.0")
 
     assert probe.get_shank_count() == 4
     assert "2.0 - Four Shank" in probe.model_name

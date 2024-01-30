@@ -7,26 +7,26 @@ import numpy as np
 
 import pytest
 
+
 def test_wire_probe():
-
-    manufacturer = 'neuronexus'
-    probe_name = 'A1x32-Poly3-10mm-50-177'
+    manufacturer = "neuronexus"
+    probe_name = "A1x32-Poly3-10mm-50-177"
     probe = get_probe(manufacturer, probe_name)
 
-    probe.wiring_to_device('H32>RHD2132')
+    probe.wiring_to_device("H32>RHD2132")
 
     plot_probe(probe, with_contact_id=True)
 
-    manufacturer = 'cambridgeneurotech'
-    probe_name = 'ASSY-156-P-1'
+    manufacturer = "cambridgeneurotech"
+    probe_name = "ASSY-156-P-1"
     probe = get_probe(manufacturer, probe_name)
 
-    probe.wiring_to_device('ASSY-156>RHD2164')
+    probe.wiring_to_device("ASSY-156>RHD2164")
 
     plot_probe(probe, with_contact_id=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_wire_probe()
 
     plt.show()

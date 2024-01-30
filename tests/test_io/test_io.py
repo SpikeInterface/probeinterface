@@ -43,6 +43,7 @@ def test_probeinterface_format(tmp_path):
     # ~ plot_probe_group(probegroup2, with_contact_id=True, same_axes=False)
     # ~ plt.show()
 
+
 def test_writeprobeinterface(tmp_path):
     probe = generate_dummy_probe()
     file_path = tmp_path / "test.prb"
@@ -61,7 +62,6 @@ def test_writeprobeinterface_raises_error_with_bad_input(tmp_path):
         write_probeinterface(file_path, probe)
 
 
-
 def test_BIDS_format(tmp_path):
     folder_path = tmp_path / "test_BIDS"
     folder_path.mkdir()
@@ -77,9 +77,7 @@ def test_BIDS_format(tmp_path):
     # with BIDS specifications
     n_els = sum([p.get_contact_count() for p in probegroup.probes])
     # using np.random.choice to ensure uniqueness of contact ids
-    el_ids = np.random.choice(
-        np.arange(1e4, 1e5, dtype="int"), replace=False, size=n_els
-    ).astype(str)
+    el_ids = np.random.choice(np.arange(1e4, 1e5, dtype="int"), replace=False, size=n_els).astype(str)
     for probe in probegroup.probes:
         probe_el_ids, el_ids = np.split(el_ids, [probe.get_contact_count()])
         probe.set_contact_ids(probe_el_ids)
@@ -102,12 +100,7 @@ def test_BIDS_format(tmp_path):
         assert all(np.isin(probe_orig.contact_ids, probe_read.contact_ids))
 
         # the transformation of contact order between the two probes
-        t = np.array(
-            [
-                list(probe_read.contact_ids).index(elid)
-                for elid in probe_orig.contact_ids
-            ]
-        )
+        t = np.array([list(probe_read.contact_ids).index(elid) for elid in probe_orig.contact_ids])
 
         assert all(probe_orig.contact_ids == probe_read.contact_ids[t])
         assert all(probe_orig.shank_ids == probe_read.shank_ids[t])
@@ -116,21 +109,14 @@ def test_BIDS_format(tmp_path):
         assert probe_orig.si_units == probe_read.si_units
 
         for i in range(len(probe_orig.probe_planar_contour)):
-            assert all(
-                probe_orig.probe_planar_contour[i] == probe_read.probe_planar_contour[i]
-            )
+            assert all(probe_orig.probe_planar_contour[i] == probe_read.probe_planar_contour[i])
         for sid, shape_params in enumerate(probe_orig.contact_shape_params):
             assert shape_params == probe_read.contact_shape_params[t][sid]
         for i in range(len(probe_orig.contact_positions)):
-            assert all(
-                probe_orig.contact_positions[i] == probe_read.contact_positions[t][i]
-            )
+            assert all(probe_orig.contact_positions[i] == probe_read.contact_positions[t][i])
         for i in range(len(probe.contact_plane_axes)):
             for dim in range(len(probe.contact_plane_axes[i])):
-                assert all(
-                    probe_orig.contact_plane_axes[i][dim]
-                    == probe_read.contact_plane_axes[t][i][dim]
-                )
+                assert all(probe_orig.contact_plane_axes[i][dim] == probe_read.contact_plane_axes[t][i][dim])
 
 
 def test_BIDS_format_empty(tmp_path):
@@ -217,6 +203,7 @@ def test_prb(tmp_path):
     # import matplotlib.pyplot as plt
     # plot_probe(probe)
     # plt.show()
+
 
 if __name__ == "__main__":
     # test_probeinterface_format()
