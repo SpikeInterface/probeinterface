@@ -464,6 +464,38 @@ class Probe:
             shanks.append(shank)
         return shanks
 
+    def __eq__(self, other):
+        if not isinstance(other, Probe):
+            return False
+
+        if not (
+            self.ndim == other.ndim
+            and self.si_units == other.si_units
+            and self.name == other.name
+            and self.serial_number == other.serial_number
+            and self.model_name == other.model_name
+            and self.manufacturer == other.manufacturer
+            and np.array_equal(self._contact_positions, other._contact_positions)
+            and np.array_equal(self._contact_plane_axes, other._contact_plane_axes)
+            and np.array_equal(self._contact_shapes, other._contact_shapes)
+            and np.array_equal(self._contact_shape_params, other._contact_shape_params)
+            and np.array_equal(self.probe_planar_contour, other.probe_planar_contour)
+            and np.array_equal(self._shank_ids, other._shank_ids)
+            and np.array_equal(self.device_channel_indices, other.device_channel_indices)
+            and np.array_equal(self._contact_ids, other._contact_ids)
+            and self.annotations == other.annotations
+        ):
+            return False
+
+        # Compare contact_annotations dictionaries
+        if self.contact_annotations.keys() != other.contact_annotations.keys():
+            return False
+        for key in self.contact_annotations:
+            if not np.array_equal(self.contact_annotations[key], other.contact_annotations[key]):
+                return False
+
+        return True
+
     def copy(self):
         """
         Copy to another Probe instance.
