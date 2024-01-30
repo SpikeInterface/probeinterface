@@ -1,5 +1,6 @@
 from probeinterface import Probe
 from probeinterface.generator import generate_dummy_probe
+from pathlib import Path
 
 import numpy as np
 
@@ -160,6 +161,22 @@ def test_set_shanks():
 
     assert all(probe.shank_ids == shank_ids.astype(str))
 
+
+def test_save_to_zarr(tmp_path):
+    # Generate a dummy probe instance
+    probe = generate_dummy_probe()
+
+    # Define file path in the temporary directory
+    folder_path = Path(tmp_path) / "probe.zarr"
+
+    # Save the probe object to Zarr format
+    probe.to_zarr(folder_path=folder_path)
+
+    # Reload the probe object from the saved Zarr file
+    reloaded_probe = Probe.from_zarr(folder_path=folder_path)
+
+    # Assert that the reloaded probe is equal to the original
+    assert probe == reloaded_probe, "Reloaded Probe object does not match the original"
 
 if __name__ == "__main__":
     test_probe()

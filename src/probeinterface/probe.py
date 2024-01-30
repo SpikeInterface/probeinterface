@@ -1,7 +1,8 @@
 from __future__ import annotations
 import numpy as np
 from typing import Optional
-
+from pathlib import Path
+import json
 
 from .shank import Shank
 
@@ -959,6 +960,87 @@ class Probe:
             probe.set_contact_ids(arr["contact_ids"])
 
         return probe
+    
+    def to_zarr(self, folder_path: str | Path):
+        """Serialize the Probe object to a Zarr file.
+
+        Parameters
+        ----------
+        folder_path : str, Path
+            The path to the folder where the serialized data will be stored.
+        """
+        import zarr
+
+        # Create a Zarr group
+        zarr_group = zarr.open(folder_path, mode='w')
+
+        # Top-level attributes
+        zarr_group.attrs['ndim'] = self.ndim
+        zarr_group.attrs['si_units'] = self.si_units
+
+        # Annotations as a group
+        annotations_group = zarr_group.create_group('annotations')
+        for key, value in self.annotations.items():
+            annotations_group.attrs[key] = value
+
+        # Contact annotations as a group
+        contact_annotations_group = zarr_group.create_group('contact_annotations')
+        for key, value in self.contact_annotations.items():
+            contact_annotations_group.create_dataset(key, data=value, chunks=True)
+
+        # Datasets
+        dataset_attrs = [
+            '_contact_positions', '_contact_plane_axes', '_contact_shapes', 
+            'device_channel_indices', '_contact_ids', '_shank_ids', 'probe_planar_contour'
+        ]
+        for attr in dataset_attrs:
+            value = getattr(self, attr)
+            if value is not None:
+                zarr_group.create_dataset(attr, data=value, chunks=True)
+
+        # Handling contact_shape_params
+        if self._contact_shape_params is not None:
+            shape_params_json = [json.dumps(d) for d in self._contact_shape_params]
+            zarr_group.create_dataset('contact_shape_params', data=shape_params_json, dtype=object)
+        
+    def from_zarr(folder_path: str | Path):
+        # Open the Zarr group
+        import zarr
+        zarr_group = zarr.open(folder_path, mode='r')
+
+        # Initialize a new Probe instance
+        probe = Probe(
+            ndim=zarr_group.attrs['ndim'], 
+            si_units=zarr_group.attrs['si_units']
+        )
+
+        # Load annotations
+        if 'annotations' in zarr_group:
+            annotations_group = zarr_group['annotations']
+            for key in annotations_group.attrs.keys():
+                probe.annotations[key] = annotations_group.attrs[key]
+
+        # Load contact annotations
+        if 'contact_annotations' in zarr_group:
+            contact_annotations_group = zarr_group['contact_annotations']
+            for key in contact_annotations_group:
+                probe.contact_annotations[key] = contact_annotations_group[key][:]
+
+        # Load datasets
+        dataset_attrs = [
+            '_contact_positions', '_contact_plane_axes', '_contact_shapes', 
+            'device_channel_indices', '_contact_ids', '_shank_ids', 'probe_planar_contour'
+        ]
+        for attr in dataset_attrs:
+            if attr in zarr_group:
+                setattr(probe, attr, zarr_group[attr][:])
+
+        # Handling contact_shape_params
+        if 'contact_shape_params' in zarr_group:
+            shape_params_json = zarr_group['contact_shape_params'][:]
+            probe._contact_shape_params = [json.loads(d) for d in shape_params_json]
+
+        return probe
 
     def to_dataframe(self, complete: bool = False) -> "pandas.DataFrame":
         """
@@ -1003,6 +1085,8 @@ class Probe:
         """
         arr = df.to_records(index=False)
         return Probe.from_numpy(arr)
+
+
 
     def to_image(
         self,
