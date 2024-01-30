@@ -9,4 +9,4 @@ repos:
     rev: 23.12.1
     hooks:
     -   id: black
-        files: ^src/|^test/
+        files: ^src/|^tests/
