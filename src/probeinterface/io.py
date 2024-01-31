@@ -9,6 +9,7 @@ Read/write probe info using a variety of formats:
   * Neurodata Without Borders (.nwb)
 
 """
+
 from __future__ import annotations
 from pathlib import Path
 from typing import Union, Optional
