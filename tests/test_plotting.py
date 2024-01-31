@@ -13,7 +13,7 @@ def test_plot_probe():
     plot_probe(probe)
     plot_probe(probe, with_contact_id=True)
     plot_probe(probe, with_device_index=True)
-    plot_probe(probe, text_on_contact=['abcde'[i%5] for i in range(probe.get_contact_count())])
+    plot_probe(probe, text_on_contact=["abcde"[i % 5] for i in range(probe.get_contact_count())])
 
     # with color
     n = probe.get_contact_count()
@@ -21,7 +21,7 @@ def test_plot_probe():
     plot_probe(probe, contacts_colors=contacts_colors)
 
     # 3d
-    probe_3d = probe.to_3d(axes='xz')
+    probe_3d = probe.to_3d(axes="xz")
     plot_probe(probe_3d)
 
     # on click
@@ -43,7 +43,7 @@ def test_plot_probe_group():
     plot_probe_group(probegroup_3d, same_axes=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_plot_probe()
     # test_plot_probe_group()
     plt.show()
