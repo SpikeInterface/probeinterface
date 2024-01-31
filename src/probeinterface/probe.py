@@ -978,7 +978,7 @@ class Probe:
         # Top-level attributes used to initialize a new Probe instance
         group.attrs["ndim"] = self.ndim
         group.attrs["si_units"] = self.si_units
-        
+
         # Special attributes
         group.attrs["name"] = self.name
         group.attrs["manufacturer"] = self.manufacturer
