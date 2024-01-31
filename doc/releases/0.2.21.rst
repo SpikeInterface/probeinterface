@@ -1,0 +1,11 @@
+probeinterface 0.2.21
+---------------------
+
+Feb, 1st 2024
+
+
+Features
+^^^^^^^^
+
+* Add equality dunder method and test to Probe object (#248)
+* Add save to zarr method to Probe object (#250)
