@@ -126,7 +126,7 @@ class Probe:
 
     @name.setter
     def name(self, value):
-        if value is not None:
+        if value not in [None, ""]:
             self.annotate(name=value)
 
     @property
@@ -135,7 +135,7 @@ class Probe:
 
     @serial_number.setter
     def serial_number(self, value):
-        if value is not None:
+        if value not in [None, ""]:
             self.annotate(serial_number=value)
 
     @property
@@ -144,7 +144,7 @@ class Probe:
 
     @model_name.setter
     def model_name(self, value):
-        if value is not None:  # Alessio, why propagate to annotations and not just set the attribute?
+        if value not in [None, ""]:
             self.annotate(model_name=value)
 
     @property
@@ -153,7 +153,7 @@ class Probe:
 
     @manufacturer.setter
     def manufacturer(self, value):
-        if value is not None:
+        if value not in [None, ""]:
             self.annotate(manufacturer=value)
 
     def get_title(self) -> str:
@@ -978,16 +978,12 @@ class Probe:
         # Top-level attributes used to initialize a new Probe instance
         group.attrs["ndim"] = self.ndim
         group.attrs["si_units"] = self.si_units
-
-        # Need this behavior because the following attributes are "" (the empty string) by default
-        if self.name is not "":
-            group.attrs["name"] = self.name
-        if self.manufacturer is not "":
-            group.attrs["manufacturer"] = self.manufacturer
-        if self.model_name is not "":
-            group.attrs["model_name"] = self.model_name
-        if self.serial_number is not "":
-            group.attrs["serial_number"] = self.serial_number
+        
+        # Special attributes
+        group.attrs["name"] = self.name
+        group.attrs["manufacturer"] = self.manufacturer
+        group.attrs["model_name"] = self.model_name
+        group.attrs["serial_number"] = self.serial_number
 
         # Annotations as a group
         annotations_group = group.create_group("annotations")
@@ -1016,8 +1012,7 @@ class Probe:
 
         # Handling contact_shape_params
         if self._contact_shape_params is not None:
-            shape_params_json = [json.dumps(d) for d in self._contact_shape_params]
-            shape_params_json_np = np.array(shape_params_json, dtype=object)
+            shape_params_json_np = np.array([json.dumps(d) for d in self._contact_shape_params], dtype=object)
             group.create_dataset("contact_shape_params", data=shape_params_json_np, dtype=str)
 
     def to_zarr(self, folder_path: str | Path) -> None:
