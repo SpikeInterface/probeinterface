@@ -2,6 +2,7 @@
 This module contains useful helper functions for generating probes.
 
 """
+
 from __future__ import annotations
 import numpy as np
 

@@ -4,6 +4,7 @@ using matplotlib.
 
 Depending on Probe.ndim, the plotting is done in 2D or 3D
 """
+
 from __future__ import annotations
 import numpy as np
 from matplotlib import path as mpl_path

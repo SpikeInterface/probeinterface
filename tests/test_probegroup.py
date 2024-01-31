@@ -12,15 +12,14 @@ def test_probegroup():
     nchan = 0
     for i in range(3):
         probe = generate_dummy_probe()
-        probe.move([i*100, i*80])
+        probe.move([i * 100, i * 80])
         n = probe.get_contact_count()
         probe.set_device_channel_indices(np.arange(n)[::-1] + nchan)
         shank_ids = np.ones(n)
-        shank_ids[:n//2] *= i * 2
-        shank_ids[n//2:] *= i * 2 +1
+        shank_ids[: n // 2] *= i * 2
+        shank_ids[n // 2 :] *= i * 2 + 1
         probe.set_shank_ids(shank_ids)
         probegroup.add_probe(probe)
-
 
         nchan += n
 
@@ -29,7 +28,7 @@ def test_probegroup():
     ids = probegroup.get_global_contact_ids()
 
     df = probegroup.to_dataframe()
-    #~ print(df['global_contact_ids'])
+    # ~ print(df['global_contact_ids'])
 
     arr = probegroup.to_numpy(complete=False)
     other = ProbeGroup.from_numpy(arr)
@@ -39,11 +38,11 @@ def test_probegroup():
     d = probegroup.to_dict()
     other = ProbeGroup.from_dict(d)
 
-    #~ from probeinterface.plotting import plot_probe_group, plot_probe
-    #~ import matplotlib.pyplot as plt
-    #~ plot_probe_group(probegroup)
-    #~ plot_probe_group(other)
-    #~ plt.show()
+    # ~ from probeinterface.plotting import plot_probe_group, plot_probe
+    # ~ import matplotlib.pyplot as plt
+    # ~ plot_probe_group(probegroup)
+    # ~ plot_probe_group(other)
+    # ~ plt.show()
 
     # checking automatic generation of ids with new dummy probes
     probegroup.probes = []
@@ -54,19 +53,20 @@ def test_probegroup():
 
     for p in probegroup.probes:
         assert p.contact_ids is not None
-        assert 'probe_id' in p.annotations
+        assert "probe_id" in p.annotations
+
 
 def test_probegroup_3d():
     probegroup = ProbeGroup()
 
     for i in range(3):
         probe = generate_dummy_probe().to_3d()
-        probe.move([i*100, i*80, i*30])
+        probe.move([i * 100, i * 80, i * 30])
         probegroup.add_probe(probe)
 
     assert probegroup.ndim == 3
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_probegroup()
-    #~ test_probegroup_3d()
+    # ~ test_probegroup_3d()

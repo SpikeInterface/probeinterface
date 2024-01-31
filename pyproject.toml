@@ -45,7 +45,7 @@ test = [
     "scipy",
     "pandas",
     "h5py",
-    "zarr >=2.16.0"
+    "zarr>=2.16.0"
 ]
 
 docs = [
