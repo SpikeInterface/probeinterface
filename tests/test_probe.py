@@ -150,6 +150,7 @@ def test_probe_equality_dunder():
     probe2.move([1, 1])
     assert probe2 != probe1
 
+
 def test_set_shanks():
     probe = Probe(ndim=2, si_units="um")
     probe.set_contacts(positions=np.arange(20).reshape(10, 2), shapes="circle", shape_params={"radius": 5})

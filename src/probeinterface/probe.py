@@ -125,7 +125,7 @@ class Probe:
 
     @name.setter
     def name(self, value):
-        if value is not None:
+        if value not in [None, ""]:
             self.annotate(name=value)
 
     @property
@@ -134,7 +134,7 @@ class Probe:
 
     @serial_number.setter
     def serial_number(self, value):
-        if value is not None:
+        if value not in [None, ""]:
             self.annotate(serial_number=value)
 
     @property
@@ -143,7 +143,7 @@ class Probe:
 
     @model_name.setter
     def model_name(self, value):
-        if value is not None:
+        if value not in [None, ""]:
             self.annotate(model_name=value)
 
     @property
@@ -152,7 +152,7 @@ class Probe:
 
     @manufacturer.setter
     def manufacturer(self, value):
-        if value is not None:
+        if value not in [None, ""]:
             self.annotate(manufacturer=value)
 
     def get_title(self) -> str:
