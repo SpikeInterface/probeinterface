@@ -177,15 +177,15 @@ class Probe:
             model_name = self.model_name
             manufacturer = self.manufacturer
             txt = ""
-            if len(name) > 0:
+            if name is not None:
                 txt += f"{name}"
             else:
                 txt += f"Probe"
-            if len(manufacturer) > 0:
+            if manufacturer is not None:
                 txt += f" - {manufacturer}"
-            if len(model_name) > 0:
+            if model_name is not None:
                 txt += f" - {model_name}"
-            if len(serial_number) > 0:
+            if serial_number is not None:
                 txt += f" - {serial_number}"
             txt += f" - {n}ch"
             if self.shank_ids is not None:
