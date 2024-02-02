@@ -121,39 +121,51 @@ class Probe:
 
     @property
     def name(self):
-        return self.annotations.get("name", "")
+        return self.annotations.get("name", None)
 
     @name.setter
     def name(self, value):
-        if value not in [None, ""]:
+        if value is not None:
             self.annotate(name=value)
+        else:
+            # we remove the annotation if it exists
+            _ = self.annotations.pop("name", None)
 
     @property
     def serial_number(self):
-        return self.annotations.get("serial_number", "")
+        return self.annotations.get("serial_number", None)
 
     @serial_number.setter
     def serial_number(self, value):
-        if value not in [None, ""]:
+        if value is not None:
             self.annotate(serial_number=value)
+        else:
+            # we remove the annotation if it exists
+            _ = self.annotations.pop("serial_number", None)
 
     @property
     def model_name(self):
-        return self.annotations.get("model_name", "")
+        return self.annotations.get("model_name", None)
 
     @model_name.setter
     def model_name(self, value):
-        if value not in [None, ""]:
+        if value is not None:
             self.annotate(model_name=value)
+        else:
+            # we remove the annotation if it exists
+            _ = self.annotations.pop("model_name", None)
 
     @property
     def manufacturer(self):
-        return self.annotations.get("manufacturer", "")
+        return self.annotations.get("manufacturer", None)
 
     @manufacturer.setter
     def manufacturer(self, value):
-        if value not in [None, ""]:
+        if value is not None:
             self.annotate(manufacturer=value)
+        else:
+            # we remove the annotation if it exists
+            _ = self.annotations.pop("manufacturer", None)
 
     def get_title(self) -> str:
         if self.contact_positions is None:
