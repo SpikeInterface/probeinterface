@@ -943,6 +943,7 @@ class Probe:
             "plane_axis_y_1",
             "plane_axis_z_0",
             "plane_axis_z_1",
+            "probe_index",
             "si_units",
         ]
         contact_annotation_fields = [f for f in fields if f not in main_fields]
