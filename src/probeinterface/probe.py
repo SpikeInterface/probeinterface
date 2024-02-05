@@ -517,6 +517,8 @@ class Probe:
 
         # planar contour
         if self.probe_planar_contour is not None:
+            if other.probe_planar_contour is None:
+                return False
             if not np.array_equal(self.probe_planar_contour, other.probe_planar_contour):
                 return False
 
