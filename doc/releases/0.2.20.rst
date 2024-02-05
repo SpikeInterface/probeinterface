@@ -1,4 +1,4 @@
-probeinterface 0.2.19
+probeinterface 0.2.20
 ---------------------
 
 Dec, 11th 2023
