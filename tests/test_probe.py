@@ -1,4 +1,5 @@
 from probeinterface import Probe
+from probeinterface.generator import generate_dummy_probe
 
 import numpy as np
 
@@ -135,6 +136,19 @@ def test_probe():
     # ~ plot_probe(probe)
     # ~ plot_probe(sliced_probe)
     # ~ plt.show()
+
+
+def test_probe_equality_dunder():
+    probe1 = generate_dummy_probe()
+    probe2 = generate_dummy_probe()
+
+    assert probe1 == probe1
+    assert probe2 == probe2
+    assert probe1 == probe2
+
+    # Modify probe2
+    probe2.move([1, 1])
+    assert probe2 != probe1
 
 
 def test_set_shanks():
