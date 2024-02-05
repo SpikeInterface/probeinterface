@@ -515,6 +515,11 @@ class Probe:
             if not np.array_equal(self.contact_annotations[key], other.contact_annotations[key]):
                 return False
 
+        # planar contour
+        if self.probe_planar_contour is not None:
+            if not np.array_equal(self.probe_planar_contour, other.probe_planar_contour):
+                return False
+
         return True
 
     def copy(self):
