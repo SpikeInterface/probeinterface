@@ -1,7 +1,8 @@
 from __future__ import annotations
 import numpy as np
 from typing import Optional
-
+from pathlib import Path
+import json
 
 from .shank import Shank
 
@@ -197,16 +198,24 @@ class Probe:
         return self.get_title()
 
     def annotate(self, **kwargs):
-        """Annotates the probe object.
+        """
+        Annotates the probe object.
 
-        Parameter
-        ---------
-        **kwargs : list of keyword arguments to add to the annotations
+        Parameters
+        ----------
+        **kwargs : list of keyword arguments to add to the annotations (e.g., brain_area="CA1")
         """
         self.annotations.update(kwargs)
         self.check_annotations()
 
     def annotate_contacts(self, **kwargs):
+        """
+        Annotates the contacts of the probe.
+
+        Parameters
+        ----------
+        **kwargs : list of keyword arguments to add to the annotations (e.g., quality=["good", "bad", ...])
+        """
         n = self.get_contact_count()
         for k, values in kwargs.items():
             assert len(values) == n, (
@@ -504,6 +513,13 @@ class Probe:
             return False
         for key in self.contact_annotations:
             if not np.array_equal(self.contact_annotations[key], other.contact_annotations[key]):
+                return False
+
+        # planar contour
+        if self.probe_planar_contour is not None:
+            if other.probe_planar_contour is None:
+                return False
+            if not np.array_equal(self.probe_planar_contour, other.probe_planar_contour):
                 return False
 
         return True
@@ -862,7 +878,7 @@ class Probe:
                 dtype += [(f"plane_axis_{dim}_0", "float64")]
                 dtype += [(f"plane_axis_{dim}_1", "float64")]
             for k, v in self.contact_annotations.items():
-                dtype += [(f"{k}", np.dtype(v[0]))]
+                dtype += [(f"{k}", np.array(v, copy=False).dtype)]
 
         arr = np.zeros(self.get_contact_count(), dtype=dtype)
         arr["x"] = self.contact_positions[:, 0]
@@ -916,8 +932,28 @@ class Probe:
         probe : Probe
             The instantiated Probe object
         """
-
         fields = list(arr.dtype.fields)
+        main_fields = [
+            "x",
+            "y",
+            "z",
+            "contact_shapes",
+            "shank_ids",
+            "contact_ids",
+            "device_channel_indices",
+            "radius",
+            "width",
+            "height",
+            "plane_axis_x_0",
+            "plane_axis_x_1",
+            "plane_axis_y_0",
+            "plane_axis_y_1",
+            "plane_axis_z_0",
+            "plane_axis_z_1",
+            "probe_index",
+            "si_units",
+        ]
+        contact_annotation_fields = [f for f in fields if f not in main_fields]
 
         if "z" in fields:
             ndim = 3
@@ -964,13 +1000,145 @@ class Probe:
 
         if "device_channel_indices" in fields:
             dev_channel_indices = arr["device_channel_indices"]
-            probe.set_device_channel_indices(dev_channel_indices)
+            if not np.all(dev_channel_indices == -1):
+                probe.set_device_channel_indices(dev_channel_indices)
         if "shank_ids" in fields:
             probe.set_shank_ids(arr["shank_ids"])
         if "contact_ids" in fields:
             probe.set_contact_ids(arr["contact_ids"])
 
+        # contact annotations
+        for k in contact_annotation_fields:
+            probe.annotate_contacts(**{k: arr[k]})
         return probe
+
+    def add_probe_to_zarr_group(self, group: "zarr.Group") -> None:
+        """
+        Serialize the probe's data and structure to a specified Zarr group.
+
+        This method is used to save the probe's attributes, annotations, and other
+        related data into a Zarr group, facilitating integration into larger Zarr
+        structures.
+
+        Parameters
+        ----------
+        group : zarr.Group
+            The target Zarr group where the probe's data will be stored.
+        """
+        probe_arr = self.to_numpy(complete=True)
+
+        # add fields and contact annotations
+        for field_name, (dtype, offset) in probe_arr.dtype.fields.items():
+            data = probe_arr[field_name]
+            group.create_dataset(name=field_name, data=data, dtype=dtype, chunks=False)
+
+        # Annotations as a group (special attibutes are stored as annotations)
+        annotations_group = group.create_group("annotations")
+        for key, value in self.annotations.items():
+            annotations_group.attrs[key] = value
+
+        # Add planar contour
+        if self.probe_planar_contour is not None:
+            group.create_dataset(
+                name="probe_planar_contour", data=self.probe_planar_contour, dtype="float64", chunks=False
+            )
+
+    def to_zarr(self, folder_path: str | Path) -> None:
+        """
+        Serialize the Probe object to a Zarr file located at the specified folder path.
+
+        This method initializes a new Zarr group at the given folder path and calls
+        `add_probe_to_zarr_group` to serialize the Probe's data into this group, effectively
+        storing the entire Probe's state in a Zarr archive.
+
+        Parameters
+        ----------
+        folder_path : str | Path
+            The path to the folder where the Zarr data structure will be created and
+            where the serialized data will be stored. If the folder does not exist,
+            it will be created.
+        """
+        import zarr
+
+        # Create or open a Zarr group for writing
+        zarr_group = zarr.open_group(folder_path, mode="w")
+
+        # Serialize this Probe object into the Zarr group
+        self.add_probe_to_zarr_group(zarr_group)
+
+    @staticmethod
+    def from_zarr_group(group: zarr.Group) -> "Probe":
+        """
+        Load a probe instance from a given Zarr group.
+
+        Parameters
+        ----------
+        group : zarr.Group
+            The Zarr group from which to load the probe.
+
+        Returns
+        -------
+        Probe
+            An instance of the Probe class initialized with data from the Zarr group.
+        """
+        import zarr
+
+        dtype = []
+        # load all datasets
+        num_contacts = None
+        probe_arr_keys = []
+        for key in group.keys():
+            if key == "probe_planar_contour":
+                continue
+            if key == "annotations":
+                continue
+            dset = group[key]
+            if isinstance(dset, zarr.Array):
+                probe_arr_keys.append(key)
+                dtype.append((key, dset.dtype))
+                if num_contacts is None:
+                    num_contacts = len(dset)
+
+        # Create a structured array from the datasets
+        probe_arr = np.zeros(num_contacts, dtype=dtype)
+
+        for probe_key in probe_arr_keys:
+            probe_arr[probe_key] = group[probe_key][:]
+
+        # Create a Probe instance from the structured array
+        probe = Probe.from_numpy(probe_arr)
+
+        # Load annotations
+        annotations_group = group.get("annotations", None)
+        for key in annotations_group.attrs.keys():
+            # Use the annotate method for each key-value pair
+            probe.annotate(**{key: annotations_group.attrs[key]})
+
+        if "probe_planar_contour" in group:
+            # Directly assign since there's no specific setter for probe_planar_contour
+            probe.probe_planar_contour = group["probe_planar_contour"][:]
+
+        return probe
+
+    @staticmethod
+    def from_zarr(folder_path: str | Path) -> "Probe":
+        """
+        Deserialize the Probe object from a Zarr file located at the given folder path.
+
+        Parameters
+        ----------
+        folder_path : str | Path
+            The path to the folder where the Zarr file is located.
+
+        Returns
+        -------
+        Probe
+            An instance of the Probe class initialized with data from the Zarr file.
+        """
+        import zarr
+
+        zarr_group = zarr.open(folder_path, mode="r")
+        return Probe.from_zarr_group(zarr_group)
 
     def to_dataframe(self, complete: bool = False) -> "pandas.DataFrame":
         """
