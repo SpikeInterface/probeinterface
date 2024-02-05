@@ -878,7 +878,7 @@ class Probe:
                 dtype += [(f"plane_axis_{dim}_0", "float64")]
                 dtype += [(f"plane_axis_{dim}_1", "float64")]
             for k, v in self.contact_annotations.items():
-                dtype += [(f"{k}", np.array(v).dtype)]
+                dtype += [(f"{k}", np.array(v, copy=False).dtype)]
 
         arr = np.zeros(self.get_contact_count(), dtype=dtype)
         arr["x"] = self.contact_positions[:, 0]
