@@ -183,4 +183,6 @@ def test_save_to_zarr(tmp_path):
 if __name__ == "__main__":
     test_probe()
 
-    test_set_shanks()
+    tmp_path = Path("tmp")
+    tmp_path.mkdir(exist_ok=True)
+    test_save_to_zarr(tmp_path)
