@@ -186,16 +186,24 @@ class Probe:
         return self.get_title()
 
     def annotate(self, **kwargs):
-        """Annotates the probe object.
+        """
+        Annotates the probe object.
 
-        Parameter
-        ---------
-        **kwargs : list of keyword arguments to add to the annotations
+        Parameters
+        ----------
+        **kwargs : list of keyword arguments to add to the annotations (e.g., brain_area="CA1")
         """
         self.annotations.update(kwargs)
         self.check_annotations()
 
     def annotate_contacts(self, **kwargs):
+        """
+        Annotates the contacts of the probe.
+
+        Parameters
+        ----------
+        **kwargs : list of keyword arguments to add to the annotations (e.g., quality=["good", "bad", ...])
+        """
         n = self.get_contact_count()
         for k, values in kwargs.items():
             assert len(values) == n, (
@@ -851,7 +859,7 @@ class Probe:
                 dtype += [(f"plane_axis_{dim}_0", "float64")]
                 dtype += [(f"plane_axis_{dim}_1", "float64")]
             for k, v in self.contact_annotations.items():
-                dtype += [(f"{k}", np.dtype(v[0]))]
+                dtype += [(f"{k}", np.array(v).dtype)]
 
         arr = np.zeros(self.get_contact_count(), dtype=dtype)
         arr["x"] = self.contact_positions[:, 0]
@@ -974,46 +982,23 @@ class Probe:
         group : zarr.Group
             The target Zarr group where the probe's data will be stored.
         """
+        probe_arr = self.to_numpy(complete=True)
 
-        # Top-level attributes used to initialize a new Probe instance
-        group.attrs["ndim"] = self.ndim
-        group.attrs["si_units"] = self.si_units
+        # add fields and contact annotations
+        for field_name, (dtype, offset) in probe_arr.dtype.fields.items():
+            data = probe_arr[field_name]
+            group.create_dataset(name=field_name, data=data, dtype=dtype, chunks=False)
 
-        # Special attributes
-        group.attrs["name"] = self.name
-        group.attrs["manufacturer"] = self.manufacturer
-        group.attrs["model_name"] = self.model_name
-        group.attrs["serial_number"] = self.serial_number
-
-        # Annotations as a group
+        # Annotations as a group (special attibutes are stored as annotations)
         annotations_group = group.create_group("annotations")
         for key, value in self.annotations.items():
             annotations_group.attrs[key] = value
 
-        # Contact annotations as a group
-        contact_annotations_group = group.create_group("contact_annotations")
-        for key, value in self.contact_annotations.items():
-            contact_annotations_group.create_dataset(key, data=value, chunks=False)
-
-        # Save the following fields of the probe as top-level datasets
-        dataset_attrs = [
-            "_contact_positions",
-            "_contact_plane_axes",
-            "_contact_shapes",
-            "device_channel_indices",
-            "_contact_ids",
-            "_shank_ids",
-            "probe_planar_contour",
-        ]
-        for attr in dataset_attrs:
-            value = getattr(self, attr)
-            if value is not None:
-                group.create_dataset(attr, data=value, chunks=False)
-
-        # Handling contact_shape_params
-        if self._contact_shape_params is not None:
-            shape_params_json_np = np.array([json.dumps(d) for d in self._contact_shape_params], dtype=object)
-            group.create_dataset("contact_shape_params", data=shape_params_json_np, dtype=str)
+        # Add planar contour
+        if self.probe_planar_contour is not None:
+            group.create_dataset(
+                name="probe_planar_contour", data=self.probe_planar_contour, dtype="float64", chunks=False
+            )
 
     def to_zarr(self, folder_path: str | Path) -> None:
         """
@@ -1053,15 +1038,32 @@ class Probe:
         Probe
             An instance of the Probe class initialized with data from the Zarr group.
         """
-        # Initialize a new Probe instance with basic attributes
-        probe = Probe(
-            ndim=group.attrs["ndim"],
-            si_units=group.attrs["si_units"],
-            name=group.attrs.get("name", None),
-            manufacturer=group.attrs.get("manufacturer", None),
-            model_name=group.attrs.get("model_name", None),
-            serial_number=group.attrs.get("serial_number", None),
-        )
+        import zarr
+
+        dtype = []
+        # load all datasets
+        num_contacts = None
+        probe_arr_keys = []
+        for key in group.keys():
+            if key == "probe_planar_contour":
+                continue
+            if key == "annotations":
+                continue
+            dset = group[key]
+            if isinstance(dset, zarr.Array):
+                probe_arr_keys.append(key)
+                dtype.append((key, dset.dtype))
+                if num_contacts is None:
+                    num_contacts = len(dset)
+
+        # Create a structured array from the datasets
+        probe_arr = np.zeros(num_contacts, dtype=dtype)
+
+        for probe_key in probe_arr_keys:
+            probe_arr[probe_key] = group[probe_key][:]
+
+        # Create a Probe instance from the structured array
+        probe = Probe.from_numpy(probe_arr)
 
         # Load annotations
         annotations_group = group.get("annotations", None)
@@ -1069,50 +1071,9 @@ class Probe:
             # Use the annotate method for each key-value pair
             probe.annotate(**{key: annotations_group.attrs[key]})
 
-        # Initialize contacts because it is possible to have a probe without contacts (undefined)
-        if "_contact_positions" in group:
-            positions = group["_contact_positions"][:]
-            shapes = group["_contact_shapes"][:]
-
-            plane_axes = group.get("_contact_plane_axes", None)
-            if plane_axes is not None:
-                plane_axes = plane_axes[:]
-
-            contact_ids = group.get("_contact_ids", None)
-            if contact_ids is not None:
-                contact_ids = contact_ids[:]
-
-            shank_ids = group.get("_shank_ids", None)
-            if shank_ids is not None:
-                shank_ids = shank_ids[:]
-
-            shape_params = group.get("contact_shape_params", None)
-            if shape_params is not None:
-                shape_params = np.array([json.loads(d) for d in shape_params[:]])
-
-            probe.set_contacts(
-                positions=positions,
-                plane_axes=plane_axes,
-                shapes=shapes,
-                shape_params=shape_params,
-                contact_ids=contact_ids,
-                shank_ids=shank_ids,
-            )
-
-        # Load contact annotations
-        contact_annotations_group = group.get("contact_annotations", None)
-        if contact_annotations_group:
-            contact_annotations_dict = {key: contact_annotations_group[key][:] for key in contact_annotations_group}
-            # Use the annotate_contacts method
-            probe.annotate_contacts(**contact_annotations_dict)
-
         if "probe_planar_contour" in group:
             # Directly assign since there's no specific setter for probe_planar_contour
             probe.probe_planar_contour = group["probe_planar_contour"][:]
-
-        if "device_channel_indices" in group:
-            # Use set_device_channel_indices for device_channel_indices
-            probe.set_device_channel_indices(group["device_channel_indices"][:])
 
         return probe
 
