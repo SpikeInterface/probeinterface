@@ -1299,7 +1299,6 @@ def read_spikegadgets(file: str | Path) -> ProbeGroup:
     # Get number of probes present (each has its own Device element)
     probe_configs = [device for device in hconf if device.attrib["name"] == "NeuroPixels1"]
     n_probes = len(probe_configs)
-    print(n_probes, "Neuropixels 1.0 probes found.")
 
     # Container to store Probe objects
     probe_group = ProbeGroup()
