@@ -1349,7 +1349,7 @@ def read_spikegadgets(file: str | Path) -> ProbeGroup:
     sconf = root.find("SpikeConfiguration")
 
     # Get number of probes present (each has its own Device element)
-    probe_configs = [device for device in hconf if device.attrib['name'] == 'NeuroPixels1']
+    probe_configs = [device for device in hconf if device.attrib["name"] == "NeuroPixels1"]
     n_probes = len(probe_configs)
     print(n_probes, "Neuropixels 1.0 probes found:")
 
@@ -1357,12 +1357,14 @@ def read_spikegadgets(file: str | Path) -> ProbeGroup:
     probe_group = ProbeGroup()
 
     for curr_probe in range(1, n_probes + 1):
-        print(f'Reading probe{curr_probe}...', flush=True, end='')
+        print(f"Reading probe{curr_probe}...", flush=True, end="")
         probe_config = probe_configs[curr_probe - 1]
 
         # Get number of active channels from probe Device element
-        active_channel_str = [option for option in probe_config if option.attrib['name'] == 'channelsOn'][0].attrib['data']
-        active_channels = [int(ch) for ch in active_channel_str.split(' ') if ch]
+        active_channel_str = [option for option in probe_config if option.attrib["name"] == "channelsOn"][0].attrib[
+            "data"
+        ]
+        active_channels = [int(ch) for ch in active_channel_str.split(" ") if ch]
         n_active_channels = sum(active_channels)
         assert len(active_channels) == TOTAL_NPIX_ELECTRODES
         assert n_active_channels <= MAX_ACTIVE_CHANNELS
@@ -1374,11 +1376,11 @@ def read_spikegadgets(file: str | Path) -> ProbeGroup:
 
         nt_i = 0  # Both probes are in sconf, so need an independent counter of probe electrodes while iterating through
         for ntrode in sconf:
-            electrode_id = ntrode.attrib['id']
+            electrode_id = ntrode.attrib["id"]
             if int(electrode_id[0]) == curr_probe:  # first digit of electrode id is probe number
                 contact_ids.append(electrode_id)
-                positions[nt_i, :] = (ntrode[0].attrib['coord_ml'], ntrode[0].attrib['coord_dv'])
-                device_channels.append(ntrode[0].attrib['hwChan'])
+                positions[nt_i, :] = (ntrode[0].attrib["coord_ml"], ntrode[0].attrib["coord_dv"])
+                device_channels.append(ntrode[0].attrib["hwChan"])
                 nt_i += 1
         assert len(contact_ids) == n_active_channels
 
@@ -1414,7 +1416,7 @@ def read_spikegadgets(file: str | Path) -> ProbeGroup:
         probe.move([250 * (curr_probe - 1), 0])
 
         # Add the probe to the probe container
-        print(probe.get_contact_count(), 'active channels found.')
+        print(probe.get_contact_count(), "active channels found.")
         probe_group.add_probe(probe)
 
     return probe_group
