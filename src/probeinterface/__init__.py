@@ -16,6 +16,7 @@ from .io import (
     write_imro,
     read_BIDS_probe,
     write_BIDS_probe,
+    read_spikegadgets,
     read_spikeglx,
     parse_spikeglx_meta,
     get_saved_channel_indices_from_spikeglx_meta,
