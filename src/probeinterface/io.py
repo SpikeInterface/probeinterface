@@ -1270,58 +1270,6 @@ def read_spikegadgets(file: str | Path) -> ProbeGroup:
     SpikeGadgets headstages support up to three Neuropixels 1.0 probes (as of March 28, 2024),
     and information for all probes will be returned in a ProbeGroup object.
 
-    Within the SpikeConfiguration header element (sconf), there is a SpikeNTrode element
-    for each electrophysiology channel that contains information relevant to scaling and
-    otherwise displaying the information from that channel, as well as the id of the electrode
-    from which it is recording ('id').
-
-    Nested within each SpikeNTrode element is a SpikeChannel element with information about
-    the electrode dynamically connected to that channel.  This contains information relevant
-    for spike sorting, i.e., its spatial location along the probe shank and the hardware channel
-    to which it is connected.
-
-    Excerpt of a sample SpikeConfiguration element:
-
-    <SpikeConfiguration chanPerChip="1889715760" device="neuropixels1" categories="">
-        <SpikeNTrode viewLFPBand="0"
-            viewStimBand="0"
-            id="1384"  # @USE: The first digit is the probe number; the last three digits are the electrode number
-            lfpScalingToUv="0.018311105685598315"
-            LFPChan="1"
-            notchFreq="60"
-            rawRefOn="0"
-            refChan="1"
-            viewSpikeBand="1"
-            rawScalingToUv="0.018311105685598315"  # For Neuropixels 1.0, raw and spike scaling are identical
-            spikeScalingToUv="0.018311105685598315"  # Extracted when reading the raw data
-            refNTrodeID="1"
-            notchBW="10"
-            color="#c83200"
-            refGroup="2"
-            filterOn="1"
-            LFPHighFilter="200"
-            moduleDataOn="0"
-            groupRefOn="0"
-            lowFilter="600"
-            refOn="0"
-            notchFilterOn="0"
-            lfpRefOn="0"
-            lfpFilterOn="0"
-            highFilter="6000"
-        >
-            <SpikeChannel thresh="60"
-                coord_dv="-480"  # @USE: dorsal-ventral coordinate in um (in pairs for staggered probe)
-                spikeSortingGroup="1782505664"
-                triggerOn="1"
-                stimCapable="0"
-                coord_ml="3192"  # @USE: medial-lateral coordinate in um
-                coord_ap="3700"  # doesn't vary, assuming the shank's flat face is along the ML axis
-                maxDisp="400"
-                hwChan="735"  # @USE: unique device channel that is reading from electrode
-            />
-        </SpikeNTrode>
-        ...
-    </SpikeConfiguration>
 
     Parameters
     ----------
@@ -1351,13 +1299,12 @@ def read_spikegadgets(file: str | Path) -> ProbeGroup:
     # Get number of probes present (each has its own Device element)
     probe_configs = [device for device in hconf if device.attrib["name"] == "NeuroPixels1"]
     n_probes = len(probe_configs)
-    print(n_probes, "Neuropixels 1.0 probes found:")
+    print(n_probes, "Neuropixels 1.0 probes found.")
 
     # Container to store Probe objects
     probe_group = ProbeGroup()
 
     for curr_probe in range(1, n_probes + 1):
-        print(f"Reading probe{curr_probe}...", flush=True, end="")
         probe_config = probe_configs[curr_probe - 1]
 
         # Get number of active channels from probe Device element
@@ -1369,6 +1316,60 @@ def read_spikegadgets(file: str | Path) -> ProbeGroup:
         assert len(active_channels) == TOTAL_NPIX_ELECTRODES
         assert n_active_channels <= MAX_ACTIVE_CHANNELS
 
+        """
+        Within the SpikeConfiguration header element (sconf), there is a SpikeNTrode element
+        for each electrophysiology channel that contains information relevant to scaling and
+        otherwise displaying the information from that channel, as well as the id of the electrode
+        from which it is recording ('id').
+
+        Nested within each SpikeNTrode element is a SpikeChannel element with information about
+        the electrode dynamically connected to that channel.  This contains information relevant
+        for spike sorting, i.e., its spatial location along the probe shank and the hardware channel
+        to which it is connected.
+
+        Excerpt of a sample SpikeConfiguration element:
+
+        <SpikeConfiguration chanPerChip="1889715760" device="neuropixels1" categories="">
+            <SpikeNTrode viewLFPBand="0"
+                viewStimBand="0"
+                id="1384"  # @USE: The first digit is the probe number; the last three digits are the electrode number
+                lfpScalingToUv="0.018311105685598315"
+                LFPChan="1"
+                notchFreq="60"
+                rawRefOn="0"
+                refChan="1"
+                viewSpikeBand="1"
+                rawScalingToUv="0.018311105685598315"  # For Neuropixels 1.0, raw and spike scaling are identical
+                spikeScalingToUv="0.018311105685598315"  # Extracted when reading the raw data
+                refNTrodeID="1"
+                notchBW="10"
+                color="#c83200"
+                refGroup="2"
+                filterOn="1"
+                LFPHighFilter="200"
+                moduleDataOn="0"
+                groupRefOn="0"
+                lowFilter="600"
+                refOn="0"
+                notchFilterOn="0"
+                lfpRefOn="0"
+                lfpFilterOn="0"
+                highFilter="6000"
+            >
+                <SpikeChannel thresh="60"
+                    coord_dv="-480"  # @USE: dorsal-ventral coordinate in um (in pairs for staggered probe)
+                    spikeSortingGroup="1782505664"
+                    triggerOn="1"
+                    stimCapable="0"
+                    coord_ml="3192"  # @USE: medial-lateral coordinate in um
+                    coord_ap="3700"  # doesn't vary, assuming the shank's flat face is along the ML axis
+                    maxDisp="400"
+                    hwChan="735"  # @USE: unique device channel that is reading from electrode
+                />
+            </SpikeNTrode>
+            ...
+        </SpikeConfiguration>
+        """
         # Find all channels/electrodes that belong to the current probe
         contact_ids = []
         device_channels = []
@@ -1416,7 +1417,6 @@ def read_spikegadgets(file: str | Path) -> ProbeGroup:
         probe.move([250 * (curr_probe - 1), 0])
 
         # Add the probe to the probe container
-        print(probe.get_contact_count(), "active channels found.")
         probe_group.add_probe(probe)
 
     return probe_group
