@@ -1264,7 +1264,7 @@ def write_imro(file: str | Path, probe: Probe):
         f.write("".join(ret))
 
 
-def read_spikegadgets(file: str | Path) -> ProbeGroup:
+def read_spikegadgets(file: str | Path, raise_error: bool = True) -> ProbeGroup:
     """
     Find active channels of the given Neuropixels probe from a SpikeGadgets .rec file.
     SpikeGadgets headstages support up to three Neuropixels 1.0 probes (as of March 28, 2024),
@@ -1299,6 +1299,11 @@ def read_spikegadgets(file: str | Path) -> ProbeGroup:
     # Get number of probes present (each has its own Device element)
     probe_configs = [device for device in hconf if device.attrib["name"] == "NeuroPixels1"]
     n_probes = len(probe_configs)
+
+    if n_probes == 0:
+        if raise_error:
+            raise Exception("No Neuropixels 1.0 probes found")
+        return None
 
     # Container to store Probe objects
     probe_group = ProbeGroup()

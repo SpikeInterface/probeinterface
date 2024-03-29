@@ -19,7 +19,7 @@ def test_parse_meta():
 
 
 def test_neuropixels_1_reader():
-    probe_group = read_spikegadgets(data_path / test_file)
+    probe_group = read_spikegadgets(data_path / test_file, raise_error=False)
     assert len(probe_group.probes) == 2
     for probe in probe_group.probes:
         assert "1.0" in probe.model_name
