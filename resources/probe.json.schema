@@ -109,8 +109,7 @@
           "annotations",
           "contact_positions",
           "contact_shapes",
-          "contact_shape_params",
-          "contact_ids"
+          "contact_shape_params"
         ],
         "additionalProperties": false
       }
