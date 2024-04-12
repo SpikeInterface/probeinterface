@@ -63,7 +63,7 @@
           },
           "contact_shapes": {
             "type": "array",
-            "items": { "type": "string", "enum": ["circle", "rect"] }
+            "items": { "type": "string", "enum": ["circle", "rect", "square"] }
           },
           "contact_shape_params": {
             "type": "array",
