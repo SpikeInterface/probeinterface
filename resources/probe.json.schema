@@ -91,7 +91,7 @@
               "type": "array",
               "items": { "type": ["integer", "number"] },
               "minItems": 2,
-              "maxItems": 2
+              "maxItems": 3
             }
           },
           "contact_ids": {
