@@ -17,7 +17,7 @@
         "properties": {
           "ndim": {
             "type": "integer",
-            "enum": [1, 2, 3]
+            "enum": [2, 3]
           },
           "si_units": {
             "type": "string",
