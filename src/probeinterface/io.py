@@ -1062,6 +1062,7 @@ probe_part_number_to_probe_type = {
     None: "0",  # for old version without a probe number we assume 1.0
     # NHP probes
     "NP1015": "1015",
+    "NP1016": "1015",
     "NP1022": "1022",
     "NP1030": "1030",
     "NP1031": "1031",
