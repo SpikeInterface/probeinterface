@@ -2,6 +2,9 @@ from probeinterface import Probe, ProbeGroup
 from probeinterface import generate_dummy_probe, generate_dummy_probe_group
 from probeinterface.plotting import plot_probe, plot_probegroup
 
+# remove once plot_probe_group is removed
+from probeinterface.plotting import plot_probe_group
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -34,6 +37,9 @@ def test_plot_probegroup():
 
     plot_probegroup(probegroup, same_axes=True, with_contact_id=True)
     plot_probegroup(probegroup, same_axes=False)
+
+    # remove when plot_probe_group has been removed
+    plot_probe_group(probegroup)
 
     # 3d
     probegroup_3d = ProbeGroup()
