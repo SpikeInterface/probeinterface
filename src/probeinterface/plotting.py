@@ -183,7 +183,7 @@ def plot_probe(
     return poly, poly_contour
 
 
-def plot_probe_group(probegroup, same_axes: bool = True, **kargs):
+def plot_probegroup(probegroup, same_axes: bool = True, **kargs):
     """Plot all probes from a ProbeGroup
     Can be in an existing set of axes or separate axes.
 
@@ -242,6 +242,22 @@ def plot_probe_group(probegroup, same_axes: bool = True, **kargs):
     kargs["title"] = False
     for i, probe in enumerate(probegroup.probes):
         plot_probe(probe, ax=axs[i], **kargs)
+
+
+def plot_probe_group(probegroup, same_axes: bool = True, **kargs):
+    """
+    This function is deprecated and will be removed in 0.2.23
+    Please use plot_probegroup instead"""
+
+    from warnings import warn
+
+    warn(
+        "`plot_probe_group` is deprecated and will be removed in 2.23. Use plot_probegroup instead",
+        category=DeprecationWarning,
+        stacklevel=2,
+    )
+
+    plot_probegroup(probegroup, same_axes=same_axes, **kargs)
 
 
 def _on_press(probe, event):
