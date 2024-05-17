@@ -558,10 +558,13 @@ def read_3brain(file: str | Path, mea_pitch: float = None,
         The file name
 
     mea_pitch : float
-        The inter-electrode distance (pitch) between electrodes
+        The inter-electrode distance (pitch) between electrodes in um, if
+        `None` it is tried to be inferred from the chip model in the file or
+        set to 42
 
     electrode_width : float
-        Width of the electrodes in um
+        The width of the electrodes in um, if `None` it is tried to be inferred
+        from the chip model in the file or set to 21
 
     Returns
     --------
@@ -596,17 +599,17 @@ def read_3brain(file: str | Path, mea_pitch: float = None,
         assert num_channels is not None, "No Well found in the file"
 
         num_channels_x = num_channels_y = int(np.sqrt(num_channels))
-        if num_channels_x * num_channels_y != num_channels:
-            raise RuntimeError(
-                "Electrode configuration is not a square. Cannot determine "
-                f"configuration of the MEA plate with {num_channels} channels."
-            )
+        assert num_channels_x * num_channels_y == num_channels, (
+            "Electrode configuration is not a square. Cannot determine "
+            f"configuration of the MEA plate with {num_channels} channels.")
         rows = np.repeat(range(num_channels_x), num_channels_y)
         cols = np.tile(range(num_channels_y), num_channels_x)
         if mea_pitch is None or electrode_width is None:
             experiment_settings = json.JSONDecoder().decode(
                 rf['ExperimentSettings'][0].decode())
             model = experiment_settings['MeaPlate']['Model'].lower()
+            # see https://www.3brain.com/products/single-well/hd-mea
+            # see https://www.3brain.com/products/multiwell/coreplate-multiwell
             if mea_pitch is None:
                 if model.startswith('accura') or model.startswith('coreplate'):
                     mea_pitch = 60
