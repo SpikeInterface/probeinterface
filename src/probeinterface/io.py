@@ -546,8 +546,7 @@ def read_maxwell(file: str | Path, well_name: str = "well000", rec_name: str = "
     return probe
 
 
-def read_3brain(file: str | Path, mea_pitch: float = None,
-                electrode_width: float = None) -> Probe:
+def read_3brain(file: str | Path, mea_pitch: float = None, electrode_width: float = None) -> Probe:
     """
     Read a 3brain file and return a Probe object. The 3brain file format can be
     either an .h5 file or a .brw
@@ -601,24 +600,24 @@ def read_3brain(file: str | Path, mea_pitch: float = None,
         num_channels_x = num_channels_y = int(np.sqrt(num_channels))
         assert num_channels_x * num_channels_y == num_channels, (
             "Electrode configuration is not a square. Cannot determine "
-            f"configuration of the MEA plate with {num_channels} channels.")
+            f"configuration of the MEA plate with {num_channels} channels."
+        )
         rows = np.repeat(range(num_channels_x), num_channels_y)
         cols = np.tile(range(num_channels_y), num_channels_x)
         if mea_pitch is None or electrode_width is None:
-            experiment_settings = json.JSONDecoder().decode(
-                rf['ExperimentSettings'][0].decode())
-            model = experiment_settings['MeaPlate']['Model'].lower()
+            experiment_settings = json.JSONDecoder().decode(rf["ExperimentSettings"][0].decode())
+            model = experiment_settings["MeaPlate"]["Model"].lower()
             # see https://www.3brain.com/products/single-well/hd-mea
             # see https://www.3brain.com/products/multiwell/coreplate-multiwell
             if mea_pitch is None:
-                if model.startswith('accura') or model.startswith('coreplate'):
+                if model.startswith("accura") or model.startswith("coreplate"):
                     mea_pitch = 60
-                elif model.startswith('stimulo'):
+                elif model.startswith("stimulo"):
                     mea_pitch = 81
                 else:  # Arena, Prime
                     mea_pitch = 42
             if electrode_width is None:
-                if model.startswith('coreplate'):
+                if model.startswith("coreplate"):
                     electrode_width = 25
                 else:  # Accura, Arena, Prime, Stimulo
                     electrode_width = 21
@@ -626,8 +625,7 @@ def read_3brain(file: str | Path, mea_pitch: float = None,
     positions = np.vstack((rows, cols)).T * mea_pitch
 
     probe = Probe(ndim=2, si_units="um", manufacturer="3Brain")
-    probe.set_contacts(positions=positions, shapes="square",
-                       shape_params={"width": electrode_width})
+    probe.set_contacts(positions=positions, shapes="square", shape_params={"width": electrode_width})
     probe.annotate_contacts(row=rows)
     probe.annotate_contacts(col=cols)
     probe.create_auto_shape(probe_type="rect", margin=mea_pitch)
