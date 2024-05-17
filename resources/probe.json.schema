@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "specification": {
+      "type": "string",
+      "value": "probeinterface"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "probes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ndim": {
+            "type": "integer",
+            "enum": [2, 3]
+          },
+          "si_units": {
+            "type": "string",
+            "enum": ["mm","um"]
+          },
+          "annotations": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "manufacturer": { "type": "string" }
+            },
+            "required": ["name", "manufacturer"],
+            "additionalProperties": true
+          },
+          "contact_annotations": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "contact_positions": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 3
+            }
+          },
+          "contact_plane_axes": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": { "type": "number" },
+                "minItems": 2,
+                "maxItems": 3
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "contact_shapes": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["circle", "rect", "square"] }
+          },
+          "contact_shape_params": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": { "radius": { "type": "integer", "minimum": 0 } },
+                  "required": ["radius"]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "width": { "type": "integer", "minimum": 0 },
+                    "height": { "type": "integer", "minimum": 0 }
+                  },
+                  "required": ["width"]
+                }
+              ]
+            }
+          },
+          "probe_planar_contour": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": { "type": ["integer", "number"] },
+              "minItems": 2,
+              "maxItems": 3
+            }
+          },
+          "contact_ids": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "shank_ids": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": [
+          "ndim",
+          "si_units",
+          "annotations",
+          "contact_positions",
+          "contact_shapes",
+          "contact_shape_params"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["specification", "version", "probes"],
+  "additionalProperties": false
+}
