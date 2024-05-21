@@ -14,11 +14,11 @@ def test_3brain():
     contact_shape = "square"
 
     for file, contact_width, contact_pitch, contact_count in [
-            # old brw3.x format with default 42 um pitch (even if wrong)
-            ("biocam_hw3.0_fw1.6.brw", 21, 42, 36),
-            # new brw4.x format has chip information included
-            ("biocam_hw3.0_fw1.7.0.12_raw.brw", 21, 60, 100),
-            ]:
+        # old brw3.x format with default 42 um pitch (even if wrong)
+        ("biocam_hw3.0_fw1.6.brw", 21, 42, 36),
+        # new brw4.x format has chip information included
+        ("biocam_hw3.0_fw1.7.0.12_raw.brw", 21, 60, 100),
+    ]:
         probe = read_3brain(data_path / file)
 
         assert probe.ndim == 2
