@@ -1624,16 +1624,16 @@ def read_openephys(
 
     info_chain = root.find("INFO")
     oe_version = parse(info_chain.find("VERSION").text)
-    signal_chain = root.find("SIGNALCHAIN")
     neuropix_pxi = None
     record_node = None
-    for processor in signal_chain:
-        if "PROCESSOR" == processor.tag:
-            name = processor.attrib["name"]
-            if "Neuropix-PXI" in name:
-                neuropix_pxi = processor
-            if "Record Node" in name:
-                record_node = processor
+    for signal_chain in root.findall("SIGNALCHAIN"):
+        for processor in signal_chain:
+            if "PROCESSOR" == processor.tag:
+                name = processor.attrib["name"]
+                if "Neuropix-PXI" in name:
+                    neuropix_pxi = processor
+                if "Record Node" in name:
+                    record_node = processor
 
     if neuropix_pxi is None:
         if raise_error:
