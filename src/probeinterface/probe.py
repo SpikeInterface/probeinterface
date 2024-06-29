@@ -855,27 +855,27 @@ class Probe:
         -------
         arr : numpy.array
             Structured array with the following dtype schema:
-            
+
             dtype = [
-                ('x', 'float64'), 
-                ('y', 'float64'), 
-                ('z', 'float64', optional), 
-                ('contact_shapes', 'U64'), 
+                ('x', 'float64'),
+                ('y', 'float64'),
+                ('z', 'float64', optional),
+                ('contact_shapes', 'U64'),
                 ...
                 # Shape parameters
-                ('shape_param_1', 'float64'), 
-                ('shape_param_2', 'float64'), 
+                ('shape_param_1', 'float64'),
+                ('shape_param_2', 'float64'),
                 ...
-                ('shank_ids', 'U64'), 
-                ('contact_ids', 'U64'), 
+                ('shank_ids', 'U64'),
+                ('contact_ids', 'U64'),
                 # The rest is added if `complete=True`
-                ('device_channel_indices', 'int64', optional), 
-                ('si_units', 'U64', optional), 
-                ('plane_axis_x_0', 'float64', optional), 
-                ('plane_axis_x_1', 'float64', optional), 
-                ('plane_axis_y_0', 'float64', optional), 
-                ('plane_axis_y_1', 'float64', optional), 
-                ('plane_axis_z_0', 'float64', optional), 
+                ('device_channel_indices', 'int64', optional),
+                ('si_units', 'U64', optional),
+                ('plane_axis_x_0', 'float64', optional),
+                ('plane_axis_x_1', 'float64', optional),
+                ('plane_axis_y_0', 'float64', optional),
+                ('plane_axis_y_1', 'float64', optional),
+                ('plane_axis_z_0', 'float64', optional),
                 ('plane_axis_z_1', 'float64', optional),
                 ...
                 # Annotations
@@ -889,7 +889,7 @@ class Probe:
         dtype = [("x", "float64"), ("y", "float64")]
         if self.ndim == 3:
             dtype += [("z", "float64")]
-        
+
         dtype += [("contact_shapes", "U64")]
         param_shape = []
         for i, p in enumerate(self.contact_shape_params):
@@ -897,7 +897,9 @@ class Probe:
                 if k not in param_shape:
                     param_shape.append(k)
         for k in param_shape:
-            dtype += [(k, "float64")]  # TODO: I think we should check for the type of the values, what if they are string?
+            dtype += [
+                (k, "float64")
+            ]  # TODO: I think we should check for the type of the values, what if they are string?
         dtype += [("shank_ids", "U64"), ("contact_ids", "U64")]
 
         if complete:
