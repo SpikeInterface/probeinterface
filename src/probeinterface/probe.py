@@ -333,7 +333,7 @@ class Probe:
             raise ValueError(f"contour_polygon.shape[1] {contour_polygon.shape[1]} and ndim {self.ndim} do not match!")
         self.probe_planar_contour = contour_polygon
 
-    def create_auto_shape(self, probe_type: "tip" | "rect" = "tip", margin: float = 20.0):
+    def create_auto_shape(self, probe_type: "tip" | "rect" | "circular" = "tip", margin: float = 20.0):
         """Create planar contour automatically based on probe contact positions.
 
         Parameters
@@ -383,8 +383,19 @@ class Probe:
                     (x1, y0),
                     (x1, y1),
                 ]
+            elif probe_type == "circular":
+                radius_x = (x1 - x0) / 2
+                radius_y = (y1 - y0) / 2
+                center = ((x0 + x1) / 2, (y0 + y1) / 2)
+                radius = max(radius_x, radius_y) + margin
+                num_vertices = 100
+                theta = np.linspace(0, 2 * np.pi, num_vertices, endpoint=False)
+                x = center[0] + radius * np.cos(theta)
+                y = center[1] + radius * np.sin(theta)
+                vertices = np.vstack((x, y)).T
+                polygon += vertices.tolist()
             else:
-                raise ValueError(f"'probe_type' can only be 'rect' or 'tip, you have entered {probe_type}")
+                raise ValueError(f"'probe_type' can only be 'rect, 'tip' or 'circular', you have entered {probe_type}")
 
         self.set_planar_contour(polygon)
 
