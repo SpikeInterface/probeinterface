@@ -359,7 +359,7 @@ class Probe:
             and to the base of the tip. The tip itself is extended downwards by
             four times the margin value.
             * "rect": The margin is added evenly around all sides of the rectangle.
-            * "circular": The margin is added to the radius of the circle. 
+            * "circular": The margin is added to the radius of the circle.
 
         Notes
         -----
