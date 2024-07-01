@@ -33,7 +33,9 @@ def test_probe():
     vertices = [(-20, -30), (20, -110), (60, -30), (60, 190), (-20, 190)]
     probe.set_planar_contour(vertices)
 
-    # auto shape
+    # auto shape (test no error)
+    probe.create_auto_shape(probe_type="rect")
+    probe.create_auto_shape(probe_type="circular")
     probe.create_auto_shape()
 
     # annotation
