@@ -334,15 +334,37 @@ class Probe:
         self.probe_planar_contour = contour_polygon
 
     def create_auto_shape(self, probe_type: "tip" | "rect" | "circular" = "tip", margin: float = 20.0):
-        """Create planar contour automatically based on probe contact positions.
+        """Create a planar contour automatically based on probe contact positions.
+
+        This function generates a 2D polygon that outlines the shape of the probe, adjusted
+        by a specified margin. The resulting contour is set as the planar contour of the probe.
 
         Parameters
         ----------
-        probe_type : "tip" | "rect", default: "tip"
-            The probe type ('tip' or 'rect')
-        margin : float, default: 20.0
-            The margin to add to the contact positions
+        probe_type : {"tip", "rect", "circular"}, default: "tip"
+            The type of probe used to collect contact data:
 
+            * "tip": Assumes a single-point contact probe. The generated contour is
+            a rectangle with a triangular "tip" extending downwards.
+            * "rect": Assumes a rectangular contact probe. The generated contour is
+            a rectangle.
+            * "circular": Assumes a circular contact probe. The generated contour
+            is a circle.
+
+        margin : float, default: 20.0
+            The margin to add around the contact positions. The behavior varies by
+            probe type:
+
+            * "tip": The margin is added around the rectangular portion of the contour
+            and to the base of the tip. The tip itself is extended downwards by
+            four times the margin value.
+            * "rect": The margin is added evenly around all sides of the rectangle.
+            * "circular": The margin is added to the radius of the circle. 
+
+        Notes
+        -----
+        This function is designed for 2D data only. If you have 3D data, consider projecting
+        it onto a plane before using this method.
         """
         if self.ndim != 2:
             raise ValueError(f"Auto shape is supported only for 2d, you have ndim {self.ndim}")
