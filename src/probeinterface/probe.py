@@ -871,7 +871,7 @@ class Probe:
                 ...
                 ('shank_ids', 'U64'),
                 ('contact_ids', 'U64'),
-                
+
                 # The rest is added only if `complete=True`
                 ('device_channel_indices', 'int64', optional),
                 ('si_units', 'U64', optional),
@@ -886,7 +886,7 @@ class Probe:
                 ('annotation_name_2', 'dtype of annotation', optional),                                ⋮
                                 ⋮
                                 ⋮
-                                ⋮  
+                                ⋮
                 variable number of annotations
                 ...
             ]
