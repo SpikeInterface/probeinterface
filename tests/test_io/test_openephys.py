@@ -150,6 +150,14 @@ def test_older_than_06_format():
     assert np.min(ypos) >= 0
 
 
+def test_multiple_signal_chains():
+    # tests that the probe information can be loaded even if the Neuropix-PXI plugin
+    # is not in the first signalchain
+    probe = read_openephys(data_path / "OE_Neuropix-PXI-multiple-signalchains" / "settings.xml")
+    assert probe.model_name == "Neuropixels 1.0"
+
+
 if __name__ == "__main__":
     # test_multiple_probes()
-    test_NP_Ultra()
+    # test_NP_Ultra()
+    test_multiple_signal_chains()
