@@ -861,14 +861,18 @@ class Probe:
                 ('y', 'float64'),
                 ('z', 'float64', optional),
                 ('contact_shapes', 'U64'),
-                ...
                 # Shape parameters
                 ('shape_param_1', 'float64'),
                 ('shape_param_2', 'float64'),
+                                ⋮
+                                ⋮
+                                ⋮
+                variable number of shape parameters
                 ...
                 ('shank_ids', 'U64'),
                 ('contact_ids', 'U64'),
-                # The rest is added if `complete=True`
+                
+                # The rest is added only if `complete=True`
                 ('device_channel_indices', 'int64', optional),
                 ('si_units', 'U64', optional),
                 ('plane_axis_x_0', 'float64', optional),
@@ -877,10 +881,13 @@ class Probe:
                 ('plane_axis_y_1', 'float64', optional),
                 ('plane_axis_z_0', 'float64', optional),
                 ('plane_axis_z_1', 'float64', optional),
-                ...
                 # Annotations
                 ('annotation_name_1', 'dtype of annotation', optional),
-                ('annotation_name_2', 'dtype of annotation', optional),
+                ('annotation_name_2', 'dtype of annotation', optional),                                ⋮
+                                ⋮
+                                ⋮
+                                ⋮  
+                variable number of annotations
                 ...
             ]
         """
