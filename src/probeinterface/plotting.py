@@ -9,6 +9,8 @@ from __future__ import annotations
 import numpy as np
 from matplotlib import path as mpl_path
 
+from .utils import get_auto_lims
+
 
 def plot_probe(
     probe,
@@ -285,39 +287,3 @@ def on_release(event):
         t.remove()
         del ax.contact_text
         event.canvas.draw()
-
-
-def get_auto_lims(probe, margin=40):
-    positions = probe.contact_positions
-    planar_contour = probe.probe_planar_contour
-
-    xlims = np.min(positions[:, 0]), np.max(positions[:, 0])
-    ylims = np.min(positions[:, 1]), np.max(positions[:, 1])
-    zlims = None
-
-    if probe.ndim == 3:
-        zlims = np.min(positions[:, 2]), np.max(positions[:, 2])
-
-    if planar_contour is not None:
-        xlims2 = np.min(planar_contour[:, 0]), np.max(planar_contour[:, 0])
-        xlims = min(xlims[0], xlims2[0]), max(xlims[1], xlims2[1])
-
-        ylims2 = np.min(planar_contour[:, 1]), np.max(planar_contour[:, 1])
-        ylims = min(ylims[0], ylims2[0]), max(ylims[1], ylims2[1])
-
-        if probe.ndim == 3:
-            zlims2 = np.min(planar_contour[:, 2]), np.max(planar_contour[:, 2])
-            zlims = min(zlims[0], zlims2[0]), max(zlims[1], zlims2[1])
-
-    xlims = xlims[0] - margin, xlims[1] + margin
-    ylims = ylims[0] - margin, ylims[1] + margin
-
-    if probe.ndim == 3:
-        zlims = zlims[0] - margin, zlims[1] + margin
-
-        # to keep equal aspect in 3d
-        # all axes have the same limits
-        lims = min(xlims[0], ylims[0], zlims[0]), max(xlims[1], ylims[1], zlims[1])
-        xlims, ylims, zlims = lims, lims, lims
-
-    return xlims, ylims, zlims
