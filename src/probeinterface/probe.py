@@ -904,9 +904,7 @@ class Probe:
                 if k not in param_shape:
                     param_shape.append(k)
         for k in param_shape:
-            dtype += [
-                (k, "float64")
-            ]  # TODO: I think we should check for the type of the values, what if they are string?
+            dtype += [(k, "float64")]
         dtype += [("shank_ids", "U64"), ("contact_ids", "U64")]
 
         if complete:
