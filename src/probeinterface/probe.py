@@ -948,7 +948,7 @@ class Probe:
                 dtype += [(f"plane_axis_{dim}_0", "float64")]
                 dtype += [(f"plane_axis_{dim}_1", "float64")]
             for annotation_name, annotation_values in self.contact_annotations.items():
-                dtype += [(f"{annotation_name}", np.asarray(annotation_values, copy=False).dtype)]
+                dtype += [(f"{annotation_name}", np.asarray(annotation_values).dtype)]
 
         # Then add the data to the structured array
         arr = np.zeros(self.get_contact_count(), dtype=dtype)
