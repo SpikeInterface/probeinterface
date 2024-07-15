@@ -1,0 +1,27 @@
+probeinterface 0.2.22
+---------------------
+
+Jul, 15th 2024
+
+
+Bugs
+^^^^
+
+* Fix broken link in `ex_11_automatic_wiring.py` (#277)
+* Load Open Ephys probe when multiple signal chains are present (#275)
+
+Features
+^^^^^^^^
+
+* Add dtype information to `to_numpy` function docstring documentation (#278, #282)
+* Add circular auto-shape option (#279)
+* Add automatic probe layout for 3brain/biocam recordings  (#274)
+* Add NP1016 probe (same as 1015) (#268)
+* Add json schema for probe json file (#265)
+* Probe reader for Neuropixels 1.0 in SpikeGadgets .rec file. (#260)
+
+Refactoring
+^^^^^^^^^^^
+
+* Move get_auto_lims function to utils (#281)
+* Deprecate `plot_probe_group` in favor of `plot_probegroup` (#267)
