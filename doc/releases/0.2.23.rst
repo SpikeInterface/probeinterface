@@ -7,4 +7,4 @@ Jul, 17th 2024
 Features
 ^^^^^^^^
 
-* Add part number for newly-manufactured Neuropixels 1.0 probes (#286)
+* Add part number `PRB_1_2_0480_2` for newly-manufactured Neuropixels 1.0 probes (#286)
