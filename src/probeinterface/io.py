@@ -1082,6 +1082,7 @@ probe_part_number_to_probe_type = {
     # NP1.0
     "PRB_1_4_0480_1": "0",
     "PRB_1_4_0480_1_C": "0",
+    "PRB_1_2_0480_2": "0",
     "NP1010": "0",
     None: "0",  # for old version without a probe number we assume 1.0
     # NHP probes
