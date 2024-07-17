@@ -1,0 +1,10 @@
+probeinterface 0.2.23
+---------------------
+
+Jul, 17th 2024
+
+
+Features
+^^^^^^^^
+
+* Add part number `PRB_1_2_0480_2` for newly-manufactured Neuropixels 1.0 probes (#286)
