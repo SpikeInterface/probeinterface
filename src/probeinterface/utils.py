@@ -155,11 +155,11 @@ def get_auto_lims(probe: Probe, margin: float = 40.0) -> tuple[float, float, flo
     -------
     lims : a tuple containing xlims, ylims, and zlims. If the provided probe
            is planar, then zlims is None.
-    
+
     """
 
     """
-    Compute the boundaries of a given probe, considering its contour and an optional margin. 
+    Compute the boundaries of a given probe, considering its contour and an optional margin.
     The function is designed to handle both planar and tridimensional probes.
 
     Parameters
