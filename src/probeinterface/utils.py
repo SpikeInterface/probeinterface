@@ -139,7 +139,42 @@ def generate_unique_ids(min: int, max: int, n: int, trials: int = 20) -> np.arra
     return ids
 
 
-def get_auto_lims(probe, margin=40):
+def get_auto_lims(probe: Probe, margin: float = 40.0) -> tuple[float, float, float]:
+    """
+    Automatically compute a probe boundaries given its contour and an optional
+    margin. Both planar and tridimensional probes are accepted.
+
+    Parameters
+    ----------
+    probe : Probe
+        The probe whose limits are to be computed.
+    margin : float, default: 40
+        An isotropic margin added to the exact probe boundaries.
+
+    Returns
+    -------
+    lims : a tuple containing xlims, ylims, and zlims. If the provided probe
+           is planar, then zlims is None.
+    
+    """
+
+    """
+    Compute the boundaries of a given probe, considering its contour and an optional margin. 
+    The function is designed to handle both planar and tridimensional probes.
+
+    Parameters
+    ----------
+    probe : Probe
+        The probe for which the limits are to be computed.
+    margin : float, default: 40
+        An isotropic margin that is added to the exact probe boundaries.
+
+    Returns
+    -------
+    lims : a tuple containing the limits in the x, y, and z directions
+           (xlims, ylims, zlims). If the provided probe is planar, then
+           zlims is None.
+    """
     positions = probe.contact_positions
     planar_contour = probe.probe_planar_contour
 
