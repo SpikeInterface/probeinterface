@@ -142,7 +142,7 @@ def generate_unique_ids(min: int, max: int, n: int, trials: int = 20) -> np.arra
 def get_auto_lims(probe: Probe, margin: float = 40.0) -> tuple[float, float, float]:
     """
     Compute the boundaries of a given probe, considering its contour and an optional margin.
-    The function is designed to handle both planar and tridimensional probes.
+    The function is designed to handle both planar and three-dimensional probes.
 
     Parameters
     ----------
