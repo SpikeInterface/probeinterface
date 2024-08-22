@@ -17,7 +17,7 @@ import re
 import warnings
 import json
 from collections import OrderedDict
-from packaging.version import Version, parse
+from packaging.version import parse
 import numpy as np
 from xml.etree import ElementTree
 
