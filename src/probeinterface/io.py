@@ -1807,7 +1807,7 @@ def read_openephys(
                 "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
             )
             for probe_idx, probe_info in enumerate(np_probes_info):
-                if probe_info["name"] in stream_name:
+                if probe_info["name"] in stream_name or probe_info["serial_number"] in stream_name:
                     found = True
                     break
             if not found:
