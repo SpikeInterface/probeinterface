@@ -1,0 +1,17 @@
+probeinterface 0.2.24
+---------------------
+
+Sept, 6th 2024
+
+
+Features
+^^^^^^^^
+
+* Add docs to get_auto_lims (#290)
+* Support Open Ephys 1.0 (#294)
+
+Bug fixes
+^^^^^^^^^
+
+* Fix open-ephys load with serial number as custom probe name (#293)
+* Update schema to floats for radius, width, height (#296, #297)
