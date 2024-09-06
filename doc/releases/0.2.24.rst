@@ -8,5 +8,9 @@ Features
 ^^^^^^^^
 
 * Add docs to get_auto_lims (#290)
-* Fix open-ephys load with serial number as custom probe name (#293)
 * Support Open Ephys 1.0 (#294)
+
+Bug fixes
+^^^^^^^^^
+
+* Fix open-ephys load with serial number as custom probe name (#293)
