@@ -1650,15 +1650,12 @@ def read_openephys(
     info_chain = root.find("INFO")
     oe_version = parse(info_chain.find("VERSION").text)
     neuropix_pxi = None
-    record_node = None
     for signal_chain in root.findall("SIGNALCHAIN"):
         for processor in signal_chain:
             if "PROCESSOR" == processor.tag:
                 name = processor.attrib["name"]
                 if "Neuropix-PXI" in name:
                     neuropix_pxi = processor
-                if "Record Node" in name:
-                    record_node = processor
 
     if neuropix_pxi is None:
         if raise_error:
@@ -1689,8 +1686,14 @@ def read_openephys(
         has_streams = False
         probe_names_used = None
 
+    # for Open Ephys version < 1.0 np_probes is in the EDITOR field.
+    # for Open Ephys version >= 1.0 np_probes is in the CUSTOM_PARAMETERS field.
     editor = neuropix_pxi.find("EDITOR")
-    np_probes = editor.findall("NP_PROBE")
+    if oe_version < parse("0.9.0"):
+        np_probes = editor.findall("NP_PROBE")
+    else:
+        custom_parameters = editor.find("CUSTOM_PARAMETERS")
+        np_probes = custom_parameters.findall("NP_PROBE")
 
     if len(np_probes) == 0:
         if raise_error:

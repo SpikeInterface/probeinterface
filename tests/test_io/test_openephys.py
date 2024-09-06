@@ -9,6 +9,14 @@ from probeinterface import read_openephys
 data_path = Path(__file__).absolute().parent.parent / "data" / "openephys"
 
 
+def test_NP2_OE_1_0():
+    # NP2 1-shank
+    probeA = read_openephys(data_path / "OE_1.0_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA")
+    assert probeA.get_shank_count() == 1
+    assert "2.0" in probeA.model_name
+    assert probeA.get_contact_count() == 384
+
+
 def test_NP2():
     # NP2
     probe = read_openephys(data_path / "OE_Neuropix-PXI" / "settings.xml")
