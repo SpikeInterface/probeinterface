@@ -14,3 +14,4 @@ Bug fixes
 ^^^^^^^^^
 
 * Fix open-ephys load with serial number as custom probe name (#293)
+* Update schema to floats for radius, width, height, and planar_contour #296
