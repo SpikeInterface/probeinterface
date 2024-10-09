@@ -1765,33 +1765,29 @@ def read_openephys(
         contact_ids = []
         probe_dict = npx_probe[ptype]
         shank_pitch = probe_dict["shank_pitch"]
-        y_pitch = probe_dict["y_pitch"]  # Vertical spacing between the centers of adjacent contacts 
-        x_pitch = probe_dict["x_pitch"]  # Horizontal spacing between the centers of contacts within the same row 
+        y_pitch = probe_dict["y_pitch"]  # Vertical spacing between the centers of adjacent contacts
+        x_pitch = probe_dict["x_pitch"]  # Horizontal spacing between the centers of contacts within the same row
         number_of_columns = probe_dict["ncol"]
         probe_stagger = probe_dict["stagger"]
-        shank_number = probe_dict["shank_number"] 
+        shank_number = probe_dict["shank_number"]
 
         for i, pos in enumerate(positions):
             # Do not calculate contact ids if the probe type is not known
             if ptype is None:
                 contact_ids = None
                 break
-            
+
             x_pos = pos[0]
             y_pos = pos[1]
-            
+
             # Adds a shift to rows in the staggered configuration
             is_row_staggered = np.mod(y_pos / y_pitch + 1, 2) == 1
             stagger = probe_stagger if is_row_staggered else 0
-            
+
             # Map the positions to the contacts ids
             shank_id = shank_ids[i] if shank_number > 1 else 0
-            contact_id = int(
-                (x_pos - stagger - shank_pitch * shank_id) / x_pitch
-                + number_of_columns * y_pos / y_pitch
-            )
-            
-            
+            contact_id = int((x_pos - stagger - shank_pitch * shank_id) / x_pitch + number_of_columns * y_pos / y_pitch)
+
             if shank_number > 1:
                 contact_ids.append(f"s{shank_id}e{contact_id}")
             else:
