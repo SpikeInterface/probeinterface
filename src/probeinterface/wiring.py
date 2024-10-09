@@ -43,7 +43,7 @@ pathways = {
 
     # Done by Zach McKenzie & Chris Halcrow
     # verified by Samuel Garcia
-    'ASSY-77>Adpt.A64-Om32_2x-sm-cambridge_neurotech>RHD2164': [
+    'ASSY-77>Adpt.A64-Om32_2x-sm-cambridgeneurotech>RHD2164': [
         32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46,
         47, 62, 63, 60, 61, 58, 59, 56, 54, 52, 50, 48, 57, 53, 51,
         49, 55, 9, 15, 13, 11, 7, 14, 12, 10, 8, 6, 5, 4, 3, 2, 1,
