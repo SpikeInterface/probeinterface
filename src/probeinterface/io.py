@@ -1081,7 +1081,7 @@ npx_probe = {
 probe_part_number_to_probe_type = {
     # NP1.0
     "PRB_1_4_0480_1": "0",
-    "PRB_1_4_0480_1_C": "0",
+    "PRB_1_4_0480_1_C": "0",  # This is the metal cap version
     "PRB_1_2_0480_2": "0",
     "NP1010": "0",
     None: "0",  # for old version without a probe number we assume 1.0
@@ -1763,19 +1763,36 @@ def read_openephys(
         positions[:, 0] += x_shift
 
         contact_ids = []
+        probe_dict = npx_probe[ptype]
+        shank_pitch = probe_dict["shank_pitch"]
+        y_pitch = probe_dict["y_pitch"]  # Vertical spacing between the centers of adjacent contacts 
+        x_pitch = probe_dict["x_pitch"]  # Horizontal spacing between the centers of contacts within the same row 
+        number_of_columns = probe_dict["ncol"]
+        probe_stagger = probe_dict["stagger"]
+        shank_number = probe_dict["shank_number"] 
+
         for i, pos in enumerate(positions):
+            # Do not calculate contact ids if the probe type is not known
             if ptype is None:
                 contact_ids = None
                 break
-
-            stagger = np.mod(pos[1] / npx_probe[ptype]["y_pitch"] + 1, 2) * npx_probe[ptype]["stagger"]
-            shank_id = shank_ids[i] if npx_probe[ptype]["shank_number"] > 1 else 0
-
+            
+            x_pos = pos[0]
+            y_pos = pos[1]
+            
+            # Adds a shift to rows in the staggered configuration
+            is_row_staggered = np.mod(y_pos / y_pitch + 1, 2) == 1
+            stagger = probe_stagger if is_row_staggered else 0
+            
+            # Map the positions to the contacts ids
+            shank_id = shank_ids[i] if shank_number > 1 else 0
             contact_id = int(
-                (pos[0] - stagger - npx_probe[ptype]["shank_pitch"] * shank_id) / npx_probe[ptype]["x_pitch"]
-                + npx_probe[ptype]["ncol"] * pos[1] / npx_probe[ptype]["y_pitch"]
+                (x_pos - stagger - shank_pitch * shank_id) / x_pitch
+                + number_of_columns * y_pos / y_pitch
             )
-            if npx_probe[ptype]["shank_number"] > 1:
+            
+            
+            if shank_number > 1:
                 contact_ids.append(f"s{shank_id}e{contact_id}")
             else:
                 contact_ids.append(f"e{contact_id}")
