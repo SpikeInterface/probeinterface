@@ -39,6 +39,13 @@ pathways = {
         11, 8, 9, 10, 12, 7, 6, 5, 4, 3, 13, 2, 1, 14, 0, 15,
         55, 56, 54, 57, 53, 58, 52, 59, 51, 60, 50, 61, 62, 49, 63, 48],
 
+    # first SPI cable goes to RHD chip on adaptor's samtec connector's side 
+    'ASSY-77>Adpt.A64-Om32_2x-sm-cambridgeneurotech>two_RHD2132': [
+        16, 31, 17, 30, 18, 29, 19, 28, 20, 27, 21, 26, 22, 25, 23, 24,
+        47, 32, 46, 33, 45, 34, 44, 43, 42, 41, 40, 35, 37, 38, 39, 36,
+        59, 56, 57, 58, 60, 55, 54, 53, 52, 51, 61, 50, 62, 49, 63, 48,
+        7, 8, 6, 9, 5, 10, 4, 11, 3, 12, 2, 13, 1, 14, 0, 15],
+
     # from PDF documention of mini-amp-64 page 5
     'cambridgeneurotech_mini-amp-64': [
         # connector J2 TOP
