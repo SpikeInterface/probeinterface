@@ -1786,7 +1786,9 @@ def read_openephys(
 
             # Map the positions to the contacts ids
             shank_id = shank_ids[i] if shank_number > 1 else 0
-            contact_id = int((x_pos - row_stagger - shank_pitch * shank_id) / x_pitch + number_of_columns * y_pos / y_pitch)
+            contact_id = int(
+                (x_pos - row_stagger - shank_pitch * shank_id) / x_pitch + number_of_columns * y_pos / y_pitch
+            )
 
             if shank_number > 1:
                 contact_ids.append(f"s{shank_id}e{contact_id}")
