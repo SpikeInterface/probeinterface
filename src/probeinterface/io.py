@@ -1782,12 +1782,12 @@ def read_openephys(
             
             # Adds a shift to rows in the staggered configuration
             is_row_staggered = np.mod(y_pos / y_pitch + 1, 2) == 1
-            stagger = probe_stagger if is_row_staggered else 0
+            row_stagger = probe_stagger if is_row_staggered else 0  
             
             # Map the positions to the contacts ids
             shank_id = shank_ids[i] if shank_number > 1 else 0
             contact_id = int(
-                (x_pos - stagger - shank_pitch * shank_id) / x_pitch
+                (x_pos - row_stagger - shank_pitch * shank_id) / x_pitch
                 + number_of_columns * y_pos / y_pitch
             )
             
