@@ -25,13 +25,20 @@ pathways = {
         24, 23, 25, 22, 26, 21, 27, 20, 28, 19, 29, 18, 30, 17, 31, 16,  0,
         15,  1, 14,  2, 13,  3, 12,  4, 11,  5, 10,  6,  9,  7,  8],
 
-    # nicely given by Aaron Wrong
+    # nicely given by Aaron Wong
     'ASSY-77>Adpt.A64-Om32_2x-sm-NN>RHD2164': [
         62, 63, 60, 61, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48,
         32, 33, 34, 35, 37, 36, 39, 41, 43, 45, 47, 38, 42, 44, 46, 40,
         22, 16, 18, 20, 24, 17, 19, 21, 23, 25, 26, 27, 29, 28, 31, 30,
         14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 3, 2, 1, 0],
-
+    
+    # mapping from the CambridgeNeurotech ("CN") adaptor (https://www.cambridgeneurotech.com/assets/files/ADPT-A64-Om32x2-map.pdf), by Aaron Wong
+   'ASSY-77>Adpt.A64-Om32x2-CN>RHD2164': [
+        32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+        62, 63, 60, 61, 58, 59, 56, 54, 52, 50, 48, 57, 53, 51, 49, 55, 
+         9, 15, 13, 11,  7, 14, 12, 10,  8,  6,  5,  4,  3,  2,  1,  0, 
+        17, 16, 19, 18, 21, 20, 23, 22, 25, 24, 27, 26, 29, 28, 31, 30,
+        ],
     # done by Samuel Garcia, Alessio Buccino, Jessie Goins for Pierre-Pascal Lenck-Santini
     'ASSY-77>Adpt.A64-Om32_2x-sm-NN>two_RHD2132': [
         47, 32, 46, 33, 34, 45, 35, 44, 36, 43, 37, 42, 38, 41, 39, 40,
