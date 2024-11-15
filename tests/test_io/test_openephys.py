@@ -140,6 +140,33 @@ def test_multiple_probes():
     assert np.min(ypos) >= 0
 
 
+def test_multiple_probes_enabled():
+    # multiple probes, all enabled:
+
+    probe = read_openephys(data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-enabled.xml",
+                           probe_name="ProbeA")
+    assert probe.get_shank_count() == 1
+
+    probe = read_openephys(data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-enabled.xml",
+                           probe_name="ProbeB")
+    assert probe.get_shank_count() == 4
+
+
+def test_multiple_probes_disabled():
+    # multiple probes, some disabled
+    probe = read_openephys(data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-disabled.xml",
+                           probe_name="ProbeA")
+
+    assert probe.get_shank_count() == 1
+
+    # Fail as this is disabled:
+    with pytest.raises(Exception) as e:
+        probe = read_openephys(data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-disabled.xml",
+                               probe_name="ProbeB")
+
+    assert "Inconsistency betweem provided probe name ProbeB and available probe ProbeA" in str(e.value)
+
+
 def test_np_opto_with_sync():
     probe = read_openephys(data_path / "OE_Neuropix-PXI-opto-with-sync" / "settings.xml")
     assert probe.model_name == "Neuropixels Opto"
