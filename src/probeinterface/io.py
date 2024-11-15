@@ -1699,6 +1699,12 @@ def read_openephys(
         if raise_error:
             raise Exception("NP_PROBE field not found in settings")
         return None
+    
+    np_probes = [probe for probe in editor.findall("NP_PROBE") if probe.attrib["isEnabled"] == "true"]
+    if len(np_probes) == 0:
+        if raise_error:
+            raise Exception("No enabled probes found in settings")
+        return None
 
     # read probes info
     # If STREAMs are not available, probes are sequentially named based on the node id
