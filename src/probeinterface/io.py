@@ -1700,11 +1700,16 @@ def read_openephys(
             raise Exception("NP_PROBE field not found in settings")
         return None
 
-    np_probes = [probe for probe in editor.findall("NP_PROBE") if probe.attrib["isEnabled"] == "true"]
-    if len(np_probes) == 0:
-        if raise_error:
-            raise Exception("No enabled probes found in settings")
-        return None
+    # In neuropixel plugin 0.7, the option for enabling/disabling probes was added.
+    # Make sure we only keep enabled probes.
+    
+    # I don't understand why the range, but otherwise the test with OE_1.0_Neuropix-PXI-multi-probe fails:
+    if oe_version >= parse("0.7.0") and oe_version <= parse("0.9.0"):
+        np_probes = [probe for probe in editor.findall("NP_PROBE") if probe.attrib["isEnabled"] == "true"]
+        if len(np_probes) == 0:
+            if raise_error:
+                raise Exception("No enabled probes found in settings")
+            return None
 
     # read probes info
     # If STREAMs are not available, probes are sequentially named based on the node id
