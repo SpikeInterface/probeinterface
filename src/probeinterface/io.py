@@ -1699,7 +1699,7 @@ def read_openephys(
         if raise_error:
             raise Exception("NP_PROBE field not found in settings")
         return None
-    
+
     np_probes = [probe for probe in editor.findall("NP_PROBE") if probe.attrib["isEnabled"] == "true"]
     if len(np_probes) == 0:
         if raise_error:
