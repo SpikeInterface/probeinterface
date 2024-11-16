@@ -143,26 +143,30 @@ def test_multiple_probes():
 def test_multiple_probes_enabled():
     # multiple probes, all enabled:
 
-    probe = read_openephys(data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-enabled.xml",
-                           probe_name="ProbeA")
+    probe = read_openephys(
+        data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-enabled.xml", probe_name="ProbeA"
+    )
     assert probe.get_shank_count() == 1
 
-    probe = read_openephys(data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-enabled.xml",
-                           probe_name="ProbeB")
+    probe = read_openephys(
+        data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-enabled.xml", probe_name="ProbeB"
+    )
     assert probe.get_shank_count() == 4
 
 
 def test_multiple_probes_disabled():
     # multiple probes, some disabled
-    probe = read_openephys(data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-disabled.xml",
-                           probe_name="ProbeA")
+    probe = read_openephys(
+        data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-disabled.xml", probe_name="ProbeA"
+    )
 
     assert probe.get_shank_count() == 1
 
     # Fail as this is disabled:
     with pytest.raises(Exception) as e:
-        probe = read_openephys(data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-disabled.xml",
-                               probe_name="ProbeB")
+        probe = read_openephys(
+            data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-disabled.xml", probe_name="ProbeB"
+        )
 
     assert "Inconsistency between provided probe name ProbeB and available probe ProbeA" in str(e.value)
 
