@@ -1704,7 +1704,6 @@ def read_openephys(
     # Make sure we only keep enabled probes.
 
     # I don't understand why the range, but otherwise the test with OE_1.0_Neuropix-PXI-multi-probe fails:
-    print(oe_version)
     if oe_version >= parse("0.6.7") and oe_version <= parse("0.9.0"):
         np_probes = [probe for probe in editor.findall("NP_PROBE") if probe.attrib["isEnabled"] == "1"]
         if len(np_probes) == 0:
