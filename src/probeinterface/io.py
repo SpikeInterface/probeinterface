@@ -1872,7 +1872,7 @@ def read_openephys(
             if available_probe_name not in stream_name:
                 if raise_error:
                     raise Exception(
-                        f"Inconsistency betweem provided stream {stream_name} and available probe "
+                        f"Inconsistency between provided stream {stream_name} and available probe "
                         f"{available_probe_name}"
                     )
                 return None
@@ -1880,7 +1880,7 @@ def read_openephys(
             if probe_name != available_probe_name:
                 if raise_error:
                     raise Exception(
-                        f"Inconsistency betweem provided probe name {probe_name} and available probe "
+                        f"Inconsistency between provided probe name {probe_name} and available probe "
                         f"{available_probe_name}"
                     )
                 return None
@@ -1888,7 +1888,7 @@ def read_openephys(
             if str(serial_number) != available_serial_number:
                 if raise_error:
                     raise Exception(
-                        f"Inconsistency betweem provided serial number {serial_number} and available serial numbers "
+                        f"Inconsistency between provided serial number {serial_number} and available serial numbers "
                         f"{available_serial_number}"
                     )
                 return None
