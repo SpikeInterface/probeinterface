@@ -164,7 +164,7 @@ def test_multiple_probes_disabled():
         probe = read_openephys(data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-disabled.xml",
                                probe_name="ProbeB")
 
-    assert "Inconsistency betweem provided probe name ProbeB and available probe ProbeA" in str(e.value)
+    assert "Inconsistency between provided probe name ProbeB and available probe ProbeA" in str(e.value)
 
 
 def test_np_opto_with_sync():
