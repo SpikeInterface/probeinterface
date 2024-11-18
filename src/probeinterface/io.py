@@ -1700,9 +1700,9 @@ def read_openephys(
             raise Exception("NP_PROBE field not found in settings")
         return None
 
-    # In neuropixel plugin 0.7, the option for enabling/disabling probes was added.
+    # In neuropixel plugin 0.7.0, the option for enabling/disabling probes was added.
     # Make sure we only keep enabled probes.
-    if editor.find("NP_PROBE") and "isEnabled" in editor.find("NP_PROBE").attrib.keys():
+    if neuropix_pxi_version >= parse("0.7.0") and neuropix_pxi_version < parse("1.0.0dev0"):
         np_probes = [probe for probe in editor.findall("NP_PROBE") if probe.attrib["isEnabled"] == "1"]
         if len(np_probes) == 0:
             if raise_error:
