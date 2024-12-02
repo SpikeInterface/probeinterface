@@ -1700,6 +1700,15 @@ def read_openephys(
             raise Exception("NP_PROBE field not found in settings")
         return None
 
+    # In neuropixel plugin 0.7.0, the option for enabling/disabling probes was added.
+    # Make sure we only keep enabled probes.
+    if neuropix_pxi_version >= parse("0.7.0") and neuropix_pxi_version < parse("1.0.0dev0"):
+        np_probes = [probe for probe in np_probes if probe.attrib["isEnabled"] == "1"]
+        if len(np_probes) == 0:
+            if raise_error:
+                raise Exception("No enabled probes found in settings")
+            return None
+
     # read probes info
     # If STREAMs are not available, probes are sequentially named based on the node id
     if not has_streams:
@@ -1861,7 +1870,7 @@ def read_openephys(
             if available_probe_name not in stream_name:
                 if raise_error:
                     raise Exception(
-                        f"Inconsistency betweem provided stream {stream_name} and available probe "
+                        f"Inconsistency between provided stream {stream_name} and available probe "
                         f"{available_probe_name}"
                     )
                 return None
@@ -1869,7 +1878,7 @@ def read_openephys(
             if probe_name != available_probe_name:
                 if raise_error:
                     raise Exception(
-                        f"Inconsistency betweem provided probe name {probe_name} and available probe "
+                        f"Inconsistency between provided probe name {probe_name} and available probe "
                         f"{available_probe_name}"
                     )
                 return None
@@ -1877,7 +1886,7 @@ def read_openephys(
             if str(serial_number) != available_serial_number:
                 if raise_error:
                     raise Exception(
-                        f"Inconsistency betweem provided serial number {serial_number} and available serial numbers "
+                        f"Inconsistency between provided serial number {serial_number} and available serial numbers "
                         f"{available_serial_number}"
                     )
                 return None
