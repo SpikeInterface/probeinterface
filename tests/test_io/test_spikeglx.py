@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 
 from probeinterface import (
-    __version__ as version,
     read_spikeglx,
     parse_spikeglx_meta,
     get_saved_channel_indices_from_spikeglx_meta,
