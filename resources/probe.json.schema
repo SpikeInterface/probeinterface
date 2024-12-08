@@ -26,10 +26,10 @@
           "annotations": {
             "type": "object",
             "properties": {
-              "name": { "type": "string" },
+              "model_name": { "type": "string" },
               "manufacturer": { "type": "string" }
             },
-            "required": ["name", "manufacturer"],
+            "required": ["model_name", "manufacturer"],
             "additionalProperties": true
           },
           "contact_annotations": {
@@ -101,6 +101,10 @@
           "shank_ids": {
             "type": "array",
             "items": { "type": "string" }
+          },
+          "device_channel_indices": {
+            "type": "array",
+            "items": { "type": "integer" }
           }
         },
         "required": [

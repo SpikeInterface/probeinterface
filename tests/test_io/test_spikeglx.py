@@ -1,3 +1,4 @@
+import glob
 from pathlib import Path
 import numpy as np
 
@@ -8,8 +9,16 @@ from probeinterface import (
     parse_spikeglx_meta,
     get_saved_channel_indices_from_spikeglx_meta,
 )
+from probeinterface.testing import validate_probe_dict
 
 data_path = Path(__file__).absolute().parent.parent / "data" / "spikeglx"
+meta_files = glob.glob(str(data_path / "*.meta"))
+
+
+@pytest.mark.parametrize("meta_file", meta_files)
+def test_valid_probe_dict(meta_file: str):
+    probe = read_spikeglx(data_path / meta_file)
+    validate_probe_dict(probe.to_dict(array_as_list=True))
 
 
 def test_parse_meta():

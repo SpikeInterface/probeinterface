@@ -2,7 +2,6 @@ from __future__ import annotations
 import numpy as np
 from typing import Optional
 from pathlib import Path
-import json
 
 from .shank import Shank
 

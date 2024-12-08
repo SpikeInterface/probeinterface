@@ -40,6 +40,7 @@ package-dir = {"probeinterface" = "src/probeinterface"}
 [project.optional-dependencies]
 
 test = [
+    "jsonschema",
     "pytest",
     "pytest-cov",
     "matplotlib",
