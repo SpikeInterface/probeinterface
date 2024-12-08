@@ -1,3 +1,4 @@
+import glob
 from pathlib import Path
 import numpy as np
 
@@ -11,7 +12,13 @@ from probeinterface import (
 from probeinterface.testing import validate_probe_dict
 
 data_path = Path(__file__).absolute().parent.parent / "data" / "spikeglx"
+meta_files = glob.glob(str(data_path / "*.meta"))
 
+
+@pytest.mark.parametrize("meta_file", meta_files)
+def test_valid_probe_dict(meta_file: str):
+    probe = read_spikeglx(data_path / meta_file)
+    validate_probe_dict(probe.to_dict(array_as_list=True))
 
 def test_parse_meta():
     for meta_file in [
@@ -35,7 +42,7 @@ def test_get_saved_channel_indices_from_spikeglx_meta():
 def test_NP1():
     probe = read_spikeglx(data_path / "Noise_g0_t0.imec0.ap.meta")
     assert "1.0" in probe.model_name
-    validate_probe_dict(probe.to_dict(array_as_list=True))
+
 
 
 def test_NP_phase3A():
@@ -56,14 +63,12 @@ def test_NP_phase3A():
 
     assert np.all(probe.contact_shape_params == {"width": contact_width})
     assert np.all(probe.contact_shapes == contact_shape)
-    validate_probe_dict(probe.to_dict(array_as_list=True))
 
 
 def test_NP2_1_shanks():
     probe = read_spikeglx(data_path / "p2_g0_t0.imec0.ap.meta")
     assert "2.0" in probe.model_name
     assert probe.get_shank_count() == 1
-    validate_probe_dict(probe.to_dict(array_as_list=True))
 
 
 def test_NP2_4_shanks():
@@ -87,7 +92,6 @@ def test_NP2_4_shanks():
     # This file does not save the channnels from 0 as the one above (NP2_4_shanks_g0_t0.imec0.ap.meta)
     ypos = probe.contact_positions[:, 1]
     assert np.min(ypos) == pytest.approx(0)
-    validate_probe_dict(probe.to_dict(array_as_list=True))
 
 
 def test_NP2_2013_all():
@@ -113,7 +117,6 @@ def test_NP2_2013_all():
     # This file does not save the channnels from 0 as the one above (NP2_4_shanks_g0_t0.imec0.ap.meta)
     ypos = probe.contact_positions[:, 1]
     assert np.min(ypos) == pytest.approx(0)
-    validate_probe_dict(probe.to_dict(array_as_list=True))
 
 
 def test_NP2_2013_subset():
@@ -139,7 +142,6 @@ def test_NP2_2013_subset():
     # This file does not save the channnels from 0 as the one above (NP2_4_shanks_g0_t0.imec0.ap.meta)
     ypos = probe.contact_positions[:, 1]
     assert np.min(ypos) == pytest.approx(0)
-    validate_probe_dict(probe.to_dict(array_as_list=True))
 
 
 def test_NP2_4_shanks_with_different_electrodes_saved():
@@ -165,7 +167,6 @@ def test_NP2_4_shanks_with_different_electrodes_saved():
     ypos = probe.contact_positions[:, 1]
     assert np.min(ypos) == pytest.approx(4080.0)
     assert np.max(ypos) == pytest.approx(4785.0)
-    validate_probe_dict(probe.to_dict(array_as_list=True))
 
 
 def test_NP1_large_depth_span():
@@ -175,7 +176,6 @@ def test_NP1_large_depth_span():
     assert probe.get_shank_count() == 1
     ypos = probe.contact_positions[:, 1]
     assert (np.max(ypos) - np.min(ypos)) > 7600
-    validate_probe_dict(probe.to_dict(array_as_list=True))
 
 
 def test_NP1_other_example():
@@ -186,7 +186,6 @@ def test_NP1_other_example():
     assert probe.get_shank_count() == 1
     ypos = probe.contact_positions[:, 1]
     assert (np.max(ypos) - np.min(ypos)) > 7600
-    validate_probe_dict(probe.to_dict(array_as_list=True))
 
 
 def tes_NP1_384_channels():
@@ -195,7 +194,6 @@ def tes_NP1_384_channels():
     assert probe.get_shank_count() == 1
     assert probe.get_contact_count() == 151
     assert 152 not in probe.contact_annotations["channel_ids"]
-    validate_probe_dict(probe.to_dict(array_as_list=True))
 
 
 def test_NPH_long_staggered():
@@ -252,7 +250,6 @@ def test_NPH_long_staggered():
     assert np.allclose(banks, 0)
     assert np.allclose(references, 0)
     assert np.allclose(filters, 1)
-    validate_probe_dict(probe.to_dict(array_as_list=True))
 
 
 def test_NPH_short_linear_probe_type_0():
@@ -303,7 +300,6 @@ def test_NPH_short_linear_probe_type_0():
     assert np.allclose(banks, 0)
     assert np.allclose(references, 0)
     assert np.allclose(filters, 1)
-    validate_probe_dict(probe.to_dict(array_as_list=True))
 
 
 def test_ultra_probe():
@@ -332,13 +328,12 @@ def test_ultra_probe():
     expected_electode_rows = 48
     unique_y_values = np.unique(y)
     assert unique_y_values.size == expected_electode_rows
-    validate_probe_dict(probe.to_dict(array_as_list=True))
 
 
 def test_CatGT_NP1():
     probe = read_spikeglx(data_path / "catgt.meta")
     assert "1.0" in probe.model_name
-    validate_probe_dict(probe.to_dict(array_as_list=True))
+
 
 
 if __name__ == "__main__":
