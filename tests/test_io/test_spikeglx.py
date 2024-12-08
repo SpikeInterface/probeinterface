@@ -20,6 +20,7 @@ def test_valid_probe_dict(meta_file: str):
     probe = read_spikeglx(data_path / meta_file)
     validate_probe_dict(probe.to_dict(array_as_list=True))
 
+
 def test_parse_meta():
     for meta_file in [
         "doppio-checkerboard_t0.imec0.ap.meta",
@@ -42,7 +43,6 @@ def test_get_saved_channel_indices_from_spikeglx_meta():
 def test_NP1():
     probe = read_spikeglx(data_path / "Noise_g0_t0.imec0.ap.meta")
     assert "1.0" in probe.model_name
-
 
 
 def test_NP_phase3A():
@@ -333,7 +333,6 @@ def test_ultra_probe():
 def test_CatGT_NP1():
     probe = read_spikeglx(data_path / "catgt.meta")
     assert "1.0" in probe.model_name
-
 
 
 if __name__ == "__main__":
