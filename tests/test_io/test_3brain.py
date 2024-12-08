@@ -20,6 +20,7 @@ def test_valid_probe_dict(file_: str):
     probe_dict["annotations"].update(model_name="placeholder")
     validate_probe_dict(probe_dict)
 
+
 def test_3brain():
     """Files on ephy_test_data"""
 
