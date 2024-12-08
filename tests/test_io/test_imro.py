@@ -1,11 +1,22 @@
+import glob
 from pathlib import Path
 
 import pytest
 import numpy as np
 
 from probeinterface import read_imro, write_imro
+from probeinterface.testing import validate_probe_dict
 
 data_path = Path(__file__).absolute().parent.parent / "data" / "imro"
+imro_files = glob.glob(str(data_path / "*.imro"))
+
+imro_files.pop(imro_files.index(str(data_path / "test_non_standard.imro")))
+
+
+@pytest.mark.parametrize("file_", imro_files)
+def test_valid_probe_dict(file_: str):
+    probe = read_imro(data_path / file_)
+    validate_probe_dict(probe.to_dict(array_as_list=True))
 
 
 def test_reading_multishank_imro(tmp_path):

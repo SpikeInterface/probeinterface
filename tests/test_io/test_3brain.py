@@ -1,3 +1,4 @@
+import glob
 from pathlib import Path
 import numpy as np
 
@@ -5,8 +6,19 @@ import pytest
 
 from probeinterface import read_3brain
 
-data_path = Path(__file__).absolute().parent.parent / "data" / "3brain"
+from probeinterface.testing import validate_probe_dict
 
+
+data_path = Path(__file__).absolute().parent.parent / "data" / "3brain"
+brw_files = glob.glob(str(data_path / "*.brw"))
+
+
+@pytest.mark.parametrize("file_", brw_files)
+def test_valid_probe_dict(file_: str):
+    probe = read_3brain(data_path / file_)
+    probe_dict = probe.to_dict(array_as_list=True)
+    probe_dict["annotations"].update(model_name="placeholder")
+    validate_probe_dict(probe_dict)
 
 def test_3brain():
     """Files on ephy_test_data"""
