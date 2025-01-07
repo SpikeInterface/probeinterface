@@ -25,7 +25,7 @@ pathways = {
         24, 23, 25, 22, 26, 21, 27, 20, 28, 19, 29, 18, 30, 17, 31, 16,  0,
         15,  1, 14,  2, 13,  3, 12,  4, 11,  5, 10,  6,  9,  7,  8],
 
-    # nicely given by Aaron Wrong;
+    # nicely given by Aaron Wong;
     # verified by Zach McKenzie & Chris Halcrow
     'ASSY-77>Adpt.A64-Om32_2x-sm-NN>RHD2164': [
         62, 63, 60, 61, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48,
@@ -42,7 +42,7 @@ pathways = {
         55, 56, 54, 57, 53, 58, 52, 59, 51, 60, 50, 61, 62, 49, 63, 48],
 
     # Done by Zach McKenzie & Chris Halcrow
-    # verified by Samuel Garcia
+    # verified by Samuel Garcia and Aaron Wong (#307)
     'ASSY-77>Adpt.A64-Om32_2x-sm-cambridgeneurotech>RHD2164': [
         32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46,
         47, 62, 63, 60, 61, 58, 59, 56, 54, 52, 50, 48, 57, 53, 51,
