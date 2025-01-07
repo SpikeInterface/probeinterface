@@ -4,8 +4,17 @@ import numpy as np
 import pytest
 
 from probeinterface import read_maxwell
+from probeinterface.testing import validate_probe_dict
 
 data_path = Path(__file__).absolute().parent.parent / "data" / "maxwell"
+
+
+def test_valid_probe_dict():
+    file_ = "data.raw.h5"
+    probe = read_maxwell(data_path / file_)
+    probe_dict = probe.to_dict(array_as_list=True)
+    probe_dict["annotations"].update(model_name="placeholder")
+    validate_probe_dict(probe_dict)
 
 
 def test_maxwell():
