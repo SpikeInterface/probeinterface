@@ -747,6 +747,42 @@ def parse_spikeglx_meta(meta_file: str | Path) -> dict:
 
     return meta
 
+def parse_spikeglx_snsGeomMap(meta):
+    """
+    For some meta recent file.
+    There is a field 'snsGeomMap' that can be used for gettiing geometry of contacts.
+
+    This is a good check that it corresponds to the 'imroTbl' for testing when present.
+
+    Important notes : 
+      * the reference is not the same for x coordinates
+      * x_pos, y_pos is referenced by shank, when using imro then x, y are absolute for the entire probe.
+    """
+
+    geom_list = meta['snsGeomMap'].split(sep=')')
+
+    # first entry is for instance (NP1000,1,0,70)
+    probe_type, num_shank, shank_pitch, shank_width = geom_list[0][1:].split(",")
+    num_shank, shank_pitch, shank_width = int(num_shank), float(shank_pitch), float(shank_width)
+
+    geom_list = geom_list[1:-1]
+    num_contact = len(geom_list)
+
+    shank_ids = np.zeros((num_contact,), dtype="int64")
+    x_pos = np.zeros((num_contact,), "float64")
+    y_pos = np.zeros((num_contact,), "float64")
+    activated = np.zeros((num_contact,), "bool")
+    
+    # then it is instance a list like this (0:27:0:1)(0:59:0:1)(0:27:15:1)...
+    for i in range(num_contact):
+        shank_id, x, y, act = geom_list[i][1:].split(':')
+        shank_ids[i] = int(shank_id)
+        x_pos[i] = float(x)
+        y_pos[i] = float(y)
+        activated[i] = bool(act)
+
+    return num_shank, shank_width, shank_pitch, shank_ids, x_pos, y_pos, activated
+
 
 def get_saved_channel_indices_from_spikeglx_meta(meta_file: str | Path) -> np.array:
     """

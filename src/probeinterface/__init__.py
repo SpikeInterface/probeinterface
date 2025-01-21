@@ -25,6 +25,7 @@ from .neuropixel_tools import (
     write_imro,
     read_spikeglx,
     parse_spikeglx_meta,
+    parse_spikeglx_snsGeomMap,
     get_saved_channel_indices_from_spikeglx_meta,
     read_openephys,
     get_saved_channel_indices_from_openephys_settings,
