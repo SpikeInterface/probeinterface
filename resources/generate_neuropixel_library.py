@@ -54,4 +54,3 @@ def generate_all_npx():
 
 if __name__ == "__main__":
     generate_all_npx()
-

@@ -2,7 +2,7 @@
 Here we implement probe info related to Neuropixel.
 Both spikeglx (using meta file) and openephys with neuropixel (using xml file) is handled.
 
-Note: 
+Note:
   * the centre of the first left columns and the first bottom row is our reference (x=0, y=0)
   * "oe_x_shift" is a global shift on x axis to make spikeglx and openephys compatible.
 
@@ -251,7 +251,7 @@ npx_descriptions = {
         "shank_pitch": 0,
         "shank_number": 1,
         "ncols_per_shank": 2,
-        "nrows_per_shank": 1248, ### verify this number!!!!!!! Jennifer Colonell has 1368
+        "nrows_per_shank": 1248,  ### verify this number!!!!!!! Jennifer Colonell has 1368
         "polygon": polygon_description["nhp125"],
         "polygon_shift": [-11, -11],
         "fields_in_imro_table": (
@@ -404,9 +404,6 @@ npx_descriptions = {
 }
 
 
-
-
-
 # TODO: unify implementation with https://github.com/jenniferColonell/SGLXMetaToCoords/blob/main/SGLXMetaToCoords.py
 
 # Map imDatPrb_pn (probe number) to imDatPrb_type (probe type) when the latter is missing
@@ -476,7 +473,6 @@ def read_imro(file_path: Union[str, Path]) -> Probe:
 
 def _make_npx_probe_from_description(probe_description, elec_ids, shank_ids):
     # used by _read_imro_string and for generating the NP library
-
 
     model_name = probe_description["model_name"]
 
@@ -570,7 +566,6 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
         imDatPrb_type = probe_part_number_to_probe_type[imDatPrb_pn]
 
     probe_description = npx_descriptions[imDatPrb_type]
-    
 
     fields = probe_description["fields_in_imro_table"]
     contact_info = {k: [] for k in fields}
@@ -586,7 +581,6 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     else:
         banks = np.array(contact_info["banks"])
         elec_ids = banks * 384 + channel_ids
-
 
     if probe_description["shank_number"] > 1:
         shank_ids = np.array(contact_info["shank_id"])
@@ -608,7 +602,6 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     vector_properties = ("channel_ids", "banks", "references", "ap_gains", "lf_gains", "ap_hp_filters")
     vector_properties_available = {k: v for k, v in contact_info.items() if k in vector_properties}
     probe.annotate_contacts(**vector_properties_available)
-
 
     return probe
 
@@ -659,6 +652,7 @@ def write_imro(file: str | Path, probe: Probe):
 ##
 # SpikeGLX zone for neuropixel
 ##
+
 
 def read_spikeglx(file: str | Path) -> Probe:
     """
@@ -1010,7 +1004,8 @@ def read_openephys(
             shank_id = shank_ids[i] if npx_descriptions[ptype]["shank_number"] > 1 else 0
 
             contact_id = int(
-                (pos[0] - stagger - npx_descriptions[ptype]["shank_pitch"] * shank_id) / npx_descriptions[ptype]["x_pitch"]
+                (pos[0] - stagger - npx_descriptions[ptype]["shank_pitch"] * shank_id)
+                / npx_descriptions[ptype]["x_pitch"]
                 + npx_descriptions[ptype]["ncols_per_shank"] * pos[1] / npx_descriptions[ptype]["y_pitch"]
             )
             if npx_descriptions[ptype]["shank_number"] > 1:
