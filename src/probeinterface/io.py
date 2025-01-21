@@ -734,11 +734,6 @@ def write_csv(file, probe):
     raise NotImplementedError
 
 
-
-
-
-
-
 def read_spikegadgets(file: str | Path, raise_error: bool = True) -> ProbeGroup:
     """
     Find active channels of the given Neuropixels probe from a SpikeGadgets .rec file.
@@ -919,9 +914,6 @@ def parse_spikegadgets_header(file: str | Path) -> str:
 
         f.seek(0)
         return f.read(header_size).decode("utf8")
-
-
-
 
 
 def read_mearec(file: str | Path) -> Probe:
