@@ -71,7 +71,7 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 480,
-        "contour": "np70",
+        "contour_description": "np70",
         "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
@@ -94,7 +94,7 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 640,
-        "contour": "np70",
+        "contour_description": "np70",
         "contour_shift": [-27, -11],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
         "oe_x_shift": -8,
@@ -110,7 +110,7 @@ npx_descriptions = {
         "shank_number": 4,
         "ncols_per_shank": 2,
         "nrows_per_shank": 640,
-        "contour": "np70",
+        "contour_description": "np70",
         "contour_shift": [-27, -11],
         "fields_in_imro_table": (
             "channel_ids",
@@ -132,7 +132,7 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 640,
-        "contour": "np70",
+        "contour_description": "np70",
         "contour_shift": [-27, -11],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
         "oe_x_shift": -8,
@@ -148,7 +148,7 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 640,
-        "contour": "np70",
+        "contour_description": "np70",
         "contour_shift": [-27, -11],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
         "oe_x_shift": -8,
@@ -164,7 +164,7 @@ npx_descriptions = {
         "shank_number": 4,
         "ncols_per_shank": 2,
         "nrows_per_shank": 640,
-        "contour": "np70",
+        "contour_description": "np70",
         "contour_shift": [-27, -11],
         "fields_in_imro_table": (
             "channel_ids",
@@ -186,7 +186,7 @@ npx_descriptions = {
         "shank_number": 4,
         "ncols_per_shank": 2,
         "nrows_per_shank": 640,
-        "contour": "np70",
+        "contour_description": "np70",
         "contour_shift": [-27, -11],
         "fields_in_imro_table": (
             "channel_ids",
@@ -208,7 +208,7 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 480,
-        "contour": "np70",
+        "contour_description": "np70",
         "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
@@ -230,7 +230,7 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 480,
-        "contour": "np70",
+        "contour_description": "np70",
         "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
@@ -254,7 +254,7 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 1248,  ### verify this number!!!!!!! Jennifer Colonell has 1368
-        "contour": "nhp125",
+        "contour_description": "nhp125",
         "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
@@ -277,7 +277,7 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 1248,  ### verify this number!!!!!!! Jennifer Colonell has 1368
-        "contour": "nhp125",
+        "contour_description": "nhp125",
         "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
@@ -301,7 +301,7 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 1248,  ### verify this number!!!!!!! Jennifer Colonell has 1368
-        "contour": "nhp125",
+        "contour_description": "nhp125",
         "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
@@ -324,7 +324,7 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 2208,
-        "contour": "nhp90",
+        "contour_description": "nhp90",
         "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
@@ -347,7 +347,7 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 2208,
-        "contour": "nhp125",
+        "contour_description": "nhp125",
         "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
@@ -370,7 +370,7 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 2208,
-        "contour": "nhp125",
+        "contour_description": "nhp125",
         "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
@@ -393,7 +393,7 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 8,
         "nrows_per_shank": 48,
-        "contour": "np70",
+        "contour_description": "np70",
         "contour_shift": [-14, -11],
         "fields_in_imro_table": (
             "channel_ids",
@@ -416,7 +416,7 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 8,
         "nrows_per_shank": 768,
-        "contour": "np70",
+        "contour_description": "np70",
         "contour_shift": [-14, -11],
         "fields_in_imro_table": (
             "channel_ids",
@@ -438,7 +438,7 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 1,
         "nrows_per_shank": 384,
-        "contour": "np70",
+        "contour_description": "np70",
         "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
@@ -461,7 +461,7 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 480,
-        "contour": "np70",
+        "contour_description": "np70",
         "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
@@ -577,8 +577,8 @@ def _make_npx_probe_from_description(probe_description, elec_ids, shank_ids):
     probe.set_contact_ids(contact_ids)
 
     # Add planar contour
-    countour = probe_description["contour"]
-    polygon = np.array(polygon_contour_description[countour])
+    contour_description = probe_description["contour_description"]
+    polygon = np.array(polygon_contour_description[contour_description])
 
     contour = []
     shank_pitch = probe_description["shank_pitch"]
@@ -595,7 +595,7 @@ def _make_npx_probe_from_description(probe_description, elec_ids, shank_ids):
     shank_tips = []
     for shank_id in range(probe_description["shank_number"]):
         shank_shift = np.array([shank_pitch * shank_id, 0])
-        shank_tip = np.array(polygon_contour_description[countour][2]) + contour_shift + shank_shift
+        shank_tip = np.array(polygon[2]) + contour_shift + shank_shift
         shank_tips.append(shank_tip.tolist())
 
     probe.annotate(shank_tips=shank_tips)
@@ -1208,10 +1208,12 @@ def read_openephys(
         contact_width = npx_descriptions[ptype]["contact_width"]
         shank_pitch = npx_descriptions[ptype]["shank_pitch"]
         num_shanks = npx_descriptions[ptype]["shank_number"]
+        contour_description = npx_descriptions[ptype]["contour_description"]
     else:
         contact_width = 12
         shank_pitch = 250
         num_shanks = 1
+        contour_description = npx_descriptions["0"]["contour_description"]
 
     contact_ids = np_probe_info["contact_ids"] if np_probe_info["contact_ids"] is not None else None
 
@@ -1250,7 +1252,7 @@ def read_openephys(
     if contact_ids is not None:
         probe.set_contact_ids(contact_ids)
 
-    polygon = polygon_contour_description["np70"]
+    polygon = polygon_contour_description[contour_description]
     if shank_ids is None:
         contour = polygon
     else:
