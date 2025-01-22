@@ -26,12 +26,12 @@ def generate_all_npx():
 
         probe_folder = base_folder / probe_number
         probe_folder.mkdir(exist_ok=True)
-    
+
         print(probe_number, probe_type)
 
         probe_description = npx_descriptions[probe_type]
 
-        
+
 
         num_shank = probe_description["shank_number"]
         contact_per_shank = probe_description["ncols_per_shank"] * probe_description["nrows_per_shank"]
@@ -57,7 +57,7 @@ def generate_all_npx():
         ax.spines["bottom"].set_visible(False)
 
         ax = axs[1]
-        
+
 
         plot_probe(probe, ax=ax)
         ax.set_title("")
