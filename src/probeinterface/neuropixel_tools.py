@@ -20,7 +20,6 @@ from .probe import Probe
 from .utils import import_safely
 
 
-
 # this dict define the contour for one shank (duplicated when several shanks so)
 # note that a final "polygon_shift" is applied
 polygon_description = {
@@ -244,8 +243,6 @@ npx_descriptions = {
         "oe_x_shift": -11,
     },
     #################
-
-
     # Neuropixels 1.0-NHP Medium (25mm)
     "1020": {
         "model_name": "Neuropixels 1.0-NHP - medium - staggered",
@@ -292,10 +289,7 @@ npx_descriptions = {
         ),
         "oe_x_shift": -11,
     },
-
     #################
-
-
     # Neuropixels 1.0-NHP Medium (25mm)
     "1022": {
         "model_name": "Neuropixels 1.0-NHP - medium",
@@ -433,7 +427,7 @@ npx_descriptions = {
             "ap_hp_filters",
         ),
         "oe_x_shift": -8,
-    },    
+    },
     "1121": {
         "model_name": "Neuropixels Ultra - Type 2",
         "x_pitch": 6,
@@ -482,35 +476,27 @@ npx_descriptions = {
 }
 
 
-
 # Map imDatPrb_pn (probe number) to imDatPrb_type (probe type) when the latter is missing
 probe_part_number_to_probe_type = {
-    
     # for old version without a probe number we assume NP1.0
     None: "0",
-
     # NP1.0
     "PRB_1_4_0480_1": "0",
     "PRB_1_4_0480_1_C": "0",
     "PRB_1_2_0480_2": "0",
     "NP1010": "0",
-    
     # NHP probes lin
     "NP1015": "1015",
     "NP1016": "1015",
     "NP1017": "1015",
-    
     # NHP probes stag med
     "NP1020": "1020",
     "NP1021": "1021",
-
     "NP1022": "1022",
-    
     # NHP probes stag long
     "NP1030": "1030",
     "NP1031": "1031",
     "NP1032": "1032",
-
     # NP2.0
     "NP2000": "21",
     "NP2010": "24",
@@ -520,19 +506,14 @@ probe_part_number_to_probe_type = {
     "NP2004": "2004",
     "PRB2_1_2_0640_0": "21",
     "PRB2_4_2_0640_0": "24",
-
     # Ultra
     "NP1100": "1100",  # Ultra probe - 1 bank
     "NP1110": "1110",  # Ultra probe - 16 banks
     "NP1121": "1121",  # Ultra probe - beta configuration
-
     # Opto
     "NP1300": "1300",  # Opto probe
-
     # missing NP1200
     # missing NXT3000
-
-
 }
 
 
