@@ -21,10 +21,10 @@ from .utils import import_safely
 
 
 # this dict define the contour for one shank (duplicated when several shanks so)
-# note that a final "polygon_shift" is applied
-polygon_description = {
+# note that a final "contour_shift" is applied
+polygon_contour_description = {
     # NP1 and NP2 (1 and 4 shanks)
-    "default": [
+    "np70": [
         (0, 10000),
         (0, 0),
         (35, -175),
@@ -71,8 +71,8 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 480,
-        "polygon": polygon_description["default"],
-        "polygon_shift": [-11, -11],
+        "contour":  "np70",
+        "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "banks",
@@ -94,8 +94,8 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 640,
-        "polygon": polygon_description["default"],
-        "polygon_shift": [-27, -11],
+        "contour":  "np70",
+        "contour_shift": [-27, -11],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
         "oe_x_shift": -8,
     },
@@ -110,8 +110,8 @@ npx_descriptions = {
         "shank_number": 4,
         "ncols_per_shank": 2,
         "nrows_per_shank": 640,
-        "polygon": polygon_description["default"],
-        "polygon_shift": [-27, -11],
+        "contour":  "np70",
+        "contour_shift": [-27, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "shank_id",
@@ -132,8 +132,8 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 640,
-        "polygon": polygon_description["default"],
-        "polygon_shift": [-27, -11],
+        "contour":  "np70",
+        "contour_shift": [-27, -11],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
         "oe_x_shift": -8,
     },
@@ -148,8 +148,8 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 640,
-        "polygon": polygon_description["default"],
-        "polygon_shift": [-27, -11],
+        "contour":  "np70",
+        "contour_shift": [-27, -11],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
         "oe_x_shift": -8,
     },
@@ -164,8 +164,8 @@ npx_descriptions = {
         "shank_number": 4,
         "ncols_per_shank": 2,
         "nrows_per_shank": 640,
-        "polygon": polygon_description["default"],
-        "polygon_shift": [-27, -11],
+        "contour":  "np70",
+        "contour_shift": [-27, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "shank_id",
@@ -186,8 +186,8 @@ npx_descriptions = {
         "shank_number": 4,
         "ncols_per_shank": 2,
         "nrows_per_shank": 640,
-        "polygon": polygon_description["default"],
-        "polygon_shift": [-27, -11],
+        "contour":  "np70",
+        "contour_shift": [-27, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "shank_id",
@@ -208,8 +208,8 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 480,
-        "polygon": polygon_description["default"],
-        "polygon_shift": [-11, -11],
+        "contour":  "np70",
+        "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "banks",
@@ -230,8 +230,8 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 480,
-        "polygon": polygon_description["default"],
-        "polygon_shift": [-11, -11],
+        "contour":  "np70",
+        "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "banks",
@@ -254,8 +254,8 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 1248,  ### verify this number!!!!!!! Jennifer Colonell has 1368
-        "polygon": polygon_description["nhp125"],
-        "polygon_shift": [-11, -11],
+        "contour":  "nhp125",
+        "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "banks",
@@ -277,8 +277,8 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 1248,  ### verify this number!!!!!!! Jennifer Colonell has 1368
-        "polygon": polygon_description["nhp125"],
-        "polygon_shift": [-11, -11],
+        "contour":  "nhp125",
+        "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "banks",
@@ -301,8 +301,8 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 1248,  ### verify this number!!!!!!! Jennifer Colonell has 1368
-        "polygon": polygon_description["nhp125"],
-        "polygon_shift": [-11, -11],
+        "contour":  "nhp125",
+        "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "banks",
@@ -324,8 +324,8 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 2208,
-        "polygon": polygon_description["nhp90"],
-        "polygon_shift": [-11, -11],
+        "contour":  "nhp90",
+        "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "banks",
@@ -347,8 +347,8 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 2208,
-        "polygon": polygon_description["nhp125"],
-        "polygon_shift": [-11, -11],
+        "contour":  "nhp125",
+        "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "banks",
@@ -370,8 +370,8 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 2208,
-        "polygon": polygon_description["nhp125"],
-        "polygon_shift": [-11, -11],
+        "contour":  "nhp125",
+        "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "banks",
@@ -393,8 +393,8 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 8,
         "nrows_per_shank": 48,
-        "polygon": polygon_description["default"],
-        "polygon_shift": [-14, -11],
+        "contour":  "np70",
+        "contour_shift": [-14, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "banks",
@@ -416,8 +416,8 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 8,
         "nrows_per_shank": 768,
-        "polygon": polygon_description["default"],
-        "polygon_shift": [-14, -11],
+        "contour":  "np70",
+        "contour_shift": [-14, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "banks",
@@ -438,8 +438,8 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 1,
         "nrows_per_shank": 384,
-        "polygon": polygon_description["default"],
-        "polygon_shift": [-11, -11],
+        "contour":  "np70",
+        "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "banks",
@@ -461,8 +461,8 @@ npx_descriptions = {
         "shank_number": 1,
         "ncols_per_shank": 2,
         "nrows_per_shank": 480,
-        "polygon": polygon_description["default"],
-        "polygon_shift": [-11, -11],
+        "contour":  "np70",
+        "contour_shift": [-11, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "banks",
@@ -578,17 +578,29 @@ def _make_npx_probe_from_description(probe_description, elec_ids, shank_ids):
     probe.set_contact_ids(contact_ids)
 
     # Add planar contour
-    polygon = np.array(probe_description["polygon"])
+    countour = probe_description["contour"]
+    polygon = np.array(polygon_contour_description[countour])
+
     contour = []
     shank_pitch = probe_description["shank_pitch"]
     for shank_id in range(probe_description["shank_number"]):
-        shift = [shank_pitch * shank_id, 0]
-        contour += list(polygon + shift)
+        shank_shift = np.array([shank_pitch * shank_id, 0])
+        contour += list(polygon + shank_shift)
 
-    # shift
-    contour = np.array(contour) + np.array(probe_description["polygon_shift"])
+    # final contour_shift
+    contour_shift = np.array(probe_description["contour_shift"])
+    contour = np.array(contour) + contour_shift
     probe.set_planar_contour(contour)
 
+    # shank tips : minimum of the polygon
+    shank_tips = []
+    for shank_id in range(probe_description["shank_number"]):
+        shank_shift = np.array([shank_pitch * shank_id, 0])
+        shank_tip = np.array(polygon_contour_description[countour][2]) + contour_shift + shank_shift
+        shank_tips.append(shank_tip.tolist())
+    
+    probe.annotate(shank_tips=shank_tips)
+    
     # wire it
     probe.set_device_channel_indices(np.arange(positions.shape[0]))
 
@@ -1239,7 +1251,7 @@ def read_openephys(
     if contact_ids is not None:
         probe.set_contact_ids(contact_ids)
 
-    polygon = polygon_description["default"]
+    polygon = polygon_contour_description["np70"]
     if shank_ids is None:
         contour = polygon
     else:

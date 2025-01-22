@@ -81,13 +81,13 @@ def generate_all_npx():
 
         fig.suptitle(title)
 
-        plt.show()
+        # plt.show()
 
-        # fig.savefig(probe_folder / f"{probe_number}.png")
+        fig.savefig(probe_folder / f"{probe_number}.png")
 
-        # write_probeinterface(probe_folder / f"{probe_number}.json", probe)
+        write_probeinterface(probe_folder / f"{probe_number}.json", probe)
 
-        # plt.close(fig)
+        plt.close(fig)
 
 
 
