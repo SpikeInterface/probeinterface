@@ -307,7 +307,7 @@ def test_ultra_probe():
     # Data provided by Alessio
     probe = read_spikeglx(data_path / "npUltra.meta")
 
-    assert probe.model_name == "Neuropixels Ultra"
+    assert probe.model_name == "Neuropixels Ultra (1 bank)"
     assert probe.manufacturer == "IMEC"
     assert probe.annotations["probe_type"] == "1100"
 

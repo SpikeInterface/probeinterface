@@ -384,7 +384,7 @@ npx_descriptions = {
     },
     # Ultra probes 1 bank
     "1100": {
-        "model_name": "Neuropixels Ultra 1 bank",
+        "model_name": "Neuropixels Ultra (1 bank)",
         "x_pitch": 6,
         "y_pitch": 6,
         "contact_width": 5,
@@ -407,7 +407,7 @@ npx_descriptions = {
     },
     # Ultra probes 16 banks
     "1110": {
-        "model_name": "Neuropixels Ultra 16 banks",
+        "model_name": "Neuropixels Ultra (16 banks)",
         "x_pitch": 6,
         "y_pitch": 6,
         "contact_width": 5,
