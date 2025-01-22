@@ -20,7 +20,7 @@ from .io import (
     read_maxwell,
     read_3brain,
 )
-from .neuropixel_tools import (
+from .neuropixels_tools import (
     read_imro,
     write_imro,
     read_spikeglx,

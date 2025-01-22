@@ -489,7 +489,7 @@ probe_part_number_to_probe_type = {
     # for old version without a probe number we assume NP1.0
     None: "0",
 
-    # NP1.0
+    # # NP1.0
     "PRB_1_4_0480_1": "0",
     "PRB_1_4_0480_1_C": "0",
     "PRB_1_2_0480_2": "0",

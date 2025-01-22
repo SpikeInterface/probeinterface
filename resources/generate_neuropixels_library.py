@@ -4,12 +4,12 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 
-from probeinterface.neuropixel_tools import npx_descriptions, probe_part_number_to_probe_type, _make_npx_probe_from_description
+from probeinterface.neuropixels_tools import npx_descriptions, probe_part_number_to_probe_type, _make_npx_probe_from_description
 from probeinterface.plotting import plot_probe
 from probeinterface import write_probeinterface
 
 
-base_folder = Path("./neuropixel_library_generated")
+base_folder = Path("./neuropixels_library_generated")
 
 
 
@@ -81,13 +81,13 @@ def generate_all_npx():
 
         fig.suptitle(title)
 
-        # plt.show()
+        plt.show()
 
-        fig.savefig(probe_folder / f"{probe_number}.png")
+        # fig.savefig(probe_folder / f"{probe_number}.png")
 
-        write_probeinterface(probe_folder / f"{probe_number}.json", probe)
+        # write_probeinterface(probe_folder / f"{probe_number}.json", probe)
 
-        plt.close(fig)
+        # plt.close(fig)
 
 
 
