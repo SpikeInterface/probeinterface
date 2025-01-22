@@ -340,7 +340,7 @@ def test_snsGeomMap():
     # check when snsGeomMap is present if contact positions are the same from imroTbl
 
     for meta_file in data_path.glob("*.meta"):
-        
+
         meta = parse_spikeglx_meta(meta_file)
         if "snsGeomMap" in meta:
             num_shank, shank_width, shank_pitch, shank_ids, x_pos, y_pos, activated = parse_spikeglx_snsGeomMap(meta)
