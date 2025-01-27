@@ -42,10 +42,10 @@ probe.set_device_channel_indices(device_channel_indices)
 ##############################################################################
 # In order to ease this process, `probeinterface` also includes some commonly
 # used wirings based on standard connectors. We created references and spreadsheets
-# showing how these wirings are computed at `probeinterface/resources/wiring_references 
+# showing how these wirings are computed at `probeinterface/resources/wiring_references
 # <https://github.com/SpikeInterface/probeinterface/tree/9776684948e3ceba71601e5c0f90c2672f665234/resources>`_.
 # If we have a Intan RHD2132 Headstage attached to a NeuroNexus H32 Connector, we can
-# import this wiring as follows: 
+# import this wiring as follows:
 
 probe.wiring_to_device('H32>RHD2132')
 print(probe.device_channel_indices)
