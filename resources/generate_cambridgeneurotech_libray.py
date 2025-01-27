@@ -204,7 +204,7 @@ def create_CN_figure(probe_name, probe):
     ax.spines['right'].set_visible(False) #remove external axis
     ax.spines['top'].set_visible(False) #remove external axis
 
-    ax.set_title('\n' +'CambridgeNeuroTech' +'\n'+  probe.annotations.get('name'), fontsize = 24)
+    ax.set_title('\n' +'CambridgeNeuroTech' +'\n'+  probe.annotations.get('model_name'), fontsize = 24)
 
     fig.tight_layout() #modif tight layout
 
@@ -285,7 +285,7 @@ def generate_all_probes():
             sorted_indices = np.argsort(contact_order)
             probe = probe_unordered.get_slice(sorted_indices)
 
-            probe.annotate(name=probe_name, manufacturer='cambridgeneurotech')
+            probe.annotate(model_name=probe_name, manufacturer='cambridgeneurotech')
 
             # one based in cambridge neurotech
             contact_ids = np.arange(sorted_indices.size) + 1
