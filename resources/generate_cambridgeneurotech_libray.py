@@ -245,11 +245,11 @@ def generate_all_probes():
 
     for i, probe_info in probe_info_table.iterrows():
         print(i, probe_info['part'])
-        
+
         # DEBUG
         # if not probe_info['part'] in ('P-1', 'P-2'):
         #     continue
-            
+
         # print(probe_info)
 
         if probe_info['shanks_n'] == 1:
