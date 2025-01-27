@@ -23,7 +23,7 @@ def generate_all_npx():
 
         if probe_number is None:
             continue
-            
+
         if probe_number == "1110":
             # the formula by the imrow table is wrong and more complicated
             continue
