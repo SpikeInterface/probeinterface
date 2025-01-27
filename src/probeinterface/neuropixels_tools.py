@@ -1,5 +1,5 @@
 """
-Here we implement probe info related to Neuropixel.
+Here we implement probe info related to Neuropixels.
 Both spikeglx (using meta file) and openephys with neuropixel (using xml file) is handled.
 
 Note:
