@@ -8,6 +8,7 @@ from probeinterface import (
     read_spikeglx,
     parse_spikeglx_meta,
     get_saved_channel_indices_from_spikeglx_meta,
+    parse_spikeglx_snsGeomMap,
 )
 from probeinterface.testing import validate_probe_dict
 
@@ -306,7 +307,7 @@ def test_ultra_probe():
     # Data provided by Alessio
     probe = read_spikeglx(data_path / "npUltra.meta")
 
-    assert probe.model_name == "Neuropixels Ultra"
+    assert probe.model_name == "Neuropixels Ultra (1 bank)"
     assert probe.manufacturer == "IMEC"
     assert probe.annotations["probe_type"] == "1100"
 
@@ -335,5 +336,33 @@ def test_CatGT_NP1():
     assert "1.0" in probe.model_name
 
 
+def test_snsGeomMap():
+    # check when snsGeomMap is present if contact positions are the same from imroTbl
+
+    for meta_file in data_path.glob("*.meta"):
+
+        meta = parse_spikeglx_meta(meta_file)
+        if "snsGeomMap" in meta:
+            num_shank, shank_width, shank_pitch, shank_ids, x_pos, y_pos, activated = parse_spikeglx_snsGeomMap(meta)
+
+            # this is read from imroTbl internally
+            probe = read_spikeglx(meta_file)
+            assert probe.get_shank_count() == num_shank
+            assert probe.get_contact_count() == x_pos.size
+            probe_x = probe.contact_positions[:, 0]
+            probe_y = probe.contact_positions[:, 1]
+
+            # for x coordinate : we have a shift between spikeglx and probeinterface (the reference is not the same)
+            # for y coordinate : it is the same
+            # in parse_spikeglx_snsGeomMap x_pos, y_pos are referenced per shank
+            # but after the offset this should equal per shank
+            for shank_id in np.unique(shank_ids):
+                mask = shank_ids == shank_id
+                x_offset = x_pos[mask][0] - probe_x[mask][0]
+                assert np.array_equal(probe_x[mask] + x_offset, x_pos[mask])
+                assert np.array_equal(probe_y[mask], y_pos[mask])
+
+
 if __name__ == "__main__":
-    test_NP2_1_shanks()
+    # test_NP2_1_shanks()
+    test_snsGeomMap()
