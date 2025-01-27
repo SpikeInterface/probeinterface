@@ -23,6 +23,10 @@ def generate_all_npx():
 
         if probe_number is None:
             continue
+            
+        if probe_number == "1110":
+            # the formula by the imrow table is wrong and more complicated
+            continue
 
         probe_folder = base_folder / probe_number
         probe_folder.mkdir(exist_ok=True)
@@ -59,11 +63,12 @@ def generate_all_npx():
         ax = axs[1]
 
 
+        # plot_probe(probe, ax=ax, text_on_contact=probe._contact_ids)
         plot_probe(probe, ax=ax)
         ax.set_title("")
 
         yp = probe_description["y_pitch"]
-        ax.set_ylim(-yp*8, yp*12)
+        ax.set_ylim(-yp*8, yp*13)
         ax.yaxis.set_visible(False)
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)

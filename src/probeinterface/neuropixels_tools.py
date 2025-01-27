@@ -231,7 +231,7 @@ npx_descriptions = {
         "ncols_per_shank": 2,
         "nrows_per_shank": 480,
         "contour_description": "np70",
-        "contour_shift": [-11, -11],
+        "contour_shift": [-27, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "banks",
@@ -439,7 +439,7 @@ npx_descriptions = {
         "ncols_per_shank": 1,
         "nrows_per_shank": 384,
         "contour_description": "np70",
-        "contour_shift": [-11, -11],
+        "contour_shift": [-6.25, -11],
         "fields_in_imro_table": (
             "channel_ids",
             "banks",
@@ -508,7 +508,7 @@ probe_part_number_to_probe_type = {
     "PRB2_4_2_0640_0": "24",
     # Ultra
     "NP1100": "1100",  # Ultra probe - 1 bank
-    "NP1110": "1110",  # Ultra probe - 16 banks
+    "NP1110": "1110",  # Ultra probe - 16 banks no handle beacuse 
     "NP1121": "1121",  # Ultra probe - beta configuration
     # Opto
     "NP1300": "1300",  # Opto probe
@@ -857,6 +857,10 @@ def parse_spikeglx_snsGeomMap(meta):
         activated[i] = bool(act)
 
     return num_shank, shank_width, shank_pitch, shank_ids, x_pos, y_pos, activated
+
+# def spikeglx_snsGeomMap_to_probe(meta):
+#     parse_spikeglx_snsGeomMap(meta)
+
 
 
 def get_saved_channel_indices_from_spikeglx_meta(meta_file: str | Path) -> np.array:
