@@ -5,7 +5,8 @@ import pytest
 import numpy as np
 
 from probeinterface import read_imro, write_imro
-from probeinterface.testing import validate_probe_dict
+
+from ..utilities import validate_probe_dict
 
 data_path = Path(__file__).absolute().parent.parent / "data" / "imro"
 imro_files = glob.glob(str(data_path / "*.imro"))
