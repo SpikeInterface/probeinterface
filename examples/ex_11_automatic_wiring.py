@@ -52,24 +52,24 @@ print(probe.device_channel_indices)
 
 ##############################################################################
 # In this figure we have 2 numbers for each contact:
-#    * the upper number "prbXX" is the Neuronexus index (one-based)
+#    * the upper number "prbXX" is the contact id (one-based, from NeuroNexus)
 #    * the lower "devXX" is the channel on the Intan device (zero-based)
 
 fig, ax = plt.subplots(figsize=(5, 15))
 plot_probe(probe, with_contact_id=True, with_device_index=True, ax=ax)
 
 
-plt.show()
-
-"""
-Available wiring "pathways"
----------------------------
-
-The available pathways can be found in the `probeinterface.wiring <>`_ module.
-
-The following pathways are available:
-"""
+##############################################################################
+# Available wiring "pathways"
+# ---------------------------
+#
+# The available pathways can be found in the `probeinterface.wiring <https://github.com/SpikeInterface/probeinterface/blob/main/src/probeinterface/wiring.py>`_ module.
+#
+# The following pathways are available:
+#
 
 from probeinterface import get_available_pathways
 
 print(get_available_pathways())
+
+plt.show()
