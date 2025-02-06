@@ -25,3 +25,6 @@ dev_*
 .coverage
 cov.xml
 .DS_Store
+
+
+neuropixel_library_generated/*

@@ -40,13 +40,14 @@ package-dir = {"probeinterface" = "src/probeinterface"}
 [project.optional-dependencies]
 
 test = [
+    "jsonschema",
     "pytest",
     "pytest-cov",
     "matplotlib",
     "scipy",
     "pandas",
     "h5py",
-    "zarr>=2.16.0"
+    "zarr>=2.16.0,<3.0.0"
 ]
 
 docs = [

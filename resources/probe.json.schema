@@ -26,10 +26,10 @@
           "annotations": {
             "type": "object",
             "properties": {
-              "name": { "type": "string" },
+              "model_name": { "type": "string" },
               "manufacturer": { "type": "string" }
             },
-            "required": ["name", "manufacturer"],
+            "required": ["model_name", "manufacturer"],
             "additionalProperties": true
           },
           "contact_annotations": {
@@ -71,14 +71,14 @@
               "anyOf": [
                 {
                   "type": "object",
-                  "properties": { "radius": { "type": "integer", "minimum": 0 } },
+                  "properties": { "radius": { "type": "number", "minimum": 0 } },
                   "required": ["radius"]
                 },
                 {
                   "type": "object",
                   "properties": {
-                    "width": { "type": "integer", "minimum": 0 },
-                    "height": { "type": "integer", "minimum": 0 }
+                    "width": { "type": "number", "minimum": 0 },
+                    "height": { "type": "number", "minimum": 0 }
                   },
                   "required": ["width"]
                 }
@@ -101,6 +101,10 @@
           "shank_ids": {
             "type": "array",
             "items": { "type": "string" }
+          },
+          "device_channel_indices": {
+            "type": "array",
+            "items": { "type": "integer" }
           }
         },
         "required": [
