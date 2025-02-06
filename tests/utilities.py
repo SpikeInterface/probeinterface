@@ -4,7 +4,7 @@ from pathlib import Path
 from probeinterface import __version__ as version
 import jsonschema
 
-json_schema_file = Path(__file__).absolute().parent.parent.parent / "resources" / "probe.json.schema"
+json_schema_file = Path(__file__).absolute().parent.parent / "resources" / "probe.json.schema"
 schema = json.load(open(json_schema_file, "r"))
 
 

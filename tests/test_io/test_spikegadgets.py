@@ -3,7 +3,8 @@ from xml.etree import ElementTree
 
 from probeinterface import read_spikegadgets
 from probeinterface.io import parse_spikegadgets_header
-from probeinterface.testing import validate_probe_dict
+
+from ..utilities import validate_probe_dict
 
 
 data_path = Path(__file__).absolute().parent.parent / "data" / "spikegadgets"

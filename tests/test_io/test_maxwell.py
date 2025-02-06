@@ -4,7 +4,8 @@ import numpy as np
 import pytest
 
 from probeinterface import read_maxwell
-from probeinterface.testing import validate_probe_dict
+
+from ..utilities import validate_probe_dict
 
 data_path = Path(__file__).absolute().parent.parent / "data" / "maxwell"
 

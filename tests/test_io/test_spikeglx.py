@@ -10,7 +10,8 @@ from probeinterface import (
     get_saved_channel_indices_from_spikeglx_meta,
     parse_spikeglx_snsGeomMap,
 )
-from probeinterface.testing import validate_probe_dict
+
+from ..utilities import validate_probe_dict
 
 data_path = Path(__file__).absolute().parent.parent / "data" / "spikeglx"
 meta_files = glob.glob(str(data_path / "*.meta"))
