@@ -197,6 +197,28 @@ npx_descriptions = {
         ),
         "oe_x_shift": -8,
     },
+    # NXT
+    "2020": {
+        "model_name": "Neuropixels 2.0 Quad Base",
+        "x_pitch": 32,
+        "y_pitch": 15,
+        "contact_width": 12,
+        "stagger": 0.0,
+        "shank_pitch": 250,
+        "shank_number": 4,
+        "ncols_per_shank": 2,
+        "nrows_per_shank": 640,
+        "contour_description": "np70",
+        "contour_shift": [-27, -11],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "shank_id",
+            "banks",
+            "references",
+            "elec_ids",
+        ),
+        "oe_x_shift": -8,
+    },
     # Experimental probes previous to 1.0
     "Phase3a": {
         "model_name": "Phase3a",
@@ -403,7 +425,7 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -8,
+        "oe_x_shift": -12,
     },
     # Ultra probes 16 banks
     "1110": {
@@ -506,6 +528,8 @@ probe_part_number_to_probe_type = {
     "NP2004": "2004",
     "PRB2_1_2_0640_0": "21",
     "PRB2_4_2_0640_0": "24",
+    # NXT
+    "NP2020": "2020",
     # Ultra
     "NP1100": "1100",  # Ultra probe - 1 bank
     "NP1110": "1110",  # Ultra probe - 16 banks no handle beacuse
@@ -1052,7 +1076,9 @@ def read_openephys(
 
         # check if shank ids is present
         if all(":" in val for val in channel_values):
-            shank_ids = np.array([int(val[val.find(":") + 1 :]) for val in channel_values])
+            shank_ids = np.array([int(val.split(":")[1]) for val in channel_values])
+        elif all("_" in val for val in channel_names):
+            shank_ids = np.array([int(val.split("_")[1]) for val in channel_names])
         else:
             shank_ids = None
 
@@ -1122,6 +1148,7 @@ def read_openephys(
     # now select correct probe (if multiple)
     if len(np_probes) > 1:
         found = False
+        probe_names = [p["name"] for p in np_probes_info]
 
         if stream_name is not None:
             assert probe_name is None and serial_number is None, (
@@ -1166,8 +1193,8 @@ def read_openephys(
                 return None
         else:
             raise Exception(
-                "More than one probe found. Use one of 'stream_name', 'probe_name', or 'serial_number' "
-                "to select the right probe"
+                f"More than one probe found. Use one of 'stream_name', 'probe_name', or 'serial_number' "
+                f"to select the right probe.\nProbe names: {probe_names}"
             )
     else:
         # in case of a single probe, make sure it is consistent with optional
@@ -1205,7 +1232,6 @@ def read_openephys(
     np_probe = np_probes[probe_idx]
     positions = np_probe_info["positions"]
     shank_ids = np_probe_info["shank_ids"]
-    pname = np_probe_info["name"]
 
     ptype = np_probe_info["ptype"]
     if ptype in npx_descriptions:
@@ -1257,6 +1283,7 @@ def read_openephys(
         probe.set_contact_ids(contact_ids)
 
     polygon = polygon_contour_description[contour_description]
+    contour_shift = np.array(npx_descriptions[ptype]["contour_shift"])
     if shank_ids is None:
         contour = polygon
     else:
@@ -1265,7 +1292,7 @@ def read_openephys(
             contour += list(np.array(polygon) + [shank_pitch * i, 0])
 
     # shift
-    contour = np.array(contour) - x_shift
+    contour = np.array(contour) + contour_shift
     probe.set_planar_contour(contour)
 
     # wire it
