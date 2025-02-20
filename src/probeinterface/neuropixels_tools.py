@@ -1081,7 +1081,11 @@ def read_openephys(
             positions[:, 1] = positions[:, 1] - npx_descriptions[ptype]["shank_pitch"] * shank_ids
 
         # x offset so that the first column is at 0x
-        positions[:, 0] -= np.min(positions[:, 0])
+        offset = np.min(positions[:, 0])
+        # if some shanks are not used, we need to adjust the offset
+        if shank_ids is not None:
+            offset -= np.min(shank_ids) * npx_descriptions[ptype]["shank_pitch"]
+        positions[:, 0] -= offset
 
         contact_ids = []
         for i, pos in enumerate(positions):
