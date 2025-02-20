@@ -4,7 +4,6 @@ Both spikeglx (using meta file) and openephys with neuropixel (using xml file) i
 
 Note:
   * the centre of the first left columns and the first bottom row is our reference (x=0, y=0)
-  * "oe_x_shift" is a global shift on x axis to make spikeglx and openephys compatible.
 
 """
 
@@ -81,7 +80,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
     # Neuropixels 2.0 - Single Shank - Prototype
     "21": {
@@ -97,7 +95,6 @@ npx_descriptions = {
         "contour_description": "np70",
         "contour_shift": [-27, -11],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
-        "oe_x_shift": -8,
     },
     # Neuropixels 2.0 - Four Shank - Prototype
     "24": {
@@ -119,7 +116,6 @@ npx_descriptions = {
             "references",
             "elec_ids",
         ),
-        "oe_x_shift": -8,
     },
     # Neuropixels 2.0 - Single Shank - Commercial without metal cap
     "2003": {
@@ -135,7 +131,6 @@ npx_descriptions = {
         "contour_description": "np70",
         "contour_shift": [-27, -11],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
-        "oe_x_shift": -8,
     },
     # Neuropixels 2.0 - Single Shank - Commercial with metal cap
     "2004": {
@@ -151,7 +146,6 @@ npx_descriptions = {
         "contour_description": "np70",
         "contour_shift": [-27, -11],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
-        "oe_x_shift": -8,
     },
     # Neuropixels 2.0 - Four Shank - Commercial without metal cap
     "2013": {
@@ -173,7 +167,6 @@ npx_descriptions = {
             "references",
             "elec_ids",
         ),
-        "oe_x_shift": -8,
     },
     # Neuropixels 2.0 - Four Shank - Commercial with metal cap
     "2014": {
@@ -195,7 +188,6 @@ npx_descriptions = {
             "references",
             "elec_ids",
         ),
-        "oe_x_shift": -8,
     },
     # NXT
     "2020": {
@@ -217,7 +209,6 @@ npx_descriptions = {
             "references",
             "elec_ids",
         ),
-        "oe_x_shift": -8,
     },
     # Experimental probes previous to 1.0
     "Phase3a": {
@@ -239,7 +230,6 @@ npx_descriptions = {
             "ap_gains",
             "lf_gains",
         ),
-        "oe_x_shift": -11,
     },
     # Neuropixels 1.0-NHP Short (10mm)
     "1015": {
@@ -262,7 +252,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
     #################
     # Neuropixels 1.0-NHP Medium (25mm)
@@ -286,7 +275,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
     # Neuropixels 1.0-NHP Medium (25mm)
     "1021": {
@@ -309,7 +297,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
     #################
     # Neuropixels 1.0-NHP Medium (25mm)
@@ -333,7 +320,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
     # Neuropixels 1.0-NHP 45mm SOI90 - NHP long 90um wide, staggered contacts
     "1030": {
@@ -356,7 +342,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
     # Neuropixels 1.0-NHP 45mm SOI125 - NHP long 125um wide, staggered contacts
     "1031": {
@@ -379,7 +364,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
     # 1.0-NHP 45mm SOI115 / 125 linear - NHP long 125um wide, linear contacts
     "1032": {
@@ -402,7 +386,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
     # Ultra probes 1 bank
     "1100": {
@@ -425,7 +408,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -12,
     },
     # Ultra probes 16 banks
     "1110": {
@@ -448,7 +430,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -8,
     },
     "1121": {
         "model_name": "Neuropixels Ultra - Type 2",
@@ -470,7 +451,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": 18,
     },
     # NP-Opto
     "1300": {
@@ -493,7 +473,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
 }
 
@@ -1097,13 +1076,12 @@ def read_openephys(
         if probe_part_number not in probe_part_number_to_probe_type:
             raise NotImplementedError(f"Probe part number {probe_part_number} is not supported yet")
         ptype = probe_part_number_to_probe_type[probe_part_number]
-        x_shift = npx_descriptions[ptype]["oe_x_shift"] if ptype is not None else 0
 
         if fix_x_position_for_oe_5 and oe_version < parse("0.6.0") and shank_ids is not None:
             positions[:, 1] = positions[:, 1] - npx_descriptions[ptype]["shank_pitch"] * shank_ids
 
-        # x offset
-        positions[:, 0] += x_shift
+        # x offset so that the first column is at 0x
+        positions[:, 0] -= np.min(positions[:, 0])
 
         contact_ids = []
         for i, pos in enumerate(positions):
