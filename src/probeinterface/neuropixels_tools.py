@@ -189,7 +189,7 @@ npx_descriptions = {
             "elec_ids",
         ),
     },
-    # NXT
+    # Neuropixels 2.0 Quad Base
     "2020": {
         "model_name": "Neuropixels 2.0 Quad Base",
         "x_pitch": 32,
