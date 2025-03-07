@@ -40,7 +40,7 @@ pathways = {
         16, 31, 17, 30, 29, 18, 28, 27, 26, 25, 24, 19, 21, 22, 23, 20,
         11, 8, 9, 10, 12, 7, 6, 5, 4, 3, 13, 2, 1, 14, 0, 15,
         55, 56, 54, 57, 53, 58, 52, 59, 51, 60, 50, 61, 62, 49, 63, 48],
-    
+
     # done by Bao Le, verified by Chris Halcrow
     # note: first SPI cable goes to RHD chip on adaptor's samtec connector's side
     'ASSY-77>Adpt.A64-Om32_2x-sm-cambridgeneurotech>two_RHD2132': [
