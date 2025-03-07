@@ -957,38 +957,52 @@ def read_openephys(
 
     info_chain = root.find("INFO")
     oe_version = parse(info_chain.find("VERSION").text)
-    neuropix_pxi = None
+    neuropix_pxi_processor = None
+    onebox_processor = None
     for signal_chain in root.findall("SIGNALCHAIN"):
         for processor in signal_chain:
             if "PROCESSOR" == processor.tag:
                 name = processor.attrib["name"]
                 if "Neuropix-PXI" in name:
-                    neuropix_pxi = processor
+                    neuropix_pxi_processor = processor
+                if "OneBox" in name:
+                    onebox_processor = processor
 
-    if neuropix_pxi is None:
+    if neuropix_pxi_processor is None and onebox_processor is None:
         if raise_error:
-            raise Exception("Open Ephys can only be read when the Neuropix-PXI plugin is used")
+            raise Exception("Open Ephys can only be read when the Neuropix-PXI or the " "OneBox plugin is used.")
         return None
 
-    if "NodeId" in neuropix_pxi.attrib:
-        node_id = neuropix_pxi.attrib["NodeId"]
-    elif "nodeId" in neuropix_pxi.attrib:
-        node_id = neuropix_pxi.attrib["nodeId"]
+    if neuropix_pxi_processor is not None:
+        assert onebox_processor is None, "Only one processor should be present"
+        processor = neuropix_pxi_processor
+        neuropix_pxi_version = parse(neuropix_pxi_processor.attrib["libraryVersion"])
+        if neuropix_pxi_version < parse("0.3.3"):
+            if raise_error:
+                raise Exception("Electrode locations are available from Neuropix-PXI version 0.3.3")
+            return None
+    if onebox_processor is not None:
+        assert neuropix_pxi_processor is None, "Only one processor should be present"
+        processor = onebox_processor
+
+    if "NodeId" in processor.attrib:
+        node_id = processor.attrib["NodeId"]
+    elif "nodeId" in processor.attrib:
+        node_id = processor.attrib["nodeId"]
     else:
         node_id = None
-    neuropix_pxi_version = parse(neuropix_pxi.attrib["libraryVersion"])
-    if neuropix_pxi_version < parse("0.3.3"):
-        if raise_error:
-            raise Exception("Electrode locations are available from Neuropix-PXI version 0.3.3")
-        return None
 
     # read STREAM fields if present (>=0.6.x)
-    stream_fields = neuropix_pxi.findall("STREAM")
+    stream_fields = processor.findall("STREAM")
     if len(stream_fields) > 0:
         has_streams = True
         streams = []
+        # find probe names (exclude ADC streams)
         for stream_field in stream_fields:
-            streams.append(stream_field.attrib["name"])
+            stream_name = stream_field.attrib["name"]
+            if "ADC" not in stream_name:
+                streams.append(stream_name)
+        # find probe names (exclude ADC streams)
         probe_names_used = np.unique([stream.split("-")[0] for stream in streams])
     else:
         has_streams = False
@@ -996,7 +1010,7 @@ def read_openephys(
 
     # for Open Ephys version < 1.0 np_probes is in the EDITOR field.
     # for Open Ephys version >= 1.0 np_probes is in the CUSTOM_PARAMETERS field.
-    editor = neuropix_pxi.find("EDITOR")
+    editor = processor.find("EDITOR")
     if oe_version < parse("0.9.0"):
         np_probes = editor.findall("NP_PROBE")
     else:
@@ -1010,12 +1024,11 @@ def read_openephys(
 
     # In neuropixel plugin 0.7.0, the option for enabling/disabling probes was added.
     # Make sure we only keep enabled probes.
-    if neuropix_pxi_version >= parse("0.7.0") and neuropix_pxi_version < parse("1.0.0dev0"):
-        np_probes = [probe for probe in np_probes if probe.attrib["isEnabled"] == "1"]
-        if len(np_probes) == 0:
-            if raise_error:
-                raise Exception("No enabled probes found in settings")
-            return None
+    np_probes = [probe for probe in np_probes if probe.attrib.get("isEnabled", "1") == "1"]
+    if len(np_probes) == 0:
+        if raise_error:
+            raise Exception("No enabled probes found in settings")
+        return None
 
     # read probes info
     # If STREAMs are not available, probes are sequentially named based on the node id
