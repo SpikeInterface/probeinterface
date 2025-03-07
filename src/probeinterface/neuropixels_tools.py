@@ -1002,9 +1002,9 @@ def read_openephys(
         streams = []
         # find probe names (exclude ADC streams)
         for stream_field in stream_fields:
-            stream_name = stream_field.attrib["name"]
-            if "ADC" not in stream_name:
-                streams.append(stream_name)
+            stream = stream_field.attrib["name"]
+            if "ADC" not in stream:
+                streams.append(stream)
         # find probe names (exclude ADC streams)
         probe_names_used = np.unique([stream.split("-")[0] for stream in streams])
     else:

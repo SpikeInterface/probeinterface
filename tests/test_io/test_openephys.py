@@ -235,6 +235,16 @@ def test_multiple_signal_chains():
     assert probe.model_name == "Neuropixels 1.0"
 
 
+def test_onebox():
+    # This dataset has a Neuropixels Ultra probe with a onebox
+    probe = read_openephys(data_path / "OE_OneBox-NP-Ultra" / "settings.xml")
+    probe_dict = probe.to_dict(array_as_list=True)
+    validate_probe_dict(probe_dict)
+    assert probe.model_name == "Neuropixels Ultra (16 banks)"
+    assert probe.get_shank_count() == 1
+    assert probe.get_contact_count() == 384
+
+
 if __name__ == "__main__":
     # test_multiple_probes()
     # test_NP_Ultra()
