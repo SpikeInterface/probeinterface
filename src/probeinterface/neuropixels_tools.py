@@ -4,7 +4,6 @@ Both spikeglx (using meta file) and openephys with neuropixel (using xml file) i
 
 Note:
   * the centre of the first left columns and the first bottom row is our reference (x=0, y=0)
-  * "oe_x_shift" is a global shift on x axis to make spikeglx and openephys compatible.
 
 """
 
@@ -81,7 +80,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
     # Neuropixels 2.0 - Single Shank - Prototype
     "21": {
@@ -97,7 +95,6 @@ npx_descriptions = {
         "contour_description": "np70",
         "contour_shift": [-27, -11],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
-        "oe_x_shift": -8,
     },
     # Neuropixels 2.0 - Four Shank - Prototype
     "24": {
@@ -119,7 +116,6 @@ npx_descriptions = {
             "references",
             "elec_ids",
         ),
-        "oe_x_shift": -8,
     },
     # Neuropixels 2.0 - Single Shank - Commercial without metal cap
     "2003": {
@@ -135,7 +131,6 @@ npx_descriptions = {
         "contour_description": "np70",
         "contour_shift": [-27, -11],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
-        "oe_x_shift": -8,
     },
     # Neuropixels 2.0 - Single Shank - Commercial with metal cap
     "2004": {
@@ -151,7 +146,6 @@ npx_descriptions = {
         "contour_description": "np70",
         "contour_shift": [-27, -11],
         "fields_in_imro_table": ("channel_ids", "banks", "references", "elec_ids"),
-        "oe_x_shift": -8,
     },
     # Neuropixels 2.0 - Four Shank - Commercial without metal cap
     "2013": {
@@ -173,7 +167,6 @@ npx_descriptions = {
             "references",
             "elec_ids",
         ),
-        "oe_x_shift": -8,
     },
     # Neuropixels 2.0 - Four Shank - Commercial with metal cap
     "2014": {
@@ -195,7 +188,27 @@ npx_descriptions = {
             "references",
             "elec_ids",
         ),
-        "oe_x_shift": -8,
+    },
+    # Neuropixels 2.0 Quad Base
+    "2020": {
+        "model_name": "Neuropixels 2.0 Quad Base",
+        "x_pitch": 32,
+        "y_pitch": 15,
+        "contact_width": 12,
+        "stagger": 0.0,
+        "shank_pitch": 250,
+        "shank_number": 4,
+        "ncols_per_shank": 2,
+        "nrows_per_shank": 640,
+        "contour_description": "np70",
+        "contour_shift": [-27, -11],
+        "fields_in_imro_table": (
+            "channel_ids",
+            "shank_id",
+            "banks",
+            "references",
+            "elec_ids",
+        ),
     },
     # Experimental probes previous to 1.0
     "Phase3a": {
@@ -217,7 +230,6 @@ npx_descriptions = {
             "ap_gains",
             "lf_gains",
         ),
-        "oe_x_shift": -11,
     },
     # Neuropixels 1.0-NHP Short (10mm)
     "1015": {
@@ -240,7 +252,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
     #################
     # Neuropixels 1.0-NHP Medium (25mm)
@@ -264,7 +275,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
     # Neuropixels 1.0-NHP Medium (25mm)
     "1021": {
@@ -287,7 +297,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
     #################
     # Neuropixels 1.0-NHP Medium (25mm)
@@ -311,7 +320,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
     # Neuropixels 1.0-NHP 45mm SOI90 - NHP long 90um wide, staggered contacts
     "1030": {
@@ -334,7 +342,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
     # Neuropixels 1.0-NHP 45mm SOI125 - NHP long 125um wide, staggered contacts
     "1031": {
@@ -357,7 +364,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
     # 1.0-NHP 45mm SOI115 / 125 linear - NHP long 125um wide, linear contacts
     "1032": {
@@ -380,7 +386,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
     # Ultra probes 1 bank
     "1100": {
@@ -403,7 +408,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -8,
     },
     # Ultra probes 16 banks
     "1110": {
@@ -426,7 +430,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -8,
     },
     "1121": {
         "model_name": "Neuropixels Ultra - Type 2",
@@ -448,7 +451,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": 18,
     },
     # NP-Opto
     "1300": {
@@ -471,7 +473,6 @@ npx_descriptions = {
             "lf_gains",
             "ap_hp_filters",
         ),
-        "oe_x_shift": -11,
     },
 }
 
@@ -506,6 +507,8 @@ probe_part_number_to_probe_type = {
     "NP2004": "2004",
     "PRB2_1_2_0640_0": "21",
     "PRB2_4_2_0640_0": "24",
+    # NXT
+    "NP2020": "2020",
     # Ultra
     "NP1100": "1100",  # Ultra probe - 1 bank
     "NP1110": "1110",  # Ultra probe - 16 banks no handle beacuse
@@ -1065,7 +1068,9 @@ def read_openephys(
 
         # check if shank ids is present
         if all(":" in val for val in channel_values):
-            shank_ids = np.array([int(val[val.find(":") + 1 :]) for val in channel_values])
+            shank_ids = np.array([int(val.split(":")[1]) for val in channel_values])
+        elif all("_" in val for val in channel_names):
+            shank_ids = np.array([int(val.split("_")[1]) for val in channel_names])
         else:
             shank_ids = None
 
@@ -1084,13 +1089,16 @@ def read_openephys(
         if probe_part_number not in probe_part_number_to_probe_type:
             raise NotImplementedError(f"Probe part number {probe_part_number} is not supported yet")
         ptype = probe_part_number_to_probe_type[probe_part_number]
-        x_shift = npx_descriptions[ptype]["oe_x_shift"] if ptype is not None else 0
 
         if fix_x_position_for_oe_5 and oe_version < parse("0.6.0") and shank_ids is not None:
             positions[:, 1] = positions[:, 1] - npx_descriptions[ptype]["shank_pitch"] * shank_ids
 
-        # x offset
-        positions[:, 0] += x_shift
+        # x offset so that the first column is at 0x
+        offset = np.min(positions[:, 0])
+        # if some shanks are not used, we need to adjust the offset
+        if shank_ids is not None:
+            offset -= np.min(shank_ids) * npx_descriptions[ptype]["shank_pitch"]
+        positions[:, 0] -= offset
 
         contact_ids = []
         for i, pos in enumerate(positions):
@@ -1135,6 +1143,7 @@ def read_openephys(
     # now select correct probe (if multiple)
     if len(np_probes) > 1:
         found = False
+        probe_names = [p["name"] for p in np_probes_info]
 
         if stream_name is not None:
             assert probe_name is None and serial_number is None, (
@@ -1179,8 +1188,8 @@ def read_openephys(
                 return None
         else:
             raise Exception(
-                "More than one probe found. Use one of 'stream_name', 'probe_name', or 'serial_number' "
-                "to select the right probe"
+                f"More than one probe found. Use one of 'stream_name', 'probe_name', or 'serial_number' "
+                f"to select the right probe.\nProbe names: {probe_names}"
             )
     else:
         # in case of a single probe, make sure it is consistent with optional
@@ -1218,7 +1227,6 @@ def read_openephys(
     np_probe = np_probes[probe_idx]
     positions = np_probe_info["positions"]
     shank_ids = np_probe_info["shank_ids"]
-    pname = np_probe_info["name"]
 
     ptype = np_probe_info["ptype"]
     if ptype in npx_descriptions:
@@ -1270,6 +1278,7 @@ def read_openephys(
         probe.set_contact_ids(contact_ids)
 
     polygon = polygon_contour_description[contour_description]
+    contour_shift = np.array(npx_descriptions[ptype]["contour_shift"])
     if shank_ids is None:
         contour = polygon
     else:
@@ -1278,7 +1287,7 @@ def read_openephys(
             contour += list(np.array(polygon) + [shank_pitch * i, 0])
 
     # shift
-    contour = np.array(contour) - x_shift
+    contour = np.array(contour) + contour_shift
     probe.set_planar_contour(contour)
 
     # wire it
