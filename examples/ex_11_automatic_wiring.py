@@ -41,31 +41,35 @@ probe.set_device_channel_indices(device_channel_indices)
 
 ##############################################################################
 # In order to ease this process, `probeinterface` also includes some commonly
-# used wirings based on standard connectors. In our case, we can simply use:
+# used wirings based on standard connectors. We created references and spreadsheets
+# showing how these wirings are computed at `probeinterface/resources/wiring_references
+# <https://github.com/SpikeInterface/probeinterface/tree/9776684948e3ceba71601e5c0f90c2672f665234/resources>`_.
+# If we have a Intan RHD2132 Headstage attached to a NeuroNexus H32 Connector, we can
+# import this wiring as follows:
 
 probe.wiring_to_device('H32>RHD2132')
 print(probe.device_channel_indices)
 
 ##############################################################################
 # In this figure we have 2 numbers for each contact:
-#    * the upper number "prbXX" is the Neuronexus index (one-based)
+#    * the upper number "prbXX" is the contact id (one-based, from NeuroNexus)
 #    * the lower "devXX" is the channel on the Intan device (zero-based)
 
 fig, ax = plt.subplots(figsize=(5, 15))
 plot_probe(probe, with_contact_id=True, with_device_index=True, ax=ax)
 
 
-plt.show()
-
-"""
-Available wiring "pathways"
----------------------------
-
-The available pathways can be found in the `probeinterface.wiring <>`_ module.
-
-The following pathways are available:
-"""
+##############################################################################
+# Available wiring "pathways"
+# ---------------------------
+#
+# The available pathways can be found in the `probeinterface.wiring <https://github.com/SpikeInterface/probeinterface/blob/main/src/probeinterface/wiring.py>`_ module.
+#
+# The following pathways are available:
+#
 
 from probeinterface import get_available_pathways
 
 print(get_available_pathways())
+
+plt.show()
