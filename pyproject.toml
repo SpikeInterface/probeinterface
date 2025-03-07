@@ -36,6 +36,9 @@ build-backend = "setuptools.build_meta"
 packages = ["probeinterface"]
 package-dir = {"probeinterface" = "src/probeinterface"}
 
+[tool.setuptools.package-data]
+"probeinterface" = ["schema/probe.json.schema"]
+
 
 [project.optional-dependencies]
 
