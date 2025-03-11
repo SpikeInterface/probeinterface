@@ -24,4 +24,4 @@ Tests
 Packaging
 ^^^^^^^^^
 * Add json schema to core and make jsonschema dependency optional (#326)
-* * Rename `-` to `_` in wiring_references  (#320)
+* Rename `-` to `_` in wiring_references  (#320)
