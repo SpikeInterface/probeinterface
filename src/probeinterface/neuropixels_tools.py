@@ -191,7 +191,7 @@ npx_descriptions = {
     },
     # Neuropixels 2.0 Quad Base
     "2020": {
-        "model_name": "Neuropixels 2.0 Quad Base",
+        "model_name": "Neuropixels 2.0 - Quad Base",
         "x_pitch": 32,
         "y_pitch": 15,
         "contact_width": 12,
