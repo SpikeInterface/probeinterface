@@ -73,7 +73,7 @@ In addition, ProbeInterface also offers the following features:
 
 ## Documentation
 
-Detailed documentation of the latest PyPI release of ProbeInterface can be found [here](https://probeinterface.readthedocs.io/en/0.2.18).
+Detailed documentation of the latest PyPI release of ProbeInterface can be found [here](https://probeinterface.readthedocs.io/en/stable).
 
 Detailed documentation of the development version of ProbeInterface can be found [here](https://probeinterface.readthedocs.io/en/latest).
 
