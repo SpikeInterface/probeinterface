@@ -245,7 +245,6 @@ def test_quadbase():
     assert probe.get_contact_count() == 1536
 
 
-
 def test_onebox():
     # This dataset has a Neuropixels Ultra probe with a onebox
     probe = read_openephys(data_path / "OE_OneBox-NP-Ultra" / "settings.xml")
