@@ -1,0 +1,27 @@
+probeinterface 0.2.26
+---------------------
+
+Mar, 11th 2025
+
+
+Features
+^^^^^^^^
+
+* Support OneBox processor for Neuropixels-Open Ephys (#327)
+* Wiring pathway for Cambridge A64 adaptor with 2x intan RHD2132 (#306)
+* Add support for NP2020 (Neuropixels 2.0 - Quad Base) (#323)
+
+Bug fixes
+^^^^^^^^^
+
+* Fix NP contour from Open Ephys and remove `oe_x_shift`(#323)
+
+Tests
+^^^^^
+
+* Add test file and test for for NP2 - Quad Base (#328)
+
+Packaging
+^^^^^^^^^
+* Add json schema to core and make jsonschema dependency optional (#326)
+* Rename `-` to `_` in wiring_references  (#320)

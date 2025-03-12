@@ -14,7 +14,7 @@ Features
 Bug fixes
 ^^^^^^^^^
 
-* Fix OpenEphys interface issue with multiple probes of which some are disabled (s#308)
+* Fix OpenEphys interface issue with multiple probes of which some are disabled (#308)
 * Update schema to floats for radius, width, height (#296, #297)
 
 Tests
