@@ -66,7 +66,7 @@ def plot_probe(
     show_channel_on_click : bool, default: False
         If True, the channel information is shown upon click
     add_to_axis : bool, default: True
-        If True, collections are added to the axis. If False, collections are 
+        If True, collections are added to the axis. If False, collections are
         only returned without being added to the axis.
 
     Returns
