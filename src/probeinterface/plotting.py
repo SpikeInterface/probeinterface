@@ -28,6 +28,7 @@ def plot_probe(
     ylims: tuple | None = None,
     zlims: tuple | None = None,
     show_channel_on_click: bool = False,
+    add_to_axis: bool = True,
 ):
     """Plot a Probe object.
     Generates a 2D or 3D axis, depending on Probe.ndim
@@ -64,6 +65,9 @@ def plot_probe(
         Limits for z dimension
     show_channel_on_click : bool, default: False
         If True, the channel information is shown upon click
+    add_to_axis : bool, default: True
+        If True, collections are added to the axis. If False, collections are 
+        only returned without being added to the axis.
 
     Returns
     -------
@@ -79,14 +83,14 @@ def plot_probe(
     elif probe.ndim == 3:
         from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-    if ax is None:
+    if ax is None and add_to_axis:
         if probe.ndim == 2:
             fig, ax = plt.subplots()
             ax.set_aspect("equal")
         else:
             fig = plt.figure()
             ax = fig.add_subplot(1, 1, 1, projection="3d")
-    else:
+    elif ax is not None:
         fig = ax.get_figure()
 
     _probe_shape_kwargs = dict(facecolor="green", edgecolor="k", lw=0.5, alpha=0.3)
@@ -107,16 +111,18 @@ def plot_probe(
     vertices = probe.get_contact_vertices()
     if probe.ndim == 2:
         poly = PolyCollection(vertices, color=contacts_colors, **_contacts_kargs)
-        ax.add_collection(poly)
+        if add_to_axis and ax is not None:
+            ax.add_collection(poly)
     elif probe.ndim == 3:
         poly = Poly3DCollection(vertices, color=contacts_colors, **_contacts_kargs)
-        ax.add_collection3d(poly)
+        if add_to_axis and ax is not None:
+            ax.add_collection3d(poly)
 
     if contacts_values is not None:
         poly.set_array(contacts_values)
         poly.set_cmap(cmap)
 
-    if show_channel_on_click:
+    if show_channel_on_click and add_to_axis:
         assert probe.ndim == 2, "show_channel_on_click works only for ndim=2"
 
         def on_press(event):
@@ -126,61 +132,63 @@ def plot_probe(
         fig.canvas.mpl_connect("button_release_event", on_release)
 
     # probe shape
+    poly_contour = None
     planar_contour = probe.probe_planar_contour
     if planar_contour is not None:
         if probe.ndim == 2:
             poly_contour = PolyCollection([planar_contour], **_probe_shape_kwargs)
-            ax.add_collection(poly_contour)
+            if add_to_axis and ax is not None:
+                ax.add_collection(poly_contour)
         elif probe.ndim == 3:
             poly_contour = Poly3DCollection([planar_contour], **_probe_shape_kwargs)
-            ax.add_collection3d(poly_contour)
-    else:
-        poly_contour = None
+            if add_to_axis and ax is not None:
+                ax.add_collection3d(poly_contour)
 
-    if text_on_contact is not None:
-        text_on_contact = np.asarray(text_on_contact)
-        assert text_on_contact.size == probe.get_contact_count()
+    if add_to_axis and ax is not None:
+        if text_on_contact is not None:
+            text_on_contact = np.asarray(text_on_contact)
+            assert text_on_contact.size == probe.get_contact_count()
 
-    if with_contact_id or with_device_index or text_on_contact is not None:
+        if with_contact_id or with_device_index or text_on_contact is not None:
+            if probe.ndim == 3:
+                raise NotImplementedError("Channel index is 2d only")
+            for i in range(n):
+                txt = []
+                if with_contact_id and probe.contact_ids is not None:
+                    contact_id = probe.contact_ids[i]
+                    txt.append(f"id{contact_id}")
+                if with_device_index and probe.device_channel_indices is not None:
+                    chan_ind = probe.device_channel_indices[i]
+                    txt.append(f"dev{chan_ind}")
+                if text_on_contact is not None:
+                    txt.append(f"{text_on_contact[i]}")
+
+                txt = "\n".join(txt)
+                x, y = probe.contact_positions[i]
+                ax.text(x, y, txt, ha="center", va="center", clip_on=True)
+
+        if xlims is None or ylims is None or (zlims is None and probe.ndim == 3):
+            xlims, ylims, zlims = get_auto_lims(probe)
+
+        ax.set_xlim(*xlims)
+        ax.set_ylim(*ylims)
+
+        if probe.si_units == "um":
+            unit_str = "($\\mu m$)"
+        else:
+            unit_str = f"({probe.si_units})"
+        ax.set_xlabel(f"x {unit_str}", fontsize=15)
+        ax.set_ylabel(f"y {unit_str}", fontsize=15)
+
         if probe.ndim == 3:
-            raise NotImplementedError("Channel index is 2d only")
-        for i in range(n):
-            txt = []
-            if with_contact_id and probe.contact_ids is not None:
-                contact_id = probe.contact_ids[i]
-                txt.append(f"id{contact_id}")
-            if with_device_index and probe.device_channel_indices is not None:
-                chan_ind = probe.device_channel_indices[i]
-                txt.append(f"dev{chan_ind}")
-            if text_on_contact is not None:
-                txt.append(f"{text_on_contact[i]}")
+            ax.set_zlim(zlims)
+            ax.set_zlabel("z")
 
-            txt = "\n".join(txt)
-            x, y = probe.contact_positions[i]
-            ax.text(x, y, txt, ha="center", va="center", clip_on=True)
+        if probe.ndim == 2:
+            ax.set_aspect("equal")
 
-    if xlims is None or ylims is None or (zlims is None and probe.ndim == 3):
-        xlims, ylims, zlims = get_auto_lims(probe)
-
-    ax.set_xlim(*xlims)
-    ax.set_ylim(*ylims)
-
-    if probe.si_units == "um":
-        unit_str = "($\\mu m$)"
-    else:
-        unit_str = f"({probe.si_units})"
-    ax.set_xlabel(f"x {unit_str}", fontsize=15)
-    ax.set_ylabel(f"y {unit_str}", fontsize=15)
-
-    if probe.ndim == 3:
-        ax.set_zlim(zlims)
-        ax.set_zlabel("z")
-
-    if probe.ndim == 2:
-        ax.set_aspect("equal")
-
-    if title:
-        ax.set_title(probe.get_title())
+        if title:
+            ax.set_title(probe.get_title())
 
     return poly, poly_contour
 
