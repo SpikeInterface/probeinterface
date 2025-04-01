@@ -21,7 +21,7 @@ def create_probe_collections(
     probe_shape_kwargs: dict = {},
 ):
     """Create PolyCollection objects for a Probe.
-    
+
     Parameters
     ----------
     probe : Probe
@@ -36,7 +36,7 @@ def create_probe_collections(
         Dict with kwargs for contacts (e.g. alpha, edgecolor, lw)
     probe_shape_kwargs : dict, default: {}
         Dict with kwargs for probe shape (e.g. alpha, edgecolor, lw)
-    
+
     Returns
     -------
     poly : PolyCollection
@@ -46,9 +46,11 @@ def create_probe_collections(
     """
     if probe.ndim == 2:
         from matplotlib.collections import PolyCollection
+
         Collection = PolyCollection
     elif probe.ndim == 3:
         from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
         Collection = Poly3DCollection
     else:
         raise ValueError(f"Unexpected probe.ndim: {probe.ndim}")
@@ -70,7 +72,7 @@ def create_probe_collections(
 
     vertices = probe.get_contact_vertices()
     poly = Collection(vertices, color=contacts_colors, **_contacts_kargs)
-    
+
     if contacts_values is not None:
         poly.set_array(contacts_values)
         poly.set_cmap(cmap)
@@ -80,8 +82,9 @@ def create_probe_collections(
     planar_contour = probe.probe_planar_contour
     if planar_contour is not None:
         poly_contour = Collection([planar_contour], **_probe_shape_kwargs)
-    
+
     return poly, poly_contour
+
 
 def plot_probe(
     probe,
@@ -174,7 +177,7 @@ def plot_probe(
         ax.add_collection3d(poly)
         if poly_contour is not None:
             ax.add_collection3d(poly_contour)
-    
+
     if show_channel_on_click:
         assert probe.ndim == 2, "show_channel_on_click works only for ndim=2"
 
