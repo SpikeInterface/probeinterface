@@ -12,6 +12,77 @@ from matplotlib import path as mpl_path
 from .utils import get_auto_lims
 
 
+def create_probe_collections(
+    probe,
+    contacts_colors: list | None = None,
+    contacts_values: np.ndarray | None = None,
+    cmap: str = "viridis",
+    contacts_kargs: dict = {},
+    probe_shape_kwargs: dict = {},
+):
+    """Create PolyCollection objects for a Probe.
+    
+    Parameters
+    ----------
+    probe : Probe
+        The probe object
+    contacts_colors : matplotlib color | None, default: None
+        The color of the contacts
+    contacts_values : np.ndarray | None, default: None
+        Values to color the contacts with
+    cmap : str, default: "viridis"
+         A colormap color
+    contacts_kargs : dict, default: {}
+        Dict with kwargs for contacts (e.g. alpha, edgecolor, lw)
+    probe_shape_kwargs : dict, default: {}
+        Dict with kwargs for probe shape (e.g. alpha, edgecolor, lw)
+    
+    Returns
+    -------
+    poly : PolyCollection
+        The polygon collection for contacts
+    poly_contour : PolyCollection | None
+        The polygon collection for the probe shape
+    """
+    if probe.ndim == 2:
+        from matplotlib.collections import PolyCollection
+        Collection = PolyCollection
+    elif probe.ndim == 3:
+        from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+        Collection = Poly3DCollection
+    else:
+        raise ValueError(f"Unexpected probe.ndim: {probe.ndim}")
+
+    _probe_shape_kwargs = dict(facecolor="green", edgecolor="k", lw=0.5, alpha=0.3)
+    _probe_shape_kwargs.update(probe_shape_kwargs)
+
+    _contacts_kargs = dict(alpha=0.7, edgecolor=[0.3, 0.3, 0.3], lw=0.5)
+    _contacts_kargs.update(contacts_kargs)
+
+    n = probe.get_contact_count()
+
+    if contacts_colors is None and contacts_values is None:
+        contacts_colors = ["orange"] * n
+    elif contacts_colors is not None:
+        contacts_colors = contacts_colors
+    elif contacts_values is not None:
+        contacts_colors = None
+
+    vertices = probe.get_contact_vertices()
+    poly = Collection(vertices, color=contacts_colors, **_contacts_kargs)
+    
+    if contacts_values is not None:
+        poly.set_array(contacts_values)
+        poly.set_cmap(cmap)
+
+    # probe shape
+    poly_contour = None
+    planar_contour = probe.probe_planar_contour
+    if planar_contour is not None:
+        poly_contour = Collection([planar_contour], **_probe_shape_kwargs)
+    
+    return poly, poly_contour
+
 def plot_probe(
     probe,
     ax=None,
@@ -28,7 +99,6 @@ def plot_probe(
     ylims: tuple | None = None,
     zlims: tuple | None = None,
     show_channel_on_click: bool = False,
-    add_to_axis: bool = True,
 ):
     """Plot a Probe object.
     Generates a 2D or 3D axis, depending on Probe.ndim
@@ -65,9 +135,6 @@ def plot_probe(
         Limits for z dimension
     show_channel_on_click : bool, default: False
         If True, the channel information is shown upon click
-    add_to_axis : bool, default: True
-        If True, collections are added to the axis. If False, collections are
-        only returned without being added to the axis.
 
     Returns
     -------
@@ -78,51 +145,37 @@ def plot_probe(
     """
     import matplotlib.pyplot as plt
 
-    if probe.ndim == 2:
-        from matplotlib.collections import PolyCollection
-    elif probe.ndim == 3:
-        from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-
-    if ax is None and add_to_axis:
+    if ax is None:
         if probe.ndim == 2:
             fig, ax = plt.subplots()
             ax.set_aspect("equal")
         else:
             fig = plt.figure()
             ax = fig.add_subplot(1, 1, 1, projection="3d")
-    elif ax is not None:
+    else:
         fig = ax.get_figure()
 
-    _probe_shape_kwargs = dict(facecolor="green", edgecolor="k", lw=0.5, alpha=0.3)
-    _probe_shape_kwargs.update(probe_shape_kwargs)
+    # Create collections (contacts, probe shape)
+    poly, poly_contour = create_probe_collections(
+        probe,
+        contacts_colors=contacts_colors,
+        contacts_values=contacts_values,
+        cmap=cmap,
+        contacts_kargs=contacts_kargs,
+        probe_shape_kwargs=probe_shape_kwargs,
+    )
 
-    _contacts_kargs = dict(alpha=0.7, edgecolor=[0.3, 0.3, 0.3], lw=0.5)
-    _contacts_kargs.update(contacts_kargs)
-
-    n = probe.get_contact_count()
-
-    if contacts_colors is None and contacts_values is None:
-        contacts_colors = ["orange"] * n
-    elif contacts_colors is not None:
-        contacts_colors = contacts_colors
-    elif contacts_values is not None:
-        contacts_colors = None
-
-    vertices = probe.get_contact_vertices()
+    # Add collections to the axis
     if probe.ndim == 2:
-        poly = PolyCollection(vertices, color=contacts_colors, **_contacts_kargs)
-        if add_to_axis and ax is not None:
-            ax.add_collection(poly)
+        ax.add_collection(poly)
+        if poly_contour is not None:
+            ax.add_collection(poly_contour)
     elif probe.ndim == 3:
-        poly = Poly3DCollection(vertices, color=contacts_colors, **_contacts_kargs)
-        if add_to_axis and ax is not None:
-            ax.add_collection3d(poly)
-
-    if contacts_values is not None:
-        poly.set_array(contacts_values)
-        poly.set_cmap(cmap)
-
-    if show_channel_on_click and add_to_axis:
+        ax.add_collection3d(poly)
+        if poly_contour is not None:
+            ax.add_collection3d(poly_contour)
+    
+    if show_channel_on_click:
         assert probe.ndim == 2, "show_channel_on_click works only for ndim=2"
 
         def on_press(event):
@@ -131,64 +184,51 @@ def plot_probe(
         fig.canvas.mpl_connect("button_press_event", on_press)
         fig.canvas.mpl_connect("button_release_event", on_release)
 
-    # probe shape
-    poly_contour = None
-    planar_contour = probe.probe_planar_contour
-    if planar_contour is not None:
-        if probe.ndim == 2:
-            poly_contour = PolyCollection([planar_contour], **_probe_shape_kwargs)
-            if add_to_axis and ax is not None:
-                ax.add_collection(poly_contour)
-        elif probe.ndim == 3:
-            poly_contour = Poly3DCollection([planar_contour], **_probe_shape_kwargs)
-            if add_to_axis and ax is not None:
-                ax.add_collection3d(poly_contour)
+    if text_on_contact is not None:
+        text_on_contact = np.asarray(text_on_contact)
+        assert text_on_contact.size == probe.get_contact_count()
 
-    if add_to_axis and ax is not None:
-        if text_on_contact is not None:
-            text_on_contact = np.asarray(text_on_contact)
-            assert text_on_contact.size == probe.get_contact_count()
-
-        if with_contact_id or with_device_index or text_on_contact is not None:
-            if probe.ndim == 3:
-                raise NotImplementedError("Channel index is 2d only")
-            for i in range(n):
-                txt = []
-                if with_contact_id and probe.contact_ids is not None:
-                    contact_id = probe.contact_ids[i]
-                    txt.append(f"id{contact_id}")
-                if with_device_index and probe.device_channel_indices is not None:
-                    chan_ind = probe.device_channel_indices[i]
-                    txt.append(f"dev{chan_ind}")
-                if text_on_contact is not None:
-                    txt.append(f"{text_on_contact[i]}")
-
-                txt = "\n".join(txt)
-                x, y = probe.contact_positions[i]
-                ax.text(x, y, txt, ha="center", va="center", clip_on=True)
-
-        if xlims is None or ylims is None or (zlims is None and probe.ndim == 3):
-            xlims, ylims, zlims = get_auto_lims(probe)
-
-        ax.set_xlim(*xlims)
-        ax.set_ylim(*ylims)
-
-        if probe.si_units == "um":
-            unit_str = "($\\mu m$)"
-        else:
-            unit_str = f"({probe.si_units})"
-        ax.set_xlabel(f"x {unit_str}", fontsize=15)
-        ax.set_ylabel(f"y {unit_str}", fontsize=15)
-
+    n = probe.get_contact_count()
+    if with_contact_id or with_device_index or text_on_contact is not None:
         if probe.ndim == 3:
-            ax.set_zlim(zlims)
-            ax.set_zlabel("z")
+            raise NotImplementedError("Channel index is 2d only")
+        for i in range(n):
+            txt = []
+            if with_contact_id and probe.contact_ids is not None:
+                contact_id = probe.contact_ids[i]
+                txt.append(f"id{contact_id}")
+            if with_device_index and probe.device_channel_indices is not None:
+                chan_ind = probe.device_channel_indices[i]
+                txt.append(f"dev{chan_ind}")
+            if text_on_contact is not None:
+                txt.append(f"{text_on_contact[i]}")
 
-        if probe.ndim == 2:
-            ax.set_aspect("equal")
+            txt = "\n".join(txt)
+            x, y = probe.contact_positions[i]
+            ax.text(x, y, txt, ha="center", va="center", clip_on=True)
 
-        if title:
-            ax.set_title(probe.get_title())
+    if xlims is None or ylims is None or (zlims is None and probe.ndim == 3):
+        xlims, ylims, zlims = get_auto_lims(probe)
+
+    ax.set_xlim(*xlims)
+    ax.set_ylim(*ylims)
+
+    if probe.si_units == "um":
+        unit_str = "($\\mu m$)"
+    else:
+        unit_str = f"({probe.si_units})"
+    ax.set_xlabel(f"x {unit_str}", fontsize=15)
+    ax.set_ylabel(f"y {unit_str}", fontsize=15)
+
+    if probe.ndim == 3:
+        ax.set_zlim(zlims)
+        ax.set_zlabel("z")
+
+    if probe.ndim == 2:
+        ax.set_aspect("equal")
+
+    if title:
+        ax.set_title(probe.get_title())
 
     return poly, poly_contour
 
