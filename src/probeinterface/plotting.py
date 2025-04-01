@@ -12,7 +12,7 @@ from matplotlib import path as mpl_path
 from .utils import get_auto_lims
 
 
-def create_probe_collections(
+def create_probe_polygons(
     probe,
     contacts_colors: list | None = None,
     contacts_values: np.ndarray | None = None,
@@ -159,7 +159,7 @@ def plot_probe(
         fig = ax.get_figure()
 
     # Create collections (contacts, probe shape)
-    poly, poly_contour = create_probe_collections(
+    poly, poly_contour = create_probe_polygons(
         probe,
         contacts_colors=contacts_colors,
         contacts_values=contacts_values,
