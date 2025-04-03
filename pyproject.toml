@@ -1,6 +1,6 @@
 [project]
 name = "probeinterface"
-version = "0.2.24"
+version = "0.2.26"
 authors = [
   { name="Samuel Garcia", email="sam.garcia.die@gmail.com" },
   { name="Alessio Buccino", email="alessiop.buccino@gmail.com" },
@@ -41,13 +41,14 @@ packages = ["src/probeinterface"]
 [project.optional-dependencies]
 
 test = [
+    "jsonschema",
     "pytest",
     "pytest-cov",
     "matplotlib",
     "scipy",
     "pandas",
     "h5py",
-    "zarr>=2.16.0"
+    "zarr>=2.16.0,<3.0.0"
 ]
 
 docs = [

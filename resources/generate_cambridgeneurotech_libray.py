@@ -50,7 +50,8 @@ import shutil
 # work_dir = '/home/samuel/Documents/SpikeInterface/2022-05-20-probeinterface_CambridgeNeurotech/'
 # work_dir = '/home/samuel/Documents/SpikeInterface/2022-10-18-probeinterface_CambridgeNeurotech/'
 # work_dir = '/home/samuel/OwnCloudCNRS/probeinterface/2023-06-14-probeinterface-CambridgeNeurotech/'
-work_dir = '/home/samuel/OwnCloudCNRS/probeinterface/2023-10-30-probeinterface-CambridgeNeurotech/'
+# work_dir = '/home/samuel/OwnCloudCNRS/probeinterface/2023-10-30-probeinterface-CambridgeNeurotech/'
+work_dir = '/home/samuel/NextcloudCNRS/probeinterface/2025-01-27-probeinterface-CambridgeNeurotech/'
 
 
 library_folder = '/home/samuel/Documents/SpikeInterface/probeinterface_library/cambridgeneurotech/'
@@ -59,7 +60,7 @@ library_folder = Path(library_folder)
 
 work_dir = Path(work_dir).absolute()
 
-export_folder = work_dir / 'export_2023_10_30'
+export_folder = work_dir / 'export_2025_01_27'
 probe_map_file = work_dir /  'ProbeMaps_Final2023.xlsx'
 probe_info_table_file = work_dir  / 'ProbesDataBase_Final2023.csv'
 
@@ -112,18 +113,21 @@ def get_contact_order(connector, probe_type):
     if probe_type == 'H5' or probe_type == 'H9':
         probe_type = 'H5 & H9'
 
-    #~ print(df[probe_type])
+    # print(df[probe_type])
     tmpList = []
     for i in df[probe_type].columns:
+        # print('i', i, len(df[probe_type].columns))
         if len(df[probe_type].columns) == 1:
             tmpList = np.flip(df[probe_type].values.astype(int).flatten())
         else:
             tmp = df[probe_type][i].values
             tmp = tmp[~np.isnan(tmp)].astype(int) # get rid of nan and convert to integer
             tmp = np.flip(tmp) # this flips the value to match index that goes from tip to headstage of the probe
+            # print('tmp', tmp)
             tmpList = np.append(tmpList, tmp)
             tmpList = tmpList.astype(int)
 
+    # print('tmpList', tmpList)
     return tmpList
 
 
@@ -200,7 +204,7 @@ def create_CN_figure(probe_name, probe):
     ax.spines['right'].set_visible(False) #remove external axis
     ax.spines['top'].set_visible(False) #remove external axis
 
-    ax.set_title('\n' +'CambridgeNeuroTech' +'\n'+  probe.annotations.get('name'), fontsize = 24)
+    ax.set_title('\n' +'CambridgeNeuroTech' +'\n'+  probe.annotations.get('model_name'), fontsize = 24)
 
     fig.tight_layout() #modif tight layout
 
@@ -242,6 +246,11 @@ def generate_all_probes():
     for i, probe_info in probe_info_table.iterrows():
         print(i, probe_info['part'])
 
+        # DEBUG
+        # if not probe_info['part'] in ('P-1', 'P-2'):
+        #     continue
+
+        # print(probe_info)
 
         if probe_info['shanks_n'] == 1:
             # one shank
@@ -254,16 +263,29 @@ def generate_all_probes():
         for connector in list(probe_info[probe_info.index.str.contains('ASSY')].dropna().index):
             probe_name = connector+'-'+probe_info['part']
 
-            #~ if probe_name != 'ASSY-77-H10':
-                #~ continue
+            # DEBUG
+            # if connector != 'ASSY-1':
+            #     continue
+
+
             print('  ', probe_name)
 
             contact_order = get_contact_order(connector = connector, probe_type = probe_info['part'])
 
+            # print(probe_unordered)
+            # print(probe_unordered.contact_ids)
+            # print(contact_order)
+            # print(probe_unordered.)
+            # fig, ax = plt.subplots()
+            # plot_probe(probe_unordered, ax=ax, with_contact_id=True)
+            # plt.show()
+
+
+
             sorted_indices = np.argsort(contact_order)
             probe = probe_unordered.get_slice(sorted_indices)
 
-            probe.annotate(name=probe_name, manufacturer='cambridgeneurotech')
+            probe.annotate(model_name=probe_name, manufacturer='cambridgeneurotech')
 
             # one based in cambridge neurotech
             contact_ids = np.arange(sorted_indices.size) + 1
@@ -272,6 +294,7 @@ def generate_all_probes():
 
             export_one_probe(probe_name, probe)
 
+        # break
 
 def synchronize_library():
 
@@ -309,6 +332,8 @@ def synchronize_library():
 
     # library_folder
 
+
+
 if __name__ == '__main__':
-    # generate_all_probes()
+    generate_all_probes()
     synchronize_library()
