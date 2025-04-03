@@ -1,0 +1,27 @@
+probeinterface 0.2.25
+---------------------
+
+Feb, 6th 2025
+
+
+Features
+^^^^^^^^
+
+* Add cambridge neurotech adaptor to wiring > RHD2164 (#304)
+* Refactor neuropixel in a separate file and generate the NP library (#316)
+* Regenerate ASSY-1-P1 and ASSY-1-P2 probes (#317)
+
+Bug fixes
+^^^^^^^^^
+
+* Fix OpenEphys interface issue with multiple probes of which some are disabled (#308)
+* Update schema to floats for radius, width, height (#296, #297)
+
+Tests
+^^^^^
+
+* Add json validation to tests (#310)
+
+Packaging
+^^^^^^^^^
+* Upper bound to zarr version (#314)
