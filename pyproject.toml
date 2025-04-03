@@ -37,6 +37,7 @@ include = ["probeinterface/schema/probe.json.schema"]
 
 [tool.hatch.build.targets.sdist]
 packages = ["src/probeinterface"]
+include = ["probeinterface/schema/probe.json.schema"]
 
 [project.optional-dependencies]
 
