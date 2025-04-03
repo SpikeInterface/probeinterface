@@ -34,6 +34,8 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/probeinterface"]
 
+[tool.hatch.build.targets.sdist]
+packages = ["src/probeinterface"]
 
 [project.optional-dependencies]
 
