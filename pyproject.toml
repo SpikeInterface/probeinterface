@@ -28,17 +28,16 @@ changelog = "https://probeinterface.readthedocs.io/en/main/release_notes.html"
 
 
 [build-system]
-requires = ["setuptools>=62.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/probeinterface"]
+include = ["probeinterface/schema/probe.json.schema"]
 
-[tool.setuptools]
-packages = ["probeinterface"]
-package-dir = {"probeinterface" = "src/probeinterface"}
-
-[tool.setuptools.package-data]
-"probeinterface" = ["schema/probe.json.schema"]
-
+[tool.hatch.build.targets.sdist]
+packages = ["src/probeinterface"]
+include = ["probeinterface/schema/probe.json.schema"]
 
 [project.optional-dependencies]
 
