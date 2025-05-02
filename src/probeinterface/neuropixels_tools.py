@@ -1106,7 +1106,7 @@ def read_openephys(
         contact_ids = []
         y_pitch = probe_dict["y_pitch"]  # Vertical spacing between the centers of adjacent contacts
         x_pitch = probe_dict["x_pitch"]  # Horizontal spacing between the centers of contacts within the same row
-        number_of_columns = probe_dict["ncol"]
+        number_of_columns = probe_dict["ncols_per_shank"]
         probe_stagger = probe_dict["stagger"]
         shank_number = probe_dict["shank_number"]
 
