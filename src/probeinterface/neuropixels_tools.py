@@ -483,7 +483,7 @@ probe_part_number_to_probe_type = {
     None: "0",
     # NP1.0
     "PRB_1_4_0480_1": "0",
-    "PRB_1_4_0480_1_C": "0",
+    "PRB_1_4_0480_1_C": "0",  # This is the metal cap version
     "PRB_1_2_0480_2": "0",
     "NP1010": "0",
     # NHP probes lin
@@ -1090,36 +1090,51 @@ def read_openephys(
             raise NotImplementedError(f"Probe part number {probe_part_number} is not supported yet")
         ptype = probe_part_number_to_probe_type[probe_part_number]
 
+        probe_dict = npx_descriptions[ptype]
+        shank_pitch = probe_dict["shank_pitch"]
+
         if fix_x_position_for_oe_5 and oe_version < parse("0.6.0") and shank_ids is not None:
-            positions[:, 1] = positions[:, 1] - npx_descriptions[ptype]["shank_pitch"] * shank_ids
+            positions[:, 1] = positions[:, 1] - shank_pitch * shank_ids
 
         # x offset so that the first column is at 0x
         offset = np.min(positions[:, 0])
         # if some shanks are not used, we need to adjust the offset
         if shank_ids is not None:
-            offset -= np.min(shank_ids) * npx_descriptions[ptype]["shank_pitch"]
+            offset -= np.min(shank_ids) * shank_pitch
         positions[:, 0] -= offset
 
         contact_ids = []
+        y_pitch = probe_dict["y_pitch"]  # Vertical spacing between the centers of adjacent contacts
+        x_pitch = probe_dict["x_pitch"]  # Horizontal spacing between the centers of contacts within the same row
+        number_of_columns = probe_dict["ncols_per_shank"]
+        probe_stagger = probe_dict["stagger"]
+        shank_number = probe_dict["shank_number"]
+
         for i, pos in enumerate(positions):
+            # Do not calculate contact ids if the probe type is not known
             if ptype is None:
                 contact_ids = None
                 break
 
-            stagger = np.mod(pos[1] / npx_descriptions[ptype]["y_pitch"] + 1, 2) * npx_descriptions[ptype]["stagger"]
-            shank_id = shank_ids[i] if npx_descriptions[ptype]["shank_number"] > 1 else 0
+            x_pos = pos[0]
+            y_pos = pos[1]
+
+            # Adds a shift to rows in the staggered configuration
+            is_row_staggered = np.mod(y_pos / y_pitch + 1, 2) == 1
+            row_stagger = probe_stagger if is_row_staggered else 0
+
+            # Map the positions to the contacts ids
+            shank_id = shank_ids[i] if shank_number > 1 else 0
 
             contact_id = int(
-                (pos[0] - stagger - npx_descriptions[ptype]["shank_pitch"] * shank_id)
-                / npx_descriptions[ptype]["x_pitch"]
-                + npx_descriptions[ptype]["ncols_per_shank"] * pos[1] / npx_descriptions[ptype]["y_pitch"]
+                (x_pos - row_stagger - shank_pitch * shank_id) / x_pitch + number_of_columns * y_pos / y_pitch
             )
-            if npx_descriptions[ptype]["shank_number"] > 1:
+            if shank_number > 1:
                 contact_ids.append(f"s{shank_id}e{contact_id}")
             else:
                 contact_ids.append(f"e{contact_id}")
 
-        model_name = npx_descriptions[ptype]["model_name"] if ptype is not None else "Unknown"
+        model_name = probe_dict["model_name"] if ptype is not None else "Unknown"
         np_probe_dict = {
             "model_name": model_name,
             "shank_ids": shank_ids,
@@ -1230,10 +1245,9 @@ def read_openephys(
 
     ptype = np_probe_info["ptype"]
     if ptype in npx_descriptions:
-        contact_width = npx_descriptions[ptype]["contact_width"]
-        shank_pitch = npx_descriptions[ptype]["shank_pitch"]
-        num_shanks = npx_descriptions[ptype]["shank_number"]
-        contour_description = npx_descriptions[ptype]["contour_description"]
+        contact_width = probe_dict["contact_width"]
+        num_shanks = probe_dict["shank_number"]
+        contour_description = probe_dict["contour_description"]
     else:
         contact_width = 12
         shank_pitch = 250
@@ -1278,7 +1292,7 @@ def read_openephys(
         probe.set_contact_ids(contact_ids)
 
     polygon = polygon_contour_description[contour_description]
-    contour_shift = np.array(npx_descriptions[ptype]["contour_shift"])
+    contour_shift = np.array(probe_dict["contour_shift"])
     if shank_ids is None:
         contour = polygon
     else:
