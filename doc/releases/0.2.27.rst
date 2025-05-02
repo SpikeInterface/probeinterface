@@ -1,0 +1,23 @@
+probeinterface 0.2.27
+---------------------
+
+May, 2nd 2025
+
+
+Features
+^^^^^^^^
+
+* Refactor Open Ephys for better readibility (#339)
+* Patch to support Quad-Base naming in read_openephys (#338)
+* Allow plot_probe not to plot on axes, but just return polycollections (#334)
+
+
+Docs
+^^^^
+
+* Add wiring reference for ASSY-77>Adpt.A64-Om32_2x-sm-cambridgeneurotech>two_RHD2132 (#333)
+* Update link in README (#332)
+
+Packaging
+^^^^^^^^^
+* Change build to hatchling (#335)
