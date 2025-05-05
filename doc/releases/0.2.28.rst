@@ -1,0 +1,9 @@
+probeinterface 0.2.28
+---------------------
+
+May, 5th 2025
+
+
+Packaging
+^^^^^^^^^
+* Fix hatchling packaging
