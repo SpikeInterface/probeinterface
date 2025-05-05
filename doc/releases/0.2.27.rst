@@ -1,7 +1,7 @@
-probeinterface 0.2.27
----------------------
+probeinterface 0.2.27 (broken)
+------------------------------
 
-May, 2nd 2025
+May, 5th 2025
 
 
 Features
