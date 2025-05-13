@@ -1066,6 +1066,13 @@ def read_openephys(
         channel_ids = np.array([int(ch[2:]) for ch in channel_names])
         channel_order = np.argsort(channel_ids)
 
+        # Detect missing channels
+        sorted_channel_ids = sorted(channel_ids)
+        all_channel_ids_range = set(range(sorted_channel_ids[0], sorted_channel_ids[-1] + 1))
+        missing_channels = sorted(all_channel_ids_range - set(channel_ids))
+        if missing_channels:
+            warnings.warn(f"Missing channels detected in XML: {missing_channels}")
+
         # sort channel_names and channel_values
         channel_names = channel_names[channel_order]
         channel_values = np.array(list(channels.attrib.values()))[channel_order]
@@ -1087,6 +1094,60 @@ def read_openephys(
             return None
         xpos = np.array([float(electrode_xpos.attrib[ch]) for ch in channel_names])
         ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])
+
+        # Fix missing channels if detected
+        if missing_channels:
+            # Detect repeating pattern in <ELECTRODE_XPOS> values
+            xpos_values = [int(float(value)) for value in electrode_xpos.attrib.values()]
+            pattern_length = next(
+                (i for i in range(1, len(xpos_values) // 2) if xpos_values[:i] == xpos_values[i:2 * i]),
+                len(xpos_values)
+            )
+            xpos_pattern = xpos_values[:pattern_length]
+
+            # Detect repeating pattern in <ELECTRODE_YPOS> values
+            ypos_values = [int(float(value)) for value in electrode_ypos.attrib.values()]
+            ypos_step = np.unique(np.diff(sorted(set(ypos_values))))[0]
+
+            # Determine fill value for channel values
+            fill_value = channel_values[0]  # TODO: how to do this more robustly?
+
+            # Extract shank id from fill value if it contains a colon
+            if ":" in fill_value:
+                shank_id_for_missing = int(fill_value.split(":")[1])
+            else:
+                shank_id_for_missing = 0
+
+            # Add missing channels to xpos, ypos, channel_names, and channel_values
+            for missing_channel in missing_channels:
+                # Calculate positions for missing channel
+                pattern_value_xpos = xpos_pattern[missing_channel % pattern_length]
+                pattern_value_ypos = (missing_channel // 2) * ypos_step
+
+                # Add to arrays
+                xpos = np.append(xpos, pattern_value_xpos)
+                ypos = np.append(ypos, pattern_value_ypos)
+                channel_names = np.append(channel_names, f"CH{missing_channel}")
+                channel_values = np.append(channel_values, fill_value)
+
+                # Update shank_ids if it exists
+                if shank_ids is not None:
+                    shank_ids = np.append(shank_ids, shank_id_for_missing)
+
+                warnings.warn(f"Fixed missing channel {missing_channel} with x={pattern_value_xpos}, y={pattern_value_ypos}")
+
+            # Re-sort arrays by channel number
+            channel_ids = np.array([int(ch[2:]) for ch in channel_names])
+            channel_order = np.argsort(channel_ids)
+            channel_names = channel_names[channel_order]
+            channel_values = channel_values[channel_order]
+            xpos = xpos[channel_order]
+            ypos = ypos[channel_order]
+
+            # Re-sort shank_ids if it exists
+            if shank_ids is not None:
+                shank_ids = shank_ids[channel_order]
+
         positions = np.array([xpos, ypos]).T
 
         probe_part_number = np_probe.get("probe_part_number", None)
