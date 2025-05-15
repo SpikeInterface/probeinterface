@@ -77,71 +77,87 @@ imro_field_to_pi_field = {
 }
 
 pi_to_pt_names = {
-    'x_pitch': 'electrode_pitch_horz_um',
-    'y_pitch': 'electrode_pitch_vert_um',
-    'contact_width': 'electrode_size_horz_direction_um',
-    'shank_pitch': 'shank_pitch_um',
-    'shank_number': 'num_shanks',
-    'ncols_per_shank': 'cols_per_shank',
-    'nrows_per_shank': 'rows_per_shank',
-    'adc_bit_depth': 'adc_bit_depth' ,
-    'model_name': 'description',
-    'num_readout_channels': 'num_readout_channels',
-    'shank_width_um': 'shank_width_um',
-    'tip_length_um': 'tip_length_um',
+    "x_pitch": "electrode_pitch_horz_um",
+    "y_pitch": "electrode_pitch_vert_um",
+    "contact_width": "electrode_size_horz_direction_um",
+    "shank_pitch": "shank_pitch_um",
+    "shank_number": "num_shanks",
+    "ncols_per_shank": "cols_per_shank",
+    "nrows_per_shank": "rows_per_shank",
+    "adc_bit_depth": "adc_bit_depth",
+    "model_name": "description",
+    "num_readout_channels": "num_readout_channels",
+    "shank_width_um": "shank_width_um",
+    "tip_length_um": "tip_length_um",
 }
+
 
 def make_npx_description(probe_part_number):
     """
     Extracts probe metadata from the `probeinterface/resources/probe_features.json` file and converts
-    to probeinterface syntax. File is maintained by Bill Karsh in ProbeTable 
+    to probeinterface syntax. File is maintained by Bill Karsh in ProbeTable
     (https://github.com/billkarsh/ProbeTable/tree/main).
 
     Parameters
     ----------
     probe_part_number : str
-        The part number of the probe e.g. 'NP2013'. 
+        The part number of the probe e.g. 'NP2013'.
     """
 
     is_phase3a = False
     # These are all prototype NP1.0 probes, not contained in ProbeTable
-    if probe_part_number in ['PRB_1_4_0480_1', 'PRB_1_4_0480_1_C', 'PRB_1_2_0480_2', None]:
+    if probe_part_number in ["PRB_1_4_0480_1", "PRB_1_4_0480_1_C", "PRB_1_2_0480_2", None]:
         if probe_part_number is None:
             is_phase3a = True
-        probe_part_number = 'NP1010'
-        
+        probe_part_number = "NP1010"
+
     probe_features_filepath = Path(__file__).absolute().parent / Path("resources/probe_features.json")
     probe_features = json.load(open(probe_features_filepath, "r"))
-    pt_metadata = probe_features['neuropixels_probes'].get(probe_part_number)
+    pt_metadata = probe_features["neuropixels_probes"].get(probe_part_number)
 
     if pt_metadata is None:
-        raise ValueError(f'Probe type {probe_part_number} not supported.')
+        raise ValueError(f"Probe type {probe_part_number} not supported.")
 
     pi_metadata = {}
-    
+
     # Extract most of the metadata
     for pi_name, pt_name in pi_to_pt_names.items():
-        if pt_name in ['num_shanks', 'cols_per_shank', 'rows_per_shank', 'adc_bit_depth', 'num_readout_channels']:
+        if pt_name in ["num_shanks", "cols_per_shank", "rows_per_shank", "adc_bit_depth", "num_readout_channels"]:
             pi_metadata[pi_name] = int(pt_metadata[pt_name])
-        elif pt_name in ['electrode_pitch_horz_um', 'electrode_pitch_vert_um', 'electrode_size_horz_direction_um', 'shank_pitch_um']:
+        elif pt_name in [
+            "electrode_pitch_horz_um",
+            "electrode_pitch_vert_um",
+            "electrode_size_horz_direction_um",
+            "shank_pitch_um",
+        ]:
             pi_metadata[pi_name] = float(pt_metadata[pt_name])
         else:
             pi_metadata[pi_name] = pt_metadata[pt_name]
 
     # Use offsets to compute stagger and contour shift
-    odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um = float(pt_metadata['odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um'])
-    even_row_horz_offset_left_edge_to_leftmost_electrode_center_um = float(pt_metadata['even_row_horz_offset_left_edge_to_leftmost_electrode_center_um'])
+    odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um = float(
+        pt_metadata["odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um"]
+    )
+    even_row_horz_offset_left_edge_to_leftmost_electrode_center_um = float(
+        pt_metadata["even_row_horz_offset_left_edge_to_leftmost_electrode_center_um"]
+    )
     middle_of_bottommost_electrode_to_top_of_shank_tip = 11
-    pi_metadata['contour_shift'] = [-odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um, -middle_of_bottommost_electrode_to_top_of_shank_tip]
-    pi_metadata['stagger'] = even_row_horz_offset_left_edge_to_leftmost_electrode_center_um - odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um
+    pi_metadata["contour_shift"] = [
+        -odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um,
+        -middle_of_bottommost_electrode_to_top_of_shank_tip,
+    ]
+    pi_metadata["stagger"] = (
+        even_row_horz_offset_left_edge_to_leftmost_electrode_center_um
+        - odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um
+    )
 
     # Read the imro tables to find out which fields the imro tables contain
-    imro_table_format_type = pt_metadata['imro_table_format_type']
+    imro_table_format_type = pt_metadata["imro_table_format_type"]
     imro_table_fields = probe_features["z_imro_formats"][imro_table_format_type + "_elm_flds"]
 
     # parse the imro_table_fields, which look like (value value value ...)
-    list_of_imro_fields = imro_table_fields.replace('(','').replace(')','').split(" ")
-    
+    list_of_imro_fields = imro_table_fields.replace("(", "").replace(")", "").split(" ")
+
     # The Phase3a probe does not contain the `ap_hipas_flt` imro table field.
     if is_phase3a:
         list_of_imro_fields.remove("ap_hipas_flt")
@@ -149,33 +165,36 @@ def make_npx_description(probe_part_number):
     pi_imro_fields = []
     for imro_field in list_of_imro_fields:
         pi_imro_fields.append(imro_field_to_pi_field[imro_field])
-    pi_metadata['fields_in_imro_table'] = tuple(pi_imro_fields)
+    pi_metadata["fields_in_imro_table"] = tuple(pi_imro_fields)
 
     # Construct probe contour, for styling the probe
-    shank_width = float(pt_metadata['shank_width_um'])
-    tip_length = float(pt_metadata['tip_length_um'])
+    shank_width = float(pt_metadata["shank_width_um"])
+    tip_length = float(pt_metadata["tip_length_um"])
     probe_length = 10_000
-    pi_metadata['contour_description'] = get_probe_contour_vertices(shank_width, tip_length, probe_length)
+    pi_metadata["contour_description"] = get_probe_contour_vertices(shank_width, tip_length, probe_length)
 
     # Get the mux table
-    mux_table_format_type = pt_metadata['mux_table_format_type']
-    mux_information = probe_features['z_mux_tables'].get(mux_table_format_type)
-    pi_metadata['mux_table_array'] = make_mux_table_array(mux_information)
+    mux_table_format_type = pt_metadata["mux_table_format_type"]
+    mux_information = probe_features["z_mux_tables"].get(mux_table_format_type)
+    pi_metadata["mux_table_array"] = make_mux_table_array(mux_information)
 
     return pi_metadata
 
+
 def make_mux_table_array(mux_information) -> np.array:
-    
+
     # mux_information looks like (num_adcs num_channels_per_adc)(int int int ...)(int int int ...)...(int int int ...)
     # First split on ')(' to get a list of the information in the brackets, and remove the leading data
     split_mux = mux_information.split(")(")[1:]
 
     # Then remove the brackets, and split using " " to get each integer as a list
-    mux_channels = [np.array(each_mux.replace('(','').replace(')','').split(" ")).astype('int') for each_mux in split_mux]
+    mux_channels = [
+        np.array(each_mux.replace("(", "").replace(")", "").split(" ")).astype("int") for each_mux in split_mux
+    ]
     mux_channels_array = np.transpose(np.array(mux_channels))
 
     return mux_channels_array
-    
+
 
 def get_probe_contour_vertices(shank_width, tip_length, probe_length):
     """
@@ -187,12 +206,13 @@ def get_probe_contour_vertices(shank_width, tip_length, probe_length):
     polygon_vertices = [
         (0, probe_length),
         (0, 0),
-        (shank_width/2, -tip_length),
+        (shank_width / 2, -tip_length),
         (shank_width, 0),
         (shank_width, probe_length),
     ]
 
     return polygon_vertices
+
 
 def read_imro(file_path: Union[str, Path]) -> Probe:
     """
@@ -380,15 +400,15 @@ def write_imro(file: str | Path, probe: Probe):
 
     if probe_type == "0":
         # Phase3a probe does not have `ap_hp_filters` annotation
-        if annotations.get('ap_hp_filters') is not None:
-            
+        if annotations.get("ap_hp_filters") is not None:
+
             for ch in range(len(data)):
                 ret.append(
                     f"({ch} 0 {annotations['references'][ch]} {annotations['ap_gains'][ch]} "
                     f"{annotations['lf_gains'][ch]} {annotations['ap_hp_filters'][ch]})"
                 )
         else:
-            
+
             for ch in range(len(data)):
                 ret.append(
                     f"({ch} 0 {annotations['references'][ch]} {annotations['ap_gains'][ch]} "
@@ -814,7 +834,7 @@ def read_openephys(
             shank_id = shank_ids[i] if shank_number > 1 else 0
 
             if x_pitch == 0:
-                contact_id = int( number_of_columns * y_pos / y_pitch)
+                contact_id = int(number_of_columns * y_pos / y_pitch)
             else:
                 contact_id = int(
                     (x_pos - row_stagger - shank_pitch * shank_id) / x_pitch + number_of_columns * y_pos / y_pitch
@@ -826,7 +846,6 @@ def read_openephys(
 
         mux_table_array = probe_dict["mux_table_array"]
 
-        
         np_probe_dict = {
             "model_name": model_name,
             "shank_ids": shank_ids,
@@ -837,7 +856,7 @@ def read_openephys(
             "dock": dock,
             "serial_number": probe_serial_number,
             "part_number": probe_part_number,
-            "mux_table_array": mux_table_array
+            "mux_table_array": mux_table_array,
         }
         # Sequentially assign probe names
         if "custom_probe_name" in np_probe.attrib and np_probe.attrib["custom_probe_name"] != probe_serial_number:

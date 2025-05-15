@@ -7,7 +7,6 @@ import numpy as np
 import pytest
 
 
-
 # Map imDatPrb_pn (probe number) to imDatPrb_type (probe type) when the latter is missing
 probe_part_number_to_probe_type = {
     # for old version without a probe number we assume NP1.0
@@ -507,13 +506,13 @@ def test_consistency_with_past():
     # known mismatches between ProbeTable and previous ProbeInterface implementation
     # None is the Phase3a probe.
     known_mismatches = {
-        None: ['fields_in_imro_table'],
-        'NP1020': ['x_pitch', 'stagger'],
-        'NP1021': ['x_pitch', 'stagger'],
-        'NP1030': ['x_pitch', 'stagger'],
-        'NP1031': ['x_pitch', 'stagger'],
-        'NP1110': ['fields_in_imro_table', 'x_pitch'],
-        'NP1121': ['x_pitch', 'contact_width'],
+        None: ["fields_in_imro_table"],
+        "NP1020": ["x_pitch", "stagger"],
+        "NP1021": ["x_pitch", "stagger"],
+        "NP1030": ["x_pitch", "stagger"],
+        "NP1031": ["x_pitch", "stagger"],
+        "NP1110": ["fields_in_imro_table", "x_pitch"],
+        "NP1121": ["x_pitch", "contact_width"],
     }
 
     for probe_part_number, probe_type in probe_part_number_to_probe_type.items():
@@ -523,10 +522,20 @@ def test_consistency_with_past():
             probe_info = make_npx_description(probe_part_number)
             old_probe_info = npx_descriptions[probe_type]
 
-            for value in ["x_pitch", "y_pitch", "contact_width", "stagger", "shank_pitch", "shank_number", "ncols_per_shank", "nrows_per_shank", "fields_in_imro_table"]:
-                
+            for value in [
+                "x_pitch",
+                "y_pitch",
+                "contact_width",
+                "stagger",
+                "shank_pitch",
+                "shank_number",
+                "ncols_per_shank",
+                "nrows_per_shank",
+                "fields_in_imro_table",
+            ]:
+
                 if known_mismatches.get(probe_part_number) is not None:
                     if value in known_mismatches.get(probe_part_number):
                         continue
-                
+
                 assert probe_info[value] == old_probe_info[value]
