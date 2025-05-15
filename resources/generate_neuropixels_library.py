@@ -1,10 +1,12 @@
 import shutil
 from pathlib import Path
 
+import json
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-from probeinterface.neuropixels_tools import npx_descriptions, probe_part_number_to_probe_type, _make_npx_probe_from_description
+from probeinterface.neuropixels_tools import make_npx_description, _make_npx_probe_from_description
 from probeinterface.plotting import plot_probe
 from probeinterface import write_probeinterface
 
@@ -18,24 +20,24 @@ def generate_all_npx():
     # if not base_folder.exists():
     base_folder.mkdir(exist_ok=True)
 
+    probe_features_filepath = Path(__file__).absolute().parent / Path("../src/probeinterface/resources/probe_features.json")
+    probe_features = json.load(open(probe_features_filepath, "r"))
+    probe_part_numbers = probe_features['neuropixels_probes'].keys()
 
-    for probe_number, probe_type in probe_part_number_to_probe_type.items():
+
+    for probe_number in probe_part_numbers:
 
         if probe_number is None:
             continue
 
-        if probe_number == "1110":
+        if probe_number == "NP1110":
             # the formula by the imrow table is wrong and more complicated
             continue
 
         probe_folder = base_folder / probe_number
         probe_folder.mkdir(exist_ok=True)
 
-        print(probe_number, probe_type)
-
-        probe_description = npx_descriptions[probe_type]
-
-
+        probe_description = make_npx_description(probe_number)
 
         num_shank = probe_description["shank_number"]
         contact_per_shank = probe_description["ncols_per_shank"] * probe_description["nrows_per_shank"]
@@ -93,9 +95,6 @@ def generate_all_npx():
         write_probeinterface(probe_folder / f"{probe_number}.json", probe)
 
         plt.close(fig)
-
-
-
 
 
 
