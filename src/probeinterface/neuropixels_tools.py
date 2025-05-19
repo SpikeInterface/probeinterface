@@ -101,7 +101,12 @@ def make_npx_description(probe_part_number):
     Parameters
     ----------
     probe_part_number : str
-        The part number of the probe e.g. 'NP2013'.
+        The part number of the probe e.g. 'NP2013'. 
+
+    Returns
+    -------
+    pi_metadata : dict
+        Dictionary containing metadata about NeuroPixels probes using ProbeInterface syntax.
     """
 
     is_phase3a = False
@@ -151,8 +156,8 @@ def make_npx_description(probe_part_number):
         - odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um
     )
 
-    # Read the imro tables to find out which fields the imro tables contain
-    imro_table_format_type = pt_metadata["imro_table_format_type"]
+    # Read the imro table formats to find out which fields the imro tables contain
+    imro_table_format_type = pt_metadata['imro_table_format_type']
     imro_table_fields = probe_features["z_imro_formats"][imro_table_format_type + "_elm_flds"]
 
     # parse the imro_table_fields, which look like (value value value ...)
@@ -182,7 +187,20 @@ def make_npx_description(probe_part_number):
 
 
 def make_mux_table_array(mux_information) -> np.array:
+    """
+    Function to parse the mux_table from ProbeTable.
 
+    Parameters
+    ----------
+    mux_information : str
+        The information from `z_mux_tables` in the ProbeTable `probe_feature.json` file
+
+    Returns
+    -------
+    mux_channels_array : np.array
+        Array of which channels are in each adc group, shaped (number of `adc`s, number of channels in each `adc`).
+    """
+    
     # mux_information looks like (num_adcs num_channels_per_adc)(int int int ...)(int int int ...)...(int int int ...)
     # First split on ')(' to get a list of the information in the brackets, and remove the leading data
     split_mux = mux_information.split(")(")[1:]
@@ -196,20 +214,48 @@ def make_mux_table_array(mux_information) -> np.array:
     return mux_channels_array
 
 
-def get_probe_contour_vertices(shank_width, tip_length, probe_length):
+def get_probe_contour_vertices(shank_width, tip_length, probe_length) -> list:
     """
-    Function to get the vertices of the probe contour from probe properties.
+    Function to get the vertices of the probe contour from probe properties. The probe contour can be constructed
+    from five points. These are the vertices shown in the following figure:
+
+          A |    | E
+            |    |
+              .
+              .
+              .
+            |    |
+          B |    | D
+             \  /
+              \/
+               C
+
+    This function returns the points indicated in the diagram above in a list [A,B,C,D,E].
+
+    Parameters
+    ----------
+    shank_width : float
+        Width of shank (um).
+    tip_length : float
+        Length of tip of probe (um).
+    probe_length : float
+        Length of entire probe (um).
+
+    Returns
+    -------
+    polygon_vertices : list
+        List of five points which make up the probe contour.
     """
 
     # this dict define the contour for one shank (duplicated when several shanks so)
     # note that a final "contour_shift" is applied
-    polygon_vertices = [
+    polygon_vertices = (
         (0, probe_length),
         (0, 0),
         (shank_width / 2, -tip_length),
         (shank_width, 0),
         (shank_width, probe_length),
-    ]
+    )
 
     return polygon_vertices
 
