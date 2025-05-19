@@ -101,7 +101,7 @@ def make_npx_description(probe_part_number):
     Parameters
     ----------
     probe_part_number : str
-        The part number of the probe e.g. 'NP2013'. 
+        The part number of the probe e.g. 'NP2013'.
 
     Returns
     -------
@@ -157,7 +157,7 @@ def make_npx_description(probe_part_number):
     )
 
     # Read the imro table formats to find out which fields the imro tables contain
-    imro_table_format_type = pt_metadata['imro_table_format_type']
+    imro_table_format_type = pt_metadata["imro_table_format_type"]
     imro_table_fields = probe_features["z_imro_formats"][imro_table_format_type + "_elm_flds"]
 
     # parse the imro_table_fields, which look like (value value value ...)
@@ -200,7 +200,7 @@ def make_mux_table_array(mux_information) -> np.array:
     mux_channels_array : np.array
         Array of which channels are in each adc group, shaped (number of `adc`s, number of channels in each `adc`).
     """
-    
+
     # mux_information looks like (num_adcs num_channels_per_adc)(int int int ...)(int int int ...)...(int int int ...)
     # First split on ')(' to get a list of the information in the brackets, and remove the leading data
     split_mux = mux_information.split(")(")[1:]
