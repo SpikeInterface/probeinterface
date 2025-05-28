@@ -472,7 +472,7 @@ def test_consistency_with_past():
     for probe_part_number, probe_type in probe_part_number_to_probe_type.items():
 
         if probe_part_number not in ["3000", "1200"]:
-            
+
             probe_info = make_npx_description(probe_part_number)
             old_probe_info = npx_descriptions[probe_type]
 
