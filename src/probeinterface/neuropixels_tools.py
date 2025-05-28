@@ -13,13 +13,13 @@ from typing import Union, Optional
 import warnings
 from packaging.version import parse
 import json
-
 import numpy as np
 
 from .probe import Probe
 from .utils import import_safely
 
 # Map imDatPrb_pn (probe number) to imDatPrb_type (probe type) when the latter is missing
+# ONLY needed for `read_imro` function
 probe_part_number_to_probe_type = {
     # for old version without a probe number we assume NP1.0
     None: "0",
@@ -59,8 +59,7 @@ probe_part_number_to_probe_type = {
     "NP1300": "1300",  # Opto probe
 }
 
-probe_type_to_probe_part_number = {v: k for k, v in probe_part_number_to_probe_type.items()}
-
+# Map from imro format to ProbeInterface naming conventions
 imro_field_to_pi_field = {
     "ap_gain": "ap_gains",
     "ap_hipas_flt": "ap_hp_filters",
@@ -76,6 +75,7 @@ imro_field_to_pi_field = {
     "bankB": "bankB",
 }
 
+# Map from ProbeInterface to ProbeTable naming conventions
 pi_to_pt_names = {
     "x_pitch": "electrode_pitch_horz_um",
     "y_pitch": "electrode_pitch_vert_um",
@@ -90,6 +90,26 @@ pi_to_pt_names = {
     "shank_width_um": "shank_width_um",
     "tip_length_um": "tip_length_um",
 }
+
+def get_probe_length(probe_part_number: str) -> int:
+    """
+    Returns the length of a given probe. We assume a length of 
+    1cm (10_000 microns) by default.
+
+    Parameters
+    ----------
+    probe_part_number : str
+        The part number of the probe e.g. 'NP2013'. 
+
+    Returns
+    -------
+    probe_length : int
+        Lenth of full probe (microns)
+    """
+
+    probe_length = 10_000
+
+    return probe_length
 
 
 def make_npx_description(probe_part_number):
@@ -109,21 +129,15 @@ def make_npx_description(probe_part_number):
         Dictionary containing metadata about NeuroPixels probes using ProbeInterface syntax.
     """
 
-    is_phase3a = False
-    # These are all prototype NP1.0 probes, not contained in ProbeTable
-    if probe_part_number in ["PRB_1_4_0480_1", "PRB_1_4_0480_1_C", "PRB_1_2_0480_2", None]:
-        if probe_part_number is None:
-            is_phase3a = True
-        probe_part_number = "NP1010"
-
     probe_features_filepath = Path(__file__).absolute().parent / Path("resources/probe_features.json")
     probe_features = json.load(open(probe_features_filepath, "r"))
+
+    # We use `pt` and `pi` as shorthand for `ProbeTable` and `ProbeInterface` throughout this function
     pt_metadata = probe_features["neuropixels_probes"].get(probe_part_number)
+    pi_metadata = {}
 
     if pt_metadata is None:
-        raise ValueError(f"Probe type {probe_part_number} not supported.")
-
-    pi_metadata = {}
+        raise ValueError(f"Probe part number {probe_part_number} not supported.")
 
     # Extract most of the metadata
     for pi_name, pt_name in pi_to_pt_names.items():
@@ -159,13 +173,9 @@ def make_npx_description(probe_part_number):
     # Read the imro table formats to find out which fields the imro tables contain
     imro_table_format_type = pt_metadata["imro_table_format_type"]
     imro_table_fields = probe_features["z_imro_formats"][imro_table_format_type + "_elm_flds"]
-
+    
     # parse the imro_table_fields, which look like (value value value ...)
     list_of_imro_fields = imro_table_fields.replace("(", "").replace(")", "").split(" ")
-
-    # The Phase3a probe does not contain the `ap_hipas_flt` imro table field.
-    if is_phase3a:
-        list_of_imro_fields.remove("ap_hipas_flt")
 
     pi_imro_fields = []
     for imro_field in list_of_imro_fields:
@@ -175,10 +185,12 @@ def make_npx_description(probe_part_number):
     # Construct probe contour, for styling the probe
     shank_width = float(pt_metadata["shank_width_um"])
     tip_length = float(pt_metadata["tip_length_um"])
-    probe_length = 10_000
+
+    probe_length = get_probe_length(probe_part_number)
     pi_metadata["contour_description"] = get_probe_contour_vertices(shank_width, tip_length, probe_length)
 
-    # Get the mux table
+    # Get the mux table. This describes which electrodes are multiplexed together, meaning
+    # which electrodes are sampled at the same time. 
     mux_table_format_type = pt_metadata["mux_table_format_type"]
     mux_information = probe_features["z_mux_tables"].get(mux_table_format_type)
     pi_metadata["mux_table_array"] = make_mux_table_array(mux_information)
@@ -279,7 +291,25 @@ def read_imro(file_path: Union[str, Path]) -> Probe:
     assert meta_file.suffix == ".imro", "'file' should point to the .imro file"
     with meta_file.open(mode="r") as f:
         imro_str = str(f.read())
-    return _read_imro_string(imro_str)
+
+    imro_table_header_str, *imro_table_values_list, _ = imro_str.strip().split(")")
+    imro_table_header = tuple(map(int, imro_table_header_str[1:].split(",")))
+
+    if len(imro_table_header) == 3:
+        # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently.
+        # We use probe_type "0", which maps to probe_part_number NP1010 as a proxy for Phase3a.
+        imDatPrb_type = "0"
+    elif len(imro_table_header) == 2:
+        imDatPrb_type, _ = imro_table_header
+    else:
+        raise ValueError(f"read_imro error, the header has a strange length: {imro_table_header}")
+    imDatPrb_type = str(imDatPrb_type)
+
+    for probe_part_number, probe_type in probe_part_number_to_probe_type.items():
+        if imDatPrb_type == probe_type:
+            imDatPrb_pn = probe_part_number
+
+    return _read_imro_string(imro_str, imDatPrb_pn)
 
 
 def _make_npx_probe_from_description(probe_description, elec_ids, shank_ids):
@@ -369,30 +399,19 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     https://billkarsh.github.io/SpikeGLX/help/imroTables/
 
     """
-    imro_table_header_str, *imro_table_values_list, _ = imro_str.strip().split(")")
-    imro_table_header = tuple(map(int, imro_table_header_str[1:].split(",")))
 
-    imDatPrb_type = None
-    if imDatPrb_pn is None:
-        if len(imro_table_header) == 3:
-            # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently.
-            probe_serial_number, probe_option, num_contact = imro_table_header
-            imDatPrb_type = "Phase3a"
-            imDatPrb_pn = None
-        elif len(imro_table_header) == 2:
-            imDatPrb_type, num_contact = imro_table_header
-            imDatPrb_type = str(imDatPrb_type)
-            imDatPrb_pn = probe_type_to_probe_part_number[imDatPrb_type]
-        else:
-            raise ValueError(f"read_imro error, the header has a strange length: {imro_table_header}")
+    probe_type_num_chans, *imro_table_values_list, _ = imro_str.strip().split(")")
+
+    # probe_type_num_chans looks like f"({probe_type},{num_chans}"
+    probe_type = probe_type_num_chans.split(',')[0][1:]
 
     probe_description = make_npx_description(imDatPrb_pn)
 
     fields = probe_description["fields_in_imro_table"]
     contact_info = {k: [] for k in fields}
     for field_values_str in imro_table_values_list:  # Imro table values look like '(value, value, value, ... '
+        # Split them by space to get int('value'), int('value'), int('value'), ...)
         values = tuple(map(int, field_values_str[1:].split(" ")))
-        # Split them by space to get (int('value'), int('value'), int('value'), ...)
         for field, field_value in zip(fields, values):
             contact_info[field].append(field_value)
 
@@ -416,12 +435,12 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
 
     # this is scalar annotations
     probe.annotate(
-        probe_type=imDatPrb_type,
+        probe_type=probe_type,
     )
 
     # this is vector annotations
     vector_properties = ("channel_ids", "banks", "references", "ap_gains", "lf_gains", "ap_hp_filters")
-    vector_properties_available = {k: v for k, v in contact_info.items() if k in vector_properties}
+    vector_properties_available = {k: v for k, v in contact_info.items() if (k in vector_properties) and (len(v)>0) }
     probe.annotate_contacts(**vector_properties_available)
 
     return probe
@@ -494,12 +513,6 @@ def read_spikeglx(file: str | Path) -> Probe:
 
     The shape is auto generated as a shank.
 
-    Now reads:
-      * NP0.0 (=phase3A)
-      * NP1.0 (=phase3B2)
-      * NP2.0 with 4 shank
-      * NP1.0-NHP
-
     Parameters
     ----------
     file : Path or str
@@ -529,6 +542,10 @@ def read_spikeglx(file: str | Path) -> Probe:
     imDatPrb_port = meta.get("imDatPrb_port", None)
     imDatPrb_slot = meta.get("imDatPrb_slot", None)
     imDatPrb_part_number = meta.get("imDatPrb_pn", None)
+
+    # Only Phase3a probe has "imProbeOpt". Map this to NP10101.
+    if meta.get("imProbeOpt") is not None:
+        imDatPrb_pn = "NP1010"
 
     probe = _read_imro_string(imro_str=imro_table, imDatPrb_pn=imDatPrb_pn)
 

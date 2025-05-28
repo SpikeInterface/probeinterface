@@ -1886,7 +1886,7 @@
             "tip_length_um": "206",
             "total_electrodes": "5120"
         },
-        "PRB_1_2_480_2": {
+        "PRB_1_2_0480_2": {
             "adc_bit_depth": "10",
             "adc_range_vpp": "1.2",
             "ap_band_list_hz": "300,10000",
