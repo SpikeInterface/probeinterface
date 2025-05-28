@@ -138,7 +138,8 @@ def make_npx_description(probe_part_number):
     pi_metadata = {}
 
     if pt_metadata is None:
-        raise ValueError(f"Probe part number {probe_part_number} not supported.")
+        warnings.warn(f"Probe part number {probe_part_number} not known. Assume a NP1.0 probe.")
+        pt_metadata = probe_features["neuropixels_probes"].get("NP1010")
 
     # Extract most of the metadata
     for pi_name, pt_name in pi_to_pt_names.items():
@@ -882,7 +883,7 @@ def read_openephys(
             model_name = "Unknown"
 
         for i, pos in enumerate(positions):
-            # Do not calculate contact ids if the probe type is not known
+            # Do not calculate contact ids if the model name is not known
             if model_name == "Unknown":
                 contact_ids = None
                 break
@@ -897,6 +898,8 @@ def read_openephys(
             # Map the positions to the contacts ids
             shank_id = shank_ids[i] if shank_number > 1 else 0
 
+            # Contact ids are computed from the positions of the electrodes. The computation
+            # is different for probes with one row of electrodes, or more than one.
             if x_pitch == 0:
                 contact_id = int(number_of_columns * y_pos / y_pitch)
             else:
