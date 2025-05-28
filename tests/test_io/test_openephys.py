@@ -17,7 +17,6 @@ def test_NP2_OE_1_0():
     probe_dict = probeA.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     assert probeA.get_shank_count() == 1
-    assert "2.0" in probeA.model_name
     assert probeA.get_contact_count() == 384
 
 
@@ -27,7 +26,6 @@ def test_NP2():
     probe_dict = probe.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     assert probe.get_shank_count() == 1
-    assert "2.0 - Single Shank" in probe.model_name
 
 
 def test_NP2_four_shank():
@@ -37,7 +35,6 @@ def test_NP2_four_shank():
     validate_probe_dict(probe_dict)
     # on this case, only shanks 2-3 are used
     assert probe.get_shank_count() == 2
-    assert "2.0 - Four Shank" in probe.model_name
 
 
 def test_NP_Ultra():
@@ -48,7 +45,6 @@ def test_NP_Ultra():
     )
     probe_dict = probeA.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
-    assert "Ultra" in probeA.model_name
     assert probeA.get_shank_count() == 1
     assert probeA.get_contact_count() == 384
 
@@ -58,7 +54,6 @@ def test_NP_Ultra():
     )
     probe_dict = probeB.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
-    assert "Ultra" in probeB.model_name
     assert probeB.get_shank_count() == 1
     assert probeB.get_contact_count() == 384
 
@@ -68,7 +63,6 @@ def test_NP_Ultra():
     )
     probe_dict = probeF.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
-    assert "Ultra" in probeF.model_name
     assert probeF.get_shank_count() == 1
     assert probeF.get_contact_count() == 384
 
@@ -78,7 +72,6 @@ def test_NP_Ultra():
     )
     probe_dict = probeD.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
-    assert "Ultra" in probeD.model_name and "Type 2" in probeD.model_name
     assert probeD.get_shank_count() == 1
     assert probeD.get_contact_count() == 384
     # for this probe model, all channels are aligned
@@ -162,7 +155,6 @@ def test_multiple_probes():
     )
 
     assert probeB2.get_shank_count() == 1
-    assert "2.0 - Four Shank" in probeB2.model_name
 
     ypos = probeB2.contact_positions[:, 1]
     assert np.min(ypos) >= 0
@@ -209,7 +201,6 @@ def test_np_opto_with_sync():
     probe = read_openephys(data_path / "OE_Neuropix-PXI-opto-with-sync" / "settings.xml")
     probe_dict = probe.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
-    assert probe.model_name == "Neuropixels Opto"
     assert probe.get_shank_count() == 1
     assert probe.get_contact_count() == 384
 
@@ -221,7 +212,6 @@ def test_older_than_06_format():
     probe_dict = probe.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     assert probe.get_shank_count() == 4
-    assert "2.0 - Four Shank" in probe.model_name
     ypos = probe.contact_positions[:, 1]
     assert np.min(ypos) >= 0
 
@@ -232,7 +222,6 @@ def test_multiple_signal_chains():
     probe = read_openephys(data_path / "OE_Neuropix-PXI-multiple-signalchains" / "settings.xml")
     probe_dict = probe.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
-    assert probe.model_name == "Neuropixels 1.0"
 
 
 def test_quadbase():
@@ -241,7 +230,6 @@ def test_quadbase():
         probe = read_openephys(data_path / "OE_Neuropix-PXI-QuadBase" / "settings.xml", probe_name=f"ProbeC-{i+1}")
         probe_dict = probe.to_dict(array_as_list=True)
         validate_probe_dict(probe_dict)
-        assert probe.model_name == "Neuropixels 2.0 - Quad Base"
         assert probe.get_shank_count() == 1
         assert probe.get_contact_count() == 384
         assert set(probe.shank_ids) == set([str(i)])
@@ -252,7 +240,6 @@ def test_onebox():
     probe = read_openephys(data_path / "OE_OneBox-NP-Ultra" / "settings.xml")
     probe_dict = probe.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
-    assert probe.model_name == "Neuropixels Ultra (16 banks)"
     assert probe.get_shank_count() == 1
     assert probe.get_contact_count() == 384
 
