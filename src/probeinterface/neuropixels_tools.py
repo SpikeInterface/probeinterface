@@ -91,15 +91,16 @@ pi_to_pt_names = {
     "tip_length_um": "tip_length_um",
 }
 
+
 def get_probe_length(probe_part_number: str) -> int:
     """
-    Returns the length of a given probe. We assume a length of 
+    Returns the length of a given probe. We assume a length of
     1cm (10_000 microns) by default.
 
     Parameters
     ----------
     probe_part_number : str
-        The part number of the probe e.g. 'NP2013'. 
+        The part number of the probe e.g. 'NP2013'.
 
     Returns
     -------
@@ -173,7 +174,7 @@ def make_npx_description(probe_part_number):
     # Read the imro table formats to find out which fields the imro tables contain
     imro_table_format_type = pt_metadata["imro_table_format_type"]
     imro_table_fields = probe_features["z_imro_formats"][imro_table_format_type + "_elm_flds"]
-    
+
     # parse the imro_table_fields, which look like (value value value ...)
     list_of_imro_fields = imro_table_fields.replace("(", "").replace(")", "").split(" ")
 
@@ -190,7 +191,7 @@ def make_npx_description(probe_part_number):
     pi_metadata["contour_description"] = get_probe_contour_vertices(shank_width, tip_length, probe_length)
 
     # Get the mux table. This describes which electrodes are multiplexed together, meaning
-    # which electrodes are sampled at the same time. 
+    # which electrodes are sampled at the same time.
     mux_table_format_type = pt_metadata["mux_table_format_type"]
     mux_information = probe_features["z_mux_tables"].get(mux_table_format_type)
     pi_metadata["mux_table_array"] = make_mux_table_array(mux_information)
@@ -403,7 +404,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     probe_type_num_chans, *imro_table_values_list, _ = imro_str.strip().split(")")
 
     # probe_type_num_chans looks like f"({probe_type},{num_chans}"
-    probe_type = probe_type_num_chans.split(',')[0][1:]
+    probe_type = probe_type_num_chans.split(",")[0][1:]
 
     probe_description = make_npx_description(imDatPrb_pn)
 
@@ -440,7 +441,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
 
     # this is vector annotations
     vector_properties = ("channel_ids", "banks", "references", "ap_gains", "lf_gains", "ap_hp_filters")
-    vector_properties_available = {k: v for k, v in contact_info.items() if (k in vector_properties) and (len(v)>0) }
+    vector_properties_available = {k: v for k, v in contact_info.items() if (k in vector_properties) and (len(v) > 0)}
     probe.annotate_contacts(**vector_properties_available)
 
     return probe
