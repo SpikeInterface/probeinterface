@@ -182,6 +182,21 @@ def test_save_to_zarr(tmp_path):
     assert probe == reloaded_probe, "Reloaded Probe object does not match the original"
 
 
+def test_position_uniqueness():
+    """Test that the error message matches the full expected string for three duplicates using pytest's match regex."""
+    import re
+
+    positions_with_dups = np.array([[0, 0], [10, 10], [0, 0], [20, 20], [0, 0], [10, 10]])
+    probe = Probe(ndim=2, si_units="um")
+    expected_error = (
+        "Contact positions must be unique within a probe. "
+        "Found 2 duplicate(s): Position (0, 0) appears at indices [0, 2, 4]; Position (10, 10) appears at indices [1, 5]"
+    )
+
+    with pytest.raises(ValueError, match=re.escape(expected_error)):
+        probe.set_contacts(positions=positions_with_dups, shapes="circle", shape_params={"radius": 5})
+
+
 if __name__ == "__main__":
     test_probe()
 
