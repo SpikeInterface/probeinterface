@@ -315,9 +315,8 @@ class Probe:
 
         # Check for duplicate positions
         unique_positions = np.unique(positions, axis=0)
-        are_positions_unique = unique_positions.shape[0] == positions.shape[0]
-
-        if not are_positions_unique:
+        positions_are_not_unique = unique_positions.shape[0] != positions.shape[0]
+        if positions_are_not_unique:
             _raise_non_unique_positions_error(positions)
 
         self._contact_positions = positions
