@@ -8,7 +8,7 @@ from .shank import Shank
 _possible_contact_shapes = ["circle", "square", "rect"]
 
 
-def _raise_non_unique_positions(positions):
+def _raise_non_unique_positions_error(positions):
     """
     Check for duplicate positions and raise ValueError with detailed information.
     
@@ -316,7 +316,7 @@ class Probe:
         are_positions_unique = unique_positions.shape[0] == positions.shape[0]
 
         if not are_positions_unique:
-            _raise_non_unique_positions(positions)
+            _raise_non_unique_positions_error(positions)
 
         self._contact_positions = positions
         n = positions.shape[0]
