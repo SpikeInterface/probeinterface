@@ -11,12 +11,12 @@ _possible_contact_shapes = ["circle", "square", "rect"]
 def _raise_non_unique_positions_error(positions):
     """
     Check for duplicate positions and raise ValueError with detailed information.
-    
+
     Parameters
     ----------
     positions : array
         Array of positions to check for duplicates.
-        
+
     Raises
     ------
     ValueError
@@ -29,15 +29,17 @@ def _raise_non_unique_positions_error(positions):
             duplicates[pos_key].append(index)
         else:
             duplicates[pos_key] = [index]
-    
+
     duplicate_groups = {pos: indices for pos, indices in duplicates.items() if len(indices) > 1}
     duplicate_info = []
     for pos, indices in duplicate_groups.items():
         pos_str = f"({', '.join(map(str, pos))})"
         indices_str = f"[{', '.join(map(str, indices))}]"
         duplicate_info.append(f"Position {pos_str} appears at indices {indices_str}")
-    
-    raise ValueError(f"Contact positions must be unique within a probe. Found {len(duplicate_groups)} duplicate(s): {'; '.join(duplicate_info)}")
+
+    raise ValueError(
+        f"Contact positions must be unique within a probe. Found {len(duplicate_groups)} duplicate(s): {'; '.join(duplicate_info)}"
+    )
 
 
 class Probe:
