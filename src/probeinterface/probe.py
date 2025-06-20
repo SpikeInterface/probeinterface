@@ -8,6 +8,38 @@ from .shank import Shank
 _possible_contact_shapes = ["circle", "square", "rect"]
 
 
+def _raise_non_unique_positions(positions):
+    """
+    Check for duplicate positions and raise ValueError with detailed information.
+    
+    Parameters
+    ----------
+    positions : array
+        Array of positions to check for duplicates.
+        
+    Raises
+    ------
+    ValueError
+        If duplicate positions are found, with detailed information about duplicates.
+    """
+    duplicates = {}
+    for index, pos in enumerate(positions):
+        pos_key = tuple(pos)
+        if pos_key in duplicates:
+            duplicates[pos_key].append(index)
+        else:
+            duplicates[pos_key] = [index]
+    
+    duplicate_groups = {pos: indices for pos, indices in duplicates.items() if len(indices) > 1}
+    duplicate_info = []
+    for pos, indices in duplicate_groups.items():
+        pos_str = f"({', '.join(map(str, pos))})"
+        indices_str = f"[{', '.join(map(str, indices))}]"
+        duplicate_info.append(f"Position {pos_str} appears at indices {indices_str}")
+    
+    raise ValueError(f"Contact positions must be unique within a probe. Found {len(duplicate_groups)} duplicate(s): {'; '.join(duplicate_info)}")
+
+
 class Probe:
     """
     Class to handle the geometry of one probe.
@@ -281,24 +313,10 @@ class Probe:
 
         # Check for duplicate positions
         unique_positions = np.unique(positions, axis=0)
-        if len(unique_positions) != len(positions):
-            # Find and report duplicates
-            duplicates = {}
-            for index, pos in enumerate(positions):
-                pos_key = tuple(pos)
-                if pos_key in duplicates:
-                    duplicates[pos_key].append(index)
-                else:
-                    duplicates[pos_key] = [index]
-            
-            duplicate_groups = {pos: indices for pos, indices in duplicates.items() if len(indices) > 1}
-            duplicate_info = []
-            for pos, indices in duplicate_groups.items():
-                pos_str = f"({', '.join(map(str, pos))})"
-                indices_str = f"[{', '.join(map(str, indices))}]"
-                duplicate_info.append(f"Position {pos_str} appears at indices {indices_str}")
-            
-            raise ValueError(f"Contact positions must be unique within a probe. Found {len(duplicate_groups)} duplicate(s): {'; '.join(duplicate_info)}")
+        are_positions_unique = unique_positions.shape[0] == positions.shape[0]
+
+        if not are_positions_unique:
+            _raise_non_unique_positions(positions)
 
         self._contact_positions = positions
         n = positions.shape[0]
