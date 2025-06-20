@@ -357,7 +357,11 @@ def _make_npx_probe_from_description(probe_description, elec_ids, shank_ids):
     probe.set_contact_ids(contact_ids)
 
     # Add planar contour
-    polygon = np.array(get_probe_contour_vertices(probe_description["shank_width_um"], probe_description["tip_length_um"], get_probe_length(model_name)))
+    polygon = np.array(
+        get_probe_contour_vertices(
+            probe_description["shank_width_um"], probe_description["tip_length_um"], get_probe_length(model_name)
+        )
+    )
 
     contour = []
     shank_pitch = probe_description["shank_pitch_um"]
@@ -367,10 +371,12 @@ def _make_npx_probe_from_description(probe_description, elec_ids, shank_ids):
 
     # final contour_shift
     middle_of_bottommost_electrode_to_top_of_shank_tip = 11
-    contour_shift = np.array([
-        -probe_description["odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um"],
-        -middle_of_bottommost_electrode_to_top_of_shank_tip,
-    ])
+    contour_shift = np.array(
+        [
+            -probe_description["odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um"],
+            -middle_of_bottommost_electrode_to_top_of_shank_tip,
+        ]
+    )
     contour = np.array(contour) + contour_shift
     probe.set_planar_contour(contour)
 
@@ -420,7 +426,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     probe_features = json.load(open(probe_features_filepath, "r"))
     pt_metadata, fields = get_probe_metadata_from_probe_features(probe_features, imDatPrb_pn)
 
-    #fields = probe_description["fields_in_imro_table"]
+    # fields = probe_description["fields_in_imro_table"]
     contact_info = {k: [] for k in fields}
     for field_values_str in imro_table_values_list:  # Imro table values look like '(value, value, value, ... '
         # Split them by space to get int('value'), int('value'), int('value'), ...)
@@ -464,6 +470,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
 
     return probe
 
+
 def get_probe_metadata_from_probe_features(probe_features: dict, imDatPrb_pn: str):
     """
     Parses the `probe_features` dict, to cast string to appropriate types
@@ -488,20 +495,29 @@ def get_probe_metadata_from_probe_features(probe_features: dict, imDatPrb_pn: st
     for key in probe_metadata.keys():
         if key in ["num_shanks", "cols_per_shank", "rows_per_shank", "adc_bit_depth", "num_readout_channels"]:
             probe_metadata[key] = int(probe_metadata[key])
-        elif key in ["electrode_pitch_horz_um", "electrode_pitch_vert_um", "electrode_size_horz_direction_um", "shank_pitch_um", "shank_width_um", "tip_length_um", "even_row_horz_offset_left_edge_to_leftmost_electrode_center_um", "odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um"]:
+        elif key in [
+            "electrode_pitch_horz_um",
+            "electrode_pitch_vert_um",
+            "electrode_size_horz_direction_um",
+            "shank_pitch_um",
+            "shank_width_um",
+            "tip_length_um",
+            "even_row_horz_offset_left_edge_to_leftmost_electrode_center_um",
+            "odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um",
+        ]:
             probe_metadata[key] = float(probe_metadata[key])
 
     # Read the imro table formats to find out which fields the imro tables contain
     imro_table_format_type = probe_metadata["imro_table_format_type"]
     imro_table_fields = probe_features["z_imro_formats"][imro_table_format_type + "_elm_flds"]
-    
+
     # parse the imro_table_fields, which look like (value value value ...)
     list_of_imro_fields = imro_table_fields.replace("(", "").replace(")", "").split(" ")
 
     imro_fields_list = []
     for imro_field in list_of_imro_fields:
         imro_fields_list.append(imro_field)
-    
+
     imro_fields = tuple(imro_fields_list)
 
     return probe_metadata, imro_fields
