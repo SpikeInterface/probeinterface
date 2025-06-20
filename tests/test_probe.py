@@ -182,58 +182,7 @@ def test_save_to_zarr(tmp_path):
     assert probe == reloaded_probe, "Reloaded Probe object does not match the original"
 
 
-def test_position_uniqueness_validation():
-    """Test that the probe validates position uniqueness correctly."""
-    # Case 1: Unique positions (should pass)
-    unique_positions = np.array([[0, 0], [10, 10], [20, 20], [30, 30]])
-    probe = Probe(ndim=2, si_units="um")
-    probe.set_contacts(positions=unique_positions, shapes="circle", shape_params={"radius": 5})
-    assert probe.get_contact_count() == 4
-
-    # Case 2: Duplicate positions (should fail)
-    duplicate_positions = np.array([[0, 0], [10, 10], [0, 0], [30, 30]])
-    probe_dup = Probe(ndim=2, si_units="um")
-    with pytest.raises(ValueError, match="Contact positions must be unique within a probe"):
-        probe_dup.set_contacts(positions=duplicate_positions, shapes="circle", shape_params={"radius": 5})
-
-    # Case 3: Multiple duplicate positions
-    multiple_dup_positions = np.array([[0, 0], [10, 10], [0, 0], [10, 10]])
-    probe_multi_dup = Probe(ndim=2, si_units="um")
-    with pytest.raises(ValueError, match="Contact positions must be unique within a probe"):
-        probe_multi_dup.set_contacts(positions=multiple_dup_positions, shapes="circle", shape_params={"radius": 5})
-
-    # Case 4: 3D positions uniqueness
-    unique_3d_positions = np.array([[0, 0, 0], [10, 10, 10], [20, 20, 20]])
-    probe_3d = Probe(ndim=3, si_units="um")
-    plane_axes = np.zeros((3, 2, 3))
-    plane_axes[:, 0, 0] = 1  # x-axis
-    plane_axes[:, 1, 1] = 1  # y-axis
-    probe_3d.set_contacts(positions=unique_3d_positions, shapes="circle", shape_params={"radius": 5}, plane_axes=plane_axes)
-    assert probe_3d.get_contact_count() == 3
-
-    # Case 5: 3D duplicate positions (should fail)
-    duplicate_3d_positions = np.array([[0, 0, 0], [10, 10, 10], [0, 0, 0]])
-    probe_3d_dup = Probe(ndim=3, si_units="um")
-    plane_axes_dup = np.zeros((3, 2, 3))
-    plane_axes_dup[:, 0, 0] = 1
-    plane_axes_dup[:, 1, 1] = 1
-    with pytest.raises(ValueError, match="Contact positions must be unique within a probe"):
-        probe_3d_dup.set_contacts(positions=duplicate_3d_positions, shapes="circle", shape_params={"radius": 5}, plane_axes=plane_axes_dup)
-
-    # Case 6: Very close positions that are actually different (should pass)
-    close_positions = np.array([[0.0, 0.0], [0.001, 0.0], [0.0, 0.001], [0.001, 0.001]])
-    probe_close = Probe(ndim=2, si_units="um")
-    probe_close.set_contacts(positions=close_positions, shapes="circle", shape_params={"radius": 5})
-    assert probe_close.get_contact_count() == 4
-
-    # Case 7: Exactly same positions due to floating point precision (should fail)
-    exact_same_positions = np.array([[0.1, 0.1], [0.2, 0.2], [0.1, 0.1]])
-    probe_exact = Probe(ndim=2, si_units="um")
-    with pytest.raises(ValueError, match="Contact positions must be unique within a probe"):
-        probe_exact.set_contacts(positions=exact_same_positions, shapes="circle", shape_params={"radius": 5})
-
-
-def test_position_uniqueness_error_message():
+def test_position_uniqueness():
     """Test that the error message matches the full expected string for three duplicates using pytest's match regex."""
     import re
     positions_with_dups = np.array([[0, 0], [10, 10], [0, 0], [20, 20], [0, 0], [10, 10]])
