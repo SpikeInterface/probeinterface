@@ -317,21 +317,26 @@ def read_imro(file_path: Union[str, Path]) -> Probe:
 def _make_npx_probe_from_description(probe_description, elec_ids, shank_ids):
     # used by _read_imro_string and for generating the NP library
 
-    model_name = probe_description["model_name"]
+    model_name = probe_description["description"]
 
     # compute position
-    y_idx, x_idx = np.divmod(elec_ids, probe_description["ncols_per_shank"])
-    x_pitch = probe_description["x_pitch"]
-    y_pitch = probe_description["y_pitch"]
+    y_idx, x_idx = np.divmod(elec_ids, probe_description["cols_per_shank"])
+    x_pitch = probe_description["electrode_pitch_horz_um"]
+    y_pitch = probe_description["electrode_pitch_vert_um"]
 
-    stagger = np.mod(y_idx + 1, 2) * probe_description["stagger"]
+    raw_stagger = (
+        probe_description["even_row_horz_offset_left_edge_to_leftmost_electrode_center_um"]
+        - probe_description["odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um"]
+    )
+
+    stagger = np.mod(y_idx + 1, 2) * raw_stagger
     x_pos = x_idx * x_pitch + stagger
     y_pos = y_idx * y_pitch
 
     # if probe_description["shank_number"] > 1:
     if shank_ids is not None:
         # shank_ids = np.array(contact_info["shank_id"])
-        shank_pitch = probe_description["shank_pitch"]
+        shank_pitch = probe_description["shank_pitch_um"]
         contact_ids = [f"s{shank_id}e{elec_id}" for shank_id, elec_id in zip(shank_ids, elec_ids)]
         x_pos += np.array(shank_ids).astype(int) * shank_pitch
     else:
@@ -346,28 +351,32 @@ def _make_npx_probe_from_description(probe_description, elec_ids, shank_ids):
         positions=positions,
         shapes="square",
         shank_ids=shank_ids,
-        shape_params={"width": probe_description["contact_width"]},
+        shape_params={"width": probe_description["electrode_size_horz_direction_um"]},
     )
 
     probe.set_contact_ids(contact_ids)
 
     # Add planar contour
-    polygon = np.array(probe_description["contour_description"])
+    polygon = np.array(get_probe_contour_vertices(probe_description["shank_width_um"], probe_description["tip_length_um"], get_probe_length(model_name)))
 
     contour = []
-    shank_pitch = probe_description["shank_pitch"]
-    for shank_id in range(probe_description["shank_number"]):
+    shank_pitch = probe_description["shank_pitch_um"]
+    for shank_id in range(probe_description["num_shanks"]):
         shank_shift = np.array([shank_pitch * shank_id, 0])
         contour += list(polygon + shank_shift)
 
     # final contour_shift
-    contour_shift = np.array(probe_description["contour_shift"])
+    middle_of_bottommost_electrode_to_top_of_shank_tip = 11
+    contour_shift = np.array([
+        -probe_description["odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um"],
+        -middle_of_bottommost_electrode_to_top_of_shank_tip,
+    ])
     contour = np.array(contour) + contour_shift
     probe.set_planar_contour(contour)
 
     # shank tips : minimum of the polygon
     shank_tips = []
-    for shank_id in range(probe_description["shank_number"]):
+    for shank_id in range(probe_description["num_shanks"]):
         shank_shift = np.array([shank_pitch * shank_id, 0])
         shank_tip = np.array(polygon[2]) + contour_shift + shank_shift
         shank_tips.append(shank_tip.tolist())
@@ -407,9 +416,11 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     # probe_type_num_chans looks like f"({probe_type},{num_chans}"
     probe_type = probe_type_num_chans.split(",")[0][1:]
 
-    probe_description = make_npx_description(imDatPrb_pn)
+    probe_features_filepath = Path(__file__).absolute().parent / Path("resources/probe_features.json")
+    probe_features = json.load(open(probe_features_filepath, "r"))
+    pt_metadata, fields = get_probe_metadata_from_probe_features(probe_features, imDatPrb_pn)
 
-    fields = probe_description["fields_in_imro_table"]
+    #fields = probe_description["fields_in_imro_table"]
     contact_info = {k: [] for k in fields}
     for field_values_str in imro_table_values_list:  # Imro table values look like '(value, value, value, ... '
         # Split them by space to get int('value'), int('value'), int('value'), ...)
@@ -417,35 +428,83 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
         for field, field_value in zip(fields, values):
             contact_info[field].append(field_value)
 
-    channel_ids = np.array(contact_info["channel_ids"])
-    if "elec_ids" in contact_info:
-        elec_ids = np.array(contact_info["elec_ids"])
+    channel_ids = np.array(contact_info["channel"])
+    if "electrode" in contact_info:
+        elec_ids = np.array(contact_info["electrode"])
     else:
-        banks = np.array(contact_info["banks"])
+        if contact_info.get("bank") is not None:
+            bank_key = "bank"
+        elif contact_info.get("bank_mask") is not None:
+            bank_key = "bank_mask"
+        banks = np.array(contact_info[bank_key])
         elec_ids = banks * 384 + channel_ids
 
-    if probe_description["shank_number"] > 1:
-        shank_ids = np.array(contact_info["shank_id"])
-        # shank_pitch = probe_description["shank_pitch"]
-        # contact_ids = [f"s{shank_id}e{elec_id}" for shank_id, elec_id in zip(shank_ids, elec_ids)]
-        # x_pos += np.array(shank_ids).astype(int) * shank_pitch
+    if pt_metadata["num_shanks"] > 1:
+        shank_ids = np.array(contact_info["shank"])
     else:
         shank_ids = None
-        # contact_ids = [f"e{elec_id}" for elec_id in elec_ids]
 
-    probe = _make_npx_probe_from_description(probe_description, elec_ids, shank_ids)
+    probe = _make_npx_probe_from_description(pt_metadata, elec_ids, shank_ids)
 
-    # this is scalar annotations
+    # scalar annotations
     probe.annotate(
         probe_type=probe_type,
     )
 
-    # this is vector annotations
-    vector_properties = ("channel_ids", "banks", "references", "ap_gains", "lf_gains", "ap_hp_filters")
-    vector_properties_available = {k: v for k, v in contact_info.items() if (k in vector_properties) and (len(v) > 0)}
+    # vector annotations
+    vector_properties = ("channel", "bank", "bank_mask", "ref_id", "ap_gain", "lf_gain", "ap_hipas_flt")
+
+    vector_properties_available = {}
+    for k, v in contact_info.items():
+        if (k in vector_properties) and (len(v) > 0):
+            # convert to ProbeInterface naming for backwards compatibility
+            vector_properties_available[imro_field_to_pi_field.get(k)] = v
+
     probe.annotate_contacts(**vector_properties_available)
 
     return probe
+
+def get_probe_metadata_from_probe_features(probe_features: dict, imDatPrb_pn: str):
+    """
+    Parses the `probe_features` dict, to cast string to appropriate types
+    and parses the imro_table_fields string. Returns the metadata needed
+    to construct a probe with part number `imDatPrb_pn`.
+
+    Parameters
+    ==========
+    probe_features : dict
+        Dictionary obtained when reading in the `probe_features.json` file.
+    imDatPrb_pn : str
+       Probe part number.
+
+    Returns
+    =======
+    probe_metadata, imro_field
+        Dictionary of probe metadata.
+        Tuple of fields included in the `imro_table_fields`.
+    """
+
+    probe_metadata = probe_features["neuropixels_probes"].get(imDatPrb_pn)
+    for key in probe_metadata.keys():
+        if key in ["num_shanks", "cols_per_shank", "rows_per_shank", "adc_bit_depth", "num_readout_channels"]:
+            probe_metadata[key] = int(probe_metadata[key])
+        elif key in ["electrode_pitch_horz_um", "electrode_pitch_vert_um", "electrode_size_horz_direction_um", "shank_pitch_um", "shank_width_um", "tip_length_um", "even_row_horz_offset_left_edge_to_leftmost_electrode_center_um", "odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um"]:
+            probe_metadata[key] = float(probe_metadata[key])
+
+    # Read the imro table formats to find out which fields the imro tables contain
+    imro_table_format_type = probe_metadata["imro_table_format_type"]
+    imro_table_fields = probe_features["z_imro_formats"][imro_table_format_type + "_elm_flds"]
+    
+    # parse the imro_table_fields, which look like (value value value ...)
+    list_of_imro_fields = imro_table_fields.replace("(", "").replace(")", "").split(" ")
+
+    imro_fields_list = []
+    for imro_field in list_of_imro_fields:
+        imro_fields_list.append(imro_field)
+    
+    imro_fields = tuple(imro_fields_list)
+
+    return probe_metadata, imro_fields
 
 
 def write_imro(file: str | Path, probe: Probe):
