@@ -279,6 +279,27 @@ class Probe:
         if positions.shape[1] != self.ndim:
             raise ValueError(f"positions.shape[1]: {positions.shape[1]} and ndim: {self.ndim} do not match!")
 
+        # Check for duplicate positions
+        unique_positions = np.unique(positions, axis=0)
+        if len(unique_positions) != len(positions):
+            # Find and report duplicates
+            duplicates = {}
+            for index, pos in enumerate(positions):
+                pos_key = tuple(pos)
+                if pos_key in duplicates:
+                    duplicates[pos_key].append(index)
+                else:
+                    duplicates[pos_key] = [index]
+            
+            duplicate_groups = {pos: indices for pos, indices in duplicates.items() if len(indices) > 1}
+            duplicate_info = []
+            for pos, indices in duplicate_groups.items():
+                pos_str = f"({', '.join(map(str, pos))})"
+                indices_str = f"[{', '.join(map(str, indices))}]"
+                duplicate_info.append(f"Position {pos_str} appears at indices {indices_str}")
+            
+            raise ValueError(f"Contact positions must be unique within a probe. Found {len(duplicate_groups)} duplicate(s): {'; '.join(duplicate_info)}")
+
         self._contact_positions = positions
         n = positions.shape[0]
 
