@@ -185,6 +185,7 @@ def test_save_to_zarr(tmp_path):
 def test_position_uniqueness():
     """Test that the error message matches the full expected string for three duplicates using pytest's match regex."""
     import re
+
     positions_with_dups = np.array([[0, 0], [10, 10], [0, 0], [20, 20], [0, 0], [10, 10]])
     probe = Probe(ndim=2, si_units="um")
     expected_error = (

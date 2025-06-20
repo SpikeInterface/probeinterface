@@ -72,7 +72,7 @@ def test_probegroup_allows_duplicate_positions_across_probes():
     from probeinterface import ProbeGroup, Probe
     import numpy as np
 
-    # Probes have the same internal relative positions 
+    # Probes have the same internal relative positions
     positions = np.array([[0, 0], [10, 10]])
     probe1 = Probe(ndim=2, si_units="um")
     probe1.set_contacts(positions=positions, shapes="circle", shape_params={"radius": 5})
