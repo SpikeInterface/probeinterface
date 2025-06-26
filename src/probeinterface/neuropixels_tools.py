@@ -376,9 +376,14 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
 
     probe = _make_npx_probe_from_description(pt_metadata, elec_ids, shank_ids, mux_table)
 
+    mux_table_format_type = pt_metadata["mux_table_format_type"]
+    mux_information = probe_features["z_mux_tables"].get(mux_table_format_type)
+    mux_table_array = make_mux_table_array(mux_information)
+
     # scalar annotations
     probe.annotate(
         probe_type=probe_type,
+        mux_table_array=mux_table_array,
     )
 
     # vector annotations
