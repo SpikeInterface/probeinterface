@@ -519,9 +519,12 @@ def read_maxwell(file: str | Path, well_name: str = "well000", rec_name: str = "
     prb = {"channel_groups": {1: {}}}
 
     channels = list(mapping["channel"])
-    electrodes = list(mapping["electrode"])
-    x_pos = list(mapping["x"])
-    y_pos = list(mapping["y"])
+    seen = set()        
+    uniqid = [i for i,x in enumerate(channels) if x not in seen and not seen.add(x)]
+    channels = [channels[i] for i in uniqid]
+    electrodes = [list(mapping["electrode"])[i] for i in uniqid]
+    x_pos = [list(mapping["x"])[i] for i in uniqid]
+    y_pos = [list(mapping["y"])[i] for i in uniqid]
     geometry = {}
     for c, x, y in zip(channels, x_pos, y_pos):
         geometry[c] = [x, y]
@@ -535,10 +538,12 @@ def read_maxwell(file: str | Path, well_name: str = "well000", rec_name: str = "
 
     chans = np.array(prb["channel_groups"][1]["channels"], dtype="int64")
     positions = np.array([prb["channel_groups"][1]["geometry"][c] for c in chans], dtype="float64")
-
-    probe.set_contacts(positions=positions, shapes="rect", shape_params={"width": 5.45, "height": 9.3})
+    
+    e_w = 8.75
+    e_h = 12.5
+    probe.set_contacts(positions=positions, shapes="rect", shape_params={"width": e_w, "height": e_h})
     probe.annotate_contacts(electrode=electrodes)
-    probe.set_planar_contour(([-12.5, -12.5], [3845, -12.5], [3845, 2095], [-12.5, 2095]))
+    probe.set_planar_contour(([-e_w/2, -e_h/2], [3832.5+e_w/2, -e_h/2], [3832.5+e_w/2, 2082.5+e_h/2], [-e_w/2, 2082.5+e_h/2]))
 
     probe.set_device_channel_indices(np.arange(positions.shape[0]))
 
