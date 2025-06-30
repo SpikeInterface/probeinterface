@@ -521,8 +521,8 @@ def read_maxwell(file: str | Path, well_name: str = "well000", rec_name: str = "
 
     prb = {"channel_groups": {1: {}}}
 
-    channels = list(mapping["channel"])
-    electrodes = list(mapping["electrode"])
+    channels = np.array(mapping["channel"])
+    electrodes = np.array(mapping["electrode"])
     assert len(channels) == len(electrodes)
     mask = np.full(len(channels), True, dtype=bool)
     mask_id = np.argwhere(mask).flatten().tolist()
@@ -545,8 +545,8 @@ def read_maxwell(file: str | Path, well_name: str = "well000", rec_name: str = "
     
     channels = channels[mask]
     electrodes = electrodes[mask]
-    x_pos = list(mapping["x"])[mask]
-    y_pos = list(mapping["y"])[mask]
+    x_pos = np.array(mapping["x"])[mask]
+    y_pos = np.array(mapping["y"])[mask]
     
     geometry = {}
     for c, x, y in zip(channels, x_pos, y_pos):
