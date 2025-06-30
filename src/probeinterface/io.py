@@ -525,26 +525,26 @@ def read_maxwell(file: str | Path, well_name: str = "well000", rec_name: str = "
     electrodes = np.array(mapping["electrode"])
     assert len(channels) == len(electrodes)
     mask = np.full(len(channels), True, dtype=bool)
-    
+
     # remove all duplicate channel-to-electrode assignments
     mask_id = np.argwhere(mask).flatten()
     channels_electrodes = [str(a) + " " + str(b) for a, b in zip(channels, electrodes)]
-    [u,u_i,u_v,u_c] = np.unique(channels_electrodes, return_index=True, return_inverse=True, return_counts=True)
-    for i in u_v[u_i[u_c>1]]:
+    [u, u_i, u_v, u_c] = np.unique(channels_electrodes, return_index=True, return_inverse=True, return_counts=True)
+    for i in u_v[u_i[u_c > 1]]:
         mask[mask_id[np.argwhere(channels_electrodes == u[i])[1:].flatten()]] = False
-    
+
     # remove all duplicate channel assigments corresponding to different electrodes (channel is a mix of mulitple electrode signals)
     mask_id = np.argwhere(mask).flatten()
-    [u,u_i,u_v,u_c] = np.unique(channels[mask], return_index=True, return_inverse=True, return_counts=True)
-    for i in u_v[u_i[u_c>1]]:
+    [u, u_i, u_v, u_c] = np.unique(channels[mask], return_index=True, return_inverse=True, return_counts=True)
+    for i in u_v[u_i[u_c > 1]]:
         mask[mask_id[np.argwhere(channels[mask] == u[i])[:].flatten()]] = False
-    
+
     # remove subsequent duplicated electrodes (single electrode saved to multiple channels)
     mask_id = np.argwhere(mask).flatten()
-    [u,u_i,u_v,u_c] = np.unique(electrodes[mask], return_index=True, return_inverse=True, return_counts=True)
-    for i in u_v[u_i[u_c>1]]:
+    [u, u_i, u_v, u_c] = np.unique(electrodes[mask], return_index=True, return_inverse=True, return_counts=True)
+    for i in u_v[u_i[u_c > 1]]:
         mask[mask_id[np.argwhere(electrodes[mask] == u[i])[1:].flatten()]] = False
-    
+
     channels = channels[mask]
     electrodes = electrodes[mask]
     x_pos = np.array(mapping["x"])[mask]
