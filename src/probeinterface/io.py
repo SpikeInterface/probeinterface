@@ -505,8 +505,6 @@ def read_maxwell(file: str | Path, well_name: str = "well000", rec_name: str = "
 
     """
 
-    pd = import_safely("pandas")
-
     file = Path(file).absolute()
     assert file.is_file()
 
