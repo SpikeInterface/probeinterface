@@ -67,6 +67,31 @@ def test_probegroup_3d():
     assert probegroup.ndim == 3
 
 
+def test_probegroup_allows_duplicate_positions_across_probes():
+    """Test that ProbeGroup allows duplicate contact positions if they are in different probes."""
+    from probeinterface import ProbeGroup, Probe
+    import numpy as np
+
+    # Probes have the same internal relative positions
+    positions = np.array([[0, 0], [10, 10]])
+    probe1 = Probe(ndim=2, si_units="um")
+    probe1.set_contacts(positions=positions, shapes="circle", shape_params={"radius": 5})
+    probe2 = Probe(ndim=2, si_units="um")
+    probe2.set_contacts(positions=positions, shapes="circle", shape_params={"radius": 5})
+
+    group = ProbeGroup()
+    group.add_probe(probe1)
+    group.add_probe(probe2)
+
+    # Should not raise any error
+    all_positions = np.vstack([p.contact_positions for p in group.probes])
+    # There are duplicates across probes, but this is allowed
+    assert (all_positions == [0, 0]).any()
+    assert (all_positions == [10, 10]).any()
+    # The group should have both probes
+    assert len(group.probes) == 2
+
+
 if __name__ == "__main__":
     test_probegroup()
     # ~ test_probegroup_3d()
