@@ -1,10 +1,12 @@
 import shutil
 from pathlib import Path
 
+import json
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-from probeinterface.neuropixels_tools import npx_descriptions, probe_part_number_to_probe_type, _make_npx_probe_from_description
+from probeinterface.neuropixels_tools import _make_npx_probe_from_description, get_probe_metadata_from_probe_features
 from probeinterface.plotting import plot_probe
 from probeinterface import write_probeinterface
 
@@ -18,27 +20,27 @@ def generate_all_npx():
     # if not base_folder.exists():
     base_folder.mkdir(exist_ok=True)
 
+    probe_features_filepath = Path(__file__).absolute().parent / Path("../src/probeinterface/resources/neuropixels_probe_features.json")
+    probe_features = json.load(open(probe_features_filepath, "r"))
+    probe_part_numbers = probe_features['neuropixels_probes'].keys()
 
-    for probe_number, probe_type in probe_part_number_to_probe_type.items():
+
+    for probe_number in probe_part_numbers:
 
         if probe_number is None:
             continue
 
-        if probe_number == "1110":
+        if probe_number == "NP1110":
             # the formula by the imrow table is wrong and more complicated
             continue
 
         probe_folder = base_folder / probe_number
         probe_folder.mkdir(exist_ok=True)
 
-        print(probe_number, probe_type)
+        pt_metadata, _, _ = get_probe_metadata_from_probe_features(probe_features, probe_number)
 
-        probe_description = npx_descriptions[probe_type]
-
-
-
-        num_shank = probe_description["shank_number"]
-        contact_per_shank = probe_description["ncols_per_shank"] * probe_description["nrows_per_shank"]
+        num_shank = pt_metadata["num_shanks"]
+        contact_per_shank = pt_metadata["cols_per_shank"] * pt_metadata["rows_per_shank"]
         if num_shank == 1:
             elec_ids = np.arange(contact_per_shank)
             shank_ids = None
@@ -46,7 +48,7 @@ def generate_all_npx():
             elec_ids = np.concatenate([np.arange(contact_per_shank) for i in range(num_shank)])
             shank_ids = np.concatenate([np.zeros(contact_per_shank) + i for i in range(num_shank)])
 
-        probe = _make_npx_probe_from_description(probe_description, elec_ids, shank_ids)
+        probe = _make_npx_probe_from_description(pt_metadata, elec_ids, shank_ids)
 
         # ploting
         fig, axs = plt.subplots(ncols=2)
@@ -67,7 +69,7 @@ def generate_all_npx():
         plot_probe(probe, ax=ax)
         ax.set_title("")
 
-        yp = probe_description["y_pitch"]
+        yp = pt_metadata["electrode_pitch_vert_um"]
         ax.set_ylim(-yp*8, yp*13)
         ax.yaxis.set_visible(False)
         ax.spines["top"].set_visible(False)
@@ -93,9 +95,6 @@ def generate_all_npx():
         write_probeinterface(probe_folder / f"{probe_number}.json", probe)
 
         plt.close(fig)
-
-
-
 
 
 

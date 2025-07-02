@@ -4,7 +4,6 @@ tests/*.prb
 tests/*.json
 tests/*/*.prb
 
-*.json
 *.prb
 tests/*/*.json
 tests/*/*.tsv
