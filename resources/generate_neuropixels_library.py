@@ -20,7 +20,7 @@ def generate_all_npx():
     # if not base_folder.exists():
     base_folder.mkdir(exist_ok=True)
 
-    probe_features_filepath = Path(__file__).absolute().parent / Path("../src/probeinterface/resources/probe_features.json")
+    probe_features_filepath = Path(__file__).absolute().parent / Path("../src/probeinterface/resources/neuropixels_probe_features.json")
     probe_features = json.load(open(probe_features_filepath, "r"))
     probe_part_numbers = probe_features['neuropixels_probes'].keys()
 

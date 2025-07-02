@@ -18,6 +18,18 @@ import numpy as np
 from .probe import Probe
 from .utils import import_safely
 
+
+global _np_probe_features
+_np_probe_features = None
+
+def _load_np_probe_features():
+    # this avoid loading the json several time
+    global _np_probe_features
+    if _np_probe_features is None:
+        probe_features_filepath = Path(__file__).absolute().parent / Path("resources/neuropixels_probe_features.json")
+        _np_probe_features = json.load(open(probe_features_filepath, "r"))
+    return _np_probe_features
+
 # Map imDatPrb_pn (probe number) to imDatPrb_type (probe type) when the latter is missing
 # ONLY needed for `read_imro` function
 probe_part_number_to_probe_type = {
@@ -346,8 +358,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     # probe_type_num_chans looks like f"({probe_type},{num_chans}"
     probe_type = probe_type_num_chans.split(",")[0][1:]
 
-    probe_features_filepath = Path(__file__).absolute().parent / Path("resources/probe_features.json")
-    probe_features = json.load(open(probe_features_filepath, "r"))
+    probe_features = _load_np_probe_features()
     pt_metadata, fields, mux_table = get_probe_metadata_from_probe_features(probe_features, imDatPrb_pn)
 
     # fields = probe_description["fields_in_imro_table"]
@@ -409,7 +420,7 @@ def get_probe_metadata_from_probe_features(probe_features: dict, imDatPrb_pn: st
     Parameters
     ----------
     probe_features : dict
-        Dictionary obtained when reading in the `probe_features.json` file.
+        Dictionary obtained when reading in the `neuropixels_probe_features.json` file.
     imDatPrb_pn : str
        Probe part number.
 
@@ -832,8 +843,7 @@ def read_openephys(
                 )
             return None
 
-    probe_features_filepath = Path(__file__).absolute().parent / Path("resources/probe_features.json")
-    probe_features = json.load(open(probe_features_filepath, "r"))
+    probe_features = _load_np_probe_features()
 
     # now load probe info from NP_PROBE fields
     np_probes_info = []
