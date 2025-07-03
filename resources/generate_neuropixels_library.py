@@ -25,19 +25,20 @@ def generate_all_npx():
     probe_part_numbers = probe_features['neuropixels_probes'].keys()
 
 
-    for probe_number in probe_part_numbers:
+    for model_name in probe_part_numbers:
+        print(model_name)
 
-        if probe_number is None:
+        if model_name is None:
             continue
 
-        if probe_number == "NP1110":
+        if model_name == "NP1110":
             # the formula by the imrow table is wrong and more complicated
             continue
 
-        probe_folder = base_folder / probe_number
+        probe_folder = base_folder / model_name
         probe_folder.mkdir(exist_ok=True)
 
-        pt_metadata, _, _ = get_probe_metadata_from_probe_features(probe_features, probe_number)
+        pt_metadata, _, _ = get_probe_metadata_from_probe_features(probe_features, model_name)
 
         num_shank = pt_metadata["num_shanks"]
         contact_per_shank = pt_metadata["cols_per_shank"] * pt_metadata["rows_per_shank"]
@@ -48,7 +49,7 @@ def generate_all_npx():
             elec_ids = np.concatenate([np.arange(contact_per_shank) for i in range(num_shank)])
             shank_ids = np.concatenate([np.zeros(contact_per_shank) + i for i in range(num_shank)])
 
-        probe = _make_npx_probe_from_description(pt_metadata, elec_ids, shank_ids)
+        probe = _make_npx_probe_from_description(pt_metadata, model_name, elec_ids, shank_ids)
 
         # ploting
         fig, axs = plt.subplots(ncols=2)
@@ -78,8 +79,8 @@ def generate_all_npx():
 
         n = probe.get_contact_count()
 
-        title = probe_number
-        title += f"\n{probe.manufacturer} - {probe.model_name}"
+        title = f"{probe.manufacturer} - {model_name}"
+        title += f"\n{probe.annotations.get('probe_long_name')}"
         title += f"\n {n}ch"
         if probe.shank_ids is not None:
             num_shank = probe.get_shank_count()
@@ -90,9 +91,11 @@ def generate_all_npx():
 
         # plt.show()
 
-        fig.savefig(probe_folder / f"{probe_number}.png")
+        fig.savefig(probe_folder / f"{model_name}.png")
 
-        write_probeinterface(probe_folder / f"{probe_number}.json", probe)
+        write_probeinterface(probe_folder / f"{model_name}.json", probe)
+
+        # plt.show()
 
         plt.close(fig)
 
