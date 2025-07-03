@@ -80,7 +80,7 @@ def generate_all_npx():
         n = probe.get_contact_count()
 
         title = f"{probe.manufacturer} - {model_name}"
-        title += f"\n{probe.annotations.get('probe_long_name')}"
+        title += f"\n{probe.name}"
         title += f"\n {n}ch"
         if probe.shank_ids is not None:
             num_shank = probe.get_shank_count()
