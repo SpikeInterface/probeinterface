@@ -271,7 +271,9 @@ def _make_npx_probe_from_description(probe_description, model_name, elec_ids, sh
     positions = np.stack((x_pos, y_pos), axis=1)
 
     # construct Probe object
-    probe = Probe(ndim=2, si_units="um", model_name=model_name, manufacturer="imec", name=probe_description["description"])
+    probe = Probe(
+        ndim=2, si_units="um", model_name=model_name, manufacturer="imec", name=probe_description["description"]
+    )
     probe.set_contacts(
         positions=positions,
         shapes="square",
@@ -280,7 +282,6 @@ def _make_npx_probe_from_description(probe_description, model_name, elec_ids, sh
     )
 
     probe.set_contact_ids(contact_ids)
-
 
     # Add planar contour
     polygon = np.array(
@@ -1055,7 +1056,9 @@ def read_openephys(
         if elec_ids is not None:
             elec_ids = np.array(elec_ids)[chans_saved]
 
-    probe = _make_npx_probe_from_description(pt_metadata, probe_part_number, elec_ids, shank_ids=shank_ids, mux_table=mux_table)
+    probe = _make_npx_probe_from_description(
+        pt_metadata, probe_part_number, elec_ids, shank_ids=shank_ids, mux_table=mux_table
+    )
     probe.serial_number = np_probe_info["serial_number"]
 
     probe.annotate(
