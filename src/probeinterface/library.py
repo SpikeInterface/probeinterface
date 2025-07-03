@@ -34,7 +34,7 @@ def download_probeinterface_file(manufacturer: str, probe_name: str):
 
     Parameters
     ----------
-    manufacturer : "cambridgeneurotech" | "neuronexus"
+    manufacturer : "cambridgeneurotech" | "neuronexus" | "plexon" | "imec" | "sinaps"
         The probe manufacturer
     probe_name : str (see probeinterface_libary for options)
         The probe name
@@ -53,7 +53,7 @@ def get_from_cache(manufacturer: str, probe_name: str) -> Optional["Probe"]:
 
     Parameters
     ----------
-    manufacturer : "cambridgeneurotech" | "neuronexus"
+    manufacturer : "cambridgeneurotech" | "neuronexus" | "plexon" | "imec" | "sinaps"
         The probe manufacturer
     probe_name : str (see probeinterface_libary for options)
         The probe name
@@ -80,7 +80,7 @@ def get_probe(manufacturer: str, probe_name: str, name: Optional[str] = None) ->
 
     Parameters
     ----------
-    manufacturer : "cambridgeneurotech" | "neuronexus"
+    manufacturer : "cambridgeneurotech" | "neuronexus" | "plexon" | "imec" | "sinaps"
         The probe manufacturer
     probe_name : str (see probeinterface_libary for options)
         The probe name

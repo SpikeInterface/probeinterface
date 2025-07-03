@@ -241,10 +241,8 @@ def read_imro(file_path: Union[str, Path]) -> Probe:
     return _read_imro_string(imro_str, imDatPrb_pn)
 
 
-def _make_npx_probe_from_description(probe_description, elec_ids, shank_ids, mux_table=None) -> Probe:
+def _make_npx_probe_from_description(probe_description, model_name, elec_ids, shank_ids, mux_table=None) -> Probe:
     # used by _read_imro_string and for generating the NP library
-
-    model_name = probe_description["description"]
 
     # compute position
     y_idx, x_idx = np.divmod(elec_ids, probe_description["cols_per_shank"])
@@ -257,8 +255,8 @@ def _make_npx_probe_from_description(probe_description, elec_ids, shank_ids, mux
     )
 
     stagger = np.mod(y_idx + 1, 2) * raw_stagger
-    x_pos = x_idx * x_pitch + stagger
-    y_pos = y_idx * y_pitch
+    x_pos = (x_idx * x_pitch + stagger).astype("float64")
+    y_pos = (y_idx * y_pitch).astype("float64")
 
     # if probe_description["shank_number"] > 1:
     if shank_ids is not None:
@@ -273,7 +271,9 @@ def _make_npx_probe_from_description(probe_description, elec_ids, shank_ids, mux
     positions = np.stack((x_pos, y_pos), axis=1)
 
     # construct Probe object
-    probe = Probe(ndim=2, si_units="um", model_name=model_name, manufacturer="IMEC")
+    probe = Probe(
+        ndim=2, si_units="um", model_name=model_name, manufacturer="imec", name=probe_description["description"]
+    )
     probe.set_contacts(
         positions=positions,
         shapes="square",
@@ -386,7 +386,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
     else:
         shank_ids = None
 
-    probe = _make_npx_probe_from_description(pt_metadata, elec_ids, shank_ids, mux_table)
+    probe = _make_npx_probe_from_description(pt_metadata, imDatPrb_pn, elec_ids, shank_ids, mux_table)
 
     # scalar annotations
     probe.annotate(
@@ -1056,7 +1056,9 @@ def read_openephys(
         if elec_ids is not None:
             elec_ids = np.array(elec_ids)[chans_saved]
 
-    probe = _make_npx_probe_from_description(pt_metadata, elec_ids, shank_ids=shank_ids, mux_table=mux_table)
+    probe = _make_npx_probe_from_description(
+        pt_metadata, probe_part_number, elec_ids, shank_ids=shank_ids, mux_table=mux_table
+    )
     probe.serial_number = np_probe_info["serial_number"]
 
     probe.annotate(
