@@ -257,8 +257,8 @@ def _make_npx_probe_from_description(probe_description, elec_ids, shank_ids, mux
     )
 
     stagger = np.mod(y_idx + 1, 2) * raw_stagger
-    x_pos = x_idx * x_pitch + stagger
-    y_pos = y_idx * y_pitch
+    x_pos = (x_idx * x_pitch + stagger).astype("float64")
+    y_pos = (y_idx * y_pitch).astype("float64")
 
     # if probe_description["shank_number"] > 1:
     if shank_ids is not None:
