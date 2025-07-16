@@ -90,20 +90,21 @@ imro_field_to_pi_field = {
 }
 
 # Map from ProbeInterface to ProbeTable naming conventions
-pi_to_pt_names = {
-    "x_pitch": "electrode_pitch_horz_um",
-    "y_pitch": "electrode_pitch_vert_um",
-    "contact_width": "electrode_size_horz_direction_um",
-    "shank_pitch": "shank_pitch_um",
-    "shank_number": "num_shanks",
-    "ncols_per_shank": "cols_per_shank",
-    "nrows_per_shank": "rows_per_shank",
-    "adc_bit_depth": "adc_bit_depth",
-    "model_name": "description",
-    "num_readout_channels": "num_readout_channels",
-    "shank_width_um": "shank_width_um",
-    "tip_length_um": "tip_length_um",
-}
+# @Chris : is this necessary ?
+# pi_to_pt_names = {
+#     "x_pitch": "electrode_pitch_horz_um",
+#     "y_pitch": "electrode_pitch_vert_um",
+#     "contact_width": "electrode_size_horz_direction_um",
+#     "shank_pitch": "shank_pitch_um",
+#     "shank_number": "num_shanks",
+#     "ncols_per_shank": "cols_per_shank",
+#     "nrows_per_shank": "rows_per_shank",
+#     "adc_bit_depth": "adc_bit_depth",
+#     "model_name": "description",
+#     "num_readout_channels": "num_readout_channels",
+#     "shank_width_um": "shank_width_um",
+#     "tip_length_um": "tip_length_um",
+# }
 
 
 def get_probe_length(probe_part_number: str) -> int:
@@ -271,9 +272,8 @@ def _make_npx_probe_from_description(probe_description, model_name, elec_ids, sh
     positions = np.stack((x_pos, y_pos), axis=1)
 
     # construct Probe object
-    probe = Probe(
-        ndim=2, si_units="um", model_name=model_name, manufacturer="imec", name=probe_description["description"]
-    )
+    probe = Probe(ndim=2, si_units="um", model_name=model_name, manufacturer="imec")
+    probe.description = probe_description["description"]
     probe.set_contacts(
         positions=positions,
         shapes="square",
@@ -905,14 +905,12 @@ def read_openephys(
         )
         num_shanks = pt_metadata["num_shanks"]
 
-        model_name = pt_metadata.get("description")
-        if model_name is None:
-            model_name = "Unknown"
+        description = pt_metadata.get("description")
 
         elec_ids = []
         for i, pos in enumerate(positions):
             # Do not calculate contact ids if the model name is not known
-            if model_name == "Unknown":
+            if description is None:
                 elec_ids = None
                 break
 
@@ -1060,6 +1058,7 @@ def read_openephys(
         pt_metadata, probe_part_number, elec_ids, shank_ids=shank_ids, mux_table=mux_table
     )
     probe.serial_number = np_probe_info["serial_number"]
+    probe.name = np_probe_info["name"]
 
     probe.annotate(
         part_number=np_probe_info["part_number"],
