@@ -89,23 +89,6 @@ imro_field_to_pi_field = {
     "bankB": "bankB",
 }
 
-# Map from ProbeInterface to ProbeTable naming conventions
-# @Chris : is this necessary ?
-# pi_to_pt_names = {
-#     "x_pitch": "electrode_pitch_horz_um",
-#     "y_pitch": "electrode_pitch_vert_um",
-#     "contact_width": "electrode_size_horz_direction_um",
-#     "shank_pitch": "shank_pitch_um",
-#     "shank_number": "num_shanks",
-#     "ncols_per_shank": "cols_per_shank",
-#     "nrows_per_shank": "rows_per_shank",
-#     "adc_bit_depth": "adc_bit_depth",
-#     "model_name": "description",
-#     "num_readout_channels": "num_readout_channels",
-#     "shank_width_um": "shank_width_um",
-#     "tip_length_um": "tip_length_um",
-# }
-
 
 def get_probe_length(probe_part_number: str) -> int:
     """
