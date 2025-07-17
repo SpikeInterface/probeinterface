@@ -85,7 +85,7 @@ def test_NP1_subset():
     validate_probe_dict(probe_dict)
 
     assert probe_ap.get_shank_count() == 1
-    assert "1.0" in probe_ap.model_name
+    assert "1.0" in probe_ap.description
     assert probe_ap.get_contact_count() == 200
 
     probe_lf = read_openephys(data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-LFP")
@@ -93,7 +93,7 @@ def test_NP1_subset():
     validate_probe_dict(probe_dict)
 
     assert probe_lf.get_shank_count() == 1
-    assert "1.0" in probe_lf.model_name
+    assert "1.0" in probe_lf.description
     assert len(probe_lf.contact_positions) == 200
 
     # Not specifying the stream_name should raise an Exception, because both the ProbeA-AP and
@@ -109,7 +109,7 @@ def test_multiple_probes():
     validate_probe_dict(probe_dict)
 
     assert probeA.get_shank_count() == 1
-    assert "1.0" in probeA.model_name
+    assert "1.0" in probeA.description
 
     probeB = read_openephys(
         data_path / "OE_Neuropix-PXI-multi-probe" / "settings.xml",

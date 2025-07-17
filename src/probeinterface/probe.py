@@ -201,6 +201,18 @@ class Probe:
             # we remove the annotation if it exists
             _ = self.annotations.pop("manufacturer", None)
 
+    @property
+    def description(self):
+        return self.annotations.get("description", None)
+
+    @description.setter
+    def description(self, value):
+        if value is not None:
+            self.annotate(description=value)
+        else:
+            # we remove the annotation if it exists
+            _ = self.annotations.pop("description", None)
+
     def get_title(self) -> str:
         if self.contact_positions is None:
             txt = "Undefined probe"
