@@ -1,5 +1,5 @@
-probeinterface 0.2.29
----------------------
+probeinterface 0.3.0
+--------------------
 
 Jul, 30th 2025
 
