@@ -1,0 +1,32 @@
+probeinterface 0.3.0
+--------------------
+
+Jul, 30th 2025
+
+
+
+Features
+^^^^^^^^
+
+* Use `ProbeTable <https://github.com/billkarsh/ProbeTable>`_ repo to generate NP probes information (#349, #355, #356)
+
+.. warning::
+
+    The ``model_name`` is now the IMEC model name (e.g. NP2003), while the long
+    name is in the ``description`` annotation. Several new annotations have been added
+    to the probe, such as ``num_channels_per_adc`` and ``num_readout_channels``.
+    The ``mux_channels`` contact annotations now contains the ADC index for each channel,
+    which can be used to compute inter sample shifts.
+
+* Add figsize handler for ``plot_probegroup` (#350)
+
+Bug fixes
+^^^^^^^^^
+
+* Check for unique positions within probe (#352)
+
+
+Tests
+^^^^^
+
+* Tests on non-editable package (#348)
