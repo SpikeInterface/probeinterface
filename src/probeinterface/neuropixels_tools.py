@@ -803,7 +803,7 @@ def read_openephys(
         probe_names_used = None
 
     if onix_processor is not None:
-        probe_names_used = [probe_name for probe_name in probe_names_used if 'Probe' in probe_name]
+        probe_names_used = [probe_name for probe_name in probe_names_used if "Probe" in probe_name]
 
     # for Open Ephys version < 1.0 np_probes is in the EDITOR field.
     # for Open Ephys version >= 1.0 np_probes is in the CUSTOM_PARAMETERS field.
@@ -852,7 +852,10 @@ def read_openephys(
     for probe_idx, np_probe in enumerate(np_probes):
         if onix_processor is not None:
             slot, port, dock = None, None, None
-            probe_part_number, probe_serial_number = np_probe.attrib["probePartNumber"], np_probe.attrib["probeSerialNumber"]
+            probe_part_number, probe_serial_number = (
+                np_probe.attrib["probePartNumber"],
+                np_probe.attrib["probeSerialNumber"],
+            )
             channels = np_probe.find("SELECTED_CHANNELS")
         else:
             slot = np_probe.attrib["slot"]
@@ -890,7 +893,7 @@ def read_openephys(
             ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])
             positions = np.array([xpos, ypos]).T
         else:
-            positions = np.reshape(np.arange(0,384*2*20,20), shape=(384,2))
+            positions = np.reshape(np.arange(0, 384 * 2 * 20, 20), shape=(384, 2))
 
         pt_metadata, _, mux_info = get_probe_metadata_from_probe_features(probe_features, probe_part_number)
 
