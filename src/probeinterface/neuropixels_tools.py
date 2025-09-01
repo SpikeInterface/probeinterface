@@ -744,6 +744,7 @@ def read_openephys(
     oe_version = parse(info_chain.find("VERSION").text)
     neuropix_pxi_processor = None
     onebox_processor = None
+    onix_processor = None
     for signal_chain in root.findall("SIGNALCHAIN"):
         for processor in signal_chain:
             if "PROCESSOR" == processor.tag:
@@ -752,8 +753,10 @@ def read_openephys(
                     neuropix_pxi_processor = processor
                 if "OneBox" in name:
                     onebox_processor = processor
+                if "ONIX" in name:
+                    onix_processor = processor
 
-    if neuropix_pxi_processor is None and onebox_processor is None:
+    if neuropix_pxi_processor is None and onebox_processor is None and onix_processor is None:
         if raise_error:
             raise Exception("Open Ephys can only be read when the Neuropix-PXI or the " "OneBox plugin is used.")
         return None
@@ -769,6 +772,8 @@ def read_openephys(
     if onebox_processor is not None:
         assert neuropix_pxi_processor is None, "Only one processor should be present"
         processor = onebox_processor
+    if onix_processor is not None:
+        processor = onix_processor
 
     if "NodeId" in processor.attrib:
         node_id = processor.attrib["NodeId"]
@@ -797,6 +802,9 @@ def read_openephys(
         has_streams = False
         probe_names_used = None
 
+    if onix_processor is not None:
+        probe_names_used = [probe_name for probe_name in probe_names_used if 'Probe' in probe_name]
+
     # for Open Ephys version < 1.0 np_probes is in the EDITOR field.
     # for Open Ephys version >= 1.0 np_probes is in the CUSTOM_PARAMETERS field.
     editor = processor.find("EDITOR")
@@ -804,7 +812,10 @@ def read_openephys(
         np_probes = editor.findall("NP_PROBE")
     else:
         custom_parameters = editor.find("CUSTOM_PARAMETERS")
-        np_probes = custom_parameters.findall("NP_PROBE")
+        if onix_processor is not None:
+            np_probes = custom_parameters.findall("NEUROPIXELSV1E")
+        else:
+            np_probes = custom_parameters.findall("NP_PROBE")
 
     if len(np_probes) == 0:
         if raise_error:
@@ -839,13 +850,18 @@ def read_openephys(
     # now load probe info from NP_PROBE fields
     np_probes_info = []
     for probe_idx, np_probe in enumerate(np_probes):
-        slot = np_probe.attrib["slot"]
-        port = np_probe.attrib["port"]
-        dock = np_probe.attrib["dock"]
-        probe_part_number = np_probe.attrib["probe_part_number"]
-        probe_serial_number = np_probe.attrib["probe_serial_number"]
-        # read channels
-        channels = np_probe.find("CHANNELS")
+        if onix_processor is not None:
+            slot, port, dock = None, None, None
+            probe_part_number, probe_serial_number = np_probe.attrib["probePartNumber"], np_probe.attrib["probeSerialNumber"]
+            channels = np_probe.find("SELECTED_CHANNELS")
+        else:
+            slot = np_probe.attrib["slot"]
+            port = np_probe.attrib["port"]
+            dock = np_probe.attrib["dock"]
+            probe_part_number = np_probe.attrib["probe_part_number"]
+            probe_serial_number = np_probe.attrib["probe_serial_number"]
+            channels = np_probe.find("CHANNELS")
+
         channel_names = np.array(list(channels.attrib.keys()))
         channel_ids = np.array([int(ch[2:]) for ch in channel_names])
         channel_order = np.argsort(channel_ids)
@@ -862,18 +878,20 @@ def read_openephys(
         else:
             shank_ids = None
 
-        electrode_xpos = np_probe.find("ELECTRODE_XPOS")
-        electrode_ypos = np_probe.find("ELECTRODE_YPOS")
+        if onix_processor is None:
+            electrode_xpos = np_probe.find("ELECTRODE_XPOS")
+            electrode_ypos = np_probe.find("ELECTRODE_YPOS")
 
-        if electrode_xpos is None or electrode_ypos is None:
-            if raise_error:
-                raise Exception("ELECTRODE_XPOS or ELECTRODE_YPOS is not available in settings!")
-            return None
-        xpos = np.array([float(electrode_xpos.attrib[ch]) for ch in channel_names])
-        ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])
-        positions = np.array([xpos, ypos]).T
+            if electrode_xpos is None or electrode_ypos is None:
+                if raise_error:
+                    raise Exception("ELECTRODE_XPOS or ELECTRODE_YPOS is not available in settings!")
+                return None
+            xpos = np.array([float(electrode_xpos.attrib[ch]) for ch in channel_names])
+            ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])
+            positions = np.array([xpos, ypos]).T
+        else:
+            positions = np.reshape(np.arange(0,384*2*20,20), shape=(384,2))
 
-        probe_part_number = np_probe.get("probe_part_number", None)
         pt_metadata, _, mux_info = get_probe_metadata_from_probe_features(probe_features, probe_part_number)
 
         shank_pitch = pt_metadata["shank_pitch_um"]
