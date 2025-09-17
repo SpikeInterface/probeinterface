@@ -235,6 +235,21 @@ def test_quadbase():
         assert set(probe.shank_ids) == set([str(i)])
 
 
+def test_quadbase_custom_names():
+    # This dataset has a Neuropixels Quad Base (4 NP2 probes on different shanks)
+    sn = "23207205101"
+    for i in range(4):
+        probe = read_openephys(
+            data_path / "OE_Neuropix-PXI-QuadBase" / "settings_custom_names.xml", probe_name=f"{sn}-{i+1}"
+        )
+        probe_dict = probe.to_dict(array_as_list=True)
+        validate_probe_dict(probe_dict)
+        assert probe.get_shank_count() == 1
+        assert probe.get_contact_count() == 384
+        assert set(probe.shank_ids) == set([str(i)])
+        assert probe.name == f"{sn}-{i+1}"
+
+
 def test_onebox():
     # This dataset has a Neuropixels Ultra probe with a onebox
     probe = read_openephys(data_path / "OE_OneBox-NP-Ultra" / "settings.xml")

@@ -155,8 +155,8 @@ def get_probe_contour_vertices(shank_width, tip_length, probe_length) -> list:
               .
             |    |
           B |    | D
-             \  /
-              \/
+             \\  /
+              \\/
                C
 
     This function returns the points indicated in the diagram above in a list [A,B,C,D,E].
@@ -952,15 +952,21 @@ def read_openephys(
     if len(np_probes) > 1:
         found = False
         probe_names = [p["name"] for p in np_probes_info]
-
         if stream_name is not None:
             assert probe_name is None and serial_number is None, (
                 "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
             )
+            # Here we have to check if the probe name or the serial number is in the stream name
+            # If both are present, e.g., the name contains the serial number, the first match is used.
             for probe_idx, probe_info in enumerate(np_probes_info):
-                if probe_info["name"] in stream_name or probe_info["serial_number"] in stream_name:
+                if probe_info["name"] in stream_name:
                     found = True
                     break
+            if not found:
+                for probe_idx, probe_info in enumerate(np_probes_info):
+                    if probe_info["serial_number"] in stream_name:
+                        found = True
+                        break
             if not found:
                 if raise_error:
                     raise Exception(
