@@ -65,6 +65,5 @@ if __name__ == "__main__":
     test_download_probeinterface_file()
     test_get_from_cache()
     test_get_probe()
-    test_get_latest_tag()
     test_get_manufacturers_in_library()
     test_get_probes_in_library()

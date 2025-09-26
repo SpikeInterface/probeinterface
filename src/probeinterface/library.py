@@ -145,30 +145,11 @@ def get_tags_in_library() -> list[str]:
     tags : list of str
         List of available tags
     """
-    tags = []
     tags = get_all_tags("SpikeInterface", "probeinterface_library")
     return tags
 
 
 ### UTILS
-def get_latest_tag(owner: str, repo: str, token: str = None):
-    """
-    Get the latest tag (by order returned from GitHub) for a repo.
-    Returns the tag name, or None if no tags exist.
-    """
-    url = f"https://api.github.com/repos/{owner}/{repo}/tags"
-    headers = {}
-    if token:
-        headers["Authorization"] = f"token {token}"
-    resp = requests.get(url, headers=headers)
-    if resp.status_code != 200:
-        raise RuntimeError(f"GitHub API returned {resp.status_code}: {resp.text}")
-    tags = resp.json()
-    if not tags:
-        return None
-    return tags[0]["name"]  # first entry is the latest
-
-
 def get_all_tags(owner: str, repo: str, token: str = None):
     """
     Get all tags for a repo.
