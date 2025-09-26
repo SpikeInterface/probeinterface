@@ -39,5 +39,5 @@ from .generator import (
     generate_multi_columns_probe,
     generate_multi_shank,
 )
-from .library import get_probe
+from .library import get_probe, get_manufacturers_in_library, get_probes_in_library, get_tags_in_library
 from .wiring import get_available_pathways
