@@ -18,6 +18,7 @@ classifiers = [
 dependencies = [
     "numpy",
     "packaging",
+    "requests"
 ]
 
 [project.urls]
