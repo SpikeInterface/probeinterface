@@ -13,6 +13,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from urllib.request import urlopen
+import requests
 from typing import Optional
 
 from .io import read_probeinterface
@@ -104,3 +105,101 @@ def get_probe(manufacturer: str, probe_name: str, name: Optional[str] = None) ->
         probe.name = name
 
     return probe
+
+
+def get_manufacturers_in_library(tag=None) -> list[str]:
+    """
+    Get the list of available manufacturers in the library
+
+    Returns
+    -------
+    manufacturers : list of str
+        List of available manufacturers
+    """
+    return list_github_folders("SpikeInterface", "probeinterface_library", ref=tag)
+
+
+def get_probes_in_library(manufacturer: str, tag=None) -> list[str]:
+    """
+    Get the list of available probes for a given manufacturer
+
+    Parameters
+    ----------
+    manufacturer : str
+        The probe manufacturer
+
+    Returns
+    -------
+    probes : list of str
+        List of available probes for the given manufacturer
+    """
+    return list_github_folders("SpikeInterface", "probeinterface_library", path=manufacturer, ref=tag)
+
+
+def get_tags_in_library() -> list[str]:
+    """
+    Get the list of available tags in the library
+
+    Returns
+    -------
+    tags : list of str
+        List of available tags
+    """
+    tags = []
+    tags = get_all_tags("SpikeInterface", "probeinterface_library")
+    return tags
+
+
+### UTILS
+def get_latest_tag(owner: str, repo: str, token: str = None):
+    """
+    Get the latest tag (by order returned from GitHub) for a repo.
+    Returns the tag name, or None if no tags exist.
+    """
+    url = f"https://api.github.com/repos/{owner}/{repo}/tags"
+    headers = {}
+    if token:
+        headers["Authorization"] = f"token {token}"
+    resp = requests.get(url, headers=headers)
+    if resp.status_code != 200:
+        raise RuntimeError(f"GitHub API returned {resp.status_code}: {resp.text}")
+    tags = resp.json()
+    if not tags:
+        return None
+    return tags[0]["name"]  # first entry is the latest
+
+
+def get_all_tags(owner: str, repo: str, token: str = None):
+    """
+    Get all tags for a repo.
+    Returns a list of tag names, or an empty list if no tags exist.
+    """
+    url = f"https://api.github.com/repos/{owner}/{repo}/tags"
+    headers = {}
+    if token:
+        headers["Authorization"] = f"token {token}"
+    resp = requests.get(url, headers=headers)
+    if resp.status_code != 200:
+        raise RuntimeError(f"GitHub API returned {resp.status_code}: {resp.text}")
+    tags = resp.json()
+    return [tag["name"] for tag in tags]
+
+
+def list_github_folders(owner: str, repo: str, path: str = "", ref: str = None, token: str = None):
+    """
+    Return a list of directory names in the given repo at the specified path.
+    You can pass a branch, tag, or commit SHA via `ref`.
+    If token is provided, use it for authenticated requests (higher rate limits).
+    """
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+    params = {}
+    if ref:
+        params["ref"] = ref
+    headers = {}
+    if token:
+        headers["Authorization"] = f"token {token}"
+    resp = requests.get(url, headers=headers, params=params)
+    if resp.status_code != 200:
+        raise RuntimeError(f"GitHub API returned status {resp.status_code}: {resp.text}")
+    items = resp.json()
+    return [item["name"] for item in items if item.get("type") == "dir" and item["name"][0] != "."]
