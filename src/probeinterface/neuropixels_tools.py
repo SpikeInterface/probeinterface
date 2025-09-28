@@ -813,7 +813,18 @@ def read_openephys(
     else:
         custom_parameters = editor.find("CUSTOM_PARAMETERS")
         if onix_processor is not None:
-            np_probes = custom_parameters.findall("NEUROPIXELSV1E")
+            possible_probe_names = ["NEUROPIXELSV1E", "NEUROPIXELSV1F", "NEUROPIXELSV2E"]
+            parent_np_probe = ""
+            for probe_name in possible_probe_names:
+                print(f"{custom_parameters.findall(probe_name)=}")
+                parent_np_probe = custom_parameters.findall(probe_name)
+                if len(parent_np_probe) > 0:
+                    break
+            if probe_name == "NEUROPIXELSV2E":
+                np_probes = [parent_np_probe[0].findall(f"PROBE{a}")[0] for a in range(2)]
+            else:
+                np_probes = [parent_np_probe[0]]
+            
         else:
             np_probes = custom_parameters.findall("NP_PROBE")
 
@@ -835,6 +846,8 @@ def read_openephys(
     if not has_streams:
         probe_names_used = [f"{node_id}.{stream_index}" for stream_index in range(len(np_probes))]
 
+    print(f"{probe_names_used=}")
+
     # check consistency with stream names and other fields
     if has_streams:
         # make sure we have at least as many NP_PROBE as the number of used probes
@@ -847,17 +860,52 @@ def read_openephys(
 
     probe_features = _load_np_probe_features()
 
-    # now load probe info from NP_PROBE fields
+    list_of_probes = []
     np_probes_info = []
-    for probe_idx, np_probe in enumerate(np_probes):
-        if onix_processor is not None:
+    if onix_processor is not None:
+
+        
+        for probe_idx, np_probe in enumerate(np_probes[1:]):
+
             slot, port, dock = None, None, None
-            probe_part_number, probe_serial_number = (
-                np_probe.attrib["probePartNumber"],
-                np_probe.attrib["probeSerialNumber"],
-            )
-            channels = np_probe.find("SELECTED_CHANNELS")
-        else:
+            probe_part_number, probe_serial_number = np_probe.attrib["probePartNumber"], np_probe.attrib["probeSerialNumber"]
+            selected_channels = np_probe.find("SELECTED_CHANNELS").attrib
+
+            pt_metadata, _, mux_info = get_probe_metadata_from_probe_features(probe_features, probe_part_number)
+
+            num_shank = pt_metadata["num_shanks"]
+            contact_per_shank = pt_metadata["cols_per_shank"] * pt_metadata["rows_per_shank"]
+            
+            if num_shank == 1:
+                elec_ids = np.arange(contact_per_shank)
+                shank_ids = None
+            else:
+                elec_ids = np.concatenate([np.arange(contact_per_shank) for i in range(num_shank)])
+                shank_ids = np.concatenate([np.zeros(contact_per_shank) + i for i in range(num_shank)])
+
+            full_probe = _make_npx_probe_from_description(pt_metadata, probe_part_number, elec_ids, shank_ids)
+
+            selected_channel_indices = [int(channel_index) for channel_index in selected_channels.values()]
+
+            sliced_probe = full_probe.get_slice(selection=selected_channel_indices)
+            elec_ids = [int(contact_id.split('e')[1]) for contact_id in sliced_probe.contact_ids]
+            shank_ids = [0 for contact_id in sliced_probe.contact_ids]
+
+            one_probe_again = _make_npx_probe_from_description(pt_metadata, probe_part_number, elec_ids, shank_ids, mux_info=mux_info)
+
+            list_of_probes.append(one_probe_again)
+        
+        return list_of_probes, full_probe
+        
+
+
+
+    else:
+
+        # now load probe info from NP_PROBE fields
+        np_probes_info = []
+        for probe_idx, np_probe in enumerate(np_probes):
+        
             slot = np_probe.attrib["slot"]
             port = np_probe.attrib["port"]
             dock = np_probe.attrib["dock"]
@@ -865,192 +913,192 @@ def read_openephys(
             probe_serial_number = np_probe.attrib["probe_serial_number"]
             channels = np_probe.find("CHANNELS")
 
-        channel_names = np.array(list(channels.attrib.keys()))
-        channel_ids = np.array([int(ch[2:]) for ch in channel_names])
-        channel_order = np.argsort(channel_ids)
+            channel_names = np.array(list(channels.attrib.keys()))
+            channel_ids = np.array([int(ch[2:]) for ch in channel_names])
+            channel_order = np.argsort(channel_ids)
 
-        # sort channel_names and channel_values
-        channel_names = channel_names[channel_order]
-        channel_values = np.array(list(channels.attrib.values()))[channel_order]
+            # sort channel_names and channel_values
+            channel_names = channel_names[channel_order]
+            channel_values = np.array(list(channels.attrib.values()))[channel_order]
 
-        # check if shank ids is present
-        if all(":" in val for val in channel_values):
-            shank_ids = np.array([int(val.split(":")[1]) for val in channel_values])
-        elif all("_" in val for val in channel_names):
-            shank_ids = np.array([int(val.split("_")[1]) for val in channel_names])
-        else:
-            shank_ids = None
-
-        if onix_processor is None:
-            electrode_xpos = np_probe.find("ELECTRODE_XPOS")
-            electrode_ypos = np_probe.find("ELECTRODE_YPOS")
-
-            if electrode_xpos is None or electrode_ypos is None:
-                if raise_error:
-                    raise Exception("ELECTRODE_XPOS or ELECTRODE_YPOS is not available in settings!")
-                return None
-            xpos = np.array([float(electrode_xpos.attrib[ch]) for ch in channel_names])
-            ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])
-            positions = np.array([xpos, ypos]).T
-        else:
-            positions = np.reshape(np.arange(0, 384 * 2 * 20, 20), shape=(384, 2))
-
-        pt_metadata, _, mux_info = get_probe_metadata_from_probe_features(probe_features, probe_part_number)
-
-        shank_pitch = pt_metadata["shank_pitch_um"]
-
-        if fix_x_position_for_oe_5 and oe_version < parse("0.6.0") and shank_ids is not None:
-            positions[:, 1] = positions[:, 1] - shank_pitch * shank_ids
-
-        # x offset so that the first column is at 0x
-        offset = np.min(positions[:, 0])
-        # if some shanks are not used, we need to adjust the offset
-        if shank_ids is not None:
-            offset -= np.min(shank_ids) * shank_pitch
-        positions[:, 0] -= offset
-
-        #
-        y_pitch = pt_metadata["electrode_pitch_vert_um"]  # Vertical spacing between the centers of adjacent contacts
-        x_pitch = pt_metadata[
-            "electrode_pitch_horz_um"
-        ]  # Horizontal spacing between the centers of contacts within the same row
-        number_of_columns = pt_metadata["cols_per_shank"]
-        probe_stagger = (
-            pt_metadata["even_row_horz_offset_left_edge_to_leftmost_electrode_center_um"]
-            - pt_metadata["odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um"]
-        )
-        num_shanks = pt_metadata["num_shanks"]
-
-        description = pt_metadata.get("description")
-
-        elec_ids = []
-        for i, pos in enumerate(positions):
-            # Do not calculate contact ids if the model name is not known
-            if description is None:
-                elec_ids = None
-                break
-
-            x_pos = pos[0]
-            y_pos = pos[1]
-
-            # Adds a shift to rows in the staggered configuration
-            is_row_staggered = np.mod(y_pos / y_pitch + 1, 2) == 1
-            row_stagger = probe_stagger if is_row_staggered else 0
-
-            # Map the positions to the contacts ids
-            shank_id = shank_ids[i] if num_shanks > 1 else 0
-
-            # Electrode ids are computed from the positions of the electrodes. The computation
-            # is different for probes with one row of electrodes, or more than one.
-            if x_pitch == 0:
-                elec_id = int(number_of_columns * y_pos / y_pitch)
+            # check if shank ids is present
+            if all(":" in val for val in channel_values):
+                shank_ids = np.array([int(val.split(":")[1]) for val in channel_values])
+            elif all("_" in val for val in channel_names):
+                shank_ids = np.array([int(val.split("_")[1]) for val in channel_names])
             else:
-                elec_id = int(
-                    (x_pos - row_stagger - shank_pitch * shank_id) / x_pitch + number_of_columns * y_pos / y_pitch
+                shank_ids = None
+
+            if onix_processor is None:
+                electrode_xpos = np_probe.find("ELECTRODE_XPOS")
+                electrode_ypos = np_probe.find("ELECTRODE_YPOS")
+
+                if electrode_xpos is None or electrode_ypos is None:
+                    if raise_error:
+                        raise Exception("ELECTRODE_XPOS or ELECTRODE_YPOS is not available in settings!")
+                    return None
+                xpos = np.array([float(electrode_xpos.attrib[ch]) for ch in channel_names])
+                ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])
+                positions = np.array([xpos, ypos]).T
+            else:
+                positions = np.reshape(np.arange(0,384*2*20,20), shape=(384,2))
+
+            pt_metadata, _, mux_info = get_probe_metadata_from_probe_features(probe_features, probe_part_number)
+
+            shank_pitch = pt_metadata["shank_pitch_um"]
+
+            if fix_x_position_for_oe_5 and oe_version < parse("0.6.0") and shank_ids is not None:
+                positions[:, 1] = positions[:, 1] - shank_pitch * shank_ids
+
+            # x offset so that the first column is at 0x
+            offset = np.min(positions[:, 0])
+            # if some shanks are not used, we need to adjust the offset
+            if shank_ids is not None:
+                offset -= np.min(shank_ids) * shank_pitch
+            positions[:, 0] -= offset
+
+            #
+            y_pitch = pt_metadata["electrode_pitch_vert_um"]  # Vertical spacing between the centers of adjacent contacts
+            x_pitch = pt_metadata[
+                "electrode_pitch_horz_um"
+            ]  # Horizontal spacing between the centers of contacts within the same row
+            number_of_columns = pt_metadata["cols_per_shank"]
+            probe_stagger = (
+                pt_metadata["even_row_horz_offset_left_edge_to_leftmost_electrode_center_um"]
+                - pt_metadata["odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um"]
+            )
+            num_shanks = pt_metadata["num_shanks"]
+
+            description = pt_metadata.get("description")
+
+            elec_ids = []
+            for i, pos in enumerate(positions):
+                # Do not calculate contact ids if the model name is not known
+                if description is None:
+                    elec_ids = None
+                    break
+
+                x_pos = pos[0]
+                y_pos = pos[1]
+
+                # Adds a shift to rows in the staggered configuration
+                is_row_staggered = np.mod(y_pos / y_pitch + 1, 2) == 1
+                row_stagger = probe_stagger if is_row_staggered else 0
+
+                # Map the positions to the contacts ids
+                shank_id = shank_ids[i] if num_shanks > 1 else 0
+
+                # Electrode ids are computed from the positions of the electrodes. The computation
+                # is different for probes with one row of electrodes, or more than one.
+                if x_pitch == 0:
+                    elec_id = int(number_of_columns * y_pos / y_pitch)
+                else:
+                    elec_id = int(
+                        (x_pos - row_stagger - shank_pitch * shank_id) / x_pitch + number_of_columns * y_pos / y_pitch
+                    )
+                elec_ids.append(elec_id)
+
+            np_probe_dict = {
+                "shank_ids": shank_ids,
+                "elec_ids": elec_ids,
+                "pt_metadata": pt_metadata,
+                "slot": slot,
+                "port": port,
+                "dock": dock,
+                "serial_number": probe_serial_number,
+                "part_number": probe_part_number,
+                "mux_info": mux_info,
+            }
+            # Sequentially assign probe names
+            if "custom_probe_name" in np_probe.attrib and np_probe.attrib["custom_probe_name"] != probe_serial_number:
+                name = np_probe.attrib["custom_probe_name"]
+            else:
+                name = probe_names_used[probe_idx]
+            np_probe_dict.update({"name": name})
+            np_probes_info.append(np_probe_dict)
+
+        # now select correct probe (if multiple)
+        if len(np_probes) > 1:
+            found = False
+            probe_names = [p["name"] for p in np_probes_info]
+
+            if stream_name is not None:
+                assert probe_name is None and serial_number is None, (
+                    "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
                 )
-            elec_ids.append(elec_id)
-
-        np_probe_dict = {
-            "shank_ids": shank_ids,
-            "elec_ids": elec_ids,
-            "pt_metadata": pt_metadata,
-            "slot": slot,
-            "port": port,
-            "dock": dock,
-            "serial_number": probe_serial_number,
-            "part_number": probe_part_number,
-            "mux_info": mux_info,
-        }
-        # Sequentially assign probe names
-        if "custom_probe_name" in np_probe.attrib and np_probe.attrib["custom_probe_name"] != probe_serial_number:
-            name = np_probe.attrib["custom_probe_name"]
+                for probe_idx, probe_info in enumerate(np_probes_info):
+                    if probe_info["name"] in stream_name or probe_info["serial_number"] in stream_name:
+                        found = True
+                        break
+                if not found:
+                    if raise_error:
+                        raise Exception(
+                            f"The stream {stream_name} is not associated to an available probe: {probe_names_used}"
+                        )
+                    return None
+            elif probe_name is not None:
+                assert stream_name is None and serial_number is None, (
+                    "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
+                )
+                for probe_idx, probe_info in enumerate(np_probes_info):
+                    if probe_info["name"] == probe_name:
+                        found = True
+                        break
+                if not found:
+                    if raise_error:
+                        raise Exception(f"The provided {probe_name} is not in the available probes: {probe_names_used}")
+                    return None
+            elif serial_number is not None:
+                assert stream_name is None and probe_name is None, (
+                    "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
+                )
+                for probe_idx, probe_info in enumerate(np_probes_info):
+                    if probe_info["serial_number"] == str(serial_number):
+                        found = True
+                        break
+                if not found:
+                    np_serial_numbers = [p["serial_number"] for p in probe_info]
+                    if raise_error:
+                        raise Exception(
+                            f"The provided {serial_number} is not in the available serial numbers: {np_serial_numbers}"
+                        )
+                    return None
+            else:
+                raise Exception(
+                    f"More than one probe found. Use one of 'stream_name', 'probe_name', or 'serial_number' "
+                    f"to select the right probe.\nProbe names: {probe_names}"
+                )
         else:
-            name = probe_names_used[probe_idx]
-        np_probe_dict.update({"name": name})
-        np_probes_info.append(np_probe_dict)
+            # in case of a single probe, make sure it is consistent with optional
+            # stream_name, probe_name, or serial number
+            available_probe_name = np_probes_info[0]["name"]
+            available_serial_number = np_probes_info[0]["serial_number"]
 
-    # now select correct probe (if multiple)
-    if len(np_probes) > 1:
-        found = False
-        probe_names = [p["name"] for p in np_probes_info]
-
-        if stream_name is not None:
-            assert probe_name is None and serial_number is None, (
-                "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
-            )
-            for probe_idx, probe_info in enumerate(np_probes_info):
-                if probe_info["name"] in stream_name or probe_info["serial_number"] in stream_name:
-                    found = True
-                    break
-            if not found:
-                if raise_error:
-                    raise Exception(
-                        f"The stream {stream_name} is not associated to an available probe: {probe_names_used}"
-                    )
-                return None
-        elif probe_name is not None:
-            assert stream_name is None and serial_number is None, (
-                "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
-            )
-            for probe_idx, probe_info in enumerate(np_probes_info):
-                if probe_info["name"] == probe_name:
-                    found = True
-                    break
-            if not found:
-                if raise_error:
-                    raise Exception(f"The provided {probe_name} is not in the available probes: {probe_names_used}")
-                return None
-        elif serial_number is not None:
-            assert stream_name is None and probe_name is None, (
-                "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
-            )
-            for probe_idx, probe_info in enumerate(np_probes_info):
-                if probe_info["serial_number"] == str(serial_number):
-                    found = True
-                    break
-            if not found:
-                np_serial_numbers = [p["serial_number"] for p in probe_info]
-                if raise_error:
-                    raise Exception(
-                        f"The provided {serial_number} is not in the available serial numbers: {np_serial_numbers}"
-                    )
-                return None
-        else:
-            raise Exception(
-                f"More than one probe found. Use one of 'stream_name', 'probe_name', or 'serial_number' "
-                f"to select the right probe.\nProbe names: {probe_names}"
-            )
-    else:
-        # in case of a single probe, make sure it is consistent with optional
-        # stream_name, probe_name, or serial number
-        available_probe_name = np_probes_info[0]["name"]
-        available_serial_number = np_probes_info[0]["serial_number"]
-
-        if stream_name:
-            if available_probe_name not in stream_name:
-                if raise_error:
-                    raise Exception(
-                        f"Inconsistency between provided stream {stream_name} and available probe "
-                        f"{available_probe_name}"
-                    )
-                return None
-        if probe_name:
-            if probe_name != available_probe_name:
-                if raise_error:
-                    raise Exception(
-                        f"Inconsistency between provided probe name {probe_name} and available probe "
-                        f"{available_probe_name}"
-                    )
-                return None
-        if serial_number:
-            if str(serial_number) != available_serial_number:
-                if raise_error:
-                    raise Exception(
-                        f"Inconsistency between provided serial number {serial_number} and available serial numbers "
-                        f"{available_serial_number}"
-                    )
-                return None
-        probe_idx = 0
+            if stream_name:
+                if available_probe_name not in stream_name:
+                    if raise_error:
+                        raise Exception(
+                            f"Inconsistency between provided stream {stream_name} and available probe "
+                            f"{available_probe_name}"
+                        )
+                    return None
+            if probe_name:
+                if probe_name != available_probe_name:
+                    if raise_error:
+                        raise Exception(
+                            f"Inconsistency between provided probe name {probe_name} and available probe "
+                            f"{available_probe_name}"
+                        )
+                    return None
+            if serial_number:
+                if str(serial_number) != available_serial_number:
+                    if raise_error:
+                        raise Exception(
+                            f"Inconsistency between provided serial number {serial_number} and available serial numbers "
+                            f"{available_serial_number}"
+                        )
+                    return None
+            probe_idx = 0
 
     np_probe_info = np_probes_info[probe_idx]
     np_probe = np_probes[probe_idx]
