@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import numpy as np
-import glob
 
 import pytest
 
@@ -235,6 +234,21 @@ def test_quadbase():
         assert set(probe.shank_ids) == set([str(i)])
 
 
+def test_quadbase_custom_names():
+    # This dataset has a Neuropixels Quad Base (4 NP2 probes on different shanks)
+    sn = "23207205101"
+    for i in range(4):
+        probe = read_openephys(
+            data_path / "OE_Neuropix-PXI-QuadBase" / "settings_custom_names.xml", probe_name=f"{sn}-{i+1}"
+        )
+        probe_dict = probe.to_dict(array_as_list=True)
+        validate_probe_dict(probe_dict)
+        assert probe.get_shank_count() == 1
+        assert probe.get_contact_count() == 384
+        assert set(probe.shank_ids) == set([str(i)])
+        assert probe.name == f"{sn}-{i+1}"
+
+
 def test_onebox():
     # This dataset has a Neuropixels Ultra probe with a onebox
     probe = read_openephys(data_path / "OE_OneBox-NP-Ultra" / "settings.xml")
@@ -244,7 +258,61 @@ def test_onebox():
     assert probe.get_contact_count() == 384
 
 
+def test_onix():
+    # This dataset has a multiple settings with different banks and configs
+    probe_bankA = read_openephys(data_path / "OE_ONIX-NP" / "settings_bankA.xml")
+    probe_dict = probe_bankA.to_dict(array_as_list=True)
+    validate_probe_dict(probe_dict)
+    assert probe_bankA.get_shank_count() == 1
+    assert probe_bankA.get_contact_count() == 384
+    assert probe_bankA.name == "PortB-Neuropixels1.0eHeadstage-Probe"
+    # bank A starts at y=0 and ends at y=3820
+    assert np.min(probe_bankA.contact_positions[:, 1]) == 0
+    assert np.max(probe_bankA.contact_positions[:, 1]) == 3820
+
+    probe_bankB = read_openephys(data_path / "OE_ONIX-NP" / "settings_bankB.xml")
+    probe_dict = probe_bankB.to_dict(array_as_list=True)
+    validate_probe_dict(probe_dict)
+    assert probe_bankB.get_shank_count() == 1
+    assert probe_bankB.get_contact_count() == 384
+    assert probe_bankB.name == "PortB-Neuropixels1.0eHeadstage-Probe"
+    # bank B starts at y=3840 and ends at y=7660
+    assert np.min(probe_bankB.contact_positions[:, 1]) == 3840
+    assert np.max(probe_bankB.contact_positions[:, 1]) == 7660
+
+    probe_bankC = read_openephys(data_path / "OE_ONIX-NP" / "settings_bankC.xml")
+    probe_dict = probe_bankC.to_dict(array_as_list=True)
+    validate_probe_dict(probe_dict)
+    assert probe_bankC.get_shank_count() == 1
+    assert probe_bankC.get_contact_count() == 384
+    assert probe_bankC.name == "PortB-Neuropixels1.0eHeadstage-Probe"
+    # bank C starts at y=7680 and ends at y=11520
+    assert np.min(probe_bankC.contact_positions[:, 1]) == 5760
+    assert np.max(probe_bankC.contact_positions[:, 1]) == 9580
+
+    # for the tetrode configuration, we expect to have 96 tetrodes
+    probe_tetrodes = read_openephys(data_path / "OE_ONIX-NP" / "settings_tetrodes.xml")
+    probe_dict = probe_tetrodes.to_dict(array_as_list=True)
+    validate_probe_dict(probe_dict)
+    contact_positions = probe_tetrodes.contact_positions
+    distances = np.sqrt(np.sum((contact_positions[:, np.newaxis] - contact_positions[np.newaxis, :]) ** 2, axis=2))
+
+    # For each contact, find the 3 closest neighbors (excluding itself)
+    np.fill_diagonal(distances, np.inf)
+    closest_indices = np.argsort(distances, axis=1)[:, :3]
+    # Create tetrode groups by combining each contact with its 3 closest neighbors
+    tetrode_groups = np.column_stack([np.arange(len(contact_positions)), closest_indices])
+    tetrode_groups = np.sort(tetrode_groups, axis=1)
+    # Find unique tetrode groups
+    unique_groups = np.unique(tetrode_groups, axis=0)
+    # Check that we have the expected number of tetrodes
+    expected_tetrodes = len(contact_positions) // 4
+    assert len(unique_groups) == expected_tetrodes, f"Expected {expected_tetrodes} tetrodes, found {len(unique_groups)}"
+    # Verify each group has exactly 4 contacts
+    assert unique_groups.shape[1] == 4, f"Tetrode groups should have 4 contacts, found {unique_groups.shape[1]}"
+
+
 if __name__ == "__main__":
     # test_multiple_probes()
     # test_NP_Ultra()
-    test_multiple_signal_chains()
+    test_onix()
