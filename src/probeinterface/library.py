@@ -20,15 +20,23 @@ from .io import read_probeinterface
 
 # OLD URL on gin
 # public_url = "https://web.gin.g-node.org/spikeinterface/probeinterface_library/raw/master/"
-
 # Now on github since 2023/06/15
-public_url = "https://raw.githubusercontent.com/SpikeInterface/probeinterface_library/main/"
+public_url = "https://raw.githubusercontent.com/SpikeInterface/probeinterface_library/"
+
 
 # check this for windows and osx
-cache_folder = Path(os.path.expanduser("~")) / ".config" / "probeinterface" / "library"
+def get_cache_folder() -> Path:
+    """Get the cache folder for probeinterface library files.
+
+    Returns
+    -------
+    cache_folder : Path
+        The path to the cache folder.
+    """
+    return Path(os.path.expanduser("~")) / ".config" / "probeinterface" / "library"
 
 
-def download_probeinterface_file(manufacturer: str, probe_name: str):
+def download_probeinterface_file(manufacturer: str, probe_name: str, tag: Optional[str] = None) -> None:
     """Download the probeinterface file to the cache directory.
     Note that the file is itself a ProbeGroup but on the repo each file
     represents one probe.
@@ -39,16 +47,23 @@ def download_probeinterface_file(manufacturer: str, probe_name: str):
         The probe manufacturer
     probe_name : str (see probeinterface_libary for options)
         The probe name
+    tag : str | None, default: None
+        Optional tag for the probe
     """
-    os.makedirs(cache_folder / manufacturer, exist_ok=True)
-    localfile = cache_folder / manufacturer / (probe_name + ".json")
-    distantfile = public_url + f"{manufacturer}/{probe_name}/{probe_name}.json"
-    dist = urlopen(distantfile)
-    with open(localfile, "wb") as f:
-        f.write(dist.read())
+    cache_folder = get_cache_folder()
+    if tag is not None:
+        assert tag in get_tags_in_library(), f"Tag {tag} not found in library"
+    else:
+        tag = "main"
+    os.makedirs(cache_folder / tag / manufacturer, exist_ok=True)
+    local_file = cache_folder / tag / manufacturer / (probe_name + ".json")
+    remote_file = public_url + tag + f"/{manufacturer}/{probe_name}/{probe_name}.json"
+    rem = urlopen(remote_file)
+    with open(local_file, "wb") as f:
+        f.write(rem.read())
 
 
-def get_from_cache(manufacturer: str, probe_name: str) -> Optional["Probe"]:
+def get_from_cache(manufacturer: str, probe_name: str, tag: Optional[str] = None) -> Optional["Probe"]:
     """
     Get Probe from local cache
 
@@ -58,24 +73,66 @@ def get_from_cache(manufacturer: str, probe_name: str) -> Optional["Probe"]:
         The probe manufacturer
     probe_name : str (see probeinterface_libary for options)
         The probe name
+    tag : str | None, default: None
+        Optional tag for the probe
 
     Returns
     -------
     probe : Probe object, or None if no probeinterface JSON file is found
 
     """
+    cache_folder = get_cache_folder()
+    if tag is not None:
+        cache_folder_tag = cache_folder / tag
+        if not cache_folder_tag.is_dir():
+            return None
+        cache_folder = cache_folder_tag
+    else:
+        cache_folder_tag = cache_folder / "main"
 
-    localfile = cache_folder / manufacturer / (probe_name + ".json")
-    if not localfile.is_file():
+    local_file = cache_folder_tag / manufacturer / (probe_name + ".json")
+    if not local_file.is_file():
         return None
     else:
-        probegroup = read_probeinterface(localfile)
+        probegroup = read_probeinterface(local_file)
         probe = probegroup.probes[0]
         probe._probe_group = None
         return probe
 
 
-def get_probe(manufacturer: str, probe_name: str, name: Optional[str] = None) -> "Probe":
+def remove_from_cache(manufacturer: str, probe_name: str, tag: Optional[str] = None) -> Optional["Probe"]:
+    """
+    Remove Probe from local cache
+
+    Parameters
+    ----------
+    manufacturer : "cambridgeneurotech" | "neuronexus" | "plexon" | "imec" | "sinaps"
+        The probe manufacturer
+    probe_name : str (see probeinterface_libary for options)
+        The probe name
+    tag : str | None, default: None
+        Optional tag for the probe
+
+    Returns
+    -------
+    probe : Probe object, or None if no probeinterface JSON file is found
+
+    """
+    cache_folder = get_cache_folder()
+    if tag is not None:
+        cache_folder_tag = cache_folder / tag
+        if not cache_folder_tag.is_dir():
+            return None
+        cache_folder = cache_folder_tag
+    else:
+        cache_folder_tag = cache_folder / "main"
+
+    local_file = cache_folder_tag / manufacturer / (probe_name + ".json")
+    if local_file.is_file():
+        os.remove(local_file)
+
+
+def get_probe(manufacturer: str, probe_name: str, name: Optional[str] = None, tag: Optional[str] = None) -> "Probe":
     """
     Get probe from ProbeInterface library
 
@@ -87,6 +144,8 @@ def get_probe(manufacturer: str, probe_name: str, name: Optional[str] = None) ->
         The probe name
     name : str | None, default: None
         Optional name for the probe
+    tag : str | None, default: None
+        Optional tag for the probe
 
     Returns
     ----------
@@ -94,11 +153,11 @@ def get_probe(manufacturer: str, probe_name: str, name: Optional[str] = None) ->
 
     """
 
-    probe = get_from_cache(manufacturer, probe_name)
+    probe = get_from_cache(manufacturer, probe_name, tag=tag)
 
     if probe is None:
-        download_probeinterface_file(manufacturer, probe_name)
-        probe = get_from_cache(manufacturer, probe_name)
+        download_probeinterface_file(manufacturer, probe_name, tag=tag)
+        probe = get_from_cache(manufacturer, probe_name, tag=tag)
     if probe.manufacturer == "":
         probe.manufacturer = manufacturer
     if name is not None:
@@ -107,7 +166,7 @@ def get_probe(manufacturer: str, probe_name: str, name: Optional[str] = None) ->
     return probe
 
 
-def get_manufacturers_in_library(tag=None) -> list[str]:
+def list_manufacturers_in_library(tag=None) -> list[str]:
     """
     Get the list of available manufacturers in the library
 
@@ -119,7 +178,7 @@ def get_manufacturers_in_library(tag=None) -> list[str]:
     return list_github_folders("SpikeInterface", "probeinterface_library", ref=tag)
 
 
-def get_probes_in_library(manufacturer: str, tag=None) -> list[str]:
+def list_probes_in_library(manufacturer: str, tag=None) -> list[str]:
     """
     Get the list of available probes for a given manufacturer
 
@@ -157,7 +216,8 @@ def get_all_tags(owner: str, repo: str, token: str = None):
     """
     url = f"https://api.github.com/repos/{owner}/{repo}/tags"
     headers = {}
-    if token:
+    if token or os.getenv("GH_TOKEN") or os.getenv("GITHUB_TOKEN"):
+        token = token or os.getenv("GH_TOKEN") or os.getenv("GITHUB_TOKEN")
         headers["Authorization"] = f"token {token}"
     resp = requests.get(url, headers=headers)
     if resp.status_code != 200:
@@ -177,7 +237,8 @@ def list_github_folders(owner: str, repo: str, path: str = "", ref: str = None, 
     if ref:
         params["ref"] = ref
     headers = {}
-    if token:
+    if token or os.getenv("GH_TOKEN") or os.getenv("GITHUB_TOKEN"):
+        token = token or os.getenv("GH_TOKEN") or os.getenv("GITHUB_TOKEN")
         headers["Authorization"] = f"token {token}"
     resp = requests.get(url, headers=headers, params=params)
     if resp.status_code != 200:
