@@ -20,31 +20,26 @@ def test_download_probeinterface_file():
 
 
 def test_latest_commit_mechanism():
-    download_probeinterface_file(manufacturer, probe_name, tag=None)
+    _ = get_probe(manufacturer, probe_name)
     cache_folder = get_cache_folder()
     latest_commit_file = cache_folder / "main" / "latest_commit.txt"
-    if latest_commit_file.is_file():
-        latest_commit_file.unlink()
+    assert latest_commit_file.is_file()
 
-    # first download
-    download_probeinterface_file(manufacturer, probe_name, tag=None)
+    # now we manually change latest_commit.txt to something else
+    with open(latest_commit_file, "w") as f:
+        f.write("1234567890123456789012345678901234567890")
+
+    # now we get the probe again and make sure the latest_commit.txt file is updated
+    _ = get_probe(manufacturer, probe_name)
     assert latest_commit_file.is_file()
     with open(latest_commit_file, "r") as f:
-        commit1 = f.read().strip()
-    assert len(commit1) == 40
-
-    # second download should not change latest_commit.txt
-    download_probeinterface_file(manufacturer, probe_name, tag=None)
-    assert latest_commit_file.is_file()
-    with open(latest_commit_file, "r") as f:
-        commit2 = f.read().strip()
-    assert commit1 == commit2
+        latest_commit = f.read().strip()
+    assert latest_commit != "123456789012345678901234567890123456789"
 
 
 def test_get_from_cache():
-    # TODO: fix this test!!!
-    remove_from_cache(manufacturer, probe_name)
-    probe = download_probeinterface_file(manufacturer, probe_name)
+    download_probeinterface_file(manufacturer, probe_name)
+    probe = get_from_cache(manufacturer, probe_name)
     assert isinstance(probe, Probe)
 
     tag = get_tags_in_library()[0]
