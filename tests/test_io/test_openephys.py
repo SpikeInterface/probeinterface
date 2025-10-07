@@ -311,6 +311,23 @@ def test_onix():
     # Verify each group has exactly 4 contacts
     assert unique_groups.shape[1] == 4, f"Tetrode groups should have 4 contacts, found {unique_groups.shape[1]}"
 
+    # NP2.0
+    probe_np2_probe0 = read_openephys(
+        data_path / "OE_ONIX-NP" / "settings_NP2.xml", probe_name="PortA-Neuropixels2.0eHeadstage-Neuropixels2.0-Probe0"
+    )
+    probe_dict = probe_np2_probe0.to_dict(array_as_list=True)
+    validate_probe_dict(probe_dict)
+    assert probe_np2_probe0.get_contact_count() == 384
+    assert probe_np2_probe0.get_shank_count() == 1
+
+    probe_np2_probe1 = read_openephys(
+        data_path / "OE_ONIX-NP" / "settings_NP2.xml", probe_name="PortA-Neuropixels2.0eHeadstage-Neuropixels2.0-Probe1"
+    )
+    probe_dict = probe_np2_probe1.to_dict(array_as_list=True)
+    validate_probe_dict(probe_dict)
+    assert probe_np2_probe1.get_contact_count() == 384
+    assert probe_np2_probe1.get_shank_count() == 4
+
 
 if __name__ == "__main__":
     # test_multiple_probes()

@@ -860,23 +860,22 @@ def read_openephys(
     # now load probe info from NP_PROBE fields
     np_probes_info = []
     for probe_idx, np_probe in enumerate(np_probes):
-        # selected_channels is the preferred way to instantiate the probe
+        # selected_electrodes is the preferred way to instantiate the probe
         # if this field is available, a full probe is created from the probe_part_number
-        # and then sliced using the selected channels
+        # and then sliced using the selected electrodes.
         # if not available, the xpos and ypos fields are used to create the probe
-        # if onix_processor is None:
         slot = np_probe.attrib.get("slot")
         port = np_probe.attrib.get("port")
         dock = np_probe.attrib.get("dock")
         probe_part_number = np_probe.attrib.get("probe_part_number") or np_probe.attrib.get("probePartNumber")
         probe_serial_number = np_probe.attrib.get("probe_serial_number") or np_probe.attrib.get("probeSerialNumber")
-        selected_channels = np_probe.find("SELECTED_CHANNELS")
+        selected_electrodes = np_probe.find("SELECTED_ELECTRODES") or np_probe.find("SELECTED_CHANNELS")
         channels = np_probe.find("CHANNELS")
 
         pt_metadata, _, mux_info = get_probe_metadata_from_probe_features(probe_features, probe_part_number)
 
-        if selected_channels is not None:
-            selected_channels_values = selected_channels.attrib.values()
+        if selected_electrodes is not None:
+            selected_electrodes_values = selected_electrodes.attrib.values()
 
             num_shank = pt_metadata["num_shanks"]
             contact_per_shank = pt_metadata["cols_per_shank"] * pt_metadata["rows_per_shank"]
@@ -892,9 +891,9 @@ def read_openephys(
                 pt_metadata, probe_part_number, elec_ids, shank_ids, mux_info=mux_info
             )
 
-            selected_channel_indices = [int(channel_index) for channel_index in selected_channels_values]
+            selected_electrode_indices = [int(electrode_index) for electrode_index in selected_electrodes_values]
 
-            sliced_probe = full_probe.get_slice(selection=selected_channel_indices)
+            sliced_probe = full_probe.get_slice(selection=selected_electrode_indices)
 
             np_probe_dict = {
                 "pt_metadata": pt_metadata,
