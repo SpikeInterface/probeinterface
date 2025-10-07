@@ -19,24 +19,6 @@ def test_download_probeinterface_file():
     download_probeinterface_file(manufacturer, probe_name, tag=None)
 
 
-def test_latest_commit_mechanism():
-    _ = get_probe(manufacturer, probe_name)
-    cache_folder = get_cache_folder()
-    latest_commit_file = cache_folder / "main" / "latest_commit.txt"
-    assert latest_commit_file.is_file()
-
-    # now we manually change latest_commit.txt to something else
-    with open(latest_commit_file, "w") as f:
-        f.write("1234567890123456789012345678901234567890")
-
-    # now we get the probe again and make sure the latest_commit.txt file is updated
-    _ = get_probe(manufacturer, probe_name)
-    assert latest_commit_file.is_file()
-    with open(latest_commit_file, "r") as f:
-        latest_commit = f.read().strip()
-    assert latest_commit != "123456789012345678901234567890123456789"
-
-
 def test_get_from_cache():
     download_probeinterface_file(manufacturer, probe_name)
     probe = get_from_cache(manufacturer, probe_name)

@@ -90,25 +90,6 @@ def get_from_cache(manufacturer: str, probe_name: str, tag: Optional[str] = None
             return None
         cache_folder = cache_folder_tag
     else:
-        # load latest commit if exists
-        commit_file = cache_folder / "main" / "latest_commit.txt"
-        commit = None
-        if commit_file.is_file():
-            with open(commit_file, "r") as f:
-                commit = f.read().strip()
-
-        # check against latest commit on github
-        try:
-            latest_commit = get_latest_commit("SpikeInterface", "probeinterface_library")["sha"]
-            if commit is None or commit != latest_commit:
-                # in this case we need to redownload the file and update the latest_commit.txt
-                with open(cache_folder / "main" / "latest_commit.txt", "w") as f:
-                    f.write(latest_commit)
-                return None
-        except Exception:
-            warnings.warn("Could not check for latest commit on github. Using local 'main' cache.")
-            pass
-
         cache_folder_tag = cache_folder / "main"
 
     local_file = cache_folder_tag / manufacturer / (probe_name + ".json")
@@ -153,7 +134,13 @@ def remove_from_cache(manufacturer: str, probe_name: str, tag: Optional[str] = N
         os.remove(local_file)
 
 
-def get_probe(manufacturer: str, probe_name: str, name: Optional[str] = None, tag: Optional[str] = None) -> "Probe":
+def get_probe(
+    manufacturer: str,
+    probe_name: str,
+    name: Optional[str] = None,
+    tag: Optional[str] = None,
+    force_download: bool = False,
+) -> "Probe":
     """
     Get probe from ProbeInterface library
 
@@ -167,14 +154,18 @@ def get_probe(manufacturer: str, probe_name: str, name: Optional[str] = None, ta
         Optional name for the probe
     tag : str | None, default: None
         Optional tag for the probe
+    force_download : bool, default: False
+        If True, force re-download of the probe file.
 
     Returns
     ----------
     probe : Probe object
 
     """
-
-    probe = get_from_cache(manufacturer, probe_name, tag=tag)
+    if not force_download:
+        probe = get_from_cache(manufacturer, probe_name, tag=tag)
+    else:
+        probe = None
 
     if probe is None:
         download_probeinterface_file(manufacturer, probe_name, tag=tag)
@@ -185,6 +176,21 @@ def get_probe(manufacturer: str, probe_name: str, name: Optional[str] = None, ta
         probe.name = name
 
     return probe
+
+
+def cache_full_library(tag=None) -> None:
+    """
+    Download all probes from the library to the cache directory.
+    """
+    manufacturers = list_manufacturers_in_library(tag=tag)
+
+    for manufacturer in manufacturers:
+        probes = list_probes_in_library(manufacturer, tag=tag)
+        for probe_name in probes:
+            try:
+                download_probeinterface_file(manufacturer, probe_name, tag=tag)
+            except Exception as e:
+                warnings.warn(f"Could not download {manufacturer}/{probe_name} (tag: {tag}): {e}")
 
 
 def list_manufacturers_in_library(tag=None) -> list[str]:
@@ -266,24 +272,3 @@ def list_github_folders(owner: str, repo: str, path: str = "", ref: str = None, 
         raise RuntimeError(f"GitHub API returned status {resp.status_code}: {resp.text}")
     items = resp.json()
     return [item["name"] for item in items if item.get("type") == "dir" and item["name"][0] != "."]
-
-
-def get_latest_commit(owner: str, repo: str, branch: str = "main", token: str = None):
-    """
-    Get the latest commit SHA and message from a given branch (default: main).
-    """
-    url = f"https://api.github.com/repos/{owner}/{repo}/commits/{branch}"
-    headers = {}
-    if token or os.getenv("GH_TOKEN") or os.getenv("GITHUB_TOKEN"):
-        token = token or os.getenv("GH_TOKEN") or os.getenv("GITHUB_TOKEN")
-        headers["Authorization"] = f"token {token}"
-    resp = requests.get(url, headers=headers)
-    if resp.status_code != 200:
-        raise RuntimeError(f"GitHub API returned {resp.status_code}: {resp.text}")
-    data = resp.json()
-    return {
-        "sha": data["sha"],
-        "message": data["commit"]["message"],
-        "author": data["commit"]["author"]["name"],
-        "date": data["commit"]["author"]["date"],
-    }
