@@ -869,7 +869,7 @@ def read_openephys(
         dock = np_probe.attrib.get("dock")
         probe_part_number = np_probe.attrib.get("probe_part_number") or np_probe.attrib.get("probePartNumber")
         probe_serial_number = np_probe.attrib.get("probe_serial_number") or np_probe.attrib.get("probeSerialNumber")
-        selected_electrodes = np_probe.find("SELECTED_ELECTRODES") or np_probe.find("SELECTED_CHANNELS")
+        selected_electrodes = np_probe.find("SELECTED_ELECTRODES")
         channels = np_probe.find("CHANNELS")
 
         pt_metadata, _, mux_info = get_probe_metadata_from_probe_features(probe_features, probe_part_number)

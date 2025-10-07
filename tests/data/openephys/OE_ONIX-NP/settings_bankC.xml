@@ -60,7 +60,7 @@
                           gainCalibrationFile="C:\Brandon-temp\19051024281\19051024281_gainCalValues.csv">
             <PROBE_VIEWER zoomHeight="100" zoomOffset="360" apGain="1000x" lfpGain="50x"
                           referenceChannel="Ext" apFilter="ON"/>
-            <SELECTED_CHANNELS CH0="768" CH1="769" CH2="770" CH3="771" CH4="772" CH5="773" CH6="774"
+            <SELECTED_ELECTRODES CH0="768" CH1="769" CH2="770" CH3="771" CH4="772" CH5="773" CH6="774"
                                CH7="775" CH8="776" CH9="777" CH10="778" CH11="779" CH12="780"
                                CH13="781" CH14="782" CH15="783" CH16="784" CH17="785" CH18="786"
                                CH19="787" CH20="788" CH21="789" CH22="790" CH23="791" CH24="792"

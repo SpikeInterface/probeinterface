@@ -59,7 +59,7 @@
                     flexVersion="0.1" searchForCorrectionFiles="1" gainCorrectionFolder="C:\Users\anjal.doshi\Desktop\23176523171"
                     gainCorrectionFile="C:\Users\anjal.doshi\Desktop\23176523171\23176523171_gainCalValues.csv">
               <PROBE_VIEWER zoomHeight="80" zoomOffset="110" referenceChannel="Ext"/>
-              <SELECTED_CHANNELS CH0="768" CH1="769" CH2="770" CH3="771" CH4="772" CH5="773" CH6="774"
+              <SELECTED_ELECTRODES CH0="768" CH1="769" CH2="770" CH3="771" CH4="772" CH5="773" CH6="774"
                                  CH7="775" CH8="776" CH9="777" CH10="778" CH11="779" CH12="780"
                                  CH13="781" CH14="782" CH15="783" CH16="784" CH17="785" CH18="786"
                                  CH19="787" CH20="788" CH21="789" CH22="790" CH23="791" CH24="792"
@@ -132,7 +132,7 @@
                     flexVersion="0.1" searchForCorrectionFiles="1" gainCorrectionFolder="C:\Users\anjal.doshi\Desktop\12345601013"
                     gainCorrectionFile="C:\Users\anjal.doshi\Desktop\12345601013\12345601013_gainCalValues.csv">
               <PROBE_VIEWER zoomHeight="80" zoomOffset="432" referenceChannel="Ext"/>
-              <SELECTED_CHANNELS CH0="384" CH1="385" CH2="386" CH3="387" CH4="388" CH5="389" CH6="390"
+              <SELECTED_ELECTRODES CH0="384" CH1="385" CH2="386" CH3="387" CH4="388" CH5="389" CH6="390"
                                  CH7="391" CH8="392" CH9="393" CH10="394" CH11="395" CH12="396"
                                  CH13="397" CH14="398" CH15="399" CH16="400" CH17="401" CH18="402"
                                  CH19="403" CH20="404" CH21="405" CH22="406" CH23="407" CH24="408"
