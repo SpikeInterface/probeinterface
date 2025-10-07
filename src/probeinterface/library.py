@@ -11,6 +11,7 @@ The gin platform enables contributions from users.
 
 from __future__ import annotations
 import os
+import warnings
 from pathlib import Path
 from urllib.request import urlopen
 import requests
@@ -55,6 +56,7 @@ def download_probeinterface_file(manufacturer: str, probe_name: str, tag: Option
         assert tag in get_tags_in_library(), f"Tag {tag} not found in library"
     else:
         tag = "main"
+
     os.makedirs(cache_folder / tag / manufacturer, exist_ok=True)
     local_file = cache_folder / tag / manufacturer / (probe_name + ".json")
     remote_file = public_url + tag + f"/{manufacturer}/{probe_name}/{probe_name}.json"
@@ -88,6 +90,25 @@ def get_from_cache(manufacturer: str, probe_name: str, tag: Optional[str] = None
             return None
         cache_folder = cache_folder_tag
     else:
+        # load latest commit if exists
+        commit_file = cache_folder / "main" / "latest_commit.txt"
+        commit = None
+        if commit_file.is_file():
+            with open(commit_file, "r") as f:
+                commit = f.read().strip()
+
+        # check against latest commit on github
+        try:
+            latest_commit = get_latest_commit("SpikeInterface", "probeinterface_library")["sha"]
+            if commit is None or commit != latest_commit:
+                # in this case we need to redownload the file and update the latest_commit.txt
+                with open(cache_folder / "main" / "latest_commit.txt", "w") as f:
+                    f.write(latest_commit)
+                return None
+        except Exception:
+            warnings.warn("Could not check for latest commit on github. Using local 'main' cache.")
+            pass
+
         cache_folder_tag = cache_folder / "main"
 
     local_file = cache_folder_tag / manufacturer / (probe_name + ".json")
@@ -245,3 +266,24 @@ def list_github_folders(owner: str, repo: str, path: str = "", ref: str = None, 
         raise RuntimeError(f"GitHub API returned status {resp.status_code}: {resp.text}")
     items = resp.json()
     return [item["name"] for item in items if item.get("type") == "dir" and item["name"][0] != "."]
+
+
+def get_latest_commit(owner: str, repo: str, branch: str = "main", token: str = None):
+    """
+    Get the latest commit SHA and message from a given branch (default: main).
+    """
+    url = f"https://api.github.com/repos/{owner}/{repo}/commits/{branch}"
+    headers = {}
+    if token or os.getenv("GH_TOKEN") or os.getenv("GITHUB_TOKEN"):
+        token = token or os.getenv("GH_TOKEN") or os.getenv("GITHUB_TOKEN")
+        headers["Authorization"] = f"token {token}"
+    resp = requests.get(url, headers=headers)
+    if resp.status_code != 200:
+        raise RuntimeError(f"GitHub API returned {resp.status_code}: {resp.text}")
+    data = resp.json()
+    return {
+        "sha": data["sha"],
+        "message": data["commit"]["message"],
+        "author": data["commit"]["author"]["name"],
+        "date": data["commit"]["author"]["date"],
+    }
