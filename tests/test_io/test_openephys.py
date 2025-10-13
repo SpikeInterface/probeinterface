@@ -258,7 +258,7 @@ def test_onebox():
     assert probe.get_contact_count() == 384
 
 
-def test_onix():
+def test_onix_np1():
     # This dataset has a multiple settings with different banks and configs
     probe_bankA = read_openephys(data_path / "OE_ONIX-NP" / "settings_bankA.xml")
     probe_dict = probe_bankA.to_dict(array_as_list=True)
@@ -311,6 +311,8 @@ def test_onix():
     # Verify each group has exactly 4 contacts
     assert unique_groups.shape[1] == 4, f"Tetrode groups should have 4 contacts, found {unique_groups.shape[1]}"
 
+
+def test_onix_np2():
     # NP2.0
     probe_np2_probe0 = read_openephys(
         data_path / "OE_ONIX-NP" / "settings_NP2.xml", probe_name="PortA-Neuropixels2.0eHeadstage-Neuropixels2.0-Probe0"
@@ -328,8 +330,33 @@ def test_onix():
     assert probe_np2_probe1.get_contact_count() == 384
     assert probe_np2_probe1.get_shank_count() == 4
 
+    for i in range(4):
+        probe_0 = read_openephys(
+            data_path / "OE_ONIX-NP" / f"settings_NP2_{i+1}.xml",
+            probe_name=f"PortA-Neuropixels2.0eHeadstage-Neuropixels2.0-Probe0",
+        )
+        probe_dict = probe_0.to_dict(array_as_list=True)
+        validate_probe_dict(probe_dict)
+        probe_1 = read_openephys(
+            data_path / "OE_ONIX-NP" / f"settings_NP2_{i+1}.xml",
+            probe_name=f"PortA-Neuropixels2.0eHeadstage-Neuropixels2.0-Probe1",
+        )
+        probe_dict = probe_1.to_dict(array_as_list=True)
+        validate_probe_dict(probe_dict)
+
+        # all should have 384 contacts and one shank, except for i == 3, where electrodes are
+        # selected on all 4 shanks
+        assert probe_0.get_contact_count() == 384
+        assert probe_0.get_shank_count() == 1
+        assert probe_1.get_contact_count() == 384
+        if i < 3:
+            assert probe_1.get_shank_count() == 1
+        else:
+            assert probe_1.get_shank_count() == 4
+
 
 if __name__ == "__main__":
     # test_multiple_probes()
     # test_NP_Ultra()
-    test_onix()
+    test_onix_np1()
+    test_onix_np2()
