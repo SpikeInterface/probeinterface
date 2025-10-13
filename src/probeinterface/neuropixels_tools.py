@@ -317,13 +317,18 @@ def _make_npx_probe_from_description(probe_description, model_name, elec_ids, sh
         # annotate each contact with its mux channel
         num_adcs, num_channels_per_adc, mux_table = make_mux_table_array(mux_info)
         num_contacts = positions.shape[0]
+        # mux channel: which adc is used for each contact
         mux_channels = np.zeros(num_contacts, dtype="int64")
+        # mux index: order of sampling of the contact in the adc group
+        mux_index = np.zeros(num_contacts, dtype="int64")
         for adc_idx, mux_channels_per_adc in enumerate(mux_table):
             mux_channels_per_adc = mux_channels_per_adc[mux_channels_per_adc < num_contacts]
             mux_channels[mux_channels_per_adc] = adc_idx
+            mux_index[mux_channels_per_adc] = np.arange(len(mux_channels_per_adc))
         probe.annotate(num_adcs=num_adcs)
         probe.annotate(num_channels_per_adc=num_channels_per_adc)
         probe.annotate_contacts(mux_channels=mux_channels)
+        probe.annotate_contacts(mux_index=mux_index)
 
     return probe
 
@@ -1044,20 +1049,17 @@ def read_openephys(
     pt_metadata = np_probe_info["pt_metadata"]
     mux_info = np_probe_info["mux_info"]
 
+    probe = _make_npx_probe_from_description(
+        pt_metadata, probe_part_number, elec_ids, shank_ids=shank_ids, mux_info=mux_info
+    )
+
     # check if subset of channels
     chans_saved = get_saved_channel_indices_from_openephys_settings(settings_file, stream_name=stream_name)
 
     # if a recording state is found, slice probe
     if chans_saved is not None:
-        positions = positions[chans_saved]
-        if shank_ids is not None:
-            shank_ids = np.array(shank_ids)[chans_saved]
-        if elec_ids is not None:
-            elec_ids = np.array(elec_ids)[chans_saved]
+        probe = probe.get_slice(chans_saved)
 
-    probe = _make_npx_probe_from_description(
-        pt_metadata, probe_part_number, elec_ids, shank_ids=shank_ids, mux_info=mux_info
-    )
     probe.serial_number = np_probe_info["serial_number"]
     probe.name = np_probe_info["name"]
 
