@@ -148,18 +148,24 @@ def get_probe_contour_vertices(shank_width, tip_length, probe_length) -> list:
     Function to get the vertices of the probe contour from probe properties. The probe contour can be constructed
     from five points. These are the vertices shown in the following figure:
 
-          A |    | E
-            |    |
-              .
-              .
-              .
-            |    |
-          B |    | D
-             \\  /
-              \\/
-               C
+            Top of probe (y = probe_length)
+        A +-------------------------------+ E
+          |                               |
+          |                               |
+          |        Shank body             |
+          |      (shank_width)            |
+          |                               |
+          |                               |
+        B +------------------------------+ D  (y = 0)
+           \                             /
+            \         Tip region        /
+             \      (tip_length)       /
+              \                       /
+               \                     /
+                \                   /
+                 +------------------+ C  (y = -tip_length)
 
-    This function returns the points indicated in the diagram above in a list [A,B,C,D,E].
+    This function returns the vertices in the order [A, B, C, D, E] as a list of (x, y) coordinates.
 
     Parameters
     ----------
