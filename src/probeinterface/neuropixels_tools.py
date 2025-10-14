@@ -146,8 +146,8 @@ def make_mux_table_array(mux_information) -> np.array:
 def get_probe_contour_vertices(shank_width, tip_length, probe_length) -> list:
     """
     Function to get the vertices of the probe contour from probe properties.
-    The probe contour can be constructed from five points. 
-    
+    The probe contour can be constructed from five points.
+
     These are the vertices shown in the following figure:
 
             Top of probe (y = probe_length)
