@@ -165,7 +165,7 @@ def get_probe_contour_vertices(shank_width, tip_length, probe_length) -> list:
               \                       /
                \                     /
                 \                   /
-                 +------------------+ C  (y = -tip_length)
+                 +-----------------+ C  (y = -tip_length)
 
     This function returns the vertices in the order [A, B, C, D, E] as a list of (x, y) coordinates.
 
