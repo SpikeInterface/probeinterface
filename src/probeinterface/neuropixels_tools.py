@@ -158,7 +158,7 @@ def get_probe_contour_vertices(shank_width, tip_length, probe_length) -> list:
           |      (shank_width)            |
           |                               |
           |                               |
-        B +------------------------------+ D  (y = 0)
+        B +-------------------------------+ D  (y = 0)
            \                             /
             \         Tip region        /
              \      (tip_length)       /
