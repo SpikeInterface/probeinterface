@@ -145,21 +145,29 @@ def make_mux_table_array(mux_information) -> np.array:
 
 def get_probe_contour_vertices(shank_width, tip_length, probe_length) -> list:
     """
-    Function to get the vertices of the probe contour from probe properties. The probe contour can be constructed
-    from five points. These are the vertices shown in the following figure:
+    Function to get the vertices of the probe contour from probe properties.
+    The probe contour can be constructed from five points.
 
-          A |    | E
-            |    |
-              .
-              .
-              .
-            |    |
-          B |    | D
-             \\  /
-              \\/
-               C
+    These are the vertices shown in the following figure:
 
-    This function returns the points indicated in the diagram above in a list [A,B,C,D,E].
+            Top of probe (y = probe_length)
+        A +-------------------------------+ E
+          |                               |
+          |                               |
+          |        Shank body             |
+          |      (shank_width)            |
+          |                               |
+          |                               |
+        B +-------------------------------+ D  (y = 0)
+           \                             /
+            \         Tip region        /
+             \      (tip_length)       /
+              \                       /
+               \                     /
+                \                   /
+                 +-----------------+ C  (y = -tip_length)
+
+    This function returns the vertices in the order [A, B, C, D, E] as a list of (x, y) coordinates.
 
     Parameters
     ----------
@@ -172,8 +180,14 @@ def get_probe_contour_vertices(shank_width, tip_length, probe_length) -> list:
 
     Returns
     -------
-    polygon_vertices : list
-        List of five points which make up the probe contour.
+    polygon_vertices : tuple of tuple
+        Five vertices as (x, y) coordinate pairs in micrometers, returned in the
+        order [A, B, C, D, E] corresponding to the diagram above:
+        A = (0, probe_length) - top-left corner
+        B = (0, 0) - bottom-left corner at shank base
+        C = (shank_width/2, -tip_length) - tip point (center bottom)
+        D = (shank_width, 0) - bottom-right corner at shank base
+        E = (shank_width, probe_length) - top-right corner
     """
 
     # this dict define the contour for one shank (duplicated when several shanks so)
