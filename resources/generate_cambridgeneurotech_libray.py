@@ -8,7 +8,7 @@ Original script:
 The script have been modified by Smauel Garcia (samuel.garcia@cnrs.fr):
   * more pytonic
   * improve code readability
-  * not more channel_device_index the order is the conatct index
+  * not more channel_device_index the order is the contact index
   * simpler function for plotting.
 
 2021-04-02
@@ -72,7 +72,7 @@ plt.rcParams['svg.fonttype'] = 'none'  # to make sure it is recognize as true fo
 
 def convert_probe_shape(listCoord):
     '''
-    This is to convert reference point probe shape inputed in excel
+    This is to convert reference point probe shape inputted in excel
     as string 'x y x y x y that outline the shape of one shanck
     and can be converted to an array to draw the porbe
     '''
@@ -95,7 +95,7 @@ def get_contact_order(connector, probe_type):
     This will help to re-order the probe contact later on.
     """
 
-    # first part of the function to opne the proper connector based on connector name
+    # first part of the function to open the proper connector based on connector name
 
     # header [0,1] is used to create a mutliindex
     df = pd.read_excel(probe_map_file, sheet_name=connector, header=[0,1])
@@ -188,7 +188,7 @@ def generate_CN_multi_shank(probe_info):
 
 def create_CN_figure(probe_name, probe):
     """
-    Create custum figire for CN with custum colors + logo
+    Create custom figire for CN with custom colors + logo
     """
     fig, ax = plt.subplots()
     fig.set_size_inches(18.5, 10.5)

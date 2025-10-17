@@ -113,7 +113,7 @@ def generate_unique_ids(min: int, max: int, n: int, trials: int = 20) -> np.arra
     Parameters
     ----------
     min : int
-        Minimun value permitted for an identifier
+        Minimum value permitted for an identifier
     max : int
         Maximum value permitted for an identifier
     n : int

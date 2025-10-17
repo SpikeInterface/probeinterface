@@ -97,7 +97,7 @@ def test_NP1_subset():
     assert len(probe_lf.contact_positions) == 200
 
     # Not specifying the stream_name should raise an Exception, because both the ProbeA-AP and
-    # ProbeA-LFP have custome channel selections
+    # ProbeA-LFP have custom channel selections
     with pytest.raises(AssertionError):
         probe = read_openephys(data_path / "OE_Neuropix-PXI-subset" / "settings.xml")
 

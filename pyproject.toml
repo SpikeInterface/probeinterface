@@ -65,3 +65,10 @@ omit = [
 
 [tool.black]
 line-length = 120
+
+[tool.codespell]
+# Ref: https://github.com/codespell-project/codespell#using-a-config-file
+skip = '.git*,*.pdf,*.svg,data,./doc/releases'
+check-hidden = true
+# ignore-regex = ''
+ignore-words-list = 'compiletime'

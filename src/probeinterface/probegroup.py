@@ -226,7 +226,7 @@ class ProbeGroup:
                 f"Wrong channels size {channels.size} for the number of channels {self.get_contact_count()}"
             )
 
-        # first reset previsous indices
+        # first reset previous indices
         for i, probe in enumerate(self.probes):
             n = probe.get_contact_count()
             probe.set_device_channel_indices([-1] * n)
