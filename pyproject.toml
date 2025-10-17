@@ -71,4 +71,4 @@ line-length = 120
 skip = '.git*,*.pdf,*.svg,data,./doc/releases'
 check-hidden = true
 # ignore-regex = ''
-# ignore-words-list = ''
+ignore-words-list = 'compiletime'
