@@ -51,7 +51,7 @@ def generate_all_npx():
 
         probe = _make_npx_probe_from_description(pt_metadata, model_name, elec_ids, shank_ids)
 
-        # ploting
+        # plotting
         fig, axs = plt.subplots(ncols=2)
 
         ax = axs[0]

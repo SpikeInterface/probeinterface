@@ -67,7 +67,7 @@ probe_part_number_to_probe_type = {
     "NP2020": "2020",
     # Ultra
     "NP1100": "1100",  # Ultra probe - 1 bank
-    "NP1110": "1110",  # Ultra probe - 16 banks no handle beacuse
+    "NP1110": "1110",  # Ultra probe - 16 banks no handle because
     "NP1121": "1121",  # Ultra probe - beta configuration
     # Opto
     "NP1300": "1300",  # Opto probe
@@ -103,7 +103,7 @@ def get_probe_length(probe_part_number: str) -> int:
     Returns
     -------
     probe_length : int
-        Lenth of full probe (microns)
+        Length of full probe (microns)
     """
 
     probe_length = 10_000
@@ -1128,7 +1128,7 @@ def get_saved_channel_indices_from_openephys_settings(
                         if len(possible_custom_streams) > 1:
                             warnings.warn(
                                 f"More than one custom parameters associated to {stream_name} "
-                                f"found. Using fisrt one"
+                                f"found. Using first one"
                             )
                         custom_stream = possible_custom_streams[0]
                     else:
