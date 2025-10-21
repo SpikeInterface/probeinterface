@@ -102,38 +102,6 @@ def get_from_cache(manufacturer: str, probe_name: str, tag: Optional[str] = None
         return probe
 
 
-def remove_from_cache(manufacturer: str, probe_name: str, tag: Optional[str] = None) -> Optional["Probe"]:
-    """
-    Remove Probe from local cache
-
-    Parameters
-    ----------
-    manufacturer : "cambridgeneurotech" | "neuronexus" | "plexon" | "imec" | "sinaps"
-        The probe manufacturer
-    probe_name : str (see probeinterface_libary for options)
-        The probe name
-    tag : str | None, default: None
-        Optional tag for the probe
-
-    Returns
-    -------
-    probe : Probe object, or None if no probeinterface JSON file is found
-
-    """
-    cache_folder = get_cache_folder()
-    if tag is not None:
-        cache_folder_tag = cache_folder / tag
-        if not cache_folder_tag.is_dir():
-            return None
-        cache_folder = cache_folder_tag
-    else:
-        cache_folder_tag = cache_folder / "main"
-
-    local_file = cache_folder_tag / manufacturer / (probe_name + ".json")
-    if local_file.is_file():
-        os.remove(local_file)
-
-
 def get_probe(
     manufacturer: str,
     probe_name: str,
