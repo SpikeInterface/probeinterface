@@ -41,9 +41,11 @@ from .generator import (
 )
 from .library import (
     get_probe,
-    list_manufacturers_in_library,
-    list_probes_in_library,
+    list_manufacturers,
+    list_probes_by_manufacturer,
+    list_all_probes,
     get_tags_in_library,
     cache_full_library,
+    clear_cache
 )
 from .wiring import get_available_pathways

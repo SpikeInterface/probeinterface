@@ -146,14 +146,14 @@ def get_probe(
     return probe
 
 
-def cache_full_library(tag=None) -> None:
+def cache_full_library(tag=None) -> None:  # pragma: no cover
     """
     Download all probes from the library to the cache directory.
     """
-    manufacturers = list_manufacturers_in_library(tag=tag)
+    manufacturers = list_manufacturers(tag=tag)
 
     for manufacturer in manufacturers:
-        probes = list_probes_in_library(manufacturer, tag=tag)
+        probes = list_probes_by_manufacturer(manufacturer, tag=tag)
         for probe_name in probes:
             try:
                 download_probeinterface_file(manufacturer, probe_name, tag=tag)
@@ -161,7 +161,29 @@ def cache_full_library(tag=None) -> None:
                 warnings.warn(f"Could not download {manufacturer}/{probe_name} (tag: {tag}): {e}")
 
 
-def list_manufacturers_in_library(tag=None) -> list[str]:
+def clear_cache(tag=None) -> None:  # pragma: no cover
+    """
+    Clear the cache folder for probeinterface library files.
+
+    Parameters
+    ----------
+    tag : str | None, default: None
+        Optional tag for the probe
+    """
+    cache_folder = get_cache_folder()
+    if tag is not None:
+        cache_folder_tag = cache_folder / tag
+        if cache_folder_tag.is_dir():
+            import shutil
+
+            shutil.rmtree(cache_folder_tag)
+    else:
+        import shutil
+
+        shutil.rmtree(cache_folder)
+
+
+def list_manufacturers(tag=None) -> list[str]:
     """
     Get the list of available manufacturers in the library
 
@@ -173,7 +195,7 @@ def list_manufacturers_in_library(tag=None) -> list[str]:
     return list_github_folders("SpikeInterface", "probeinterface_library", ref=tag)
 
 
-def list_probes_in_library(manufacturer: str, tag=None) -> list[str]:
+def list_probes_by_manufacturer(manufacturer: str, tag=None) -> list[str]:
     """
     Get the list of available probes for a given manufacturer
 
@@ -188,6 +210,23 @@ def list_probes_in_library(manufacturer: str, tag=None) -> list[str]:
         List of available probes for the given manufacturer
     """
     return list_github_folders("SpikeInterface", "probeinterface_library", path=manufacturer, ref=tag)
+
+
+def list_all_probes(tag=None) -> dict[str, list[str]]:
+    """
+    Get the list of all available probes in the library
+
+    Returns
+    -------
+    all_probes : dict
+        Dictionary with manufacturers as keys and list of probes as values
+    """
+    all_probes = {}
+    manufacturers = list_manufacturers(tag=tag)
+    for manufacturer in manufacturers:
+        probes = list_probes_by_manufacturer(manufacturer, tag=tag)
+        all_probes[manufacturer] = probes
+    return all_probes
 
 
 def get_tags_in_library() -> list[str]:

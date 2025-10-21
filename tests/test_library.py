@@ -1,13 +1,18 @@
 import os
+import pytest
+
 from probeinterface import Probe
 from probeinterface.library import (
     download_probeinterface_file,
     get_from_cache,
     get_probe,
     get_tags_in_library,
-    list_manufacturers_in_library,
-    list_probes_in_library,
+    list_manufacturers,
+    list_probes_by_manufacturer,
+    list_all_probes,
     get_cache_folder,
+    cache_full_library,
+    clear_cache
 )
 
 
@@ -77,24 +82,44 @@ def test_available_tags():
             assert len(tag) > 0
 
 
-def test_list_manufacturers_in_library():
-    manufacturers = list_manufacturers_in_library()
+def test_list_manufacturers():
+    manufacturers = list_manufacturers()
     assert isinstance(manufacturers, list)
     assert "neuronexus" in manufacturers
     assert "imec" in manufacturers
 
 
-def test_list_probes_in_library():
-    manufacturers = list_manufacturers_in_library()
+def test_list_probes():
+    manufacturers = list_all_probes()
     for manufacturer in manufacturers:
-        probes = list_probes_in_library(manufacturer)
+        probes = list_probes_by_manufacturer(manufacturer)
         assert isinstance(probes, list)
         assert len(probes) > 0
+
+
+@pytest.mark.skip(reason="long test that downloads the full library")
+def test_cache_full_library():
+    tag = get_tags_in_library()[0] if len(get_tags_in_library()) > 0 else None
+    print(tag)
+    cache_full_library(tag=tag)
+    all_probes = list_all_probes(tag=tag)
+    # spot check that a known probe is in the cache
+    for manufacturer, probes in all_probes.items():
+        for probe_name in probes:
+            probe = get_from_cache(manufacturer, probe_name, tag=tag)
+            assert isinstance(probe, Probe)
+
+    clear_cache(tag=tag)
+    for manufacturer, probes in all_probes.items():
+        for probe_name in probes:
+            probe = get_from_cache(manufacturer, probe_name, tag=tag)
+            assert probe is None
 
 
 if __name__ == "__main__":
     test_download_probeinterface_file()
     test_get_from_cache()
     test_get_probe()
-    test_list_manufacturers_in_library()
-    test_list_probes_in_library()
+    test_list_manufacturers()
+    test_list_probes()
+    test_cache_full_library()
