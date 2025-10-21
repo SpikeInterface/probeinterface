@@ -12,7 +12,7 @@ from probeinterface.library import (
     list_all_probes,
     get_cache_folder,
     cache_full_library,
-    clear_cache
+    clear_cache,
 )
 
 

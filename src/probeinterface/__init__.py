@@ -46,6 +46,6 @@ from .library import (
     list_all_probes,
     get_tags_in_library,
     cache_full_library,
-    clear_cache
+    clear_cache,
 )
 from .wiring import get_available_pathways
