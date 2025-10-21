@@ -15,7 +15,7 @@ manufacturer = "neuronexus"
 probe_name = "A1x32-Poly3-10mm-50-177"
 
 
-def _remove_from_cache(manufacturer: str, probe_name: str, tag = None) -> None:
+def _remove_from_cache(manufacturer: str, probe_name: str, tag=None) -> None:
     """
     Remove Probe from local cache
 
