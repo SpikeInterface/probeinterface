@@ -122,7 +122,7 @@ def make_mux_table_array(mux_information) -> np.array:
 
     Returns
     -------
-    mux_channels_array : np.array
+    adc_groups_array : np.array
         Array of which channels are in each adc group, shaped (number of `adc`s, number of channels in each `adc`).
     """
 
@@ -135,12 +135,12 @@ def make_mux_table_array(mux_information) -> np.array:
     num_adcs, num_channels_per_adc = map(int, adc_info[1:].split(","))
 
     # Then remove the brackets, and split using " " to get each integer as a list
-    mux_channels = [
+    adc_groups = [
         np.array(each_mux.replace("(", "").replace(")", "").split(" ")).astype("int") for each_mux in split_mux
     ]
-    mux_channels_array = np.transpose(np.array(mux_channels))
+    adc_groups_array = np.transpose(np.array(adc_groups))
 
-    return num_adcs, num_channels_per_adc, mux_channels_array
+    return num_adcs, num_channels_per_adc, adc_groups_array
 
 
 def get_probe_contour_vertices(shank_width, tip_length, probe_length) -> list:
@@ -318,17 +318,17 @@ def _make_npx_probe_from_description(probe_description, model_name, elec_ids, sh
         num_adcs, num_channels_per_adc, mux_table = make_mux_table_array(mux_info)
         num_contacts = positions.shape[0]
         # mux channel: which adc is used for each contact
-        mux_channels = np.zeros(num_contacts, dtype="int64")
+        adc_groups = np.zeros(num_contacts, dtype="int64")
         # mux index: order of sampling of the contact in the adc group
-        mux_index = np.zeros(num_contacts, dtype="int64")
-        for adc_idx, mux_channels_per_adc in enumerate(mux_table):
-            mux_channels_per_adc = mux_channels_per_adc[mux_channels_per_adc < num_contacts]
-            mux_channels[mux_channels_per_adc] = adc_idx
-            mux_index[mux_channels_per_adc] = np.arange(len(mux_channels_per_adc))
+        adc_sample_order = np.zeros(num_contacts, dtype="int64")
+        for adc_idx, adc_groups_per_adc in enumerate(mux_table):
+            adc_groups_per_adc = adc_groups_per_adc[adc_groups_per_adc < num_contacts]
+            adc_groups[adc_groups_per_adc] = adc_idx
+            adc_sample_order[adc_groups_per_adc] = np.arange(len(adc_groups_per_adc))
         probe.annotate(num_adcs=num_adcs)
         probe.annotate(num_channels_per_adc=num_channels_per_adc)
-        probe.annotate_contacts(mux_channels=mux_channels)
-        probe.annotate_contacts(mux_index=mux_index)
+        probe.annotate_contacts(adc_groups=adc_groups)
+        probe.annotate_contacts(adc_sample_order=adc_sample_order)
 
     return probe
 
