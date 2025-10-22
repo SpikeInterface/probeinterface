@@ -854,7 +854,6 @@ def read_openephys(
 
     probe_features = _load_np_probe_features()
 
-    list_of_probes = []
     np_probes_info = []
 
     # now load probe info from NP_PROBE fields
