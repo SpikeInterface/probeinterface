@@ -317,9 +317,9 @@ def _make_npx_probe_from_description(probe_description, model_name, elec_ids, sh
         # annotate each contact with its mux channel
         num_adcs, num_channels_per_adc, mux_table = make_mux_table_array(mux_info)
         num_contacts = positions.shape[0]
-        # mux channel: which adc is used for each contact
+        # ADC group: which adc is used for each contact
         adc_groups = np.zeros(num_contacts, dtype="int64")
-        # mux index: order of sampling of the contact in the adc group
+        # ADC sample order: order of sampling of the contact in the adc group
         adc_sample_order = np.zeros(num_contacts, dtype="int64")
         for adc_idx, adc_groups_per_adc in enumerate(mux_table):
             adc_groups_per_adc = adc_groups_per_adc[adc_groups_per_adc < num_contacts]
