@@ -1120,7 +1120,6 @@ def read_openephys(
 
     if probe is None:
         # check if subset of channels
-        chans_saved = get_saved_channel_indices_from_openephys_settings(settings_file, stream_name=stream_name)
         shank_ids = np_probe_info["shank_ids"]
         elec_ids = np_probe_info["elec_ids"]
         pt_metadata = np_probe_info["pt_metadata"]
@@ -1130,16 +1129,9 @@ def read_openephys(
             pt_metadata, probe_part_number, elec_ids, shank_ids=shank_ids, mux_info=mux_info
         )
 
-        # if a recording state is found, slice probe
-        if chans_saved is not None:
-            positions = positions[chans_saved]
-            if shank_ids is not None:
-                shank_ids = np.array(shank_ids)[chans_saved]
-            if elec_ids is not None:
-                elec_ids = np.array(elec_ids)[chans_saved]
-
-        if chans_saved is not None:
-            probe = probe.get_slice(chans_saved)
+    chans_saved = get_saved_channel_indices_from_openephys_settings(settings_file, stream_name=stream_name)
+    if chans_saved is not None:
+        probe = probe.get_slice(chans_saved)
 
     probe.serial_number = np_probe_info["serial_number"]
     probe.name = np_probe_info["name"]
