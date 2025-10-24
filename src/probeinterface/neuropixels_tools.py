@@ -324,8 +324,8 @@ def _make_npx_probe_from_description(probe_description, model_name, elec_ids, sh
     probe.annotate(
         adc_bit_depth=probe_description["adc_bit_depth"],
         num_readout_channels=probe_description["num_readout_channels"],
-        ap_sample_frequency_hz=probe_description["ap_sample_frequency_hz"],
-        lf_sample_frequency_hz=probe_description["lf_sample_frequency_hz"],
+        ap_sample_frequency_hz=float(probe_description["ap_sample_frequency_hz"]),
+        lf_sample_frequency_hz=float(probe_description["lf_sample_frequency_hz"]),
     )
 
     # annotate with MUX table
