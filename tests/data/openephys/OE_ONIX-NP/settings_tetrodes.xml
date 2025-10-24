@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<SETTINGS>
+  <INFO>
+    <VERSION>1.0.1</VERSION>
+    <PLUGIN_API_VERSION>10</PLUGIN_API_VERSION>
+    <DATE>5 Sep 2025 14:09:43</DATE>
+    <OS>Windows 10</OS>
+    <MACHINE name="OE" cpu_model="Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz"
+             cpu_num_cores="8"/>
+  </INFO>
+  <SIGNALCHAIN>
+    <PROCESSOR name="ONIX Source" insertionPoint="0" pluginName="ONIX Source"
+               type="4" index="0" libraryName="ONIX Source" libraryVersion="0.2.0"
+               processorType="2" nodeId="100">
+      <PROCESSOR_PARAMETERS passthroughA="0" passthroughB="1"/>
+      <STREAM name="BreakoutBoard-DigitalIO" description="Digital inputs and buttons"
+              sample_rate="25000.0" channel_count="14" device_name="Digital IO">
+        <PARAMETERS/>
+      </STREAM>
+      <STREAM name="BreakoutBoard-AnalogIO-AnalogInput" description="Analog Input data"
+              sample_rate="25000.0" channel_count="12" device_name="Analog IO">
+        <PARAMETERS/>
+      </STREAM>
+      <STREAM name="BreakoutBoard-MemoryMonitor-PercentUsed" description="Percent of available memory that is currently used"
+              sample_rate="100.0" channel_count="1" device_name="Memory Monitor">
+        <PARAMETERS/>
+      </STREAM>
+      <STREAM name="PortB-Neuropixels1.0eHeadstage-Probe-AP" description="Neuropixels 1.0 AP band data stream"
+              sample_rate="30000.0" channel_count="384" device_name="Probe">
+        <PARAMETERS/>
+      </STREAM>
+      <STREAM name="PortB-Neuropixels1.0eHeadstage-Probe-LFP" description="Neuropixels 1.0 LFP band data stream"
+              sample_rate="2500.0" channel_count="384" device_name="Probe">
+        <PARAMETERS/>
+      </STREAM>
+      <STREAM name="PortB-Neuropixels1.0eHeadstage-BNO055" description="Continuous data from a Bno055 9-axis IMU"
+              sample_rate="100.0" channel_count="18" device_name="BNO055">
+        <PARAMETERS/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="ONIX Source" activeStream="0"
+              Type="Visualizer" tabText="Onix Source" headstagePortA="" headstagePortB="Neuropixels 1.0e Headstage"
+              portVoltageA="Auto" portVoltageB="Auto" blockReadSize="4096">
+        <TAB Active="1"/>
+        <WINDOW Active="0"/>
+        <VISUALIZER_PARAMETERS/>
+        <CUSTOM_PARAMETERS>
+          <DIGITALIO isEnabled="1"/>
+          <ANALOGIO isEnabled="1">
+            <CHANNEL_DIRECTION CH0="Input" CH1="Input" CH2="Input" CH3="Input" CH4="Input" CH5="Input"
+                               CH6="Input" CH7="Input" CH8="Input" CH9="Input" CH10="Input"
+                               CH11="Input"/>
+          </ANALOGIO>
+          <HARPSYNCINPUT isEnabled="0"/>
+          <OUTPUTCLOCK frequencyHz="1.0" dutyCycle="50" delay="0" gateRun="1"/>
+          <NEUROPIXELSV1E name="Probe" idx="512" probeSerialNumber="19051024281" probePartNumber="PRB_1_4_0480_1_C"
+                          flexPartNumber="NP2_FLEX_0" flexVersion="1.2" isEnabled="1" searchForCalibrationFiles="1"
+                          calibrationFolder="C:\Brandon-temp" adcCalibrationFile="C:\Brandon-temp\19051024281\19051024281_ADCCalibration.csv"
+                          gainCalibrationFile="C:\Brandon-temp\19051024281\19051024281_gainCalValues.csv">
+            <PROBE_VIEWER zoomHeight="100" zoomOffset="360" apGain="1000x" lfpGain="50x"
+                          referenceChannel="Ext" apFilter="ON"/>
+            <SELECTED_ELECTRODES CH0="0" CH1="1" CH2="2" CH3="3" CH4="388" CH5="389" CH6="390"
+                               CH7="391" CH8="8" CH9="9" CH10="10" CH11="11" CH12="396" CH13="397"
+                               CH14="398" CH15="399" CH16="16" CH17="17" CH18="18" CH19="19"
+                               CH20="404" CH21="405" CH22="406" CH23="407" CH24="24" CH25="25"
+                               CH26="26" CH27="27" CH28="412" CH29="413" CH30="414" CH31="415"
+                               CH32="32" CH33="33" CH34="34" CH35="35" CH36="420" CH37="421"
+                               CH38="422" CH39="423" CH40="40" CH41="41" CH42="42" CH43="43"
+                               CH44="428" CH45="429" CH46="430" CH47="431" CH48="48" CH49="49"
+                               CH50="50" CH51="51" CH52="436" CH53="437" CH54="438" CH55="439"
+                               CH56="56" CH57="57" CH58="58" CH59="59" CH60="444" CH61="445"
+                               CH62="446" CH63="447" CH64="64" CH65="65" CH66="66" CH67="67"
+                               CH68="452" CH69="453" CH70="454" CH71="455" CH72="72" CH73="73"
+                               CH74="74" CH75="75" CH76="460" CH77="461" CH78="462" CH79="463"
+                               CH80="80" CH81="81" CH82="82" CH83="83" CH84="468" CH85="469"
+                               CH86="470" CH87="471" CH88="88" CH89="89" CH90="90" CH91="91"
+                               CH92="476" CH93="477" CH94="478" CH95="479" CH96="96" CH97="97"
+                               CH98="98" CH99="99" CH100="484" CH101="485" CH102="486" CH103="487"
+                               CH104="104" CH105="105" CH106="106" CH107="107" CH108="492" CH109="493"
+                               CH110="494" CH111="495" CH112="112" CH113="113" CH114="114" CH115="115"
+                               CH116="500" CH117="501" CH118="502" CH119="503" CH120="120" CH121="121"
+                               CH122="122" CH123="123" CH124="508" CH125="509" CH126="510" CH127="511"
+                               CH128="128" CH129="129" CH130="130" CH131="131" CH132="516" CH133="517"
+                               CH134="518" CH135="519" CH136="136" CH137="137" CH138="138" CH139="139"
+                               CH140="524" CH141="525" CH142="526" CH143="527" CH144="144" CH145="145"
+                               CH146="146" CH147="147" CH148="532" CH149="533" CH150="534" CH151="535"
+                               CH152="152" CH153="153" CH154="154" CH155="155" CH156="540" CH157="541"
+                               CH158="542" CH159="543" CH160="160" CH161="161" CH162="162" CH163="163"
+                               CH164="548" CH165="549" CH166="550" CH167="551" CH168="168" CH169="169"
+                               CH170="170" CH171="171" CH172="556" CH173="557" CH174="558" CH175="559"
+                               CH176="176" CH177="177" CH178="178" CH179="179" CH180="564" CH181="565"
+                               CH182="566" CH183="567" CH184="184" CH185="185" CH186="186" CH187="187"
+                               CH188="572" CH189="573" CH190="574" CH191="575" CH192="192" CH193="193"
+                               CH194="194" CH195="195" CH196="580" CH197="581" CH198="582" CH199="583"
+                               CH200="200" CH201="201" CH202="202" CH203="203" CH204="588" CH205="589"
+                               CH206="590" CH207="591" CH208="208" CH209="209" CH210="210" CH211="211"
+                               CH212="596" CH213="597" CH214="598" CH215="599" CH216="216" CH217="217"
+                               CH218="218" CH219="219" CH220="604" CH221="605" CH222="606" CH223="607"
+                               CH224="224" CH225="225" CH226="226" CH227="227" CH228="612" CH229="613"
+                               CH230="614" CH231="615" CH232="232" CH233="233" CH234="234" CH235="235"
+                               CH236="620" CH237="621" CH238="622" CH239="623" CH240="240" CH241="241"
+                               CH242="242" CH243="243" CH244="628" CH245="629" CH246="630" CH247="631"
+                               CH248="248" CH249="249" CH250="250" CH251="251" CH252="636" CH253="637"
+                               CH254="638" CH255="639" CH256="256" CH257="257" CH258="258" CH259="259"
+                               CH260="644" CH261="645" CH262="646" CH263="647" CH264="264" CH265="265"
+                               CH266="266" CH267="267" CH268="652" CH269="653" CH270="654" CH271="655"
+                               CH272="272" CH273="273" CH274="274" CH275="275" CH276="660" CH277="661"
+                               CH278="662" CH279="663" CH280="280" CH281="281" CH282="282" CH283="283"
+                               CH284="668" CH285="669" CH286="670" CH287="671" CH288="288" CH289="289"
+                               CH290="290" CH291="291" CH292="676" CH293="677" CH294="678" CH295="679"
+                               CH296="296" CH297="297" CH298="298" CH299="299" CH300="684" CH301="685"
+                               CH302="686" CH303="687" CH304="304" CH305="305" CH306="306" CH307="307"
+                               CH308="692" CH309="693" CH310="694" CH311="695" CH312="312" CH313="313"
+                               CH314="314" CH315="315" CH316="700" CH317="701" CH318="702" CH319="703"
+                               CH320="320" CH321="321" CH322="322" CH323="323" CH324="708" CH325="709"
+                               CH326="710" CH327="711" CH328="328" CH329="329" CH330="330" CH331="331"
+                               CH332="716" CH333="717" CH334="718" CH335="719" CH336="336" CH337="337"
+                               CH338="338" CH339="339" CH340="724" CH341="725" CH342="726" CH343="727"
+                               CH344="344" CH345="345" CH346="346" CH347="347" CH348="732" CH349="733"
+                               CH350="734" CH351="735" CH352="352" CH353="353" CH354="354" CH355="355"
+                               CH356="740" CH357="741" CH358="742" CH359="743" CH360="360" CH361="361"
+                               CH362="362" CH363="363" CH364="748" CH365="749" CH366="750" CH367="751"
+                               CH368="368" CH369="369" CH370="370" CH371="371" CH372="756" CH373="757"
+                               CH374="758" CH375="759" CH376="376" CH377="377" CH378="378" CH379="379"
+                               CH380="764" CH381="765" CH382="766" CH383="767"/>
+          </NEUROPIXELSV1E>
+          <POLLEDBNO055 name="BNO055" idx="513" isEnabled="1"/>
+        </CUSTOM_PARAMETERS>
+      </EDITOR>
+    </PROCESSOR>
+    <PROCESSOR name="LFP Viewer" insertionPoint="1" pluginName="LFP Viewer"
+               type="1" index="4" libraryName="LFP viewer" libraryVersion="1.0.1"
+               processorType="3" nodeId="101">
+      <PROCESSOR_PARAMETERS/>
+      <STREAM name="BreakoutBoard-DigitalIO" description="Digital inputs and buttons"
+              sample_rate="25000.0" channel_count="14" device_name="Digital IO">
+        <PARAMETERS/>
+      </STREAM>
+      <STREAM name="BreakoutBoard-AnalogIO-AnalogInput" description="Analog Input data"
+              sample_rate="25000.0" channel_count="12" device_name="Analog IO">
+        <PARAMETERS/>
+      </STREAM>
+      <STREAM name="BreakoutBoard-MemoryMonitor-PercentUsed" description="Percent of available memory that is currently used"
+              sample_rate="100.0" channel_count="1" device_name="Memory Monitor">
+        <PARAMETERS/>
+      </STREAM>
+      <STREAM name="PortB-Neuropixels1.0eHeadstage-Probe-AP" description="Neuropixels 1.0 AP band data stream"
+              sample_rate="30000.0" channel_count="384" device_name="Probe">
+        <PARAMETERS/>
+      </STREAM>
+      <STREAM name="PortB-Neuropixels1.0eHeadstage-Probe-LFP" description="Neuropixels 1.0 LFP band data stream"
+              sample_rate="2500.0" channel_count="384" device_name="Probe">
+        <PARAMETERS/>
+      </STREAM>
+      <STREAM name="PortB-Neuropixels1.0eHeadstage-BNO055" description="Continuous data from a Bno055 9-axis IMU"
+              sample_rate="100.0" channel_count="18" device_name="BNO055">
+        <PARAMETERS/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="LFP Viewer" activeStream="0"
+              Type="LfpDisplayEditor" tabText="LFP">
+        <TAB Active="1"/>
+        <WINDOW Active="0"/>
+        <VALUES SelectedLayout="1"/>
+        <VISUALIZER_PARAMETERS/>
+        <CUSTOM_PARAMETERS>
+          <LFPDISPLAY0 stream_key="100|BreakoutBoard-DigitalIO" Range="250,2000,10.0"
+                       Timebase="2.0" Spread="40" colourScheme="1" colourGrouping="1"
+                       spikeRaster="OFF" clipWarning="1" satWarning="1" reverseOrder="0"
+                       sortByDepth="0" channelSkip="1" showChannelNum="0" subtractOffset="0"
+                       isInverted="0" triggerSource="1" trialAvg="0" singleChannelView="-1"
+                       EventButtonState="255" ChannelDisplayState="11111111111111" selectedChannelType="1"
+                       ScrollX="0" ScrollY="0"/>
+          <LFPDISPLAY1 stream_key="100|BreakoutBoard-DigitalIO" Range="250,2000,10.0"
+                       Timebase="2.0" Spread="40" colourScheme="1" colourGrouping="1"
+                       spikeRaster="OFF" clipWarning="1" satWarning="1" reverseOrder="0"
+                       sortByDepth="0" channelSkip="1" showChannelNum="0" subtractOffset="0"
+                       isInverted="0" triggerSource="1" trialAvg="0" singleChannelView="-1"
+                       EventButtonState="255" ChannelDisplayState="11111111111111" selectedChannelType="1"
+                       ScrollX="0" ScrollY="0"/>
+          <LFPDISPLAY2 stream_key="100|BreakoutBoard-DigitalIO" Range="250,2000,10.0"
+                       Timebase="2.0" Spread="40" colourScheme="1" colourGrouping="1"
+                       spikeRaster="OFF" clipWarning="1" satWarning="1" reverseOrder="0"
+                       sortByDepth="0" channelSkip="1" showChannelNum="0" subtractOffset="0"
+                       isInverted="0" triggerSource="1" trialAvg="0" singleChannelView="-1"
+                       EventButtonState="255" ChannelDisplayState="11111111111111" selectedChannelType="1"
+                       ScrollX="0" ScrollY="0"/>
+          <CANVAS doubleVerticalSplitRatio="0.5" doubleHorizontalSplitRatio="0.5"
+                  tripleHorizontalSplitRatio="0.33,0.66" tripleVerticalSplitRatio="0.33,0.66"
+                  showAllOptions="0"/>
+        </CUSTOM_PARAMETERS>
+      </EDITOR>
+    </PROCESSOR>
+    <PROCESSOR name="Record Node" insertionPoint="1" pluginName="Record Node"
+               type="0" index="3" libraryName="" libraryVersion="" processorType="8"
+               nodeId="102">
+      <PROCESSOR_PARAMETERS directory="None" engine="0" events="1" spikes="1" main_sync="-1"/>
+      <STREAM name="BreakoutBoard-DigitalIO" description="Digital inputs and buttons"
+              sample_rate="25000.0" channel_count="14" device_name="Digital IO">
+        <PARAMETERS channels="" sync_line="-1"/>
+      </STREAM>
+      <STREAM name="BreakoutBoard-AnalogIO-AnalogInput" description="Analog Input data"
+              sample_rate="25000.0" channel_count="12" device_name="Analog IO">
+        <PARAMETERS channels="" sync_line="-1"/>
+      </STREAM>
+      <STREAM name="BreakoutBoard-MemoryMonitor-PercentUsed" description="Percent of available memory that is currently used"
+              sample_rate="100.0" channel_count="1" device_name="Memory Monitor">
+        <PARAMETERS channels="" sync_line="-1"/>
+      </STREAM>
+      <STREAM name="PortB-Neuropixels1.0eHeadstage-Probe-AP" description="Neuropixels 1.0 AP band data stream"
+              sample_rate="30000.0" channel_count="384" device_name="Probe">
+        <PARAMETERS channels="" sync_line="-1"/>
+      </STREAM>
+      <STREAM name="PortB-Neuropixels1.0eHeadstage-Probe-LFP" description="Neuropixels 1.0 LFP band data stream"
+              sample_rate="2500.0" channel_count="384" device_name="Probe">
+        <PARAMETERS channels="" sync_line="-1"/>
+      </STREAM>
+      <STREAM name="PortB-Neuropixels1.0eHeadstage-BNO055" description="Continuous data from a Bno055 9-axis IMU"
+              sample_rate="100.0" channel_count="18" device_name="BNO055">
+        <PARAMETERS channels="" sync_line="-1"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS fifoMonitorsVisible="1"/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Record Node" activeStream="0"/>
+    </PROCESSOR>
+  </SIGNALCHAIN>
+  <CONTROLPANEL isOpen="1" recordPath="C:\Users\brandon\Documents\private\saving-probe-interface-files"
+                recordEngine="BINARY" clockMode="0" clockReferenceTime="0" forceNewDirectory="0"/>
+  <AUDIOEDITOR isMuted="0" volume="50.0" noiseGate="0.0"/>
+  <FILENAMECONFIG>
+    <PREPEND state="0" value=""/>
+    <MAIN state="1" value="2025-09-05_14-09-32"/>
+    <APPEND state="0" value=""/>
+  </FILENAMECONFIG>
+  <EDITORVIEWPORT selectedTab="0" scroll="0"/>
+  <GRAPHVIEWER>
+    <NODE id="100" isProcessorInfoVisible="0">
+      <STREAM key="100|BreakoutBoard-AnalogIO-AnalogInput" isStreamVisible="0"
+              isParamsVisible="0"/>
+      <STREAM key="100|BreakoutBoard-DigitalIO" isStreamVisible="0" isParamsVisible="0"/>
+      <STREAM key="100|BreakoutBoard-MemoryMonitor-PercentUsed" isStreamVisible="0"
+              isParamsVisible="0"/>
+      <STREAM key="100|PortB-Neuropixels1.0eHeadstage-BNO055" isStreamVisible="0"
+              isParamsVisible="0"/>
+      <STREAM key="100|PortB-Neuropixels1.0eHeadstage-Probe-AP" isStreamVisible="0"
+              isParamsVisible="0"/>
+      <STREAM key="100|PortB-Neuropixels1.0eHeadstage-Probe-LFP" isStreamVisible="0"
+              isParamsVisible="0"/>
+    </NODE>
+    <NODE id="101" isProcessorInfoVisible="0">
+      <STREAM key="100|BreakoutBoard-AnalogIO-AnalogInput" isStreamVisible="0"
+              isParamsVisible="0"/>
+      <STREAM key="100|BreakoutBoard-DigitalIO" isStreamVisible="0" isParamsVisible="0"/>
+      <STREAM key="100|BreakoutBoard-MemoryMonitor-PercentUsed" isStreamVisible="0"
+              isParamsVisible="0"/>
+      <STREAM key="100|PortB-Neuropixels1.0eHeadstage-BNO055" isStreamVisible="0"
+              isParamsVisible="0"/>
+      <STREAM key="100|PortB-Neuropixels1.0eHeadstage-Probe-AP" isStreamVisible="0"
+              isParamsVisible="0"/>
+      <STREAM key="100|PortB-Neuropixels1.0eHeadstage-Probe-LFP" isStreamVisible="0"
+              isParamsVisible="0"/>
+    </NODE>
+    <NODE id="102" isProcessorInfoVisible="0">
+      <STREAM key="100|BreakoutBoard-AnalogIO-AnalogInput" isStreamVisible="0"
+              isParamsVisible="0"/>
+      <STREAM key="100|BreakoutBoard-DigitalIO" isStreamVisible="0" isParamsVisible="0"/>
+      <STREAM key="100|BreakoutBoard-MemoryMonitor-PercentUsed" isStreamVisible="0"
+              isParamsVisible="0"/>
+      <STREAM key="100|PortB-Neuropixels1.0eHeadstage-BNO055" isStreamVisible="0"
+              isParamsVisible="0"/>
+      <STREAM key="100|PortB-Neuropixels1.0eHeadstage-Probe-AP" isStreamVisible="0"
+              isParamsVisible="0"/>
+      <STREAM key="100|PortB-Neuropixels1.0eHeadstage-Probe-LFP" isStreamVisible="0"
+              isParamsVisible="0"/>
+    </NODE>
+  </GRAPHVIEWER>
+  <DATAVIEWPORT>
+    <TABBEDCOMPONENT index="0" selectedTabNodeId="100">
+      <TAB nodeId="0"/>
+      <TAB nodeId="1"/>
+      <TAB nodeId="100"/>
+      <TAB nodeId="101"/>
+    </TABBEDCOMPONENT>
+  </DATAVIEWPORT>
+  <PROCESSORLIST>
+    <COLOUR ID="801" R="50" G="50" B="50"/>
+    <COLOUR ID="804" R="241" G="90" B="41"/>
+    <COLOUR ID="802" R="0" G="160" B="225"/>
+    <COLOUR ID="803" R="0" G="166" B="81"/>
+    <COLOUR ID="805" R="90" G="110" B="110"/>
+    <COLOUR ID="806" R="255" G="0" B="0"/>
+    <COLOUR ID="807" R="0" G="0" B="0"/>
+  </PROCESSORLIST>
+  <UICOMPONENT isProcessorListOpen="1" isEditorViewportOpen="1" consoleOpenInWindow="0"/>
+  <AUDIO sampleRate="48000.0" bufferSize="1024" deviceType="Windows Audio"/>
+  <MESSAGES/>
+</SETTINGS>

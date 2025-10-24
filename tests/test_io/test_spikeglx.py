@@ -86,7 +86,7 @@ def test_NP2_4_shanks():
     assert np.all(probe.contact_shape_params == {"width": contact_width})
     assert np.all(probe.contact_shapes == contact_shape)
 
-    # This file does not save the channnels from 0 as the one above (NP2_4_shanks_g0_t0.imec0.ap.meta)
+    # This file does not save the channels from 0 as the one above (NP2_4_shanks_g0_t0.imec0.ap.meta)
     ypos = probe.contact_positions[:, 1]
     assert np.min(ypos) == pytest.approx(0)
 
@@ -109,7 +109,7 @@ def test_NP2_2013_all():
     assert np.all(probe.contact_shape_params == {"width": contact_width})
     assert np.all(probe.contact_shapes == contact_shape)
 
-    # This file does not save the channnels from 0 as the one above (NP2_4_shanks_g0_t0.imec0.ap.meta)
+    # This file does not save the channels from 0 as the one above (NP2_4_shanks_g0_t0.imec0.ap.meta)
     ypos = probe.contact_positions[:, 1]
     assert np.min(ypos) == pytest.approx(0)
 
@@ -132,7 +132,7 @@ def test_NP2_2013_subset():
     assert np.all(probe.contact_shape_params == {"width": contact_width})
     assert np.all(probe.contact_shapes == contact_shape)
 
-    # This file does not save the channnels from 0 as the one above (NP2_4_shanks_g0_t0.imec0.ap.meta)
+    # This file does not save the channels from 0 as the one above (NP2_4_shanks_g0_t0.imec0.ap.meta)
     ypos = probe.contact_positions[:, 1]
     assert np.min(ypos) == pytest.approx(0)
 
@@ -154,7 +154,7 @@ def test_NP2_4_shanks_with_different_electrodes_saved():
     assert np.all(probe.contact_shape_params == {"width": contact_width})
     assert np.all(probe.contact_shapes == contact_shape)
 
-    # This file does not save the channnels from 0 as the one above (NP2_4_shanks_g0_t0.imec0.ap.meta)
+    # This file does not save the channels from 0 as the one above (NP2_4_shanks_g0_t0.imec0.ap.meta)
     ypos = probe.contact_positions[:, 1]
     assert np.min(ypos) == pytest.approx(4080.0)
     assert np.max(ypos) == pytest.approx(4785.0)
