@@ -327,7 +327,7 @@ def _make_npx_probe_from_description(probe_description, model_name, elec_ids, sh
             adc_sample_order[adc_groups_per_adc] = np.arange(len(adc_groups_per_adc))
         probe.annotate(num_adcs=num_adcs)
         probe.annotate(num_channels_per_adc=num_channels_per_adc)
-        probe.annotate_contacts(adc_groups=adc_groups)
+        probe.annotate_contacts(adc_group=adc_groups)
         probe.annotate_contacts(adc_sample_order=adc_sample_order)
 
     return probe
