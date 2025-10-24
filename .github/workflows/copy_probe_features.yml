@@ -20,6 +20,7 @@ jobs:
           https://raw.githubusercontent.com/billkarsh/ProbeTable/refs/heads/main/Tables/probe_features.json
 
     - name: Commit changes if any
+      id: commit
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
@@ -27,5 +28,19 @@ jobs:
         git add src/probeinterface/resources/neuropixels_probe_features.json
 
         # Only commit if there are changes
-        git diff --staged --quiet || git commit -m "Update neuropixels_probe_features from ProbeTable"
-        git push
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+          echo "changes=false" >> $GITHUB_OUTPUT
+        else
+          git commit -m "Update neuropixels_probe_features from ProbeTable"
+          echo "changes=true" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Make PR with updated probe features
+      if: steps.commit.outputs.changes == 'true'
+      uses: peter-evans/create-pull-request@v7
+      with:
+        title: "Update Neuropixels probe features"
+        body: "This PR updates the probe features JSON file from the ProbeTable repository."
+        branch-suffix: short-commit-hash
+        base: "main"
