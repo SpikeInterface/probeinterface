@@ -159,12 +159,12 @@ def get_probe_contour_vertices(shank_width, tip_length, probe_length) -> list:
           |                               |
           |                               |
         B +-------------------------------+ D  (y = 0)
-           \                             /
-            \         Tip region        /
-             \      (tip_length)       /
-              \                       /
-               \                     /
-                \                   /
+           \\                             /
+            \\         Tip region        /
+             \\      (tip_length)       /
+              \\                       /
+               \\                     /
+                \\                   /
                  +-----------------+ C  (y = -tip_length)
 
     This function returns the vertices in the order [A, B, C, D, E] as a list of (x, y) coordinates.
@@ -1119,14 +1119,25 @@ def read_openephys(
     probe = np_probe_info.get("probe")
 
     if probe is None:
+        # check if subset of channels
+        chans_saved = get_saved_channel_indices_from_openephys_settings(settings_file, stream_name=stream_name)
+        shank_ids = np_probe_info["shank_ids"]
+        elec_ids = np_probe_info["elec_ids"]
+        pt_metadata = np_probe_info["pt_metadata"]
+        mux_info = np_probe_info["mux_info"]
+
         probe = _make_npx_probe_from_description(
             pt_metadata, probe_part_number, elec_ids, shank_ids=shank_ids, mux_info=mux_info
         )
 
-        # check if subset of channels
-        chans_saved = get_saved_channel_indices_from_openephys_settings(settings_file, stream_name=stream_name)
-
         # if a recording state is found, slice probe
+        if chans_saved is not None:
+            positions = positions[chans_saved]
+            if shank_ids is not None:
+                shank_ids = np.array(shank_ids)[chans_saved]
+            if elec_ids is not None:
+                elec_ids = np.array(elec_ids)[chans_saved]
+
         if chans_saved is not None:
             probe = probe.get_slice(chans_saved)
 
