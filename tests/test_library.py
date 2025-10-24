@@ -82,6 +82,7 @@ def test_available_tags():
             assert len(tag) > 0
 
 
+@pytest.mark.library
 def test_list_manufacturers():
     manufacturers = list_manufacturers()
     assert isinstance(manufacturers, list)
@@ -89,6 +90,7 @@ def test_list_manufacturers():
     assert "imec" in manufacturers
 
 
+@pytest.mark.library
 def test_list_probes():
     manufacturers = list_all_probes()
     for manufacturer in manufacturers:
