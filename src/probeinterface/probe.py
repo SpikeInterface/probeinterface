@@ -1154,7 +1154,7 @@ class Probe:
             data = probe_arr[field_name]
             group.create_dataset(name=field_name, data=data, dtype=dtype, chunks=False)
 
-        # Annotations as a group (special attibutes are stored as annotations)
+        # Annotations as a group (special attributes are stored as annotations)
         annotations_group = group.create_group("annotations")
         for key, value in self.annotations.items():
             annotations_group.attrs[key] = value

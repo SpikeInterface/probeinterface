@@ -60,7 +60,7 @@ pathways = {
         31, 30
     ],
 
-    # from PDF documention of mini-amp-64 page 5
+    # from PDF documentation of mini-amp-64 page 5
     'cambridgeneurotech_mini-amp-64': [
         # connector J2 TOP
         41, 39, 38, 37, 35, 34, 33, 32, 29, 30, 28, 26, 25, 24, 22, 20,

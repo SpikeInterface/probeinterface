@@ -728,7 +728,7 @@ def read_csv(file: str | Path):
 
 def write_csv(file, probe):
     """
-    Write contact postions into a 2 or 3 columns csv file
+    Write contact positions into a 2 or 3 columns csv file
     """
 
     raise NotImplementedError
