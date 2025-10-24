@@ -192,6 +192,10 @@ def list_manufacturers(tag=None) -> list[str]:
     manufacturers : list of str
         List of available manufacturers
     """
+    if tag is not None:
+        assert (
+            tag in get_tags_in_library()
+        ), f"Tag {tag} not found in library. Available tags are {get_tags_in_library()}."
     return list_github_folders("SpikeInterface", "probeinterface_library", ref=tag)
 
 
@@ -209,6 +213,13 @@ def list_probes_by_manufacturer(manufacturer: str, tag=None) -> list[str]:
     probes : list of str
         List of available probes for the given manufacturer
     """
+    if tag is not None:
+        assert (
+            tag in get_tags_in_library()
+        ), f"Tag {tag} not found in library. Available tags are {get_tags_in_library()}."
+    assert manufacturer in list_manufacturers(
+        tag=tag
+    ), f"Manufacturer {manufacturer} not found in library. Available manufacturers are {list_manufacturers(tag=tag)}."
     return list_github_folders("SpikeInterface", "probeinterface_library", path=manufacturer, ref=tag)
 
 
