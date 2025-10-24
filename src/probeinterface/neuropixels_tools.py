@@ -880,11 +880,11 @@ def read_openephys(
             contact_per_shank = pt_metadata["cols_per_shank"] * pt_metadata["rows_per_shank"]
 
             if num_shank == 1:
-                elec_ids = np.arange(contact_per_shank)
+                elec_ids = np.arange(contact_per_shank, dtype=int)
                 shank_ids = None
             else:
-                elec_ids = np.concatenate([np.arange(contact_per_shank) for i in range(num_shank)])
-                shank_ids = np.concatenate([np.zeros(contact_per_shank) + i for i in range(num_shank)])
+                elec_ids = np.concatenate([np.arange(contact_per_shank, dtype=int) for i in range(num_shank)])
+                shank_ids = np.concatenate([np.zeros(contact_per_shank, dtype=int) + i for i in range(num_shank)])
 
             full_probe = _make_npx_probe_from_description(
                 pt_metadata, probe_part_number, elec_ids, shank_ids, mux_info=mux_info
