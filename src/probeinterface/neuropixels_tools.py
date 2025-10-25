@@ -122,7 +122,7 @@ def make_mux_table_array(mux_information) -> np.array:
 
     Returns
     -------
-    mux_channels_array : np.array
+    adc_groups_array : np.array
         Array of which channels are in each adc group, shaped (number of `adc`s, number of channels in each `adc`).
     """
 
@@ -135,12 +135,12 @@ def make_mux_table_array(mux_information) -> np.array:
     num_adcs, num_channels_per_adc = map(int, adc_info[1:].split(","))
 
     # Then remove the brackets, and split using " " to get each integer as a list
-    mux_channels = [
+    adc_groups = [
         np.array(each_mux.replace("(", "").replace(")", "").split(" ")).astype("int") for each_mux in split_mux
     ]
-    mux_channels_array = np.transpose(np.array(mux_channels))
+    adc_groups_array = np.transpose(np.array(adc_groups))
 
-    return num_adcs, num_channels_per_adc, mux_channels_array
+    return num_adcs, num_channels_per_adc, adc_groups_array
 
 
 def get_probe_contour_vertices(shank_width, tip_length, probe_length) -> list:
@@ -159,12 +159,12 @@ def get_probe_contour_vertices(shank_width, tip_length, probe_length) -> list:
           |                               |
           |                               |
         B +-------------------------------+ D  (y = 0)
-           \                             /
-            \         Tip region        /
-             \      (tip_length)       /
-              \                       /
-               \                     /
-                \                   /
+           \\                             /
+            \\         Tip region        /
+             \\      (tip_length)       /
+              \\                       /
+               \\                     /
+                \\                   /
                  +-----------------+ C  (y = -tip_length)
 
     This function returns the vertices in the order [A, B, C, D, E] as a list of (x, y) coordinates.
@@ -322,8 +322,10 @@ def _make_npx_probe_from_description(probe_description, model_name, elec_ids, sh
 
     # set other key metadata annotations
     probe.annotate(
-        adc_bit_depth=probe_description["adc_bit_depth"],
-        num_readout_channels=probe_description["num_readout_channels"],
+        adc_bit_depth=int(probe_description["adc_bit_depth"]),
+        num_readout_channels=int(probe_description["num_readout_channels"]),
+        ap_sample_frequency_hz=float(probe_description["ap_sample_frequency_hz"]),
+        lf_sample_frequency_hz=float(probe_description["lf_sample_frequency_hz"]),
     )
 
     # annotate with MUX table
@@ -331,13 +333,18 @@ def _make_npx_probe_from_description(probe_description, model_name, elec_ids, sh
         # annotate each contact with its mux channel
         num_adcs, num_channels_per_adc, mux_table = make_mux_table_array(mux_info)
         num_contacts = positions.shape[0]
-        mux_channels = np.zeros(num_contacts, dtype="int64")
-        for adc_idx, mux_channels_per_adc in enumerate(mux_table):
-            mux_channels_per_adc = mux_channels_per_adc[mux_channels_per_adc < num_contacts]
-            mux_channels[mux_channels_per_adc] = adc_idx
+        # ADC group: which adc is used for each contact
+        adc_groups = np.zeros(num_contacts, dtype="int64")
+        # ADC sample order: order of sampling of the contact in the adc group
+        adc_sample_order = np.zeros(num_contacts, dtype="int64")
+        for adc_idx, adc_groups_per_adc in enumerate(mux_table):
+            adc_groups_per_adc = adc_groups_per_adc[adc_groups_per_adc < num_contacts]
+            adc_groups[adc_groups_per_adc] = adc_idx
+            adc_sample_order[adc_groups_per_adc] = np.arange(len(adc_groups_per_adc))
         probe.annotate(num_adcs=num_adcs)
         probe.annotate(num_channels_per_adc=num_channels_per_adc)
-        probe.annotate_contacts(mux_channels=mux_channels)
+        probe.annotate_contacts(adc_group=adc_groups)
+        probe.annotate_contacts(adc_sample_order=adc_sample_order)
 
     return probe
 
@@ -1115,23 +1122,19 @@ def read_openephys(
 
     if probe is None:
         # check if subset of channels
-        chans_saved = get_saved_channel_indices_from_openephys_settings(settings_file, stream_name=stream_name)
         shank_ids = np_probe_info["shank_ids"]
         elec_ids = np_probe_info["elec_ids"]
         pt_metadata = np_probe_info["pt_metadata"]
         mux_info = np_probe_info["mux_info"]
 
-        # if a recording state is found, slice probe
-        if chans_saved is not None:
-            positions = positions[chans_saved]
-            if shank_ids is not None:
-                shank_ids = np.array(shank_ids)[chans_saved]
-            if elec_ids is not None:
-                elec_ids = np.array(elec_ids)[chans_saved]
-
         probe = _make_npx_probe_from_description(
             pt_metadata, probe_part_number, elec_ids, shank_ids=shank_ids, mux_info=mux_info
         )
+
+    chans_saved = get_saved_channel_indices_from_openephys_settings(settings_file, stream_name=stream_name)
+    if chans_saved is not None:
+        probe = probe.get_slice(chans_saved)
+
     probe.serial_number = np_probe_info["serial_number"]
     probe.name = np_probe_info["name"]
 
