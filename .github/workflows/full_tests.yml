@@ -31,4 +31,8 @@ jobs:
         pip install .[test]
     - name: Pytest
       run: |
-        pytest -v
+        pytest -m "not library" -v
+    - name: Pytest library tests
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: |
+        pytest -m library -v

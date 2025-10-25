@@ -39,5 +39,13 @@ from .generator import (
     generate_multi_columns_probe,
     generate_multi_shank,
 )
-from .library import get_probe
+from .library import (
+    get_probe,
+    list_manufacturers,
+    list_probes_by_manufacturer,
+    list_all_probes,
+    get_tags_in_library,
+    cache_full_library,
+    clear_cache,
+)
 from .wiring import get_available_pathways

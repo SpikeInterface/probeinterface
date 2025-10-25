@@ -39,7 +39,8 @@ def test_plot_probegroup():
     plot_probegroup(probegroup, same_axes=False)
 
     # remove when plot_probe_group has been removed
-    plot_probe_group(probegroup)
+    with pytest.warns(DeprecationWarning):
+        plot_probe_group(probegroup)
 
     # 3d
     probegroup_3d = ProbeGroup()
