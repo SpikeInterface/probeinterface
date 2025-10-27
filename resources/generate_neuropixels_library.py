@@ -11,11 +11,14 @@ from probeinterface.plotting import plot_probe
 from probeinterface import write_probeinterface
 
 
-base_folder = Path("./neuropixels_library_generated")
+default_base_folder = Path("./neuropixels_library_generated")
 
 
 
-def generate_all_npx():
+def generate_all_npx(base_folder=None):
+
+    if base_folder is None:
+        base_folder = default_base_folder
 
     # if not base_folder.exists():
     base_folder.mkdir(exist_ok=True)
