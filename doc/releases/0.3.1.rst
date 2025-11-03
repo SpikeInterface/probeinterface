@@ -1,0 +1,25 @@
+probeinterface 0.3.1
+--------------------
+
+Nov, 3rd 2025
+
+
+Features
+^^^^^^^^
+
+* Allow for user defined base folder in npx library generator (#376)
+* Update Neuropixels probe features (#374, #375)
+* Add adc_group/adc_sample_order contact annotation (#368)
+* Improve interaction with probeinterface-library (#364)
+* Support Open Ephys ONIX  system for Neuropixels(#360)
+
+Bug fixes
+^^^^^^^^^
+* Improve invalid escape character on neuropixel tools (#369)
+* Fix QuadBase probe assignment with custom names+serial numbers (#361)
+
+Continuous integration
+^^^^^^^^^^^^^^^^^^^^^^
+* Fix copy-files action by making a PR (#373)
+* Run codecov daily and extend OS and python versions (#372)
+* Add codespell support (config, workflow to detect/not fix) and make it fix some typos (#370)
