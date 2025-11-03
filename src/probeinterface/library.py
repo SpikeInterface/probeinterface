@@ -289,4 +289,8 @@ def list_github_folders(owner: str, repo: str, path: str = "", ref: str = None, 
     if resp.status_code != 200:
         raise RuntimeError(f"GitHub API returned status {resp.status_code}: {resp.text}")
     items = resp.json()
-    return [item["name"] for item in items if item.get("type") == "dir" and item["name"][0] != "." and item["name"] != "scripts"]
+    return [
+        item["name"]
+        for item in items
+        if item.get("type") == "dir" and item["name"][0] != "." and item["name"] != "scripts"
+    ]
