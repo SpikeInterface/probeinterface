@@ -152,12 +152,13 @@ def plot_probe(
     import matplotlib.pyplot as plt
 
     if probe.contact_sides is not None:
-        if side is None or side not in ('front', 'back'):
-            raise ValueError("The probe has two side, you must give which one to plot. plot_probe(probe, side='front'|'back')")
+        if side is None or side not in ("front", "back"):
+            raise ValueError(
+                "The probe has two side, you must give which one to plot. plot_probe(probe, side='front'|'back')"
+            )
         mask = probe.contact_sides == side
         probe = probe.get_slice(mask)
         probe._contact_sides = None
-
 
     if ax is None:
         if probe.ndim == 2:

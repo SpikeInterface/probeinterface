@@ -53,10 +53,19 @@ def test_plot_probegroup():
 def test_plot_probe_two_side():
     probe = Probe()
     probe.set_contacts(
-        positions=np.array([[0, 0], [0, 10], [0, 20],[0, 0], [0, 10], [0, 20],]),
+        positions=np.array(
+            [
+                [0, 0],
+                [0, 10],
+                [0, 20],
+                [0, 0],
+                [0, 10],
+                [0, 20],
+            ]
+        ),
         shapes="circle",
         contact_ids=["F1", "F2", "F3", "B1", "B2", "B3"],
-        contact_sides=["front", "front", "front", "back", "back","back"]
+        contact_sides=["front", "front", "front", "back", "back", "back"],
     )
 
     plot_probe(probe, with_contact_id=True, side="front")

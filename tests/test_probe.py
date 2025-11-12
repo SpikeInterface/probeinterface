@@ -201,23 +201,31 @@ def test_double_side_probe():
 
     probe = Probe()
     probe.set_contacts(
-        positions=np.array([[0, 0], [0, 10], [0, 20],[0, 0], [0, 10], [0, 20],]),
+        positions=np.array(
+            [
+                [0, 0],
+                [0, 10],
+                [0, 20],
+                [0, 0],
+                [0, 10],
+                [0, 20],
+            ]
+        ),
         shapes="circle",
-        contact_sides=["front", "front", "front", "back", "back","back"]
+        contact_sides=["front", "front", "front", "back", "back", "back"],
     )
     print(probe)
 
     assert "contact_sides" in probe.to_dict()
 
     probe2 = Probe.from_dict(probe.to_dict())
-    assert probe2 == probe 
+    assert probe2 == probe
 
     probe3 = Probe.from_numpy(probe.to_numpy())
-    assert probe3 == probe 
+    assert probe3 == probe
 
     probe4 = Probe.from_dataframe(probe.to_dataframe())
     assert probe4 == probe
-
 
 
 if __name__ == "__main__":
