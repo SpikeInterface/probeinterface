@@ -197,9 +197,34 @@ def test_position_uniqueness():
         probe.set_contacts(positions=positions_with_dups, shapes="circle", shape_params={"radius": 5})
 
 
+def test_double_side_probe():
+
+    probe = Probe()
+    probe.set_contacts(
+        positions=np.array([[0, 0], [0, 10], [0, 20],[0, 0], [0, 10], [0, 20],]),
+        shapes="circle",
+        contact_sides=["front", "front", "front", "back", "back","back"]
+    )
+    print(probe)
+
+    assert "contact_sides" in probe.to_dict()
+
+    probe2 = Probe.from_dict(probe.to_dict())
+    assert probe2 == probe 
+
+    probe3 = Probe.from_numpy(probe.to_numpy())
+    assert probe3 == probe 
+
+    probe4 = Probe.from_dataframe(probe.to_dataframe())
+    assert probe4 == probe
+
+
+
 if __name__ == "__main__":
     test_probe()
 
     tmp_path = Path("tmp")
     tmp_path.mkdir(exist_ok=True)
     test_save_to_zarr(tmp_path)
+
+    test_double_side_probe()
