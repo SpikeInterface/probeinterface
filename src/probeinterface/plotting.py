@@ -139,7 +139,7 @@ def plot_probe(
         Limits for z dimension
     show_channel_on_click : bool, default: False
         If True, the channel information is shown upon click
-    side : None | "front" | "back
+    side : None | "front" | "back"
         If the probe is two side, then the side must be given otherwise this raises an error.
 
     Returns
