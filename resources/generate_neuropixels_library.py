@@ -6,7 +6,10 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from probeinterface.neuropixels_tools import _make_npx_probe_from_description, get_probe_metadata_from_probe_features
+from probeinterface.neuropixels_tools import (
+    _make_npx_probe_from_description,
+    _extract_probe_geometry,
+)
 from probeinterface.plotting import plot_probe
 from probeinterface import write_probeinterface
 
@@ -41,10 +44,12 @@ def generate_all_npx(base_folder=None):
         probe_folder = base_folder / model_name
         probe_folder.mkdir(exist_ok=True)
 
-        pt_metadata, _, _ = get_probe_metadata_from_probe_features(probe_features, model_name)
+        probe_spec_dict = probe_features["neuropixels_probes"][model_name]
+        probe_geometry = _extract_probe_geometry(probe_spec_dict)
+        mux_table_string = probe_features["z_mux_tables"][probe_spec_dict["mux_table_format_type"]]
 
-        num_shank = pt_metadata["num_shanks"]
-        contact_per_shank = pt_metadata["cols_per_shank"] * pt_metadata["rows_per_shank"]
+        num_shank = probe_geometry["num_shanks"]
+        contact_per_shank = probe_geometry["cols_per_shank"] * probe_geometry["rows_per_shank"]
         if num_shank == 1:
             elec_ids = np.arange(contact_per_shank)
             shank_ids = None
@@ -52,7 +57,7 @@ def generate_all_npx(base_folder=None):
             elec_ids = np.concatenate([np.arange(contact_per_shank) for i in range(num_shank)])
             shank_ids = np.concatenate([np.zeros(contact_per_shank) + i for i in range(num_shank)])
 
-        probe = _make_npx_probe_from_description(pt_metadata, model_name, elec_ids, shank_ids)
+        probe = _make_npx_probe_from_description(probe_geometry, model_name, elec_ids, shank_ids, mux_table_string)
 
         # plotting
         fig, axs = plt.subplots(ncols=2)
@@ -73,7 +78,7 @@ def generate_all_npx(base_folder=None):
         plot_probe(probe, ax=ax)
         ax.set_title("")
 
-        yp = pt_metadata["electrode_pitch_vert_um"]
+        yp = probe_geometry["electrode_pitch_vert_um"]
         ax.set_ylim(-yp*8, yp*13)
         ax.yaxis.set_visible(False)
         ax.spines["top"].set_visible(False)
