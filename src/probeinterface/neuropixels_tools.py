@@ -1106,15 +1106,24 @@ def read_openephys(
         pt_metadata, _, mux_info = get_probe_metadata_from_probe_features(probe_features, probe_part_number)
 
         if selected_electrodes is not None:
-            # ===== Path 1: Build full probe from probe_part_number and slice with SELECTED_ELECTRODES =====
+            selected_electrodes_values = selected_electrodes.attrib.values()
 
-            # Step 1: Build full probe with all contacts
-            full_probe = build_neuropixels_probe(probe_part_number)
+            num_shank = pt_metadata["num_shanks"]
+            contact_per_shank = pt_metadata["cols_per_shank"] * pt_metadata["rows_per_shank"]
 
-            # Step 2: Get selected electrode indices from XML
-            selected_electrode_indices = [int(electrode_index) for electrode_index in selected_electrodes.attrib.values()]
+            if num_shank == 1:
+                elec_ids = np.arange(contact_per_shank, dtype=int)
+                shank_ids = None
+            else:
+                elec_ids = np.concatenate([np.arange(contact_per_shank, dtype=int) for i in range(num_shank)])
+                shank_ids = np.concatenate([np.zeros(contact_per_shank, dtype=int) + i for i in range(num_shank)])
 
-            # Step 3: Slice probe to selected electrodes
+            full_probe = _make_npx_probe_from_description(
+                pt_metadata, probe_part_number, elec_ids, shank_ids, mux_info=mux_info
+            )
+
+            selected_electrode_indices = [int(electrode_index) for electrode_index in selected_electrodes_values]
+
             sliced_probe = full_probe.get_slice(selection=selected_electrode_indices)
 
             np_probe_dict = {
@@ -1125,8 +1134,6 @@ def read_openephys(
                 "probe": sliced_probe,
             }
         else:
-            # ===== Path 2 (Legacy): Build probe from ELECTRODE_XPOS/YPOS fields =====
-            # This path is kept unchanged for backward compatibility with older OpenEphys versions
 
             channel_names = np.array(list(channels.attrib.keys()))
             channel_ids = np.array([int(ch[2:]) for ch in channel_names])
