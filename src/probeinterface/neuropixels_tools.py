@@ -372,28 +372,15 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
     Returns
     -------
     probe : Probe
-        Full probe object with all possible contacts, including:
-        - Contact positions (x, y coordinates)
-        - Contact IDs (e.g., "e0", "e1", ..., "e959")
-        - Planar contour (probe outline)
-        - Shank tips (for multi-shank probes)
-        - Device channel indices
-        - MUX table annotations (ADC groups, sample order)
-        - Probe-level metadata (sample rates, ADC bit depth, etc.)
+        The complete Probe object with all contacts and metadata.
     """
-    # Load probe features from JSON
+    # ===== 1. Load configuration =====
     probe_features = _load_np_probe_features()
     probe_spec_dict = probe_features["neuropixels_probes"][probe_part_number]
 
-    # Extract and convert geometry
-    probe_geometry = _extract_probe_geometry(probe_spec_dict)
-
-    # Get MUX table
-    mux_table_string = probe_features["z_mux_tables"][probe_spec_dict["mux_table_format_type"]]
-
-    # Calculate ALL electrode IDs (all possible contacts)
-    num_shanks = probe_geometry["num_shanks"]
-    contacts_per_shank = probe_geometry["cols_per_shank"] * probe_geometry["rows_per_shank"]
+    # ===== 2. Calculate electrode IDs and shank IDs =====
+    num_shanks = int(probe_spec_dict["num_shanks"])
+    contacts_per_shank = int(probe_spec_dict["cols_per_shank"]) * int(probe_spec_dict["rows_per_shank"])
 
     if num_shanks == 1:
         elec_ids = np.arange(contacts_per_shank, dtype=int)
@@ -402,10 +389,95 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
         elec_ids = np.concatenate([np.arange(contacts_per_shank, dtype=int) for i in range(num_shanks)])
         shank_ids = np.concatenate([np.zeros(contacts_per_shank, dtype=int) + i for i in range(num_shanks)])
 
-    # Build the full probe
-    probe = _make_npx_probe_from_description(
-        probe_geometry, probe_part_number, elec_ids, shank_ids, mux_table_string
+    # ===== 3. Calculate contact positions =====
+    cols_per_shank = int(probe_spec_dict["cols_per_shank"])
+    y_idx, x_idx = np.divmod(elec_ids, cols_per_shank)
+
+    x_pitch = float(probe_spec_dict["electrode_pitch_horz_um"])
+    y_pitch = float(probe_spec_dict["electrode_pitch_vert_um"])
+
+    even_offset = float(probe_spec_dict["even_row_horz_offset_left_edge_to_leftmost_electrode_center_um"])
+    odd_offset = float(probe_spec_dict["odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um"])
+    raw_stagger = even_offset - odd_offset
+
+    stagger = np.mod(y_idx + 1, 2) * raw_stagger
+    x_pos = (x_idx * x_pitch + stagger).astype("float64")
+    y_pos = (y_idx * y_pitch).astype("float64")
+
+    # Apply horizontal offset for multi-shank probes
+    if shank_ids is not None:
+        shank_pitch = float(probe_spec_dict["shank_pitch_um"])
+        x_pos += np.array(shank_ids).astype(int) * shank_pitch
+
+    positions = np.stack((x_pos, y_pos), axis=1)
+
+    # ===== 4. Calculate contact IDs =====
+    if shank_ids is not None:
+        contact_ids = [f"s{shank_id}e{elec_id}" for shank_id, elec_id in zip(shank_ids, elec_ids)]
+    else:
+        contact_ids = [f"e{elec_id}" for elec_id in elec_ids]
+
+    # ===== 5. Create Probe object and set contacts =====
+    probe = Probe(ndim=2, si_units="um", model_name=probe_part_number, manufacturer="imec")
+    probe.description = probe_spec_dict["description"]
+    probe.set_contacts(
+        positions=positions,
+        shapes="square",
+        shank_ids=shank_ids,
+        shape_params={"width": float(probe_spec_dict["electrode_size_horz_direction_um"])},
     )
+    probe.set_contact_ids(contact_ids)
+
+    # ===== 6. Build probe contour and shank tips =====
+    shank_width = float(probe_spec_dict["shank_width_um"])
+    tip_length = float(probe_spec_dict["tip_length_um"])
+    polygon = np.array(get_probe_contour_vertices(shank_width, tip_length, get_probe_length(probe_part_number)))
+
+    # Build contour for all shanks
+    contour = []
+    if shank_ids is not None:
+        shank_pitch = float(probe_spec_dict["shank_pitch_um"])
+    for shank_id in range(num_shanks):
+        shank_shift = np.array([shank_pitch * shank_id if shank_ids is not None else 0, 0])
+        contour += list(polygon + shank_shift)
+
+    # Apply contour shift to align with contact positions
+    middle_of_bottommost_electrode_to_top_of_shank_tip = 11
+    contour_shift = np.array([-odd_offset, -middle_of_bottommost_electrode_to_top_of_shank_tip])
+    contour = np.array(contour) + contour_shift
+    probe.set_planar_contour(contour)
+
+    # Calculate shank tips (polygon[2] is the tip vertex from get_probe_contour_vertices)
+    tip_vertex = polygon[2]
+    shank_tips = []
+    for shank_id in range(num_shanks):
+        shank_shift = np.array([shank_pitch * shank_id if shank_ids is not None else 0, 0])
+        shank_tip = np.array(tip_vertex) + contour_shift + shank_shift
+        shank_tips.append(shank_tip.tolist())
+    probe.annotate(shank_tips=shank_tips)
+
+    # ===== 7. Add metadata annotations =====
+    probe.annotate(
+        adc_bit_depth=int(probe_spec_dict["adc_bit_depth"]),
+        num_readout_channels=int(probe_spec_dict["num_readout_channels"]),
+        ap_sample_frequency_hz=float(probe_spec_dict["ap_sample_frequency_hz"]),
+        lf_sample_frequency_hz=float(probe_spec_dict["lf_sample_frequency_hz"]),
+    )
+
+    # ===== 8. Add MUX table annotations =====
+    mux_table_string = probe_features["z_mux_tables"][probe_spec_dict["mux_table_format_type"]]
+    num_adcs, num_channels_per_adc, mux_table = make_mux_table_array(mux_table_string)
+    num_contacts = positions.shape[0]
+    adc_groups = np.zeros(num_contacts, dtype="int64")
+    adc_sample_order = np.zeros(num_contacts, dtype="int64")
+    for adc_index, adc_groups_per_adc in enumerate(mux_table):
+        adc_groups_per_adc = adc_groups_per_adc[adc_groups_per_adc < num_contacts]
+        adc_groups[adc_groups_per_adc] = adc_index
+        adc_sample_order[adc_groups_per_adc] = np.arange(len(adc_groups_per_adc))
+    probe.annotate(num_adcs=num_adcs)
+    probe.annotate(num_channels_per_adc=num_channels_per_adc)
+    probe.annotate_contacts(adc_group=adc_groups)
+    probe.annotate_contacts(adc_sample_order=adc_sample_order)
 
     return probe
 
@@ -530,7 +602,7 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
         if len(matching_indices) > 0:
             keep_indices.append(matching_indices[0])
 
-    probe = probe.get_slice(keep_indices)
+    probe = probe.get_slice(np.array(keep_indices, dtype=int))
 
     # Add probe type annotation
     probe.annotate(probe_type=contact_annotations.pop("probe_type"))
@@ -1027,39 +1099,24 @@ def read_openephys(
         selected_electrodes = np_probe.find("SELECTED_ELECTRODES")
         channels = np_probe.find("CHANNELS")
 
-        probe_spec_dict = probe_features["neuropixels_probes"][probe_part_number]
-        probe_geometry = _extract_probe_geometry(probe_spec_dict)
-        mux_table_string = probe_features["z_mux_tables"][probe_spec_dict["mux_table_format_type"]]
-
         if selected_electrodes is not None:
-            selected_electrodes_values = selected_electrodes.attrib.values()
+            # Build the FULL probe with all possible contacts from the probe part number
+            full_probe = build_neuropixels_probe(probe_part_number)
 
-            num_shank = probe_geometry["num_shanks"]
-            contact_per_shank = probe_geometry["cols_per_shank"] * probe_geometry["rows_per_shank"]
-
-            if num_shank == 1:
-                elec_ids = np.arange(contact_per_shank, dtype=int)
-                shank_ids = None
-            else:
-                elec_ids = np.concatenate([np.arange(contact_per_shank, dtype=int) for i in range(num_shank)])
-                shank_ids = np.concatenate([np.zeros(contact_per_shank, dtype=int) + i for i in range(num_shank)])
-
-            full_probe = _make_npx_probe_from_description(
-                probe_geometry, probe_part_number, elec_ids, shank_ids, mux_table_string=mux_table_string
-            )
-
-            selected_electrode_indices = [int(electrode_index) for electrode_index in selected_electrodes_values]
-
+            # Slice the full probe to only include the selected electrodes from OpenEphys settings
+            selected_electrode_indices = [int(electrode_index) for electrode_index in selected_electrodes.attrib.values()]
             sliced_probe = full_probe.get_slice(selection=selected_electrode_indices)
 
             np_probe_dict = {
-                "probe_geometry": probe_geometry,
                 "serial_number": probe_serial_number,
                 "part_number": probe_part_number,
-                "mux_table_string": mux_table_string,
                 "probe": sliced_probe,
             }
         else:
+            # For older OpenEphys versions without SELECTED_ELECTRODES, we need probe_geometry for position calculations
+            probe_spec_dict = probe_features["neuropixels_probes"][probe_part_number]
+            probe_geometry = _extract_probe_geometry(probe_spec_dict)
+            mux_table_string = probe_features["z_mux_tables"][probe_spec_dict["mux_table_format_type"]]
 
             channel_names = np.array(list(channels.attrib.keys()))
             channel_ids = np.array([int(ch[2:]) for ch in channel_names])
