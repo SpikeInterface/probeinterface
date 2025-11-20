@@ -693,6 +693,51 @@ def write_imro(file: str | Path, probe: Probe):
 ##
 
 
+def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
+    """
+    Parse IMRO (Imec ReadOut) table string into structured per-channel data.
+
+    IMRO format: "(probe_type,num_chans)(ch0 bank0 ref0 ...)(ch1 bank1 ref1 ...)..."
+    Example: "(0,384)(0 1 0 500 250 1)(1 0 0 500 250 1)..."
+
+    Note: The IMRO header contains a probe_type field (e.g., "0", "21", "24"), which is
+    a numeric format version identifier that specifies which IMRO table structure was used.
+    Different probe generations use different IMRO formats. This is a file format detail,
+    not a physical probe property.
+
+    Parameters
+    ----------
+    imro_table_string : str
+        IMRO table string from SpikeGLX metadata file
+    probe_part_number : str
+        Probe part number (e.g., "NP1000", "NP2000")
+
+    Returns
+    -------
+    imro_per_channel : dict
+        Dictionary where each key maps to a list of values (one per channel).
+        Keys are IMRO fields like "channel", "bank", "electrode", "ap_gain", etc.
+        Example: {"channel": [0,1,2,...], "bank": [1,0,0,...], "ap_gain": [500,500,...]}
+    """
+    # Get IMRO field format from catalogue
+    probe_features = _load_np_probe_features()
+    probe_spec = probe_features["neuropixels_probes"][probe_part_number]
+    imro_format = probe_spec["imro_table_format_type"]
+    imro_fields_string = probe_features["z_imro_formats"][imro_format + "_elm_flds"]
+    imro_fields = tuple(imro_fields_string.replace("(", "").replace(")", "").split(" "))
+
+    # Parse IMRO table values into per-channel data
+    # Skip the header "(probe_type,num_chans)" and trailing empty string
+    _, *imro_table_values_list, _ = imro_table_string.strip().split(")")
+    imro_per_channel = {k: [] for k in imro_fields}
+    for field_values_str in imro_table_values_list:
+        values = tuple(map(int, field_values_str[1:].split(" ")))
+        for field, field_value in zip(imro_fields, values):
+            imro_per_channel[field].append(field_value)
+
+    return imro_per_channel
+
+
 def read_spikeglx(file: str | Path) -> Probe:
     """
     Read probe geometry and configuration from a SpikeGLX metadata file.
@@ -739,73 +784,49 @@ def read_spikeglx(file: str | Path) -> Probe:
     full_probe = build_neuropixels_probe(probe_part_number=imDatPrb_pn)
 
     # ===== 3. Parse IMRO table to extract recorded electrodes and acquisition settings =====
-    # The IMRO table specifies which electrodes were selected for recording (e.g., 384 of 960),
-    # plus their acquisition settings (gains, references, filters)
-    imro_table = meta["imroTbl"]
-    probe_type_num_chans, *imro_table_values_list, _ = imro_table.strip().split(")")
+    # IMRO = Imec ReadOut (the configuration table format from IMEC manufacturer)
+    # Specifies which electrodes were selected for recording (e.g., 384 of 960) plus their
+    # acquisition settings (gains, references, filters). See: https://billkarsh.github.io/SpikeGLX/help/imroTables/
+    imro_table_string = meta["imroTbl"]
+    imro_per_channel = _parse_imro_string(imro_table_string, imDatPrb_pn)
 
-    # probe_type_num_chans looks like f"({probe_type},{num_chans}"
-    probe_type = probe_type_num_chans.split(",")[0][1:]
-
-    probe_features = _load_np_probe_features()
-    _, imro_fields, _ = get_probe_metadata_from_probe_features(probe_features, imDatPrb_pn)
-
-    # Parse IMRO table values
-    contact_info = {k: [] for k in imro_fields}
-    for field_values_str in imro_table_values_list:  # Imro table values look like '(value, value, value, ... '
-        # Split them by space to get int('value'), int('value'), int('value'), ...)
-        values = tuple(map(int, field_values_str[1:].split(" ")))
-        for field, field_value in zip(imro_fields, values):
-            contact_info[field].append(field_value)
-
-    # Convert IMRO channel numbers to physical electrode IDs
-    # The IMRO table specifies which electrodes were recorded, but different probe types
-    # encode this information differently:
-    readout_channel_ids = np.array(contact_info["channel"])  # 0-383 for NP1.0
-
-    if "electrode" in contact_info:
-        # NP2.0 and some probes directly specify the physical electrode ID
-        physical_electrode_ids = np.array(contact_info["electrode"])
+    # ===== 4. Get active electrodes from IMRO data =====
+    # Convert IMRO channel numbers to physical electrode IDs. Different probe types encode
+    # electrode selection differently: NP1.0 uses banks, NP2.0+ uses direct electrode IDs.
+    if "electrode" in imro_per_channel:
+        # NP2.0+: Direct electrode addressing
+        physical_electrode_ids = np.array(imro_per_channel["electrode"])
     else:
-        # NP1.0 uses banks to encode electrode position
-        # Physical electrode ID = bank * 384 + channel
-        # (e.g., bank 0, channel 0 → electrode 0; bank 1, channel 0 → electrode 384)
-        bank_key = "bank" if "bank" in contact_info else "bank_mask"
-        bank_indices = np.array(contact_info[bank_key])
+        # NP1.0: Bank-based addressing (physical_electrode_id = bank * 384 + channel)
+        readout_channel_ids = np.array(imro_per_channel["channel"])
+        bank_key = "bank" if "bank" in imro_per_channel else "bank_mask"
+        bank_indices = np.array(imro_per_channel[bank_key])
         physical_electrode_ids = bank_indices * 384 + readout_channel_ids
 
-    # ===== 4. Slice full probe to IMRO-selected electrodes =====
-    # The full probe has all electrodes (e.g., 960 for NP1.0). We need to find which
-    # indices in the full probe array correspond to the electrodes selected in the IMRO table.
+    # ===== 5. Slice full probe to active electrodes =====
     selected_contact_indices = []
-
     for idx, electrode_id in enumerate(physical_electrode_ids):
-        # Build the contact ID string that matches the full probe's contact_ids array
-        if "shank" in contact_info:
-            # Multi-shank probes: contact ID = "s{shank}e{electrode}"
-            shank_id = contact_info["shank"][idx]
+        if "shank" in imro_per_channel:
+            shank_id = imro_per_channel["shank"][idx]
             contact_id_str = f"s{shank_id}e{electrode_id}"
         else:
-            # Single-shank probes: contact ID = "e{electrode}"
             contact_id_str = f"e{electrode_id}"
 
-        # Find where this contact appears in the full probe
         full_probe_index = np.where(full_probe.contact_ids == contact_id_str)[0]
         if len(full_probe_index) > 0:
             selected_contact_indices.append(full_probe_index[0])
 
     probe = full_probe.get_slice(np.array(selected_contact_indices, dtype=int))
 
-    # Add IMRO-specific contact annotations (acquisition settings)
-    probe.annotate(probe_type=probe_type)
+    # ===== 6. Store IMRO properties (acquisition settings) as annotations =====
     vector_properties = ("channel", "bank", "bank_mask", "ref_id", "ap_gain", "lf_gain", "ap_hipas_flt")
     vector_properties_available = {}
-    for k, v in contact_info.items():
+    for k, v in imro_per_channel.items():
         if (k in vector_properties) and (len(v) > 0):
             vector_properties_available[imro_field_to_pi_field.get(k)] = v
     probe.annotate_contacts(**vector_properties_available)
 
-    # ===== 5. Slice to saved channels (if subset was saved) =====
+    # ===== 7. Slice to saved channels (if subset was saved) =====
     # This is DIFFERENT from IMRO selection: IMRO selects which electrodes to acquire,
     # but SpikeGLX can optionally save only a subset of acquired channels to reduce file size.
     # For example: IMRO selects 384 electrodes, but only 300 are saved to disk.
