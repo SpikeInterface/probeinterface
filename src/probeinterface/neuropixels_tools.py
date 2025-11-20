@@ -843,11 +843,9 @@ def read_spikeglx(file: str | Path) -> Probe:
     ]
 
     # ===== 5. Slice full probe to active electrodes =====
-    # Find indices where full probe contact IDs match the active contact IDs
-    full_probe_contact_ids = np.array(full_probe.contact_ids)
-    active_contact_ids_array = np.array(active_contact_ids)
-    mask = np.isin(full_probe_contact_ids, active_contact_ids_array)
-    selected_contact_indices = np.where(mask)[0]
+    # Find indices of active contacts in the full probe, preserving IMRO order
+    contact_id_to_index = {contact_id: idx for idx, contact_id in enumerate(full_probe.contact_ids)}
+    selected_contact_indices = np.array([contact_id_to_index[contact_id] for contact_id in active_contact_ids])
 
     probe = full_probe.get_slice(np.array(selected_contact_indices, dtype=int))
 
