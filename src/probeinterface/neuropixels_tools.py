@@ -416,10 +416,8 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
     positions = np.stack((x_pos, y_pos), axis=1)
 
     # ===== 4. Calculate contact IDs =====
-    if shank_ids is not None:
-        contact_ids = [f"s{shank_id}e{elec_id}" for shank_id, elec_id in zip(shank_ids, elec_ids)]
-    else:
-        contact_ids = [f"e{elec_id}" for elec_id in elec_ids]
+    shank_ids_iter = shank_ids if shank_ids is not None else [None] * len(elec_ids)
+    contact_ids = [_build_canonical_contact_id(elec_id, shank_id) for shank_id, elec_id in zip(shank_ids_iter, elec_ids)]
 
     # ===== 5. Create Probe object and set contacts =====
     probe = Probe(ndim=2, si_units="um", model_name=probe_part_number, manufacturer="imec")
@@ -693,6 +691,39 @@ def write_imro(file: str | Path, probe: Probe):
 ##
 
 
+def _build_canonical_contact_id(electrode_id: int, shank_id: int | None = None) -> str:
+    """
+    Build the canonical contact ID string for a Neuropixels electrode.
+
+    This establishes the standard naming convention used throughout probeinterface
+    for Neuropixels contact identification.
+
+    Parameters
+    ----------
+    electrode_id : int
+        Physical electrode ID on the probe (e.g., 0-959 for NP1.0)
+    shank_id : int or None, default: None
+        Shank ID for multi-shank probes. If None, assumes single-shank probe.
+
+    Returns
+    -------
+    contact_id : str
+        Canonical contact ID string, either "e{electrode_id}" for single-shank
+        or "s{shank_id}e{electrode_id}" for multi-shank probes.
+
+    Examples
+    --------
+    >>> _build_canonical_contact_id(123)
+    'e123'
+    >>> _build_canonical_contact_id(123, shank_id=0)
+    's0e123'
+    """
+    if shank_id is not None:
+        return f"s{shank_id}e{electrode_id}"
+    else:
+        return f"e{electrode_id}"
+
+
 def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
     """
     Parse IMRO (Imec ReadOut) table string into structured per-channel data.
@@ -717,7 +748,10 @@ def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
     imro_per_channel : dict
         Dictionary where each key maps to a list of values (one per channel).
         Keys are IMRO fields like "channel", "bank", "electrode", "ap_gain", etc.
-        Example: {"channel": [0,1,2,...], "bank": [1,0,0,...], "ap_gain": [500,500,...]}
+        The "electrode" key always contains physical electrode IDs (0-959 for NP1.0, etc.).
+        For NP2.0+: electrode IDs come directly from IMRO data.
+        For NP1.0: electrode IDs are computed as bank * 384 + channel.
+        Example: {"channel": [0,1,2,...], "bank": [1,0,0,...], "electrode": [384,1,2,...], "ap_gain": [500,500,...]}
     """
     # Get IMRO field format from catalogue
     probe_features = _load_np_probe_features()
@@ -734,6 +768,15 @@ def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
         values = tuple(map(int, field_values_str[1:].split(" ")))
         for field, field_value in zip(imro_fields, values):
             imro_per_channel[field].append(field_value)
+
+    # Ensure "electrode" key always exists with physical electrode IDs
+    # Different probe types encode electrode selection differently
+    if "electrode" not in imro_per_channel:
+        # NP1.0: Bank-based addressing (physical_electrode_id = bank * 384 + channel)
+        readout_channel_ids = np.array(imro_per_channel["channel"])
+        bank_key = "bank" if "bank" in imro_per_channel else "bank_mask"
+        bank_indices = np.array(imro_per_channel[bank_key])
+        imro_per_channel["electrode"] = (bank_indices * 384 + readout_channel_ids).tolist()
 
     return imro_per_channel
 
@@ -790,41 +833,32 @@ def read_spikeglx(file: str | Path) -> Probe:
     imro_table_string = meta["imroTbl"]
     imro_per_channel = _parse_imro_string(imro_table_string, imDatPrb_pn)
 
-    # ===== 4. Get active electrodes from IMRO data =====
-    # Convert IMRO channel numbers to physical electrode IDs. Different probe types encode
-    # electrode selection differently: NP1.0 uses banks, NP2.0+ uses direct electrode IDs.
-    if "electrode" in imro_per_channel:
-        # NP2.0+: Direct electrode addressing
-        physical_electrode_ids = np.array(imro_per_channel["electrode"])
-    else:
-        # NP1.0: Bank-based addressing (physical_electrode_id = bank * 384 + channel)
-        readout_channel_ids = np.array(imro_per_channel["channel"])
-        bank_key = "bank" if "bank" in imro_per_channel else "bank_mask"
-        bank_indices = np.array(imro_per_channel[bank_key])
-        physical_electrode_ids = bank_indices * 384 + readout_channel_ids
+    # ===== 4. Build contact IDs for active electrodes =====
+    # Convert physical electrode IDs to probeinterface canonical contact ID strings
+    imro_electrode = imro_per_channel["electrode"]
+    imro_shank = imro_per_channel.get("shank", [None] * len(imro_electrode))
+    active_contact_ids = [
+        _build_canonical_contact_id(elec_id, shank_id)
+        for shank_id, elec_id in zip(imro_shank, imro_electrode)
+    ]
 
     # ===== 5. Slice full probe to active electrodes =====
-    selected_contact_indices = []
-    for idx, electrode_id in enumerate(physical_electrode_ids):
-        if "shank" in imro_per_channel:
-            shank_id = imro_per_channel["shank"][idx]
-            contact_id_str = f"s{shank_id}e{electrode_id}"
-        else:
-            contact_id_str = f"e{electrode_id}"
-
-        full_probe_index = np.where(full_probe.contact_ids == contact_id_str)[0]
-        if len(full_probe_index) > 0:
-            selected_contact_indices.append(full_probe_index[0])
+    # Find indices where full probe contact IDs match the active contact IDs
+    full_probe_contact_ids = np.array(full_probe.contact_ids)
+    active_contact_ids_array = np.array(active_contact_ids)
+    mask = np.isin(full_probe_contact_ids, active_contact_ids_array)
+    selected_contact_indices = np.where(mask)[0]
 
     probe = full_probe.get_slice(np.array(selected_contact_indices, dtype=int))
 
     # ===== 6. Store IMRO properties (acquisition settings) as annotations =====
-    vector_properties = ("channel", "bank", "bank_mask", "ref_id", "ap_gain", "lf_gain", "ap_hipas_flt")
-    vector_properties_available = {}
-    for k, v in imro_per_channel.items():
-        if (k in vector_properties) and (len(v) > 0):
-            vector_properties_available[imro_field_to_pi_field.get(k)] = v
-    probe.annotate_contacts(**vector_properties_available)
+    # Map IMRO field names to probeinterface field names and add as contact annotations
+    imro_properties_to_add = ("channel", "bank", "bank_mask", "ref_id", "ap_gain", "lf_gain", "ap_hipas_flt")
+    probe.annotate_contacts(**{
+        imro_field_to_pi_field.get(k): v
+        for k, v in imro_per_channel.items()
+        if k in imro_properties_to_add and len(v) > 0
+    })
 
     # ===== 7. Slice to saved channels (if subset was saved) =====
     # This is DIFFERENT from IMRO selection: IMRO selects which electrodes to acquire,
