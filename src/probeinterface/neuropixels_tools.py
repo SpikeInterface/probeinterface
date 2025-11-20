@@ -847,16 +847,17 @@ def read_spikeglx(file: str | Path) -> Probe:
     contact_id_to_index = {contact_id: idx for idx, contact_id in enumerate(full_probe.contact_ids)}
     selected_contact_indices = np.array([contact_id_to_index[contact_id] for contact_id in active_contact_ids])
 
-    probe = full_probe.get_slice(np.array(selected_contact_indices, dtype=int))
+    probe = full_probe.get_slice(selected_contact_indices)
 
     # ===== 6. Store IMRO properties (acquisition settings) as annotations =====
     # Map IMRO field names to probeinterface field names and add as contact annotations
     imro_properties_to_add = ("channel", "bank", "bank_mask", "ref_id", "ap_gain", "lf_gain", "ap_hipas_flt")
-    probe.annotate_contacts(**{
-        imro_field_to_pi_field.get(k): v
-        for k, v in imro_per_channel.items()
-        if k in imro_properties_to_add and len(v) > 0
-    })
+    annotations = {}
+    for imro_field, values in imro_per_channel.items():
+        if imro_field in imro_properties_to_add and len(values) > 0:
+            pi_field = imro_field_to_pi_field.get(imro_field)
+            annotations[pi_field] = values
+    probe.annotate_contacts(**annotations)
 
     # ===== 7. Slice to saved channels (if subset was saved) =====
     # This is DIFFERENT from IMRO selection: IMRO selects which electrodes to acquire,
