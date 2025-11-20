@@ -851,13 +851,14 @@ def read_spikeglx(file: str | Path) -> Probe:
     probe = full_probe.get_slice(selected_contact_indices)
 
     # ===== 6. Store IMRO properties (acquisition settings) as annotations =====
-    # Map IMRO field names to probeinterface field names and add as contact annotations
+    # Filter IMRO data to only the properties we want to add as annotations
     imro_properties_to_add = ("channel", "bank", "bank_mask", "ref_id", "ap_gain", "lf_gain", "ap_hipas_flt")
+    imro_filtered = {k: v for k, v in imro_per_channel.items() if k in imro_properties_to_add and len(v) > 0}
+    # Map IMRO field names to probeinterface field names and add as contact annotations
     annotations = {}
-    for imro_field, values in imro_per_channel.items():
-        if imro_field in imro_properties_to_add and len(values) > 0:
-            pi_field = imro_field_to_pi_field.get(imro_field)
-            annotations[pi_field] = values
+    for imro_field, values in imro_filtered.items():
+        pi_field = imro_field_to_pi_field.get(imro_field)
+        annotations[pi_field] = values
     probe.annotate_contacts(**annotations)
 
     # ===== 7. Slice to saved channels (if subset was saved) =====
