@@ -381,7 +381,6 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
     # ===== 1. Load configuration =====
     probe_features = _load_np_probe_features()
     probe_spec_dict = probe_features["neuropixels_probes"][probe_part_number]
-    mux_table_string = probe_features["z_mux_tables"][probe_spec_dict["mux_table_format_type"]]
 
     # ===== 2. Calculate electrode IDs and shank IDs =====
     num_shanks = int(probe_spec_dict["num_shanks"])
@@ -447,6 +446,9 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
         contour += list(polygon + shank_shift)
 
     # Apply contour shift to align with contact positions
+    # This constant (11 μm) represents the vertical distance from the center of the bottommost
+    # electrode to the top of the shank tip. This is a geometric constant for Neuropixels probes
+    # that is not currently available in the ProbeTable specifications.
     middle_of_bottommost_electrode_to_top_of_shank_tip = 11
     contour_shift = np.array([-odd_offset, -middle_of_bottommost_electrode_to_top_of_shank_tip])
     contour = np.array(contour) + contour_shift
@@ -470,8 +472,18 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
     )
 
     # ===== 8. Add MUX table annotations =====
+    mux_table_string = probe_features["z_mux_tables"][probe_spec_dict["mux_table_format_type"]]
     if mux_table_string is not None:
-        num_adcs, num_channels_per_adc, mux_table = make_mux_table_array(mux_table_string)
+        # Parse MUX table string: (num_adcs,num_channels_per_adc)(int int ...)(int int ...)...
+        adc_info = mux_table_string.split(")(")[0]
+        split_mux = mux_table_string.split(")(")[1:]
+        num_adcs, num_channels_per_adc = map(int, adc_info[1:].split(","))
+        adc_groups_list = [
+            np.array(each_mux.replace("(", "").replace(")", "").split(" ")).astype("int") for each_mux in split_mux
+        ]
+        mux_table = np.transpose(np.array(adc_groups_list))
+
+        # Map contacts to ADC groups and sample order
         num_contacts = positions.shape[0]
         adc_groups = np.zeros(num_contacts, dtype="int64")
         adc_sample_order = np.zeros(num_contacts, dtype="int64")
@@ -479,6 +491,7 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
             adc_groups_per_adc = adc_groups_per_adc[adc_groups_per_adc < num_contacts]
             adc_groups[adc_groups_per_adc] = adc_index
             adc_sample_order[adc_groups_per_adc] = np.arange(len(adc_groups_per_adc))
+
         probe.annotate(num_adcs=num_adcs)
         probe.annotate(num_channels_per_adc=num_channels_per_adc)
         probe.annotate_contacts(adc_group=adc_groups)
