@@ -417,7 +417,9 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
 
     # ===== 4. Calculate contact IDs =====
     shank_ids_iter = shank_ids if shank_ids is not None else [None] * len(elec_ids)
-    contact_ids = [_build_canonical_contact_id(elec_id, shank_id) for shank_id, elec_id in zip(shank_ids_iter, elec_ids)]
+    contact_ids = [
+        _build_canonical_contact_id(elec_id, shank_id) for shank_id, elec_id in zip(shank_ids_iter, elec_ids)
+    ]
 
     # ===== 5. Create Probe object and set contacts =====
     probe = Probe(ndim=2, si_units="um", model_name=probe_part_number, manufacturer="imec")
@@ -838,8 +840,7 @@ def read_spikeglx(file: str | Path) -> Probe:
     imro_electrode = imro_per_channel["electrode"]
     imro_shank = imro_per_channel.get("shank", [None] * len(imro_electrode))
     active_contact_ids = [
-        _build_canonical_contact_id(elec_id, shank_id)
-        for shank_id, elec_id in zip(imro_shank, imro_electrode)
+        _build_canonical_contact_id(elec_id, shank_id) for shank_id, elec_id in zip(imro_shank, imro_electrode)
     ]
 
     # ===== 5. Slice full probe to active electrodes =====
