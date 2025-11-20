@@ -745,36 +745,43 @@ def read_spikeglx(file: str | Path) -> Probe:
         for field, field_value in zip(imro_fields, values):
             contact_info[field].append(field_value)
 
-    # Extract electrode IDs from IMRO table
-    channel_ids = np.array(contact_info["channel"])
+    # Convert IMRO channel numbers to physical electrode IDs
+    # The IMRO table specifies which electrodes were recorded, but different probe types
+    # encode this information differently:
+    readout_channel_ids = np.array(contact_info["channel"])  # 0-383 for NP1.0
+
     if "electrode" in contact_info:
-        elec_ids = np.array(contact_info["electrode"])
+        # NP2.0 and some probes directly specify the physical electrode ID
+        physical_electrode_ids = np.array(contact_info["electrode"])
     else:
-        if contact_info.get("bank") is not None:
-            bank_key = "bank"
-        elif contact_info.get("bank_mask") is not None:
-            bank_key = "bank_mask"
-        banks = np.array(contact_info[bank_key])
-        elec_ids = banks * 384 + channel_ids
+        # NP1.0 uses banks to encode electrode position
+        # Physical electrode ID = bank * 384 + channel
+        # (e.g., bank 0, channel 0 → electrode 0; bank 1, channel 0 → electrode 384)
+        bank_key = "bank" if "bank" in contact_info else "bank_mask"
+        bank_indices = np.array(contact_info[bank_key])
+        physical_electrode_ids = bank_indices * 384 + readout_channel_ids
 
     # ===== 4. Slice full probe to IMRO-selected electrodes =====
-    # Match the electrode IDs from IMRO table to contacts in the full probe
-    keep_indices = []
-    for elec_id in elec_ids:
-        # For multi-shank probes, we need to check if shank info is in contact_info
+    # The full probe has all electrodes (e.g., 960 for NP1.0). We need to find which
+    # indices in the full probe array correspond to the electrodes selected in the IMRO table.
+    selected_contact_indices = []
+
+    for idx, electrode_id in enumerate(physical_electrode_ids):
+        # Build the contact ID string that matches the full probe's contact_ids array
         if "shank" in contact_info:
-            # Get the shank for this electrode from IMRO table
-            shank_idx = contact_info["shank"][len(keep_indices)]
-            contact_id = f"s{shank_idx}e{elec_id}"
+            # Multi-shank probes: contact ID = "s{shank}e{electrode}"
+            shank_id = contact_info["shank"][idx]
+            contact_id_str = f"s{shank_id}e{electrode_id}"
         else:
-            contact_id = f"e{elec_id}"
+            # Single-shank probes: contact ID = "e{electrode}"
+            contact_id_str = f"e{electrode_id}"
 
-        # Search for this contact ID in the full probe
-        matching_indices = np.where(full_probe.contact_ids == contact_id)[0]
-        if len(matching_indices) > 0:
-            keep_indices.append(matching_indices[0])
+        # Find where this contact appears in the full probe
+        full_probe_index = np.where(full_probe.contact_ids == contact_id_str)[0]
+        if len(full_probe_index) > 0:
+            selected_contact_indices.append(full_probe_index[0])
 
-    probe = full_probe.get_slice(np.array(keep_indices, dtype=int))
+    probe = full_probe.get_slice(np.array(selected_contact_indices, dtype=int))
 
     # Add IMRO-specific contact annotations (acquisition settings)
     probe.annotate(probe_type=probe_type)
@@ -805,9 +812,7 @@ def read_spikeglx(file: str | Path) -> Probe:
     probe.annotate(slot=imDatPrb_slot)
 
     # ===== 7. Set device channel indices (wiring) =====
-    # Device channel indices map probe contacts to data file channels.
-    # After all slicing, channels are numbered 0, 1, 2, ... N-1 in the order they appear
-    # in the binary data file, so we wire them sequentially.
+    # I am unsure why are we are doing this. If someone knows please document it here.
     probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
 
     return probe
