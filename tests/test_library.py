@@ -56,14 +56,6 @@ def test_get_from_cache():
     probe = get_from_cache(manufacturer, probe_name)
     assert isinstance(probe, Probe)
 
-    tag = get_tags_in_library()[0]
-    probe = get_from_cache(manufacturer, probe_name, tag=tag)
-    assert probe is None  # because we did not download with this tag
-    download_probeinterface_file(manufacturer, probe_name, tag=tag)
-    probe = get_from_cache(manufacturer, probe_name, tag=tag)
-    _remove_from_cache(manufacturer, probe_name, tag=tag)
-    assert isinstance(probe, Probe)
-
     probe = get_from_cache("yep", "yop")
     assert probe is None
 
@@ -74,6 +66,18 @@ def test_get_probe():
     assert probe.get_contact_count() == 32
 
 
+@pytest.mark.library
+def test_get_from_cache_with_tag():
+    tag = get_tags_in_library()[0]
+    probe = get_from_cache(manufacturer, probe_name, tag=tag)
+    assert probe is None  # because we did not download with this tag
+    download_probeinterface_file(manufacturer, probe_name, tag=tag)
+    probe = get_from_cache(manufacturer, probe_name, tag=tag)
+    _remove_from_cache(manufacturer, probe_name, tag=tag)
+    assert isinstance(probe, Probe)
+
+
+@pytest.mark.library
 def test_available_tags():
     tags = get_tags_in_library()
     if len(tags) > 0:
