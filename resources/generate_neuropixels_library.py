@@ -6,7 +6,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from probeinterface.neuropixels_tools import _make_npx_probe_from_description, get_probe_metadata_from_probe_features
+from probeinterface.neuropixels_tools import build_neuropixels_probe
 from probeinterface.plotting import plot_probe
 from probeinterface import write_probeinterface
 
@@ -28,6 +28,8 @@ def generate_all_npx(base_folder=None):
     probe_part_numbers = probe_features['neuropixels_probes'].keys()
 
 
+    # Note: model_name here is the probe_part_number (specific SKU like "NP1000"),
+    # NOT the model/platform (like "Neuropixels 1.0", "Neuropixels 2.0", "Ultra", or "NHP")
     for model_name in probe_part_numbers:
         print(model_name)
 
@@ -41,18 +43,8 @@ def generate_all_npx(base_folder=None):
         probe_folder = base_folder / model_name
         probe_folder.mkdir(exist_ok=True)
 
-        pt_metadata, _, _ = get_probe_metadata_from_probe_features(probe_features, model_name)
-
-        num_shank = pt_metadata["num_shanks"]
-        contact_per_shank = pt_metadata["cols_per_shank"] * pt_metadata["rows_per_shank"]
-        if num_shank == 1:
-            elec_ids = np.arange(contact_per_shank)
-            shank_ids = None
-        else:
-            elec_ids = np.concatenate([np.arange(contact_per_shank) for i in range(num_shank)])
-            shank_ids = np.concatenate([np.zeros(contact_per_shank) + i for i in range(num_shank)])
-
-        probe = _make_npx_probe_from_description(pt_metadata, model_name, elec_ids, shank_ids)
+        # Build the full probe with all possible contacts from the probe part number
+        probe = build_neuropixels_probe(model_name)
 
         # plotting
         fig, axs = plt.subplots(ncols=2)
@@ -73,7 +65,10 @@ def generate_all_npx(base_folder=None):
         plot_probe(probe, ax=ax)
         ax.set_title("")
 
-        yp = pt_metadata["electrode_pitch_vert_um"]
+        # Get vertical pitch from contact positions (minimum non-zero y-distance)
+        positions = probe.contact_positions
+        y_positions = np.unique(positions[:, 1])
+        yp = np.min(np.diff(y_positions))
         ax.set_ylim(-yp*8, yp*13)
         ax.yaxis.set_visible(False)
         ax.spines["top"].set_visible(False)
