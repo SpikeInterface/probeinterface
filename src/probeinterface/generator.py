@@ -101,7 +101,7 @@ def generate_tetrode(r: float = 10.0) -> Probe:
 
 def generate_multi_columns_probe(
     num_columns: int = 3,
-    num_contact_per_column: int = 10,
+    num_contact_per_column: int | list[int] = 10,
     xpitch: float = 20,
     ypitch: float = 20,
     y_shift_per_column: Optional[np.array | list] = None,
