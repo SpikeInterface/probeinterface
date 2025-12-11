@@ -1,6 +1,16 @@
 import importlib.metadata
+import importlib.utils
+from packaging.version import parse
 
 __version__ = importlib.metadata.version("probeinterface")
+
+# If Zarr is installed, it must be >= 3.0.0
+ZARR_INSTALLED = importlib.utils.find_spec("zarr") is not None
+if ZARR_INSTALLED:
+    import zarr
+
+    if parse(zarr.__version__) < parse("3.0.0"):
+        raise ImportError("zarr version must be >= 3.0.0")
 
 
 from .probe import Probe, select_axes

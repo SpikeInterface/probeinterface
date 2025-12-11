@@ -1152,7 +1152,7 @@ class Probe:
         # add fields and contact annotations
         for field_name, (dtype, offset) in probe_arr.dtype.fields.items():
             data = probe_arr[field_name]
-            group.create_dataset(name=field_name, data=data, dtype=dtype, chunks=False)
+            group.create_array(name=field_name, data=data, chunks=data.shape)
 
         # Annotations as a group (special attributes are stored as annotations)
         annotations_group = group.create_group("annotations")
@@ -1161,8 +1161,8 @@ class Probe:
 
         # Add planar contour
         if self.probe_planar_contour is not None:
-            group.create_dataset(
-                name="probe_planar_contour", data=self.probe_planar_contour, dtype="float64", chunks=False
+            group.create_array(
+                name="probe_planar_contour", data=self.probe_planar_contour, chunks=self.probe_planar_contour.shape
             )
 
     def to_zarr(self, folder_path: str | Path) -> None:
@@ -1219,7 +1219,7 @@ class Probe:
                 probe_arr_keys.append(key)
                 dtype.append((key, dset.dtype))
                 if num_contacts is None:
-                    num_contacts = len(dset)
+                    num_contacts = dset.shape[0]
 
         # Create a structured array from the datasets
         probe_arr = np.zeros(num_contacts, dtype=dtype)
