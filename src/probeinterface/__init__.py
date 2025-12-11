@@ -1,11 +1,11 @@
 import importlib.metadata
-import importlib.utils
+import importlib.util
 from packaging.version import parse
 
 __version__ = importlib.metadata.version("probeinterface")
 
 # If Zarr is installed, it must be >= 3.0.0
-ZARR_INSTALLED = importlib.utils.find_spec("zarr") is not None
+ZARR_INSTALLED = importlib.util.find_spec("zarr") is not None
 if ZARR_INSTALLED:
     import zarr
 
