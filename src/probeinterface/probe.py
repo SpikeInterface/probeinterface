@@ -355,7 +355,7 @@ class Probe:
             # Check for duplicate positions side by side
             contact_sides = np.asarray(contact_sides).astype(str)
             for side in ("front", "back"):
-                mask = contact_sides == "front"
+                mask = contact_sides == side
                 unique_positions = np.unique(positions[mask], axis=0)
                 positions_are_not_unique = unique_positions.shape[0] != positions[mask].shape[0]
                 if positions_are_not_unique:
