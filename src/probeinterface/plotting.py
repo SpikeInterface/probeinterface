@@ -102,6 +102,7 @@ def plot_probe(
     ylims: tuple | None = None,
     zlims: tuple | None = None,
     show_channel_on_click: bool = False,
+    side=None,
 ):
     """Plot a Probe object.
     Generates a 2D or 3D axis, depending on Probe.ndim
@@ -138,6 +139,8 @@ def plot_probe(
         Limits for z dimension
     show_channel_on_click : bool, default: False
         If True, the channel information is shown upon click
+    side : None | "front" | "back"
+        If the probe is two side, then the side must be given otherwise this raises an error.
 
     Returns
     -------
@@ -147,6 +150,15 @@ def plot_probe(
         The polygon collection for the probe shape
     """
     import matplotlib.pyplot as plt
+
+    if probe.contact_sides is not None:
+        if side is None or side not in ("front", "back"):
+            raise ValueError(
+                "The probe has two side, you must give which one to plot. plot_probe(probe, side='front'|'back')"
+            )
+        mask = probe.contact_sides == side
+        probe = probe.get_slice(mask)
+        probe._contact_sides = None
 
     if ax is None:
         if probe.ndim == 2:

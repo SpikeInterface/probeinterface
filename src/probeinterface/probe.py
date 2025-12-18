@@ -101,6 +101,7 @@ class Probe:
         self.probe_planar_contour = None
 
         # This handles the shank id per contact
+        # If None then one shank only
         self._shank_ids = None
 
         # This handles the wiring to device : channel index on device side.
@@ -111,6 +112,10 @@ class Probe:
         # Handle ids with str so it can be displayed like names
         #  This must be unique at Probe AND ProbeGroup level
         self._contact_ids = None
+
+        # Handle contact side for double face probes
+        # If None then one face only
+        self._contact_sides = None
 
         # annotation:  a dict that contains all meta information about
         # the probe (name, manufacturor, date of production, ...)
@@ -152,6 +157,10 @@ class Probe:
     @property
     def shank_ids(self):
         return self._shank_ids
+
+    @property
+    def contact_sides(self):
+        return self._contact_sides
 
     @property
     def name(self):
@@ -237,6 +246,8 @@ class Probe:
             if self.shank_ids is not None:
                 num_shank = self.get_shank_count()
                 txt += f" - {num_shank}shanks"
+            if self._contact_sides is not None:
+                txt += f" - 2 sides"
         return txt
 
     def __repr__(self):
@@ -291,7 +302,14 @@ class Probe:
         return n
 
     def set_contacts(
-        self, positions, shapes="circle", shape_params={"radius": 10}, plane_axes=None, contact_ids=None, shank_ids=None
+        self,
+        positions,
+        shapes="circle",
+        shape_params={"radius": 10},
+        plane_axes=None,
+        contact_ids=None,
+        shank_ids=None,
+        contact_sides=None,
     ):
         """Sets contacts to a Probe.
 
@@ -320,16 +338,28 @@ class Probe:
         shank_ids : array[str] | None, default: None
             Defines the shank ids for the contacts. If None, then
             these are assigned to a unique Shank.
+        contact_sides : array[str] | None, default: None
+            If probe is double sided, defines sides by a vector of ['front' | 'back']
         """
         positions = np.array(positions)
         if positions.shape[1] != self.ndim:
             raise ValueError(f"positions.shape[1]: {positions.shape[1]} and ndim: {self.ndim} do not match!")
 
-        # Check for duplicate positions
-        unique_positions = np.unique(positions, axis=0)
-        positions_are_not_unique = unique_positions.shape[0] != positions.shape[0]
-        if positions_are_not_unique:
-            _raise_non_unique_positions_error(positions)
+        if contact_sides is None:
+            # Check for duplicate positions
+            unique_positions = np.unique(positions, axis=0)
+            positions_are_not_unique = unique_positions.shape[0] != positions.shape[0]
+            if positions_are_not_unique:
+                _raise_non_unique_positions_error(positions)
+        else:
+            # Check for duplicate positions side by side
+            contact_sides = np.asarray(contact_sides).astype(str)
+            for side in ("front", "back"):
+                mask = contact_sides == side
+                unique_positions = np.unique(positions[mask], axis=0)
+                positions_are_not_unique = unique_positions.shape[0] != positions[mask].shape[0]
+                if positions_are_not_unique:
+                    _raise_non_unique_positions_error(positions[mask])
 
         self._contact_positions = positions
         n = positions.shape[0]
@@ -355,6 +385,15 @@ class Probe:
             self._shank_ids = np.asarray(shank_ids).astype(str)
             if self.shank_ids.size != n:
                 raise ValueError(f"shank_ids have wrong size: {self.shanks.ids.size} != {n}")
+
+        if contact_sides is None:
+            self._contact_sides = contact_sides
+        else:
+            self._contact_sides = contact_sides
+            if self._contact_sides.size != n:
+                raise ValueError(f"contact_sides have wrong size: {self._contact_sides.ids.size} != {n}")
+            if not np.all(np.isin(self._contact_sides, ["front", "back"])):
+                raise ValueError(f"contact_sides must 'front' or 'back'")
 
         # shape
         if isinstance(shapes, str):
@@ -591,6 +630,13 @@ class Probe:
             and self.annotations == other.annotations
         ):
             return False
+
+        if self._contact_sides is None:
+            if other._contact_sides is not None:
+                return False
+        else:
+            if not np.array_equal(self._contact_sides, other._contact_sides):
+                return False
 
         # Compare contact_annotations dictionaries
         if self.contact_annotations.keys() != other.contact_annotations.keys():
@@ -842,6 +888,7 @@ class Probe:
         "device_channel_indices",
         "_contact_ids",
         "_shank_ids",
+        "_contact_sides",
     ]
 
     def to_dict(self, array_as_list: bool = False) -> dict:
@@ -895,6 +942,9 @@ class Probe:
             plane_axes=d["contact_plane_axes"],
             shapes=d["contact_shapes"],
             shape_params=d["contact_shape_params"],
+            contact_ids=d.get("contact_ids", None),
+            shank_ids=d.get("shank_ids", None),
+            contact_sides=d.get("contact_sides", None),
         )
 
         v = d.get("probe_planar_contour", None)
@@ -904,14 +954,6 @@ class Probe:
         v = d.get("device_channel_indices", None)
         if v is not None:
             probe.set_device_channel_indices(v)
-
-        v = d.get("shank_ids", None)
-        if v is not None:
-            probe.set_shank_ids(v)
-
-        v = d.get("contact_ids", None)
-        if v is not None:
-            probe.set_contact_ids(v)
 
         if "annotations" in d:
             probe.annotate(**d["annotations"])
@@ -955,6 +997,7 @@ class Probe:
                 ...
                 ('shank_ids', 'U64'),
                 ('contact_ids', 'U64'),
+                ('contact_sides', 'U8'),
 
                 # The rest is added only if `complete=True`
                 ('device_channel_indices', 'int64', optional),
@@ -991,6 +1034,11 @@ class Probe:
             dtype += [(k, "float64")]
         dtype += [("shank_ids", "U64"), ("contact_ids", "U64")]
 
+        if self._contact_sides is not None:
+            dtype += [
+                ("contact_sides", "U8"),
+            ]
+
         if complete:
             dtype += [("device_channel_indices", "int64")]
             dtype += [("si_units", "U64")]
@@ -1013,6 +1061,9 @@ class Probe:
                 arr[k][i] = v
 
         arr["shank_ids"] = self.shank_ids
+
+        if self._contact_sides is not None:
+            arr["contact_sides"] = self.contact_sides
 
         if self.contact_ids is None:
             arr["contact_ids"] = [""] * self.get_contact_count()
@@ -1062,6 +1113,7 @@ class Probe:
             "contact_shapes",
             "shank_ids",
             "contact_ids",
+            "contact_sides",
             "device_channel_indices",
             "radius",
             "width",
@@ -1118,14 +1170,22 @@ class Probe:
         else:
             plane_axes = None
 
-        probe.set_contacts(positions=positions, plane_axes=plane_axes, shapes=shapes, shape_params=shape_params)
+        shank_ids = arr["shank_ids"] if "shank_ids" in fields else None
+        contact_sides = arr["contact_sides"] if "contact_sides" in fields else None
+
+        probe.set_contacts(
+            positions=positions,
+            plane_axes=plane_axes,
+            shapes=shapes,
+            shape_params=shape_params,
+            shank_ids=shank_ids,
+            contact_sides=contact_sides,
+        )
 
         if "device_channel_indices" in fields:
             dev_channel_indices = arr["device_channel_indices"]
             if not np.all(dev_channel_indices == -1):
                 probe.set_device_channel_indices(dev_channel_indices)
-        if "shank_ids" in fields:
-            probe.set_shank_ids(arr["shank_ids"])
         if "contact_ids" in fields:
             probe.set_contact_ids(arr["contact_ids"])
 
