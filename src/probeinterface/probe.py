@@ -297,8 +297,11 @@ class Probe:
         """
         Return the number of shanks for this probe.
         """
-        assert self.shank_ids is not None
-        n = len(np.unique(self.shank_ids))
+        # assert self.shank_ids is not None
+        if self.shank_ids is None:
+            n = 1
+        else:
+            n = len(np.unique(self.shank_ids))
         return n
 
     def set_contacts(
@@ -380,7 +383,8 @@ class Probe:
             self.set_contact_ids(contact_ids)
 
         if shank_ids is None:
-            self._shank_ids = np.zeros(n, dtype=str)
+            # self._shank_ids = np.zeros(n, dtype=str)
+            self._shank_ids = None
         else:
             self._shank_ids = np.asarray(shank_ids).astype(str)
             if self.shank_ids.size != n:
@@ -601,11 +605,15 @@ class Probe:
         """
         Return the list of Shank objects for this Probe
         """
-        assert self.shank_ids is not None, "Can only get shanks if `shank_ids` exist"
-        shanks = []
-        for shank_id in np.unique(self.shank_ids):
-            shank = Shank(probe=self, shank_id=shank_id)
-            shanks.append(shank)
+        # assert self.shank_ids is not None, "Can only get shanks if `shank_ids` exist"
+        if self.shank_ids is None:
+            # has a unique shank
+            shanks = [Shank(probe=self, shank_id=None)]
+        else:
+            shanks = []
+            for shank_id in np.unique(self.shank_ids):
+                shank = Shank(probe=self, shank_id=shank_id)
+                shanks.append(shank)
         return shanks
 
     def __eq__(self, other):
@@ -1032,7 +1040,11 @@ class Probe:
                     param_shape.append(k)
         for k in param_shape:
             dtype += [(k, "float64")]
-        dtype += [("shank_ids", "U64"), ("contact_ids", "U64")]
+
+        if self._shank_ids is not None:
+            dtype += [("shank_ids", "U64")]
+        
+        dtype += [("contact_ids", "U64")]
 
         if self._contact_sides is not None:
             dtype += [
@@ -1060,7 +1072,8 @@ class Probe:
             for k, v in p.items():
                 arr[k][i] = v
 
-        arr["shank_ids"] = self.shank_ids
+        if self._shank_ids is not None:
+            arr["shank_ids"] = self.shank_ids
 
         if self._contact_sides is not None:
             arr["contact_sides"] = self.contact_sides

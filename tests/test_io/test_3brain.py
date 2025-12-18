@@ -43,3 +43,7 @@ def test_3brain():
         assert np.all(np.isclose(np.diff(unique_rows), contact_pitch)), file
         unique_cols = np.unique(probe.contact_positions[:, 0])
         assert np.all(np.isclose(np.diff(unique_cols), contact_pitch))
+
+
+if __name__ == "__main__":
+    test_3brain()
