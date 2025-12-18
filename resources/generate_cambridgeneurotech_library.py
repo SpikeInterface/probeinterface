@@ -152,8 +152,9 @@ def generate_all_probes(probe_tables_path, output_folder):
 
         if np.all(pd.isna(contacts["contact_sides"])):
             contacts.drop(columns="contact_sides", inplace=True)
-        else:
-            print(f"Double sided probe: {sheet_name}")
+
+        if np.all(pd.isna(contacts["shank_ids"])):
+            contacts.drop(columns="shank_ids", inplace=True)
 
         if "z" in contacts.columns:
             contacts.drop(columns=["z"], inplace=True)
@@ -172,8 +173,9 @@ def generate_all_probes(probe_tables_path, output_folder):
             print(f"Problem loading {sheet_name}: {e}")
             sheets_with_issues.append(sheet_name)
 
-    print("Wrong contours:\n\n", wrong_contours)
-    print("Sheets with issues:\n\n", sheets_with_issues)
+    print(f"\nREPORT for CambridgeNeurotech probe library generation\n")
+    print(f"Probes with wrong contours: {len(wrong_contours)}\n{wrong_contours}")
+    print(f"Probes failed to load: {len(sheets_with_issues)}\n{sheets_with_issues}")
 
 
 if __name__ == "__main__":
