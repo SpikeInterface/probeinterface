@@ -43,6 +43,7 @@
             "rows_per_shank": "480",
             "shank_pitch_um": "0",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "209",
             "total_electrodes": "960"
@@ -90,6 +91,7 @@
             "rows_per_shank": "480",
             "shank_pitch_um": "0",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "209",
             "total_electrodes": "960"
@@ -137,6 +139,7 @@
             "rows_per_shank": "480",
             "shank_pitch_um": "0",
             "shank_thickness_um": "132",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "209",
             "total_electrodes": "960"
@@ -184,6 +187,7 @@
             "rows_per_shank": "480",
             "shank_pitch_um": "0",
             "shank_thickness_um": "132",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "209",
             "total_electrodes": "960"
@@ -231,6 +235,7 @@
             "rows_per_shank": "480",
             "shank_pitch_um": "0",
             "shank_thickness_um": "132",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "209",
             "total_electrodes": "960"
@@ -278,6 +283,7 @@
             "rows_per_shank": "480",
             "shank_pitch_um": "0",
             "shank_thickness_um": "132",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "209",
             "total_electrodes": "960"
@@ -325,6 +331,7 @@
             "rows_per_shank": "480",
             "shank_pitch_um": "0",
             "shank_thickness_um": "122",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "209",
             "total_electrodes": "960"
@@ -372,6 +379,7 @@
             "rows_per_shank": "480",
             "shank_pitch_um": "0",
             "shank_thickness_um": "122",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "209",
             "total_electrodes": "960"
@@ -419,6 +427,7 @@
             "rows_per_shank": "480",
             "shank_pitch_um": "0",
             "shank_thickness_um": "122",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "209",
             "total_electrodes": "960"
@@ -466,6 +475,7 @@
             "rows_per_shank": "480",
             "shank_pitch_um": "0",
             "shank_thickness_um": "122",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "209",
             "total_electrodes": "960"
@@ -513,6 +523,7 @@
             "rows_per_shank": "1248",
             "shank_pitch_um": "0",
             "shank_thickness_um": "42",
+            "shank_tip_to_base_um": "25000",
             "shank_width_um": "125",
             "tip_length_um": "373",
             "total_electrodes": "2496"
@@ -560,6 +571,7 @@
             "rows_per_shank": "1248",
             "shank_pitch_um": "0",
             "shank_thickness_um": "67",
+            "shank_tip_to_base_um": "25000",
             "shank_width_um": "125",
             "tip_length_um": "373",
             "total_electrodes": "2496"
@@ -607,6 +619,7 @@
             "rows_per_shank": "1248",
             "shank_pitch_um": "0",
             "shank_thickness_um": "122",
+            "shank_tip_to_base_um": "25000",
             "shank_width_um": "125",
             "tip_length_um": "373",
             "total_electrodes": "2496"
@@ -654,6 +667,7 @@
             "rows_per_shank": "2208",
             "shank_pitch_um": "0",
             "shank_thickness_um": "97",
+            "shank_tip_to_base_um": "45000",
             "shank_width_um": "125",
             "tip_length_um": "373",
             "total_electrodes": "4416"
@@ -701,6 +715,7 @@
             "rows_per_shank": "2208",
             "shank_pitch_um": "0",
             "shank_thickness_um": "132",
+            "shank_tip_to_base_um": "45000",
             "shank_width_um": "125",
             "tip_length_um": "373",
             "total_electrodes": "4416"
@@ -748,6 +763,7 @@
             "rows_per_shank": "2208",
             "shank_pitch_um": "0",
             "shank_thickness_um": "122",
+            "shank_tip_to_base_um": "45000",
             "shank_width_um": "125",
             "tip_length_um": "373",
             "total_electrodes": "4416"
@@ -795,6 +811,7 @@
             "rows_per_shank": "2208",
             "shank_pitch_um": "0",
             "shank_thickness_um": "122",
+            "shank_tip_to_base_um": "45000",
             "shank_width_um": "125",
             "tip_length_um": "373",
             "total_electrodes": "4416"
@@ -842,6 +859,7 @@
             "rows_per_shank": "48",
             "shank_pitch_um": "0",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "206.5",
             "total_electrodes": "384"
@@ -889,6 +907,7 @@
             "rows_per_shank": "768",
             "shank_pitch_um": "0",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "73",
             "tip_length_um": "203.5",
             "total_electrodes": "6144"
@@ -936,6 +955,7 @@
             "rows_per_shank": "192",
             "shank_pitch_um": "0",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "205.75",
             "total_electrodes": "384"
@@ -983,6 +1003,7 @@
             "rows_per_shank": "384",
             "shank_pitch_um": "0",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "205.25",
             "total_electrodes": "384"
@@ -1030,6 +1051,7 @@
             "rows_per_shank": "24",
             "shank_pitch_um": "0",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "205.25",
             "total_electrodes": "384"
@@ -1077,6 +1099,7 @@
             "rows_per_shank": "32",
             "shank_pitch_um": "0",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "205.75",
             "total_electrodes": "384"
@@ -1124,6 +1147,7 @@
             "rows_per_shank": "64",
             "shank_pitch_um": "0",
             "shank_thickness_um": "67",
+            "shank_tip_to_base_um": "25000",
             "shank_width_um": "125",
             "tip_length_um": "372",
             "total_electrodes": "128"
@@ -1171,6 +1195,7 @@
             "rows_per_shank": "64",
             "shank_pitch_um": "0",
             "shank_thickness_um": "132",
+            "shank_tip_to_base_um": "45000",
             "shank_width_um": "125",
             "tip_length_um": "372",
             "total_electrodes": "128"
@@ -1218,6 +1243,7 @@
             "rows_per_shank": "480",
             "shank_pitch_um": "0",
             "shank_thickness_um": "35",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "209",
             "total_electrodes": "960"
@@ -1265,6 +1291,7 @@
             "rows_per_shank": "640",
             "shank_pitch_um": "0",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "206",
             "total_electrodes": "1280"
@@ -1312,6 +1339,7 @@
             "rows_per_shank": "640",
             "shank_pitch_um": "0",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "206",
             "total_electrodes": "1280"
@@ -1359,6 +1387,7 @@
             "rows_per_shank": "640",
             "shank_pitch_um": "0",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "206",
             "total_electrodes": "1280"
@@ -1406,6 +1435,7 @@
             "rows_per_shank": "640",
             "shank_pitch_um": "0",
             "shank_thickness_um": "122",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "206",
             "total_electrodes": "1280"
@@ -1453,6 +1483,7 @@
             "rows_per_shank": "640",
             "shank_pitch_um": "0",
             "shank_thickness_um": "122",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "206",
             "total_electrodes": "1280"
@@ -1500,6 +1531,7 @@
             "rows_per_shank": "640",
             "shank_pitch_um": "250",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "206",
             "total_electrodes": "1280"
@@ -1547,6 +1579,7 @@
             "rows_per_shank": "640",
             "shank_pitch_um": "250",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "206",
             "total_electrodes": "5120"
@@ -1594,6 +1627,7 @@
             "rows_per_shank": "640",
             "shank_pitch_um": "250",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "206",
             "total_electrodes": "5120"
@@ -1641,6 +1675,7 @@
             "rows_per_shank": "640",
             "shank_pitch_um": "250",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "206",
             "total_electrodes": "5120"
@@ -1688,6 +1723,7 @@
             "rows_per_shank": "640",
             "shank_pitch_um": "250",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "206",
             "total_electrodes": "5120"
@@ -1735,6 +1771,7 @@
             "rows_per_shank": "128",
             "shank_pitch_um": "0",
             "shank_thickness_um": "35",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "206",
             "total_electrodes": "128"
@@ -1782,6 +1819,7 @@
             "rows_per_shank": "640",
             "shank_pitch_um": "0",
             "shank_thickness_um": "30",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "203",
             "total_electrodes": "1280"
@@ -1829,6 +1867,7 @@
             "rows_per_shank": "640",
             "shank_pitch_um": "0",
             "shank_thickness_um": "30",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "203",
             "total_electrodes": "1280"
@@ -1876,6 +1915,7 @@
             "rows_per_shank": "640",
             "shank_pitch_um": "250",
             "shank_thickness_um": "30",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "204",
             "total_electrodes": "5120"
@@ -1923,6 +1963,7 @@
             "rows_per_shank": "640",
             "shank_pitch_um": "250",
             "shank_thickness_um": "30",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "204",
             "total_electrodes": "5120"
@@ -1970,6 +2011,7 @@
             "rows_per_shank": "640",
             "shank_pitch_um": "250",
             "shank_thickness_um": "30",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "204",
             "total_electrodes": "5120"
@@ -2017,6 +2059,7 @@
             "rows_per_shank": "640",
             "shank_pitch_um": "0",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "206",
             "total_electrodes": "1280"
@@ -2064,6 +2107,7 @@
             "rows_per_shank": "640",
             "shank_pitch_um": "250",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "206",
             "total_electrodes": "5120"
@@ -2111,6 +2155,7 @@
             "rows_per_shank": "480",
             "shank_pitch_um": "0",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "209",
             "total_electrodes": "960"
@@ -2158,6 +2203,7 @@
             "rows_per_shank": "480",
             "shank_pitch_um": "0",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "209",
             "total_electrodes": "960"
@@ -2205,6 +2251,7 @@
             "rows_per_shank": "480",
             "shank_pitch_um": "0",
             "shank_thickness_um": "24",
+            "shank_tip_to_base_um": "10000",
             "shank_width_um": "70",
             "tip_length_um": "209",
             "total_electrodes": "960"
@@ -2258,7 +2305,7 @@
         "imro_np3020_val_def": "type:3020 num_channels:num_readout_channels channel:[0,num_readout_channels-1] shank:[0,num_shanks-1] bank:[0,banks_per_shank-1] ref_id:(0,ext)(1,gnd)(2,tip0)(3,tip1)(4,tip2)(5,tip3) electrode:[0,electrodes_per_shank-1]"
     },
     "z_meta": {
-        "table_version": "1.4"
+        "table_version": "1.5"
     },
     "z_mux_tables": {
         "mux_np1000": "(32,12)(0 1 24 25 48 49 72 73 96 97 120 121 144 145 168 169 192 193 216 217 240 241 264 265 288 289 312 313 336 337 360 361)(2 3 26 27 50 51 74 75 98 99 122 123 146 147 170 171 194 195 218 219 242 243 266 267 290 291 314 315 338 339 362 363)(4 5 28 29 52 53 76 77 100 101 124 125 148 149 172 173 196 197 220 221 244 245 268 269 292 293 316 317 340 341 364 365)(6 7 30 31 54 55 78 79 102 103 126 127 150 151 174 175 198 199 222 223 246 247 270 271 294 295 318 319 342 343 366 367)(8 9 32 33 56 57 80 81 104 105 128 129 152 153 176 177 200 201 224 225 248 249 272 273 296 297 320 321 344 345 368 369)(10 11 34 35 58 59 82 83 106 107 130 131 154 155 178 179 202 203 226 227 250 251 274 275 298 299 322 323 346 347 370 371)(12 13 36 37 60 61 84 85 108 109 132 133 156 157 180 181 204 205 228 229 252 253 276 277 300 301 324 325 348 349 372 373)(14 15 38 39 62 63 86 87 110 111 134 135 158 159 182 183 206 207 230 231 254 255 278 279 302 303 326 327 350 351 374 375)(16 17 40 41 64 65 88 89 112 113 136 137 160 161 184 185 208 209 232 233 256 257 280 281 304 305 328 329 352 353 376 377)(18 19 42 43 66 67 90 91 114 115 138 139 162 163 186 187 210 211 234 235 258 259 282 283 306 307 330 331 354 355 378 379)(20 21 44 45 68 69 92 93 116 117 140 141 164 165 188 189 212 213 236 237 260 261 284 285 308 309 332 333 356 357 380 381)(22 23 46 47 70 71 94 95 118 119 142 143 166 167 190 191 214 215 238 239 262 263 286 287 310 311 334 335 358 359 382 383)",
