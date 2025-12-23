@@ -945,13 +945,19 @@ class Probe:
         """
         probe = Probe(ndim=d["ndim"], si_units=d["si_units"])
 
+
+        shank_ids=d.get("shank_ids", None)
+        if shank_ids is not None and np.all(shank_ids == ''):
+            # backward compatible hack with previous version
+            shank_ids = None
+
         probe.set_contacts(
             positions=d["contact_positions"],
             plane_axes=d["contact_plane_axes"],
             shapes=d["contact_shapes"],
             shape_params=d["contact_shape_params"],
             contact_ids=d.get("contact_ids", None),
-            shank_ids=d.get("shank_ids", None),
+            shank_ids=shank_ids,
             contact_sides=d.get("contact_sides", None),
         )
 
