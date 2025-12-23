@@ -858,8 +858,7 @@ def read_spikeglx(file: str | Path) -> Probe:
         split_mux = adc_sampling_table.split(")(")[1:]
         num_adcs, num_channels_per_adc = map(int, adc_info[1:].split(","))
         adc_groups_list = [
-            np.array(each_mux.replace("(", "").replace(")", "").split(" ")).astype("int")
-            for each_mux in split_mux
+            np.array(each_mux.replace("(", "").replace(")", "").split(" ")).astype("int") for each_mux in split_mux
         ]
         mux_table = np.transpose(np.array(adc_groups_list))
 
