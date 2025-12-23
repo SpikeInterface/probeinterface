@@ -945,9 +945,8 @@ class Probe:
         """
         probe = Probe(ndim=d["ndim"], si_units=d["si_units"])
 
-
-        shank_ids=d.get("shank_ids", None)
-        if shank_ids is not None and np.all(shank_ids == ''):
+        shank_ids = d.get("shank_ids", None)
+        if shank_ids is not None and np.all(shank_ids == ""):
             # backward compatible hack with previous version
             shank_ids = None
 
