@@ -83,7 +83,8 @@ def test_BIDS_format(tmp_path):
         probe.set_contact_ids(probe_el_ids)
 
         # switch to more generic dtype for shank_ids
-        probe.set_shank_ids(probe.shank_ids.astype(str))
+        if probe.shank_ids is not None:
+            probe.set_shank_ids(probe.shank_ids.astype(str))
 
     write_BIDS_probe(folder_path, probegroup)
 
@@ -103,7 +104,8 @@ def test_BIDS_format(tmp_path):
         t = np.array([list(probe_read.contact_ids).index(elid) for elid in probe_orig.contact_ids])
 
         assert all(probe_orig.contact_ids == probe_read.contact_ids[t])
-        assert all(probe_orig.shank_ids == probe_read.shank_ids[t])
+        if probe_orig.shank_ids is not None:
+            assert all(probe_orig.shank_ids == probe_read.shank_ids[t])
         assert all(probe_orig.contact_shapes == probe_read.contact_shapes[t])
         assert probe_orig.ndim == probe_read.ndim
         assert probe_orig.si_units == probe_read.si_units
@@ -206,8 +208,12 @@ def test_prb(tmp_path):
 
 
 if __name__ == "__main__":
-    # test_probeinterface_format()
-    # test_BIDS_format()
+    import tempfile
+
+    tmp_path = Path(tempfile.mkdtemp())
+
+    # test_probeinterface_format(tmp_path)
+    test_BIDS_format(tmp_path)
     # test_BIDS_format_empty()
     # test_BIDS_format_minimal()
     pass
