@@ -209,8 +209,9 @@ def test_prb(tmp_path):
 
 if __name__ == "__main__":
     import tempfile
+
     tmp_path = Path(tempfile.mkdtemp())
-    
+
     # test_probeinterface_format(tmp_path)
     test_BIDS_format(tmp_path)
     # test_BIDS_format_empty()

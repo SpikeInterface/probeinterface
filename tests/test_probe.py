@@ -230,8 +230,8 @@ def test_double_side_probe():
 
 if __name__ == "__main__":
     import tempfile
-    tmp_path = Path(tempfile.mkdtemp())
 
+    tmp_path = Path(tempfile.mkdtemp())
 
     test_probe()
     test_save_to_zarr(tmp_path)

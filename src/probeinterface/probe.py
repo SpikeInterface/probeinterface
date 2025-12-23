@@ -383,7 +383,7 @@ class Probe:
             self.set_contact_ids(contact_ids)
 
         if shank_ids is None:
-            # self._shank_ids = np.zeros(n, dtype=str)
+            # self._shank_ids = np.zeros(n, dtype=str)
             self._shank_ids = None
         else:
             self._shank_ids = np.asarray(shank_ids).astype(str)
@@ -1043,7 +1043,7 @@ class Probe:
 
         if self._shank_ids is not None:
             dtype += [("shank_ids", "U64")]
-        
+
         dtype += [("contact_ids", "U64")]
 
         if self._contact_sides is not None:
