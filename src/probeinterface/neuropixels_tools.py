@@ -471,31 +471,16 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
         lf_sample_frequency_hz=float(probe_spec_dict["lf_sample_frequency_hz"]),
     )
 
-    # ===== 8. Add MUX table annotations =====
-    mux_table_string = probe_features["z_mux_tables"][probe_spec_dict["mux_table_format_type"]]
-    if mux_table_string is not None:
-        # Parse MUX table string: (num_adcs,num_channels_per_adc)(int int ...)(int int ...)...
-        adc_info = mux_table_string.split(")(")[0]
-        split_mux = mux_table_string.split(")(")[1:]
-        num_adcs, num_channels_per_adc = map(int, adc_info[1:].split(","))
-        adc_groups_list = [
-            np.array(each_mux.replace("(", "").replace(")", "").split(" ")).astype("int") for each_mux in split_mux
-        ]
-        mux_table = np.transpose(np.array(adc_groups_list))
-
-        # Map contacts to ADC groups and sample order
-        num_contacts = positions.shape[0]
-        adc_groups = np.zeros(num_contacts, dtype="int64")
-        adc_sample_order = np.zeros(num_contacts, dtype="int64")
-        for adc_index, adc_groups_per_adc in enumerate(mux_table):
-            adc_groups_per_adc = adc_groups_per_adc[adc_groups_per_adc < num_contacts]
-            adc_groups[adc_groups_per_adc] = adc_index
-            adc_sample_order[adc_groups_per_adc] = np.arange(len(adc_groups_per_adc))
-
-        probe.annotate(num_adcs=num_adcs)
-        probe.annotate(num_channels_per_adc=num_channels_per_adc)
-        probe.annotate_contacts(adc_group=adc_groups)
-        probe.annotate_contacts(adc_sample_order=adc_sample_order)
+    # ===== 8. Store ADC sampling table =====
+    # The ADC sampling table describes how readout channels map to ADCs, not electrodes.
+    # Per-contact annotations (adc_group, adc_sample_order) can only be correctly
+    # assigned when reading a recording with a known channel map (via read_spikeglx),
+    # because the table indices are readout channel indices, not electrode indices.
+    # We store the full table string so it's available after slicing.
+    mux_table_format_type = probe_spec_dict["mux_table_format_type"]
+    adc_sampling_table = probe_features["z_mux_tables"].get(mux_table_format_type)
+    if adc_sampling_table is not None:
+        probe.annotate(adc_sampling_table=adc_sampling_table)
 
     return probe
 
@@ -860,6 +845,38 @@ def read_spikeglx(file: str | Path) -> Probe:
         pi_field = imro_field_to_pi_field.get(imro_field)
         annotations[pi_field] = values
     probe.annotate_contacts(**annotations)
+
+    # ===== 6b. Add ADC sampling annotations =====
+    # The ADC sampling table describes which ADC samples each readout channel and in what order.
+    # At this point, contacts are ordered by readout channel (0-383), so we can directly
+    # apply the mapping. This must be done here (not in build_neuropixels_probe)
+    # because the table indices are readout channel indices, not electrode indices.
+    adc_sampling_table = probe.annotations.get("adc_sampling_table")
+    if adc_sampling_table is not None:
+        # Parse table string: (num_adcs,num_channels_per_adc)(ch ch ...)(ch ch ...)...
+        adc_info = adc_sampling_table.split(")(")[0]
+        split_mux = adc_sampling_table.split(")(")[1:]
+        num_adcs, num_channels_per_adc = map(int, adc_info[1:].split(","))
+        adc_groups_list = [
+            np.array(each_mux.replace("(", "").replace(")", "").split(" ")).astype("int")
+            for each_mux in split_mux
+        ]
+        mux_table = np.transpose(np.array(adc_groups_list))
+
+        # Map readout channels to ADC groups and sample order
+        num_readout_channels = probe.get_contact_count()
+        adc_groups = np.zeros(num_readout_channels, dtype="int64")
+        adc_sample_order = np.zeros(num_readout_channels, dtype="int64")
+        for adc_index, channels_per_adc in enumerate(mux_table):
+            # Filter out placeholder values (e.g., 128 in mux_np1200 for unused slots)
+            valid_channels = channels_per_adc[channels_per_adc < num_readout_channels]
+            adc_groups[valid_channels] = adc_index
+            adc_sample_order[valid_channels] = np.arange(len(valid_channels))
+
+        probe.annotate(num_adcs=num_adcs)
+        probe.annotate(num_channels_per_adc=num_channels_per_adc)
+        probe.annotate_contacts(adc_group=adc_groups)
+        probe.annotate_contacts(adc_sample_order=adc_sample_order)
 
     # ===== 7. Slice to saved channels (if subset was saved) =====
     # This is DIFFERENT from IMRO selection: IMRO selects which electrodes to acquire,
