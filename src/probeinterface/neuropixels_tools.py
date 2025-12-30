@@ -897,7 +897,6 @@ def read_spikeglx(file: str | Path) -> Probe:
     probe.annotate(slot=imDatPrb_slot)
 
     # ===== 7. Set device channel indices (wiring) =====
-    # I am unsure why are we are doing this. If someone knows please document it here.
     probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
 
     return probe
