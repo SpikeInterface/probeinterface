@@ -320,6 +320,57 @@ def test_CatGT_NP1():
     assert "1.0" in probe.description
 
 
+def test_mux_annotations_match_readout_channels():
+    """
+    Test that MUX annotations (adc_group, adc_sample_order) correctly map
+    readout channels to their ADC assignments.
+
+    The MUX table defines which ADC samples each readout channel and in what order.
+    For NP1.0 (mux_np1000), the pattern is:
+    - Readout channel 0 -> ADC 0, sample order 0
+    - Readout channel 1 -> ADC 1, sample order 0
+    - Readout channel 2 -> ADC 0, sample order 1
+    - Readout channel 3 -> ADC 1, sample order 1
+    - etc.
+
+    The contacts in the probe returned by read_spikeglx are ordered by readout channel,
+    so adc_group[i] should be the ADC for readout channel i.
+
+    This test uses allan-longcol which has alternating banks (0, 1, 0, 1, ...),
+    meaning electrode indices differ from readout channel indices. This exposes
+    bugs where MUX table indices (readout channels) are incorrectly treated as
+    electrode indices.
+    """
+    # allan-longcol uses alternating banks: channel 0->electrode 0, channel 1->electrode 385, etc.
+    probe = read_spikeglx(data_path / "allan-longcol_g0_t0.imec0.ap.meta")
+
+    assert probe.get_contact_count() == 384
+
+    # Verify the bank pattern - this file alternates between bank 0 and bank 1
+    banks = probe.contact_annotations.get("banks")
+    assert list(banks[:10]) == [0, 1, 0, 1, 0, 1, 0, 1, 0, 1], "Expected alternating banks"
+
+    adc_groups = probe.contact_annotations.get("adc_group")
+    adc_sample_order = probe.contact_annotations.get("adc_sample_order")
+
+    assert adc_groups is not None, "adc_group annotation should be present"
+    assert adc_sample_order is not None, "adc_sample_order annotation should be present"
+    assert len(adc_groups) == 384
+    assert len(adc_sample_order) == 384
+
+    # According to mux_np1000 (32 ADCs, 12 channels per ADC):
+    # Readout channel 0 -> ADC 0, readout channel 1 -> ADC 1, etc.
+    # The MUX assignment follows readout channel order, NOT electrode order.
+    # Even though electrode indices are [0, 385, 2, 387, ...], the ADC groups
+    # should still be [0, 1, 0, 1, ...] because that's the readout channel pattern.
+    expected_adc_for_first_10 = [0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
+    assert list(adc_groups[:10]) == expected_adc_for_first_10, (
+        f"ADC groups for first 10 channels should be {expected_adc_for_first_10}, "
+        f"got {list(adc_groups[:10])}. "
+        f"MUX annotations must follow readout channel order, not electrode order."
+    )
+
+
 def test_snsGeomMap():
     # check when snsGeomMap is present if contact positions are the same from imroTbl
 
