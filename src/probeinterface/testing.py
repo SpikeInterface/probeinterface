@@ -4,7 +4,8 @@ from pathlib import Path
 from probeinterface import __version__ as version
 
 json_schema_file = Path(__file__).absolute().parent / "schema" / "probe.json.schema"
-schema = json.load(open(json_schema_file, "r"))
+with open(json_schema_file, "r") as f:
+    schema = json.load(f)
 
 
 def validate_probe_dict(probe_dict):

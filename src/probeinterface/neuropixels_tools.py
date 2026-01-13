@@ -28,7 +28,8 @@ def _load_np_probe_features():
     global _np_probe_features
     if _np_probe_features is None:
         probe_features_filepath = Path(__file__).absolute().parent / Path("resources/neuropixels_probe_features.json")
-        _np_probe_features = json.load(open(probe_features_filepath, "r"))
+        with open(probe_features_filepath, "r") as f:
+            _np_probe_features = json.load(f)
     return _np_probe_features
 
 
