@@ -319,7 +319,7 @@ def plot_probegroup(probegroup, same_axes: bool = True, **kargs):
                 val = kargs[key]
                 if hasattr(val, "__len__") and len(val) == total_contacts:
                     kargs_probe[key] = val[cum_contact_cnt : cum_contact_cnt + n]
-        
+
         plot_probe(probe, ax=axs[i], **kargs_probe)
         cum_contact_cnt += n
 
