@@ -307,8 +307,21 @@ def plot_probegroup(probegroup, same_axes: bool = True, **kargs):
         kargs["zlims"] = None
 
     kargs["title"] = False
+
+    cum_contact_cnt = 0
+    total_contacts = sum(p.get_contact_count() for p in probegroup.probes)
+
     for i, probe in enumerate(probegroup.probes):
-        plot_probe(probe, ax=axs[i], **kargs)
+        n = probe.get_contact_count()
+        kargs_probe = kargs.copy()
+        for key in ["contacts_colors", "contacts_values", "text_on_contact"]:
+            if key in kargs and kargs[key] is not None:
+                val = kargs[key]
+                if hasattr(val, "__len__") and len(val) == total_contacts:
+                    kargs_probe[key] = val[cum_contact_cnt : cum_contact_cnt + n]
+
+        plot_probe(probe, ax=axs[i], **kargs_probe)
+        cum_contact_cnt += n
 
 
 def plot_probe_group(probegroup, same_axes: bool = True, **kargs):
