@@ -8,7 +8,6 @@ from probeinterface import read_3brain
 
 from probeinterface.testing import validate_probe_dict
 
-
 data_path = Path(__file__).absolute().parent.parent / "data" / "3brain"
 brw_files = glob.glob(str(data_path / "*.brw"))
 

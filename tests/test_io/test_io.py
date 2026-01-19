@@ -14,7 +14,6 @@ import numpy as np
 
 import pytest
 
-
 data_path = Path(__file__).absolute().parent.parent / "data"
 
 
