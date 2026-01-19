@@ -12,7 +12,6 @@ from .probe import Probe
 from .probegroup import ProbeGroup
 from .utils import combine_probes
 
-
 _default_shape_to_params = {"circle": "radius", "square": "width", "rect": "height"}
 
 
