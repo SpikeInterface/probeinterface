@@ -93,8 +93,7 @@ imro_field_to_pi_field = {
 
 def get_probe_length(probe_part_number: str) -> int:
     """
-    Returns the length of a given probe. We assume a length of
-    1cm (10_000 microns) by default.
+    Returns the length of a given probe from ProbeTable specifications.
 
     Parameters
     ----------
@@ -104,12 +103,16 @@ def get_probe_length(probe_part_number: str) -> int:
     Returns
     -------
     probe_length : int
-        Length of full probe (microns)
+        Length of full probe shank from tip to base (microns)
     """
+    np_features = _load_np_probe_features()
+    probe_spec = np_features["neuropixels_probes"].get(probe_part_number)
 
-    probe_length = 10_000
+    if probe_spec is not None and "shank_tip_to_base_um" in probe_spec:
+        return int(probe_spec["shank_tip_to_base_um"])
 
-    return probe_length
+    # Fallback for unknown probes or missing field
+    return 10_000
 
 
 def make_mux_table_array(mux_information) -> np.array:
