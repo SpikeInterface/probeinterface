@@ -15,7 +15,6 @@ from probeinterface.library import (
     clear_cache,
 )
 
-
 manufacturer = "neuronexus"
 probe_name = "A1x32-Poly3-10mm-50-177"
 
