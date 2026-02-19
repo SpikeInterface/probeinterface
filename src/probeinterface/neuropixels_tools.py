@@ -1222,7 +1222,6 @@ def read_openephys(
                 "probe": sliced_probe,
             }
         else:
-
             channel_names = np.array(list(channels.attrib.keys()))
             channel_ids = np.array([int(ch[2:]) for ch in channel_names])
             channel_order = np.argsort(channel_ids)
@@ -1308,6 +1307,7 @@ def read_openephys(
             np_probe_dict = {
                 "shank_ids": shank_ids,
                 "elec_ids": elec_ids,
+                "channel_names": channel_names,
                 "pt_metadata": pt_metadata,
                 "slot": slot,
                 "port": port,
@@ -1446,6 +1446,8 @@ def read_openephys(
         probe.annotate(port=np_probe_info["port"])
     if "dock" in np_probe_info:
         probe.annotate(dock=np_probe_info["dock"])
+    if "channel_names" in np_probe_info:
+        probe.annotate_contacts(channel_name=np_probe_info["channel_names"])
 
     return probe
 
