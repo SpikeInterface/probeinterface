@@ -570,13 +570,14 @@ class Probe:
             self._contact_ids = None
             return
 
-        assert np.unique(contact_ids).size == contact_ids.size, "Contact ids have to be unique within a Probe"
-
         if contact_ids.size != self.get_contact_count():
-            ValueError(
+            raise ValueError(
                 f"contact_ids {contact_ids.size} do not have the same size "
                 f"as number of contacts {self.get_contact_count()}"
             )
+
+        if np.unique(contact_ids).size != contact_ids.size:
+            raise ValueError("contact_ids must be unique within a Probe")
 
         if contact_ids.dtype.kind != "U":
             contact_ids = contact_ids.astype("U")
