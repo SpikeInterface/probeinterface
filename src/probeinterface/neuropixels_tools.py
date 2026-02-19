@@ -1221,7 +1221,6 @@ def read_openephys(
                 "probe": sliced_probe,
             }
         else:
-
             channel_names = np.array(list(channels.attrib.keys()))
             channel_ids = np.array([int(ch[2:]) for ch in channel_names])
             channel_order = np.argsort(channel_ids)
@@ -1307,6 +1306,7 @@ def read_openephys(
             np_probe_dict = {
                 "shank_ids": shank_ids,
                 "elec_ids": elec_ids,
+                "channel_names": channel_names,
                 "pt_metadata": pt_metadata,
                 "slot": slot,
                 "port": port,
@@ -1428,6 +1428,9 @@ def read_openephys(
         probe = _make_npx_probe_from_description(
             pt_metadata, probe_part_number, elec_ids, shank_ids=shank_ids, mux_info=mux_info
         )
+
+    if "channel_names" in np_probe_info:
+        probe.annotate_contacts(channel_name=np_probe_info["channel_names"])
 
     chans_saved = get_saved_channel_indices_from_openephys_settings(settings_file, stream_name=stream_name)
     if chans_saved is not None:
