@@ -18,7 +18,6 @@ import numpy as np
 from .probe import Probe
 from .utils import import_safely
 
-
 global _np_probe_features
 _np_probe_features = None
 
