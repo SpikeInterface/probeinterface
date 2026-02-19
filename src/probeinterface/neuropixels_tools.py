@@ -1430,6 +1430,9 @@ def read_openephys(
             pt_metadata, probe_part_number, elec_ids, shank_ids=shank_ids, mux_info=mux_info
         )
 
+    if "channel_names" in np_probe_info:
+        probe.annotate_contacts(channel_name=np_probe_info["channel_names"])
+
     chans_saved = get_saved_channel_indices_from_openephys_settings(settings_file, stream_name=stream_name)
     if chans_saved is not None:
         probe = probe.get_slice(chans_saved)
@@ -1446,8 +1449,6 @@ def read_openephys(
         probe.annotate(port=np_probe_info["port"])
     if "dock" in np_probe_info:
         probe.annotate(dock=np_probe_info["dock"])
-    if "channel_names" in np_probe_info:
-        probe.annotate_contacts(channel_name=np_probe_info["channel_names"])
 
     return probe
 
