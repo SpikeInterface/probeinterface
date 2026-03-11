@@ -1003,59 +1003,261 @@ def get_saved_channel_indices_from_spikeglx_meta(meta_file: str | Path) -> np.ar
 ##
 
 
-def read_openephys(
+def _parse_probe_info_from_openephys_settings(
     settings_file: str | Path,
-    stream_name: Optional[str] = None,
-    probe_name: Optional[str] = None,
-    serial_number: Optional[str] = None,
+    stream_name: str,
     fix_x_position_for_oe_5: bool = True,
-    raise_error: bool = True,
-) -> Probe:
+) -> dict:
     """
-    Read probe positions from Open Ephys folder when using the Neuropix-PXI plugin.
-    The reader assumes that the NP_PROBE fields are available in the settings file.
-    Open Ephys versions 0.5.x and 0.6.x are supported:
-    * For version 0.6.x, the probe names are inferred from the STREAM field. Probe
-      information is then populated sequentially with the NP_PROBE fields.
-    * For version 0.5.x, STREAMs are not available. In this case, if multiple probes
-      are available, they are named sequentially based on the nodeId. E.g. "100.0",
-      "100.1". These substrings are used for selection.
+    Parse an Open Ephys settings.xml and extract info for one probe matching stream_name.
+
+    Navigates the XML to find the Neuropixels processor, matches the stream name to a
+    probe, and extracts the probe part number, electrode selection, and annotation
+    metadata. No raw XML elements are returned.
 
     Parameters
     ----------
-    settings_file :  Path, str, or None
-        If more than one settings.xml file is in the folder structure, this argument
-        is required to indicate which settings file to use
-    stream_name : str or None
-        If more than one probe is used, the 'stream_name' indicates which probe to load base on the
-        stream. For example, if there are 3 probes ('ProbeA', 'ProbeB', ProbeC) and the stream_name is
-        contains the substring 'ProbeC' (e.g. 'my-stream-ProbeC'), then the probe associated with
-        ProbeC is returned. If this argument is used, the 'probe_name' and 'serial_number' must be None.
-    probe_name : str or None
-        If more than one probe is used, the 'probe_name' indicates which probe to load base on the
-        probe name (e.g. "ProbeB"). If this argument is used, the 'stream_name' and 'serial_number'
-        must be None.
-    serial_number : str or None
-        If more than one probe is used, the 'serial_number' indicates which probe to load base on the
-        serial number. If this argument is used, the 'stream_name' and 'probe_name'
-        must be None.
-    fix_x_position_for_oe_5: bool
-        The neuropixels PXI plugin in the open-ephys < 0.6.0 contains a bug in the y position. This option allow to fix it.
-    raise_error: bool
-        If True, any error would raise an exception. If False, None is returned. Default True
-
-    Note
-    ----
-    The electrode positions are only available when recording using the Neuropix-PXI plugin version >= 0.3.3
+    settings_file : Path or str
+        Path to the Open Ephys settings.xml file.
+    stream_name : str
+        The stream name used to select which probe to extract. The probe is
+        selected by substring match against probe names derived from STREAM
+        elements, with a fallback to serial number matching.
+    fix_x_position_for_oe_5 : bool
+        Fix a y-position bug in the Neuropix-PXI plugin for Open Ephys < 0.6.0.
+        Default True.
 
     Returns
     -------
-    probe : Probe object
-
+    probe_info : dict
+        Dict with keys:
+        - probe_part_number : str
+        - serial_number : str or None
+        - name : str
+        - slot, port, dock : str or None
+        - selected_electrode_indices : list of int, or None (Path A)
+        - contact_ids : list of str, or None (Path B)
     """
-
     ET = import_safely("xml.etree.ElementTree")
-    # parse xml
+    tree = ET.parse(str(settings_file))
+    root = tree.getroot()
+
+    info_chain = root.find("INFO")
+    oe_version = parse(info_chain.find("VERSION").text)
+
+    # Find the Neuropixels processor
+    neuropix_pxi_processor = None
+    onebox_processor = None
+    onix_processor = None
+    for signal_chain in root.findall("SIGNALCHAIN"):
+        for processor in signal_chain:
+            if "PROCESSOR" == processor.tag:
+                pname = processor.attrib["name"]
+                if "Neuropix-PXI" in pname:
+                    neuropix_pxi_processor = processor
+                if "OneBox" in pname:
+                    onebox_processor = processor
+                if "ONIX" in pname:
+                    onix_processor = processor
+
+    if neuropix_pxi_processor is None and onebox_processor is None and onix_processor is None:
+        raise ValueError("Open Ephys settings.xml has no Neuropix-PXI, OneBox, or ONIX processor.")
+
+    if neuropix_pxi_processor is not None:
+        assert onebox_processor is None, "Only one processor should be present"
+        processor = neuropix_pxi_processor
+        neuropix_pxi_version = parse(neuropix_pxi_processor.attrib["libraryVersion"])
+        if neuropix_pxi_version < parse("0.3.3"):
+            raise ValueError("Electrode locations are available from Neuropix-PXI version 0.3.3")
+    if onebox_processor is not None:
+        assert neuropix_pxi_processor is None, "Only one processor should be present"
+        processor = onebox_processor
+    if onix_processor is not None:
+        processor = onix_processor
+
+    if "NodeId" in processor.attrib:
+        node_id = processor.attrib["NodeId"]
+    elif "nodeId" in processor.attrib:
+        node_id = processor.attrib["nodeId"]
+    else:
+        node_id = None
+
+    # Read STREAM fields if present (>=0.6.x)
+    stream_fields = processor.findall("STREAM")
+    if len(stream_fields) > 0:
+        has_streams = True
+        probe_names_used = []
+        for stream_field in stream_fields:
+            stream = stream_field.attrib["name"]
+            if "ADC" in stream:
+                continue
+            stream = stream.replace("-AP", "").replace("-LFP", "")
+            if stream not in probe_names_used:
+                probe_names_used.append(stream)
+    else:
+        has_streams = False
+        probe_names_used = None
+
+    if onix_processor is not None:
+        probe_names_used = [pn for pn in probe_names_used if "Probe" in pn]
+
+    # Find NP_PROBE elements
+    editor = processor.find("EDITOR")
+    if oe_version < parse("0.9.0"):
+        np_probes = editor.findall("NP_PROBE")
+    else:
+        custom_parameters = editor.find("CUSTOM_PARAMETERS")
+        if onix_processor is not None:
+            possible_probe_names = ["NEUROPIXELSV1E", "NEUROPIXELSV1F", "NEUROPIXELSV2E"]
+            parent_np_probe = ""
+            for possible_probe_name in possible_probe_names:
+                parent_np_probe = custom_parameters.findall(possible_probe_name)
+                if len(parent_np_probe) > 0:
+                    break
+            if possible_probe_name == "NEUROPIXELSV2E":
+                np_probes = [parent_np_probe[0].findall(f"PROBE{a}")[0] for a in range(2)]
+            else:
+                np_probes = [parent_np_probe[0]]
+        else:
+            np_probes = custom_parameters.findall("NP_PROBE")
+
+    if len(np_probes) == 0:
+        raise ValueError("NP_PROBE field not found in settings")
+
+    np_probes = [probe for probe in np_probes if probe.attrib.get("isEnabled", "1") == "1"]
+    if len(np_probes) == 0:
+        raise ValueError("No enabled probes found in settings")
+
+    if not has_streams:
+        probe_names_used = [f"{node_id}.{i}" for i in range(len(np_probes))]
+
+    if has_streams and len(np_probes) < len(probe_names_used):
+        raise ValueError(f"Not enough NP_PROBE entries ({len(np_probes)}) for probes: {probe_names_used}")
+
+    # Match stream_name to a probe
+    np_probe = None
+    probe_name = None
+    for np_p, pn in zip(np_probes, probe_names_used):
+        if pn in stream_name:
+            np_probe = np_p
+            probe_name = pn
+            break
+    if np_probe is None:
+        for np_p, pn in zip(np_probes, probe_names_used):
+            serial = np_p.attrib.get("probe_serial_number") or np_p.attrib.get("probeSerialNumber", "")
+            if serial and serial in stream_name:
+                np_probe = np_p
+                probe_name = pn
+                break
+    if np_probe is None:
+        raise ValueError(f"Stream '{stream_name}' does not match any available probe: {probe_names_used}")
+
+    # Extract probe info from the matched NP_PROBE element
+    probe_part_number = np_probe.attrib.get("probe_part_number") or np_probe.attrib.get("probePartNumber")
+    probe_serial_number = np_probe.attrib.get("probe_serial_number") or np_probe.attrib.get("probeSerialNumber")
+
+    if "custom_probe_name" in np_probe.attrib and np_probe.attrib["custom_probe_name"] != probe_serial_number:
+        name = np_probe.attrib["custom_probe_name"]
+    else:
+        name = probe_name
+
+    info = {
+        "probe_part_number": probe_part_number,
+        "serial_number": probe_serial_number,
+        "name": name,
+        "slot": np_probe.attrib.get("slot"),
+        "port": np_probe.attrib.get("port"),
+        "dock": np_probe.attrib.get("dock"),
+        "selected_electrode_indices": None,
+        "positions": None,
+    }
+
+    # Electrode selection
+    selected_electrodes = np_probe.find("SELECTED_ELECTRODES")
+    if selected_electrodes is not None:
+        # ONIX plugin provides electrode indices directly as SELECTED_ELECTRODES attributes.
+        # These are indices into the full probe's electrode array.
+        info["selected_electrode_indices"] = [int(ei) for ei in selected_electrodes.attrib.values()]
+    else:
+        # Neuropix-PXI and OneBox plugins provide CHANNELS (channel keys like CH0, CH1, ...)
+        # with ELECTRODE_XPOS/ELECTRODE_YPOS giving the physical position of each channel.
+        # We extract the positions so the caller can match them against the catalogue probe.
+        channels = np_probe.find("CHANNELS")
+        plugin_channel_keys = np.array(list(channels.attrib.keys()))
+        channel_ids = np.array([int(ch[2:]) for ch in plugin_channel_keys])
+        channel_order = np.argsort(channel_ids)
+
+        plugin_channel_keys = plugin_channel_keys[channel_order]
+        channel_values = np.array(list(channels.attrib.values()))[channel_order]
+
+        if all(":" in val for val in channel_values):
+            shank_ids = np.array([int(val.split(":")[1]) for val in channel_values])
+        elif all("_" in val for val in plugin_channel_keys):
+            shank_ids = np.array([int(val.split("_")[1]) for val in plugin_channel_keys])
+        else:
+            shank_ids = None
+
+        electrode_xpos = np_probe.find("ELECTRODE_XPOS")
+        electrode_ypos = np_probe.find("ELECTRODE_YPOS")
+        if electrode_xpos is None or electrode_ypos is None:
+            raise ValueError("ELECTRODE_XPOS or ELECTRODE_YPOS is not available in settings!")
+
+        xpos = np.array([float(electrode_xpos.attrib[ch]) for ch in plugin_channel_keys])
+        ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in plugin_channel_keys])
+        positions = np.array([xpos, ypos]).T
+
+        probe_features = _load_np_probe_features()
+        pt_metadata, _, _ = get_probe_metadata_from_probe_features(probe_features, probe_part_number)
+        shank_pitch = pt_metadata["shank_pitch_um"]
+
+        # Fix y-position bug in OE < 0.6.0 for multi-shank probes
+        if fix_x_position_for_oe_5 and oe_version < parse("0.6.0") and shank_ids is not None:
+            positions[:, 1] = positions[:, 1] - shank_pitch * shank_ids
+
+        # Normalize x so the first column starts at 0
+        offset = np.min(positions[:, 0])
+        if shank_ids is not None:
+            offset -= np.min(shank_ids) * shank_pitch
+        positions[:, 0] -= offset
+
+        info["positions"] = positions
+        info["plugin_channel_keys"] = plugin_channel_keys
+
+    return info
+
+
+def _parse_openephys_settings(
+    settings_file: str | Path,
+    fix_x_position_for_oe_5: bool = True,
+    raise_error: bool = True,
+) -> Optional[list[dict]]:
+    """
+    Parse an Open Ephys settings.xml and extract per-probe metadata.
+
+    Returns a list of dicts, one per enabled probe, containing the probe_part_number,
+    serial_number, name, slot/port/dock, and electrode selection info needed to
+    build the probe from the catalogue.
+
+    Parameters
+    ----------
+    settings_file : Path or str
+        Path to the Open Ephys settings.xml file.
+    fix_x_position_for_oe_5 : bool
+        Fix position bug in open-ephys < 0.6.0.
+    raise_error : bool
+        If True, raise on error. If False, return None.
+
+    Returns
+    -------
+    probes_info : list of dict, or None
+        Each dict contains:
+        - probe_part_number, serial_number, name, slot, port, dock
+        - selected_electrode_indices: list of int (from SELECTED_ELECTRODES), or None
+        - contact_ids: list of str (reverse-engineered from CHANNELS), or None
+        - channel_names: np.array of str, or None
+        - elec_ids, shank_ids, pt_metadata, mux_info: for legacy fallback
+    """
+    ET = import_safely("xml.etree.ElementTree")
     tree = ET.parse(str(settings_file))
     root = tree.getroot()
 
@@ -1122,7 +1324,7 @@ def read_openephys(
         probe_names_used = None
 
     if onix_processor is not None:
-        probe_names_used = [probe_name for probe_name in probe_names_used if "Probe" in probe_name]
+        probe_names_used = [pn for pn in probe_names_used if "Probe" in pn]
 
     # for Open Ephys version < 1.0 np_probes is in the EDITOR field.
     # for Open Ephys version >= 1.0 np_probes is in the CUSTOM_PARAMETERS field.
@@ -1158,14 +1360,12 @@ def read_openephys(
             raise Exception("No enabled probes found in settings")
         return None
 
-    # read probes info
     # If STREAMs are not available, probes are sequentially named based on the node id
     if not has_streams:
         probe_names_used = [f"{node_id}.{stream_index}" for stream_index in range(len(np_probes))]
 
     # check consistency with stream names and other fields
     if has_streams:
-        # make sure we have at least as many NP_PROBE as the number of used probes
         if len(np_probes) < len(probe_names_used):
             if raise_error:
                 raise Exception(f"Not enough NP_PROBE entries ({len(np_probes)}) for used probes: {probe_names_used}")
@@ -1173,15 +1373,8 @@ def read_openephys(
 
     probe_features = _load_np_probe_features()
 
-    np_probes_info = []
-
-    # now load probe info from NP_PROBE fields
-    np_probes_info = []
+    probes_info = []
     for probe_idx, np_probe in enumerate(np_probes):
-        # selected_electrodes is the preferred way to instantiate the probe
-        # if this field is available, a full probe is created from the probe_part_number
-        # and then sliced using the selected electrodes.
-        # if not available, the xpos and ypos fields are used to create the probe
         slot = np_probe.attrib.get("slot")
         port = np_probe.attrib.get("port")
         dock = np_probe.attrib.get("dock")
@@ -1192,40 +1385,37 @@ def read_openephys(
 
         pt_metadata, _, mux_info = get_probe_metadata_from_probe_features(probe_features, probe_part_number)
 
-        if selected_electrodes is not None:
-            selected_electrodes_values = selected_electrodes.attrib.values()
-
-            num_shank = pt_metadata["num_shanks"]
-            contact_per_shank = pt_metadata["cols_per_shank"] * pt_metadata["rows_per_shank"]
-
-            if num_shank == 1:
-                elec_ids = np.arange(contact_per_shank, dtype=int)
-                shank_ids = None
-            else:
-                elec_ids = np.concatenate([np.arange(contact_per_shank, dtype=int) for i in range(num_shank)])
-                shank_ids = np.concatenate([np.zeros(contact_per_shank, dtype=int) + i for i in range(num_shank)])
-
-            full_probe = _make_npx_probe_from_description(
-                pt_metadata, probe_part_number, elec_ids, shank_ids, mux_info=mux_info
-            )
-
-            selected_electrode_indices = [int(electrode_index) for electrode_index in selected_electrodes_values]
-
-            sliced_probe = full_probe.get_slice(selection=selected_electrode_indices)
-
-            np_probe_dict = {
-                "pt_metadata": pt_metadata,
-                "serial_number": probe_serial_number,
-                "part_number": probe_part_number,
-                "mux_info": mux_info,
-                "probe": sliced_probe,
-            }
+        # Assign probe name
+        if "custom_probe_name" in np_probe.attrib and np_probe.attrib["custom_probe_name"] != probe_serial_number:
+            name = np_probe.attrib["custom_probe_name"]
         else:
+            name = probe_names_used[probe_idx]
+
+        info = {
+            "probe_part_number": probe_part_number,
+            "serial_number": probe_serial_number,
+            "name": name,
+            "slot": slot,
+            "port": port,
+            "dock": dock,
+            "pt_metadata": pt_metadata,
+            "mux_info": mux_info,
+            "selected_electrode_indices": None,
+            "contact_ids": None,
+            "channel_names": None,
+            "elec_ids": None,
+            "shank_ids": None,
+        }
+
+        if selected_electrodes is not None:
+            # Newer plugin versions provide electrode indices directly
+            info["selected_electrode_indices"] = [int(ei) for ei in selected_electrodes.attrib.values()]
+        else:
+            # Older plugin versions: reverse-engineer electrode IDs from positions
             channel_names = np.array(list(channels.attrib.keys()))
             channel_ids = np.array([int(ch[2:]) for ch in channel_names])
             channel_order = np.argsort(channel_ids)
 
-            # sort channel_names and channel_values
             channel_names = channel_names[channel_order]
             channel_values = np.array(list(channels.attrib.values()))[channel_order]
 
@@ -1255,30 +1445,22 @@ def read_openephys(
 
             # x offset so that the first column is at 0x
             offset = np.min(positions[:, 0])
-            # if some shanks are not used, we need to adjust the offset
             if shank_ids is not None:
                 offset -= np.min(shank_ids) * shank_pitch
             positions[:, 0] -= offset
 
-            #
-            y_pitch = pt_metadata[
-                "electrode_pitch_vert_um"
-            ]  # Vertical spacing between the centers of adjacent contacts
-            x_pitch = pt_metadata[
-                "electrode_pitch_horz_um"
-            ]  # Horizontal spacing between the centers of contacts within the same row
+            y_pitch = pt_metadata["electrode_pitch_vert_um"]
+            x_pitch = pt_metadata["electrode_pitch_horz_um"]
             number_of_columns = pt_metadata["cols_per_shank"]
             probe_stagger = (
                 pt_metadata["even_row_horz_offset_left_edge_to_leftmost_electrode_center_um"]
                 - pt_metadata["odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um"]
             )
             num_shanks = pt_metadata["num_shanks"]
-
             description = pt_metadata.get("description")
 
             elec_ids = []
             for i, pos in enumerate(positions):
-                # Do not calculate contact ids if the model name is not known
                 if description is None:
                     elec_ids = None
                     break
@@ -1286,15 +1468,11 @@ def read_openephys(
                 x_pos = pos[0]
                 y_pos = pos[1]
 
-                # Adds a shift to rows in the staggered configuration
                 is_row_staggered = np.mod(y_pos / y_pitch + 1, 2) == 1
                 row_stagger = probe_stagger if is_row_staggered else 0
 
-                # Map the positions to the contacts ids
                 shank_id = shank_ids[i] if num_shanks > 1 else 0
 
-                # Electrode ids are computed from the positions of the electrodes. The computation
-                # is different for probes with one row of electrodes, or more than one.
                 if x_pitch == 0:
                     elec_id = int(number_of_columns * y_pos / y_pitch)
                 else:
@@ -1303,44 +1481,64 @@ def read_openephys(
                     )
                 elec_ids.append(elec_id)
 
-            np_probe_dict = {
-                "shank_ids": shank_ids,
-                "elec_ids": elec_ids,
-                "channel_names": channel_names,
-                "pt_metadata": pt_metadata,
-                "slot": slot,
-                "port": port,
-                "dock": dock,
-                "serial_number": probe_serial_number,
-                "part_number": probe_part_number,
-                "mux_info": mux_info,
-            }
+            info["channel_names"] = channel_names
+            info["shank_ids"] = shank_ids
+            info["elec_ids"] = elec_ids
 
-        # Sequentially assign probe names
-        if "custom_probe_name" in np_probe.attrib and np_probe.attrib["custom_probe_name"] != probe_serial_number:
-            name = np_probe.attrib["custom_probe_name"]
-        else:
-            name = probe_names_used[probe_idx]
-        np_probe_dict.update({"name": name})
-        np_probes_info.append(np_probe_dict)
+            # Build contact_ids from reverse-engineered electrode IDs
+            if elec_ids is not None:
+                shank_ids_iter = shank_ids if shank_ids is not None else [None] * len(elec_ids)
+                info["contact_ids"] = [
+                    _build_canonical_contact_id(eid, sid) for sid, eid in zip(shank_ids_iter, elec_ids)
+                ]
 
-    # now select find the selected probe (if multiple)
-    if len(np_probes) > 1:
+        probes_info.append(info)
+
+    return probes_info
+
+
+def _select_openephys_probe_info(
+    probes_info: list[dict],
+    stream_name: Optional[str] = None,
+    probe_name: Optional[str] = None,
+    serial_number: Optional[str] = None,
+    raise_error: bool = True,
+) -> Optional[dict]:
+    """
+    Select one probe's info dict from the list returned by `_parse_openephys_settings`.
+
+    Parameters
+    ----------
+    probes_info : list of dict
+        List of per-probe info dicts from `_parse_openephys_settings`.
+    stream_name : str or None
+        Stream name for selection.
+    probe_name : str or None
+        Probe name for selection.
+    serial_number : str or None
+        Serial number for selection.
+    raise_error : bool
+        If True, raise on error. If False, return None.
+
+    Returns
+    -------
+    info : dict or None
+    """
+    probe_names_used = [p["name"] for p in probes_info]
+
+    if len(probes_info) > 1:
         found = False
-        probe_names = [p["name"] for p in np_probes_info]
 
         if stream_name is not None:
             assert probe_name is None and serial_number is None, (
                 "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
             )
-            # Here we have to check if the probe name or the serial number is in the stream name
-            # If both are present, e.g., the name contains the serial number, the first match is used.
-            for probe_idx, probe_info in enumerate(np_probes_info):
+            for probe_info in probes_info:
                 if probe_info["name"] in stream_name:
                     found = True
                     break
             if not found:
-                for probe_idx, probe_info in enumerate(np_probes_info):
+                for probe_info in probes_info:
                     if probe_info["serial_number"] in stream_name:
                         found = True
                         break
@@ -1354,7 +1552,7 @@ def read_openephys(
             assert stream_name is None and serial_number is None, (
                 "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
             )
-            for probe_idx, probe_info in enumerate(np_probes_info):
+            for probe_info in probes_info:
                 if probe_info["name"] == probe_name:
                     found = True
                     break
@@ -1366,12 +1564,12 @@ def read_openephys(
             assert stream_name is None and probe_name is None, (
                 "Use one of 'stream_name', 'probe_name', " "or 'serial_number'"
             )
-            for probe_idx, probe_info in enumerate(np_probes_info):
+            for probe_info in probes_info:
                 if probe_info["serial_number"] == str(serial_number):
                     found = True
                     break
             if not found:
-                np_serial_numbers = [p["serial_number"] for p in probe_info]
+                np_serial_numbers = [p["serial_number"] for p in probes_info]
                 if raise_error:
                     raise Exception(
                         f"The provided {serial_number} is not in the available serial numbers: {np_serial_numbers}"
@@ -1380,13 +1578,12 @@ def read_openephys(
         else:
             raise Exception(
                 f"More than one probe found. Use one of 'stream_name', 'probe_name', or 'serial_number' "
-                f"to select the right probe.\nProbe names: {probe_names}"
+                f"to select the right probe.\nProbe names: {probe_names_used}"
             )
+        return probe_info
     else:
-        # in case of a single probe, make sure it is consistent with optional
-        # stream_name, probe_name, or serial number
-        available_probe_name = np_probes_info[0]["name"]
-        available_serial_number = np_probes_info[0]["serial_number"]
+        available_probe_name = probes_info[0]["name"]
+        available_serial_number = probes_info[0]["serial_number"]
 
         if stream_name:
             if available_probe_name not in stream_name:
@@ -1412,43 +1609,327 @@ def read_openephys(
                         f"{available_serial_number}"
                     )
                 return None
-        probe_idx = 0
+        return probes_info[0]
 
-    np_probe_info = np_probes_info[probe_idx]
-    np_probe = np_probes[probe_idx]
-    probe = np_probe_info.get("probe")
 
-    if probe is None:
-        # check if subset of channels
-        shank_ids = np_probe_info["shank_ids"]
-        elec_ids = np_probe_info["elec_ids"]
-        pt_metadata = np_probe_info["pt_metadata"]
-        mux_info = np_probe_info["mux_info"]
+def _slice_catalogue_probe(full_probe: Probe, probe_info: dict) -> Probe:
+    """
+    Slice a full catalogue probe using the electrode selection from probe_info.
 
-        probe = _make_npx_probe_from_description(
-            pt_metadata, probe_part_number, elec_ids, shank_ids=shank_ids, mux_info=mux_info
-        )
+    For SELECTED_ELECTRODES (newer plugin), uses the indices directly.
+    For CHANNELS (older plugin), matches reverse-engineered contact_ids to the catalogue.
+    Falls back to legacy `_make_npx_probe_from_description` if matching fails.
 
-    if "channel_names" in np_probe_info:
-        probe.annotate_contacts(channel_name=np_probe_info["channel_names"])
+    Parameters
+    ----------
+    full_probe : Probe
+        Full catalogue probe from `build_neuropixels_probe`.
+    probe_info : dict
+        Probe info dict from `_parse_openephys_settings`.
+
+    Returns
+    -------
+    probe : Probe
+    """
+    if probe_info["selected_electrode_indices"] is not None:
+        return full_probe.get_slice(selection=probe_info["selected_electrode_indices"])
+
+    contact_ids = probe_info["contact_ids"]
+    if contact_ids is not None:
+        catalogue_ids = set(full_probe.contact_ids)
+        if all(cid in catalogue_ids for cid in contact_ids):
+            contact_id_to_index = {cid: i for i, cid in enumerate(full_probe.contact_ids)}
+            selected_indices = np.array([contact_id_to_index[cid] for cid in contact_ids])
+            return full_probe.get_slice(selection=selected_indices)
+        else:
+            raise ValueError(
+                f"Could not match electrode positions to catalogue probe '{probe_info['probe_part_number']}'. "
+                f"The probe part number in settings.xml may be incorrect. "
+                f"See https://github.com/SpikeInterface/probeinterface/issues/407 for details."
+            )
+
+
+def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:
+    """
+    Annotate a probe with metadata from the parsed settings info.
+
+    Parameters
+    ----------
+    probe : Probe
+        The probe to annotate (modified in place).
+    probe_info : dict
+        Probe info dict from `_parse_openephys_settings`.
+    """
+    if probe_info["channel_names"] is not None:
+        probe.annotate_contacts(channel_name=probe_info["channel_names"])
+
+    probe.serial_number = probe_info["serial_number"]
+    probe.name = probe_info["name"]
+    probe.annotate(part_number=probe_info["probe_part_number"])
+
+    if probe_info["slot"] is not None:
+        probe.annotate(slot=probe_info["slot"])
+    if probe_info["port"] is not None:
+        probe.annotate(port=probe_info["port"])
+    if probe_info["dock"] is not None:
+        probe.annotate(dock=probe_info["dock"])
+
+
+def read_openephys(
+    settings_file: str | Path,
+    stream_name: Optional[str] = None,
+    probe_name: Optional[str] = None,
+    serial_number: Optional[str] = None,
+    fix_x_position_for_oe_5: bool = True,
+    raise_error: bool = True,
+) -> Probe:
+    """
+    Read probe positions from Open Ephys folder when using the Neuropix-PXI plugin.
+    The reader assumes that the NP_PROBE fields are available in the settings file.
+    Open Ephys versions 0.5.x and 0.6.x are supported:
+    * For version 0.6.x, the probe names are inferred from the STREAM field. Probe
+      information is then populated sequentially with the NP_PROBE fields.
+    * For version 0.5.x, STREAMs are not available. In this case, if multiple probes
+      are available, they are named sequentially based on the nodeId. E.g. "100.0",
+      "100.1". These substrings are used for selection.
+
+    Parameters
+    ----------
+    settings_file :  Path, str, or None
+        If more than one settings.xml file is in the folder structure, this argument
+        is required to indicate which settings file to use
+    stream_name : str or None
+        If more than one probe is used, the 'stream_name' indicates which probe to load base on the
+        stream. For example, if there are 3 probes ('ProbeA', 'ProbeB', ProbeC) and the stream_name is
+        contains the substring 'ProbeC' (e.g. 'my-stream-ProbeC'), then the probe associated with
+        ProbeC is returned. If this argument is used, the 'probe_name' and 'serial_number' must be None.
+    probe_name : str or None
+        If more than one probe is used, the 'probe_name' indicates which probe to load base on the
+        probe name (e.g. "ProbeB"). If this argument is used, the 'stream_name' and 'serial_number'
+        must be None.
+    serial_number : str or None
+        If more than one probe is used, the 'serial_number' indicates which probe to load base on the
+        serial number. If this argument is used, the 'stream_name' and 'probe_name'
+        must be None.
+    fix_x_position_for_oe_5: bool
+        The neuropixels PXI plugin in the open-ephys < 0.6.0 contains a bug in the y position. This option allow to fix it.
+    raise_error: bool
+        If True, any error would raise an exception. If False, None is returned. Default True
+
+    Note
+    ----
+    The electrode positions are only available when recording using the Neuropix-PXI plugin version >= 0.3.3
+
+    Returns
+    -------
+    probe : Probe object
+
+    """
+    probes_info = _parse_openephys_settings(settings_file, fix_x_position_for_oe_5, raise_error)
+    if probes_info is None:
+        return None
+
+    probe_info = _select_openephys_probe_info(probes_info, stream_name, probe_name, serial_number, raise_error)
+    if probe_info is None:
+        return None
+
+    full_probe = build_neuropixels_probe(probe_info["probe_part_number"])
+    probe = _slice_catalogue_probe(full_probe, probe_info)
+    _annotate_openephys_probe(probe, probe_info)
 
     chans_saved = get_saved_channel_indices_from_openephys_settings(settings_file, stream_name=stream_name)
     if chans_saved is not None:
         probe = probe.get_slice(chans_saved)
 
-    probe.serial_number = np_probe_info["serial_number"]
-    probe.name = np_probe_info["name"]
+    probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
+    return probe
 
-    probe.annotate(
-        part_number=np_probe_info["part_number"],
-    )
-    if "slot" in np_probe_info:
-        probe.annotate(slot=np_probe_info["slot"])
-    if "port" in np_probe_info:
-        probe.annotate(port=np_probe_info["port"])
-    if "dock" in np_probe_info:
-        probe.annotate(dock=np_probe_info["dock"])
 
+def read_openephys_binary(
+    settings_file: str | Path,
+    oebin_file: str | Path,
+    stream_name: str,
+    fix_x_position_for_oe_5: bool = True,
+) -> Probe:
+    """
+    Read probe positions from an Open Ephys binary format recording, using both the
+    settings.xml for probe geometry and the structure.oebin file for channel ordering.
+
+    This function builds the probe geometry from settings.xml (which describes all probes
+    in the experiment), selects the probe matching the given stream, then uses the oebin
+    file to validate the channel count against the binary data layout.
+
+    This is the recommended reader for Open Ephys binary recordings when the caller
+    has both the settings.xml and structure.oebin available, which is always the case
+    for the binary format. The ``stream_name`` parameter is required because the
+    settings.xml contains all probes in a single file and the oebin contains all
+    streams; a stream name is needed to select the correct probe and stream.
+
+    Parameters
+    ----------
+    settings_file : Path or str
+        Path to the Open Ephys settings.xml file. This file is located at the
+        Record Node level (e.g. ``Record Node 102/settings.xml``) and contains
+        the full signal chain configuration including all probe geometries.
+    oebin_file : Path or str
+        Path to the structure.oebin JSON file. This file is located at the
+        recording level (e.g. ``experiment1/recording1/structure.oebin``) and
+        describes the binary data layout including channel count per stream.
+    stream_name : str
+        The stream name used to select which probe to load from settings.xml
+        and which continuous stream to match in the oebin file. This is typically
+        the neo stream name constructed as ``"Record Node 102#Neuropix-PXI-100.ProbeA-AP"``.
+        The probe is selected by substring match: if the probe name (e.g. ``"ProbeA"``)
+        appears anywhere in the stream_name, that probe is selected.
+    fix_x_position_for_oe_5 : bool
+        Fix a y-position bug present in the Neuropix-PXI plugin for Open Ephys < 0.6.0
+        where multi-shank probe y-coordinates included an erroneous shank pitch offset.
+        Despite the parameter name, this corrects the y (not x) position. Default True.
+
+    Returns
+    -------
+    probe : Probe
+        The probe with ``device_channel_indices`` set to identity mapping.
+
+    Raises
+    ------
+    ValueError
+        If the settings.xml cannot be parsed, no matching probe is found, or
+        the oebin channel count does not match the probe contact count.
+    """
+    # Parse settings.xml for this stream's probe
+    probe_info = _parse_probe_info_from_openephys_settings(settings_file, stream_name, fix_x_position_for_oe_5)
+
+    # Build probe from catalogue and slice to selected electrodes
+    full_probe = build_neuropixels_probe(probe_info["probe_part_number"])
+
+    if probe_info["selected_electrode_indices"] is not None:
+        # ONIX plugin provides electrode indices directly as SELECTED_ELECTRODES.
+        # These are indices into the full probe's contact array.
+        probe = full_probe.get_slice(selection=probe_info["selected_electrode_indices"])
+    elif probe_info["positions"] is not None:
+        # Neuropix-PXI and OneBox plugins provide channel positions via
+        # CHANNELS + ELECTRODE_XPOS/ELECTRODE_YPOS. Match these positions against the
+        # catalogue probe to find which electrodes are active.
+        xml_positions = probe_info["positions"]
+        catalogue_positions = full_probe.contact_positions
+
+        matched_indices = []
+        for xml_pos in xml_positions:
+            distances = np.sum(np.abs(catalogue_positions - xml_pos), axis=1)
+            best_index = np.argmin(distances)
+            matched_indices.append(best_index)
+
+        matched_indices = np.array(matched_indices)
+
+        # Validate: all matches should be exact (within floating point tolerance)
+        # and each XML position should match a unique catalogue contact
+        max_distance = max(
+            np.sum(np.abs(catalogue_positions[matched_indices[i]] - xml_positions[i]))
+            for i in range(len(matched_indices))
+        )
+        n_unique = len(np.unique(matched_indices))
+
+        if max_distance > 0.1 or n_unique != len(matched_indices):
+            raise ValueError(
+                f"Could not match XML electrode positions to catalogue probe '{probe_info['probe_part_number']}' "
+                f"in settings '{settings_file}'. "
+                f"Max position distance: {max_distance:.2f} um, "
+                f"unique matches: {n_unique}/{len(matched_indices)}. "
+                f"The probe part number in settings.xml may be incorrect, or the probe model "
+                f"may not be in the catalogue."
+            )
+
+        probe = full_probe.get_slice(selection=matched_indices)
+    else:
+        raise ValueError(
+            f"No electrode selection found in '{settings_file}' for probe '{probe_info['name']}'. "
+            f"Expected either SELECTED_ELECTRODES or CHANNELS with ELECTRODE_XPOS/ELECTRODE_YPOS."
+        )
+
+    # Annotate
+    probe.serial_number = probe_info["serial_number"]
+    probe.name = probe_info["name"]
+    probe.annotate(part_number=probe_info["probe_part_number"])
+    for attr in ("slot", "port", "dock"):
+        if probe_info[attr] is not None:
+            probe.annotate(**{attr: probe_info[attr]})
+    if probe_info.get("plugin_channel_keys") is not None:
+        probe.annotate_contacts(plugin_channel_key=probe_info["plugin_channel_keys"])
+
+    # Apply saved channel subsetting
+    chans_saved = get_saved_channel_indices_from_openephys_settings(settings_file, stream_name=stream_name)
+    if chans_saved is not None:
+        probe = probe.get_slice(chans_saved)
+
+    # Read oebin and validate channel count
+    oebin_file = Path(oebin_file)
+    with open(oebin_file, "r") as f:
+        oebin = json.load(f)
+
+    continuous_streams = oebin.get("continuous", [])
+    matched_stream = None
+    for cs in continuous_streams:
+        folder_name = cs.get("folder_name", "")
+        if stream_name in folder_name or folder_name in stream_name:
+            matched_stream = cs
+            break
+
+    if matched_stream is None:
+        available = [cs.get("folder_name", "unknown") for cs in continuous_streams]
+        raise ValueError(
+            f"Could not find stream matching '{stream_name}' in oebin file '{oebin_file}'. "
+            f"Available streams: {available}"
+        )
+
+    oebin_channels = matched_stream.get("channels", [])
+    num_contacts = probe.get_contact_count()
+
+    # Extract electrode_index metadata from oebin channels.
+    # This was added in neuropixels-pxi plugin v0.5.0 (January 2023).
+    oebin_electrode_indices = []
+    for ch in oebin_channels:
+        electrode_index = None
+        for m in ch.get("channel_metadata", []):
+            if m.get("name") == "electrode_index":
+                electrode_index = m["value"][0]
+                break
+        oebin_electrode_indices.append(electrode_index)
+
+    # Filter out non-electrode channels (e.g. AP_SYNC) that lack electrode_index
+    electrode_channel_indices = [i for i, ei in enumerate(oebin_electrode_indices) if ei is not None]
+    oebin_electrode_indices = [oebin_electrode_indices[i] for i in electrode_channel_indices]
+
+    if len(oebin_electrode_indices) != num_contacts:
+        raise ValueError(
+            f"Channel count mismatch: oebin '{oebin_file}' has {len(oebin_electrode_indices)} electrode channels "
+            f"but probe from settings '{settings_file}' has {num_contacts} contacts."
+        )
+
+    # Check if electrode_index values are valid (not all zeros).
+    # All-zero values occur in recordings from neuropixels-pxi < 0.5.0.
+    has_valid_electrode_indices = not all(ei == 0 for ei in oebin_electrode_indices)
+
+    if has_valid_electrode_indices:
+        # Map each probe contact to its binary file column using electrode_index.
+        electrode_index_to_column = {ei: col for col, ei in enumerate(oebin_electrode_indices)}
+        device_channel_indices = np.zeros(num_contacts, dtype=int)
+        for i, contact_id in enumerate(probe.contact_ids):
+            electrode_index = int(contact_id.split("e")[-1])
+            if electrode_index not in electrode_index_to_column:
+                warnings.warn(
+                    f"Contact {contact_id} has electrode_index {electrode_index} not found in oebin. "
+                    f"Falling back to identity wiring."
+                )
+                device_channel_indices = np.arange(num_contacts)
+                break
+            device_channel_indices[i] = electrode_index_to_column[electrode_index]
+    else:
+        # Fallback: identity wiring. The binary .dat file is written in channel-number order
+        # (confirmed in https://github.com/open-ephys-plugins/neuropixels-pxi/issues/39).
+        device_channel_indices = np.arange(num_contacts)
+
+    probe.set_device_channel_indices(device_channel_indices)
     return probe
 
 
