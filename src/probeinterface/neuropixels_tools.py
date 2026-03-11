@@ -1642,19 +1642,11 @@ def _slice_catalogue_probe(full_probe: Probe, probe_info: dict) -> Probe:
             selected_indices = np.array([contact_id_to_index[cid] for cid in contact_ids])
             return full_probe.get_slice(selection=selected_indices)
         else:
-            warnings.warn(
-                "Could not match reverse-engineered electrode IDs to catalogue probe. "
-                "Falling back to legacy probe construction."
+            raise ValueError(
+                f"Could not match electrode positions to catalogue probe '{probe_info['probe_part_number']}'. "
+                f"The probe part number in settings.xml may be incorrect. "
+                f"See https://github.com/SpikeInterface/probeinterface/issues/407 for details."
             )
-
-    # Legacy fallback
-    return _make_npx_probe_from_description(
-        probe_info["pt_metadata"],
-        probe_info["probe_part_number"],
-        probe_info["elec_ids"],
-        shank_ids=probe_info["shank_ids"],
-        mux_info=probe_info["mux_info"],
-    )
 
 
 def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:

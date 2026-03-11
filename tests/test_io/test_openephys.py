@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import numpy as np
@@ -41,34 +42,7 @@ def test_NP2_four_shank():
 
 
 def test_NP_Ultra():
-    # This dataset has 4 NP-Ultra probes (3 type 1, 1 type 2)
-    probeA = read_openephys(
-        data_path / "OE_Neuropix-PXI-NP-Ultra" / "settings.xml",
-        probe_name="ProbeA",
-    )
-    probe_dict = probeA.to_dict(array_as_list=True)
-    validate_probe_dict(probe_dict)
-    assert probeA.get_shank_count() == 1
-    assert probeA.get_contact_count() == 384
-
-    probeB = read_openephys(
-        data_path / "OE_Neuropix-PXI-NP-Ultra" / "settings.xml",
-        probe_name="ProbeB",
-    )
-    probe_dict = probeB.to_dict(array_as_list=True)
-    validate_probe_dict(probe_dict)
-    assert probeB.get_shank_count() == 1
-    assert probeB.get_contact_count() == 384
-
-    probeF = read_openephys(
-        data_path / "OE_Neuropix-PXI-NP-Ultra" / "settings.xml",
-        probe_name="ProbeF",
-    )
-    probe_dict = probeF.to_dict(array_as_list=True)
-    validate_probe_dict(probe_dict)
-    assert probeF.get_shank_count() == 1
-    assert probeF.get_contact_count() == 384
-
+    # ProbeD (NP1121) matches its catalogue geometry
     probeD = read_openephys(
         data_path / "OE_Neuropix-PXI-NP-Ultra" / "settings.xml",
         probe_name="ProbeD",
@@ -79,6 +53,21 @@ def test_NP_Ultra():
     assert probeD.get_contact_count() == 384
     # for this probe model, all channels are aligned
     assert len(np.unique(probeD.contact_positions[:, 0])) == 1
+
+
+def test_probe_part_number_mismatch_with_catalogue():
+    # ProbeA is labeled NP1100 but its positions don't match the NP1100 catalogue.
+    # See https://github.com/SpikeInterface/probeinterface/issues/407
+    expected_error = (
+        "Could not match electrode positions to catalogue probe 'NP1100'. "
+        "The probe part number in settings.xml may be incorrect. "
+        "See https://github.com/SpikeInterface/probeinterface/issues/407 for details."
+    )
+    with pytest.raises(ValueError, match=re.escape(expected_error)):
+        read_openephys(
+            data_path / "OE_Neuropix-PXI-NP-Ultra" / "settings.xml",
+            probe_name="ProbeA",
+        )
 
 
 def test_NP1_subset():
@@ -423,7 +412,7 @@ def test_read_openephys_contact_ids_match_canonical_pattern():
 
     # Datasets identified as inconsistent in PR #383 discussion:
 
-    # NP-Ultra: NP1100 falls back to legacy (catalogue mismatch), but NP1121 should match
+    # NP-Ultra: NP1100 probes error due to catalogue mismatch (see issue #407), NP1121 should match
     probe = read_openephys(data_path / "OE_Neuropix-PXI-NP-Ultra" / "settings.xml", probe_name="ProbeD")
     _assert_contact_ids_match_canonical_pattern(probe, "NP-Ultra ProbeD")
 
