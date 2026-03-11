@@ -215,6 +215,28 @@ def test_older_than_06_format():
     assert np.min(ypos) >= 0
 
 
+def test_older_than_06_device_channel_indices():
+    """Test that device_channel_indices correctly map sorted contacts to original XML order."""
+    import xml.etree.ElementTree as ET
+
+    settings_file = data_path / "OE_5_Neuropix-PXI-multi-probe" / "settings.xml"
+    tree = ET.parse(settings_file)
+    root = tree.getroot()
+
+    # Parse the original XML channel order for the first probe
+    np_probe = root.findall(".//NP_PROBE")[0]
+    channels = np_probe.find("CHANNELS")
+    channel_names = list(channels.attrib.keys())
+    channel_ids = np.array([int(ch[2:]) for ch in channel_names])
+    expected_channel_order = np.argsort(channel_ids)
+
+    probe = read_openephys(settings_file, probe_name="100.0")
+
+    # device_channel_indices should map sorted contacts back to original XML positions
+    assert probe.device_channel_indices is not None
+    np.testing.assert_array_equal(probe.device_channel_indices, expected_channel_order)
+
+
 def test_multiple_signal_chains():
     # tests that the probe information can be loaded even if the Neuropix-PXI plugin
     # is not in the first signalchain
