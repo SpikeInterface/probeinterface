@@ -1183,17 +1183,17 @@ def _parse_probe_info_from_openephys_settings(
         # with ELECTRODE_XPOS/ELECTRODE_YPOS giving the physical position of each channel.
         # We extract the positions so the caller can match them against the catalogue probe.
         channels = np_probe.find("CHANNELS")
-        channel_names = np.array(list(channels.attrib.keys()))
-        channel_ids = np.array([int(ch[2:]) for ch in channel_names])
+        plugin_channel_keys = np.array(list(channels.attrib.keys()))
+        channel_ids = np.array([int(ch[2:]) for ch in plugin_channel_keys])
         channel_order = np.argsort(channel_ids)
 
-        channel_names = channel_names[channel_order]
+        plugin_channel_keys = plugin_channel_keys[channel_order]
         channel_values = np.array(list(channels.attrib.values()))[channel_order]
 
         if all(":" in val for val in channel_values):
             shank_ids = np.array([int(val.split(":")[1]) for val in channel_values])
-        elif all("_" in val for val in channel_names):
-            shank_ids = np.array([int(val.split("_")[1]) for val in channel_names])
+        elif all("_" in val for val in plugin_channel_keys):
+            shank_ids = np.array([int(val.split("_")[1]) for val in plugin_channel_keys])
         else:
             shank_ids = None
 
@@ -1202,8 +1202,8 @@ def _parse_probe_info_from_openephys_settings(
         if electrode_xpos is None or electrode_ypos is None:
             raise ValueError("ELECTRODE_XPOS or ELECTRODE_YPOS is not available in settings!")
 
-        xpos = np.array([float(electrode_xpos.attrib[ch]) for ch in channel_names])
-        ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])
+        xpos = np.array([float(electrode_xpos.attrib[ch]) for ch in plugin_channel_keys])
+        ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in plugin_channel_keys])
         positions = np.array([xpos, ypos]).T
 
         probe_features = _load_np_probe_features()
@@ -1221,6 +1221,7 @@ def _parse_probe_info_from_openephys_settings(
         positions[:, 0] -= offset
 
         info["positions"] = positions
+        info["plugin_channel_keys"] = plugin_channel_keys
 
     return info
 
@@ -1839,7 +1840,8 @@ def read_openephys_binary(
 
         if max_distance > 0.1 or n_unique != len(matched_indices):
             raise ValueError(
-                f"Could not match XML electrode positions to catalogue probe '{probe_info['probe_part_number']}'. "
+                f"Could not match XML electrode positions to catalogue probe '{probe_info['probe_part_number']}' "
+                f"in settings '{settings_file}'. "
                 f"Max position distance: {max_distance:.2f} um, "
                 f"unique matches: {n_unique}/{len(matched_indices)}. "
                 f"The probe part number in settings.xml may be incorrect, or the probe model "
@@ -1849,7 +1851,7 @@ def read_openephys_binary(
         probe = full_probe.get_slice(selection=matched_indices)
     else:
         raise ValueError(
-            f"No electrode selection found in settings.xml for probe '{probe_info['name']}'. "
+            f"No electrode selection found in '{settings_file}' for probe '{probe_info['name']}'. "
             f"Expected either SELECTED_ELECTRODES or CHANNELS with ELECTRODE_XPOS/ELECTRODE_YPOS."
         )
 
@@ -1860,6 +1862,8 @@ def read_openephys_binary(
     for attr in ("slot", "port", "dock"):
         if probe_info[attr] is not None:
             probe.annotate(**{attr: probe_info[attr]})
+    if probe_info.get("plugin_channel_keys") is not None:
+        probe.annotate_contacts(plugin_channel_key=probe_info["plugin_channel_keys"])
 
     # Apply saved channel subsetting
     chans_saved = get_saved_channel_indices_from_openephys_settings(settings_file, stream_name=stream_name)
@@ -1881,16 +1885,59 @@ def read_openephys_binary(
 
     if matched_stream is None:
         available = [cs.get("folder_name", "unknown") for cs in continuous_streams]
-        raise ValueError(f"Could not find matching stream in oebin file. Available streams: {available}")
-
-    num_channels = matched_stream.get("num_channels", 0)
-    num_contacts = probe.get_contact_count()
-    if num_channels != num_contacts and num_channels > 0:
         raise ValueError(
-            f"Channel count mismatch: oebin has {num_channels} channels but probe has {num_contacts} contacts."
+            f"Could not find stream matching '{stream_name}' in oebin file '{oebin_file}'. "
+            f"Available streams: {available}"
         )
 
-    probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
+    oebin_channels = matched_stream.get("channels", [])
+    num_contacts = probe.get_contact_count()
+
+    # Extract electrode_index metadata from oebin channels.
+    # This was added in neuropixels-pxi plugin v0.5.0 (January 2023).
+    oebin_electrode_indices = []
+    for ch in oebin_channels:
+        electrode_index = None
+        for m in ch.get("channel_metadata", []):
+            if m.get("name") == "electrode_index":
+                electrode_index = m["value"][0]
+                break
+        oebin_electrode_indices.append(electrode_index)
+
+    # Filter out non-electrode channels (e.g. AP_SYNC) that lack electrode_index
+    electrode_channel_indices = [i for i, ei in enumerate(oebin_electrode_indices) if ei is not None]
+    oebin_electrode_indices = [oebin_electrode_indices[i] for i in electrode_channel_indices]
+
+    if len(oebin_electrode_indices) != num_contacts:
+        raise ValueError(
+            f"Channel count mismatch: oebin '{oebin_file}' has {len(oebin_electrode_indices)} electrode channels "
+            f"but probe from settings '{settings_file}' has {num_contacts} contacts."
+        )
+
+    # Check if electrode_index values are valid (not all zeros).
+    # All-zero values occur in recordings from neuropixels-pxi < 0.5.0.
+    has_valid_electrode_indices = not all(ei == 0 for ei in oebin_electrode_indices)
+
+    if has_valid_electrode_indices:
+        # Map each probe contact to its binary file column using electrode_index.
+        electrode_index_to_column = {ei: col for col, ei in enumerate(oebin_electrode_indices)}
+        device_channel_indices = np.zeros(num_contacts, dtype=int)
+        for i, contact_id in enumerate(probe.contact_ids):
+            electrode_index = int(contact_id.split("e")[-1])
+            if electrode_index not in electrode_index_to_column:
+                warnings.warn(
+                    f"Contact {contact_id} has electrode_index {electrode_index} not found in oebin. "
+                    f"Falling back to identity wiring."
+                )
+                device_channel_indices = np.arange(num_contacts)
+                break
+            device_channel_indices[i] = electrode_index_to_column[electrode_index]
+    else:
+        # Fallback: identity wiring. The binary .dat file is written in channel-number order
+        # (confirmed in https://github.com/open-ephys-plugins/neuropixels-pxi/issues/39).
+        device_channel_indices = np.arange(num_contacts)
+
+    probe.set_device_channel_indices(device_channel_indices)
     return probe
 
 

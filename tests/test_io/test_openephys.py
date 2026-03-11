@@ -4,9 +4,11 @@ import numpy as np
 
 import pytest
 
+import json
+
 from probeinterface import read_openephys
 from probeinterface.neuropixels_tools import _parse_openephys_settings, _select_openephys_probe_info
-from probeinterface.neuropixels_tools import _slice_catalogue_probe, build_neuropixels_probe
+from probeinterface.neuropixels_tools import _slice_catalogue_probe, build_neuropixels_probe, read_openephys_binary
 from probeinterface.testing import validate_probe_dict
 
 data_path = Path(__file__).absolute().parent.parent / "data" / "openephys"
@@ -377,20 +379,77 @@ def test_build_openephys_probe_no_wiring():
     assert probe_b.device_channel_indices is None
 
 
-def test_build_openephys_probe_uses_catalogue():
+def _assert_contact_ids_match_catalogue(probe, label=""):
+    """Assert that a probe's contact_ids are a subset of the catalogue probe's contact_ids."""
+    part_number = probe.annotations["part_number"]
+    catalogue = build_neuropixels_probe(part_number)
+    catalogue_ids = set(catalogue.contact_ids)
+    probe_ids = set(probe.contact_ids)
+    assert probe_ids.issubset(catalogue_ids), (
+        f"{label} ({part_number}): OpenEphys contact_ids not in catalogue: {probe_ids - catalogue_ids}"
+    )
+
+
+def test_read_openephys_contact_ids_consistent_with_catalogue():
+    """Verify that read_openephys contact_ids are consistent with the catalogue probe (issue #394).
+
+    For each dataset, the contact_ids produced by read_openephys must be a subset of
+    the contact_ids from build_neuropixels_probe(). This ensures that the same physical
+    electrode gets the same contact_id regardless of acquisition system (OpenEphys vs SpikeGLX).
+
+    The datasets from OE_Neuropix-PXI-NP-Ultra, OE_6.7_enabled_disabled_Neuropix-PXI, and
+    OE_Neuropix-PXI-QuadBase were identified as inconsistent cases in PR #383
+    (see https://github.com/SpikeInterface/probeinterface/pull/383#discussion_r2650588006).
+    """
     # Path A (SELECTED_ELECTRODES): OE 1.0 dataset
-    probe_a = _build_probe_from_settings(
+    probe = read_openephys(
         data_path / "OE_1.0_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA"
     )
-    assert probe_a is not None
-    for cid in probe_a.contact_ids:
-        assert cid.startswith("e") or cid.startswith("s"), f"Unexpected contact_id format: {cid}"
+    _assert_contact_ids_match_catalogue(probe, "OE_1.0 ProbeA")
 
-    # Path B (CHANNELS): NP2 dataset (single shank, canonical IDs should be "eN")
-    probe_b = _build_probe_from_settings(data_path / "OE_Neuropix-PXI" / "settings.xml")
-    assert probe_b is not None
-    for cid in probe_b.contact_ids:
-        assert cid.startswith("e") or cid.startswith("s"), f"Unexpected contact_id format: {cid}"
+    # Path B (CHANNELS): NP2 dataset (single shank)
+    probe = read_openephys(data_path / "OE_Neuropix-PXI" / "settings.xml")
+    _assert_contact_ids_match_catalogue(probe, "NP2")
+
+    # Path B (CHANNELS): NP2 4-shank dataset (multi-shank)
+    probe = read_openephys(data_path / "OE_Neuropix-PXI-NP2-4shank" / "settings.xml")
+    _assert_contact_ids_match_catalogue(probe, "NP2 4-shank")
+
+    # Path B (CHANNELS): NP-Opto dataset
+    probe = read_openephys(data_path / "OE_Neuropix-PXI-opto-with-sync" / "settings.xml")
+    _assert_contact_ids_match_catalogue(probe, "NP-Opto")
+
+    # Path B (CHANNELS): OneBox NP-Ultra (NP1110) dataset
+    probe = read_openephys(data_path / "OE_OneBox-NP-Ultra" / "settings.xml")
+    _assert_contact_ids_match_catalogue(probe, "OneBox NP1110")
+
+    # Datasets identified as inconsistent in PR #383 discussion:
+
+    # NP-Ultra: NP1100 falls back to legacy (catalogue mismatch), but NP1121 should match
+    probe = read_openephys(
+        data_path / "OE_Neuropix-PXI-NP-Ultra" / "settings.xml", probe_name="ProbeD"
+    )
+    _assert_contact_ids_match_catalogue(probe, "NP-Ultra ProbeD")
+
+    # enabled/disabled: NP1 and NP2014
+    probe = read_openephys(
+        data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-enabled.xml",
+        probe_name="ProbeA",
+    )
+    _assert_contact_ids_match_catalogue(probe, "enabled-enabled ProbeA")
+
+    probe = read_openephys(
+        data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-enabled.xml",
+        probe_name="ProbeB",
+    )
+    _assert_contact_ids_match_catalogue(probe, "enabled-enabled ProbeB")
+
+    # QuadBase: NP2020 (4 probes)
+    for i in range(4):
+        probe = read_openephys(
+            data_path / "OE_Neuropix-PXI-QuadBase" / "settings.xml", probe_name=f"ProbeC-{i+1}"
+        )
+        _assert_contact_ids_match_catalogue(probe, f"QuadBase ProbeC-{i+1}")
 
 
 def test_read_openephys_backward_compatible():
@@ -411,6 +470,106 @@ def test_read_openephys_backward_compatible():
     validate_probe_dict(probe_dict)
     assert probe_a.device_channel_indices is not None
     assert np.array_equal(probe_a.device_channel_indices, np.arange(probe_a.get_contact_count()))
+
+
+def _read_oebin_electrode_indices(oebin_file, stream_name):
+    """Read electrode_index metadata from an oebin file for a given stream."""
+    with open(oebin_file) as f:
+        oebin = json.load(f)
+    for cs in oebin.get("continuous", []):
+        folder_name = cs.get("folder_name", "")
+        if stream_name in folder_name or folder_name in stream_name:
+            indices = []
+            for ch in cs.get("channels", []):
+                for m in ch.get("channel_metadata", []):
+                    if m.get("name") == "electrode_index":
+                        indices.append(m["value"][0])
+            return indices
+    return []
+
+
+def test_read_openephys_binary_wiring():
+    """Verify wiring invariant: for each contact, the oebin's electrode_index at the
+    assigned binary column matches the contact's electrode index."""
+    settings = data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "settings.xml"
+    oebin = (
+        data_path
+        / "OE_Neuropix-PXI-NP1-binary"
+        / "Record_Node_101"
+        / "experiment1"
+        / "recording1"
+        / "structure.oebin"
+    )
+    stream_name = "Neuropix-PXI-100.ProbeA"
+
+    probe = read_openephys_binary(settings, oebin, stream_name)
+
+    assert probe.get_contact_count() == 384
+    assert probe.device_channel_indices is not None
+    _assert_contact_ids_match_catalogue(probe, "NP1 binary")
+
+    # Wiring invariant
+    oebin_electrode_indices = _read_oebin_electrode_indices(oebin, stream_name)
+    for i, contact_id in enumerate(probe.contact_ids):
+        electrode_index = int(contact_id.split("e")[-1])
+        column = probe.device_channel_indices[i]
+        assert oebin_electrode_indices[column] == electrode_index, (
+            f"Contact {i} ({contact_id}): expected electrode_index {electrode_index} "
+            f"at column {column}, got {oebin_electrode_indices[column]}"
+        )
+
+
+def test_read_openephys_binary_sync_channel_filtered():
+    """Verify that the oebin sync channel (385 channels) is filtered, producing 384 contacts."""
+    settings = data_path / "OE_Neuropix-PXI-NP2-4shank-binary" / "Record_Node_101" / "settings.xml"
+    oebin = (
+        data_path
+        / "OE_Neuropix-PXI-NP2-4shank-binary"
+        / "Record_Node_101"
+        / "experiment4"
+        / "recording2"
+        / "structure.oebin"
+    )
+
+    probe = read_openephys_binary(settings, oebin, "Neuropix-PXI-100.ProbeA-AP")
+    assert probe.get_contact_count() == 384
+
+
+def test_read_openephys_binary_plugin_channel_key():
+    """Verify that plugin_channel_key annotation is set."""
+    settings = data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "settings.xml"
+    oebin = (
+        data_path
+        / "OE_Neuropix-PXI-NP1-binary"
+        / "Record_Node_101"
+        / "experiment1"
+        / "recording1"
+        / "structure.oebin"
+    )
+    stream_name = "Neuropix-PXI-100.ProbeA"
+
+    probe = read_openephys_binary(settings, oebin, stream_name)
+    keys = probe.contact_annotations.get("plugin_channel_key", None)
+    assert keys is not None, "plugin_channel_key annotation not set"
+    assert len(keys) == probe.get_contact_count()
+    # Keys should be like "CH0", "CH1", etc.
+    assert all(k.startswith("CH") for k in keys)
+
+
+def test_read_openephys_binary_no_matching_stream():
+    """Verify error when stream_name doesn't match any oebin stream."""
+    settings = data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "settings.xml"
+    oebin = (
+        data_path
+        / "OE_Neuropix-PXI-NP1-binary"
+        / "Record_Node_101"
+        / "experiment1"
+        / "recording1"
+        / "structure.oebin"
+    )
+
+    with pytest.raises(ValueError, match="does not match any available probe"):
+        read_openephys_binary(settings, oebin, "NonExistentStream")
 
 
 if __name__ == "__main__":
