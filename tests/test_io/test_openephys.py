@@ -5,6 +5,8 @@ import numpy as np
 import pytest
 
 from probeinterface import read_openephys
+from probeinterface.neuropixels_tools import _parse_openephys_settings, _select_openephys_probe_info
+from probeinterface.neuropixels_tools import _slice_catalogue_probe, build_neuropixels_probe
 from probeinterface.testing import validate_probe_dict
 
 data_path = Path(__file__).absolute().parent.parent / "data" / "openephys"
@@ -353,6 +355,62 @@ def test_onix_np2():
             assert probe_1.get_shank_count() == 1
         else:
             assert probe_1.get_shank_count() == 4
+
+
+def _build_probe_from_settings(settings_file, **kwargs):
+    """Helper: parse settings, select probe, build from catalogue, slice."""
+    probes_info = _parse_openephys_settings(settings_file)
+    info = _select_openephys_probe_info(probes_info, **kwargs)
+    full_probe = build_neuropixels_probe(info["probe_part_number"])
+    return _slice_catalogue_probe(full_probe, info)
+
+
+def test_build_openephys_probe_no_wiring():
+    # Path A (SELECTED_ELECTRODES): ONIX dataset
+    probe_a = _build_probe_from_settings(data_path / "OE_ONIX-NP" / "settings_bankA.xml")
+    assert probe_a is not None
+    assert probe_a.device_channel_indices is None
+
+    # Path B (CHANNELS): Neuropix-PXI dataset
+    probe_b = _build_probe_from_settings(data_path / "OE_Neuropix-PXI" / "settings.xml")
+    assert probe_b is not None
+    assert probe_b.device_channel_indices is None
+
+
+def test_build_openephys_probe_uses_catalogue():
+    # Path A (SELECTED_ELECTRODES): OE 1.0 dataset
+    probe_a = _build_probe_from_settings(
+        data_path / "OE_1.0_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA"
+    )
+    assert probe_a is not None
+    for cid in probe_a.contact_ids:
+        assert cid.startswith("e") or cid.startswith("s"), f"Unexpected contact_id format: {cid}"
+
+    # Path B (CHANNELS): NP2 dataset (single shank, canonical IDs should be "eN")
+    probe_b = _build_probe_from_settings(data_path / "OE_Neuropix-PXI" / "settings.xml")
+    assert probe_b is not None
+    for cid in probe_b.contact_ids:
+        assert cid.startswith("e") or cid.startswith("s"), f"Unexpected contact_id format: {cid}"
+
+
+def test_read_openephys_backward_compatible():
+    # Verify read_openephys still produces valid probes with device_channel_indices set
+    # Path B dataset
+    probe = read_openephys(data_path / "OE_Neuropix-PXI" / "settings.xml")
+    probe_dict = probe.to_dict(array_as_list=True)
+    validate_probe_dict(probe_dict)
+    assert probe.device_channel_indices is not None
+    assert len(probe.device_channel_indices) == probe.get_contact_count()
+    assert np.array_equal(probe.device_channel_indices, np.arange(probe.get_contact_count()))
+
+    # Path A dataset
+    probe_a = read_openephys(
+        data_path / "OE_1.0_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA"
+    )
+    probe_dict = probe_a.to_dict(array_as_list=True)
+    validate_probe_dict(probe_dict)
+    assert probe_a.device_channel_indices is not None
+    assert np.array_equal(probe_a.device_channel_indices, np.arange(probe_a.get_contact_count()))
 
 
 if __name__ == "__main__":
