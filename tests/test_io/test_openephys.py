@@ -379,19 +379,19 @@ def test_build_openephys_probe_no_wiring():
     assert probe_b.device_channel_indices is None
 
 
-def _assert_contact_ids_match_catalogue(probe, label=""):
-    """Assert that a probe's contact_ids are a subset of the catalogue probe's contact_ids."""
+def _assert_contact_ids_match_canonical_pattern(probe, label=""):
+    """Assert that a probe's contact_ids are a subset of the canonical IDs from build_neuropixels_probe."""
     part_number = probe.annotations["part_number"]
     catalogue = build_neuropixels_probe(part_number)
     catalogue_ids = set(catalogue.contact_ids)
     probe_ids = set(probe.contact_ids)
     assert probe_ids.issubset(
         catalogue_ids
-    ), f"{label} ({part_number}): OpenEphys contact_ids not in catalogue: {probe_ids - catalogue_ids}"
+    ), f"{label} ({part_number}): contact_ids not in canonical pattern: {probe_ids - catalogue_ids}"
 
 
-def test_read_openephys_contact_ids_consistent_with_catalogue():
-    """Verify that read_openephys contact_ids are consistent with the catalogue probe (issue #394).
+def test_read_openephys_contact_ids_match_canonical_pattern():
+    """Verify that read_openephys contact_ids are consistent with SpikeGLX (issue #394).
 
     For each dataset, the contact_ids produced by read_openephys must be a subset of
     the contact_ids from build_neuropixels_probe(). This ensures that the same physical
@@ -403,47 +403,47 @@ def test_read_openephys_contact_ids_consistent_with_catalogue():
     """
     # Path A (SELECTED_ELECTRODES): OE 1.0 dataset
     probe = read_openephys(data_path / "OE_1.0_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA")
-    _assert_contact_ids_match_catalogue(probe, "OE_1.0 ProbeA")
+    _assert_contact_ids_match_canonical_pattern(probe, "OE_1.0 ProbeA")
 
     # Path B (CHANNELS): NP2 dataset (single shank)
     probe = read_openephys(data_path / "OE_Neuropix-PXI" / "settings.xml")
-    _assert_contact_ids_match_catalogue(probe, "NP2")
+    _assert_contact_ids_match_canonical_pattern(probe, "NP2")
 
     # Path B (CHANNELS): NP2 4-shank dataset (multi-shank)
     probe = read_openephys(data_path / "OE_Neuropix-PXI-NP2-4shank" / "settings.xml")
-    _assert_contact_ids_match_catalogue(probe, "NP2 4-shank")
+    _assert_contact_ids_match_canonical_pattern(probe, "NP2 4-shank")
 
     # Path B (CHANNELS): NP-Opto dataset
     probe = read_openephys(data_path / "OE_Neuropix-PXI-opto-with-sync" / "settings.xml")
-    _assert_contact_ids_match_catalogue(probe, "NP-Opto")
+    _assert_contact_ids_match_canonical_pattern(probe, "NP-Opto")
 
     # Path B (CHANNELS): OneBox NP-Ultra (NP1110) dataset
     probe = read_openephys(data_path / "OE_OneBox-NP-Ultra" / "settings.xml")
-    _assert_contact_ids_match_catalogue(probe, "OneBox NP1110")
+    _assert_contact_ids_match_canonical_pattern(probe, "OneBox NP1110")
 
     # Datasets identified as inconsistent in PR #383 discussion:
 
     # NP-Ultra: NP1100 falls back to legacy (catalogue mismatch), but NP1121 should match
     probe = read_openephys(data_path / "OE_Neuropix-PXI-NP-Ultra" / "settings.xml", probe_name="ProbeD")
-    _assert_contact_ids_match_catalogue(probe, "NP-Ultra ProbeD")
+    _assert_contact_ids_match_canonical_pattern(probe, "NP-Ultra ProbeD")
 
     # enabled/disabled: NP1 and NP2014
     probe = read_openephys(
         data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-enabled.xml",
         probe_name="ProbeA",
     )
-    _assert_contact_ids_match_catalogue(probe, "enabled-enabled ProbeA")
+    _assert_contact_ids_match_canonical_pattern(probe, "enabled-enabled ProbeA")
 
     probe = read_openephys(
         data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-enabled.xml",
         probe_name="ProbeB",
     )
-    _assert_contact_ids_match_catalogue(probe, "enabled-enabled ProbeB")
+    _assert_contact_ids_match_canonical_pattern(probe, "enabled-enabled ProbeB")
 
     # QuadBase: NP2020 (4 probes)
     for i in range(4):
         probe = read_openephys(data_path / "OE_Neuropix-PXI-QuadBase" / "settings.xml", probe_name=f"ProbeC-{i+1}")
-        _assert_contact_ids_match_catalogue(probe, f"QuadBase ProbeC-{i+1}")
+        _assert_contact_ids_match_canonical_pattern(probe, f"QuadBase ProbeC-{i+1}")
 
 
 def test_read_openephys_backward_compatible():
@@ -493,7 +493,6 @@ def test_read_openephys_binary_wiring():
 
     assert probe.get_contact_count() == 384
     assert probe.device_channel_indices is not None
-    _assert_contact_ids_match_catalogue(probe, "NP1 binary")
 
     # Wiring invariant
     oebin_electrode_indices = _read_oebin_electrode_indices(oebin, stream_name)
@@ -504,6 +503,30 @@ def test_read_openephys_binary_wiring():
             f"Contact {i} ({contact_id}): expected electrode_index {electrode_index} "
             f"at column {column}, got {oebin_electrode_indices[column]}"
         )
+
+
+def test_read_openephys_binary_contact_ids_match_canonical_pattern():
+    """Verify that read_openephys_binary contact_ids are consistent with SpikeGLX (issue #394)."""
+    # NP2014 single-shank
+    probe = read_openephys_binary(
+        data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "settings.xml",
+        data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "experiment1" / "recording1" / "structure.oebin",
+        "Neuropix-PXI-100.ProbeA",
+    )
+    _assert_contact_ids_match_canonical_pattern(probe, "NP2014 binary")
+
+    # NP1032 4-shank
+    probe = read_openephys_binary(
+        data_path / "OE_Neuropix-PXI-NP2-4shank-binary" / "Record_Node_101" / "settings.xml",
+        data_path
+        / "OE_Neuropix-PXI-NP2-4shank-binary"
+        / "Record_Node_101"
+        / "experiment4"
+        / "recording2"
+        / "structure.oebin",
+        "Neuropix-PXI-100.ProbeA-AP",
+    )
+    _assert_contact_ids_match_canonical_pattern(probe, "NP1032 binary")
 
 
 def test_read_openephys_binary_sync_channel_filtered():
