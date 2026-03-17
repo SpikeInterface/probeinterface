@@ -1548,7 +1548,7 @@ def _compute_device_channel_indices_from_oebin(
                 break
         oebin_electrode_indices.append(electrode_index)
 
-    # Filter out non-electrode channels (e.g. AP_SYNC) that lack electrode_index
+    # Filter out non-electrode channels (e.g. the sync channel) that lack electrode_index
     electrode_channel_indices = [i for i, ei in enumerate(oebin_electrode_indices) if ei is not None]
     oebin_electrode_indices = [oebin_electrode_indices[i] for i in electrode_channel_indices]
 
