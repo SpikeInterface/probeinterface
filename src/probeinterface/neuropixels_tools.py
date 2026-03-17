@@ -18,7 +18,6 @@ import numpy as np
 from .probe import Probe
 from .utils import import_safely
 
-
 global _np_probe_features
 _np_probe_features = None
 
@@ -28,7 +27,8 @@ def _load_np_probe_features():
     global _np_probe_features
     if _np_probe_features is None:
         probe_features_filepath = Path(__file__).absolute().parent / Path("resources/neuropixels_probe_features.json")
-        _np_probe_features = json.load(open(probe_features_filepath, "r"))
+        with open(probe_features_filepath, "r") as f:
+            _np_probe_features = json.load(f)
     return _np_probe_features
 
 
@@ -92,8 +92,7 @@ imro_field_to_pi_field = {
 
 def get_probe_length(probe_part_number: str) -> int:
     """
-    Returns the length of a given probe. We assume a length of
-    1cm (10_000 microns) by default.
+    Returns the length of a given probe from ProbeTable specifications.
 
     Parameters
     ----------
@@ -103,12 +102,16 @@ def get_probe_length(probe_part_number: str) -> int:
     Returns
     -------
     probe_length : int
-        Length of full probe (microns)
+        Length of full probe shank from tip to base (microns)
     """
+    np_features = _load_np_probe_features()
+    probe_spec = np_features["neuropixels_probes"].get(probe_part_number)
 
-    probe_length = 10_000
+    if probe_spec is not None and "shank_tip_to_base_um" in probe_spec:
+        return int(probe_spec["shank_tip_to_base_um"])
 
-    return probe_length
+    # Fallback for unknown probes or missing field
+    return 10_000
 
 
 def make_mux_table_array(mux_information) -> np.array:
@@ -1218,7 +1221,6 @@ def read_openephys(
                 "probe": sliced_probe,
             }
         else:
-
             channel_names = np.array(list(channels.attrib.keys()))
             channel_ids = np.array([int(ch[2:]) for ch in channel_names])
             channel_order = np.argsort(channel_ids)
@@ -1304,6 +1306,7 @@ def read_openephys(
             np_probe_dict = {
                 "shank_ids": shank_ids,
                 "elec_ids": elec_ids,
+                "channel_names": channel_names,
                 "pt_metadata": pt_metadata,
                 "slot": slot,
                 "port": port,
@@ -1425,6 +1428,9 @@ def read_openephys(
         probe = _make_npx_probe_from_description(
             pt_metadata, probe_part_number, elec_ids, shank_ids=shank_ids, mux_info=mux_info
         )
+
+    if "channel_names" in np_probe_info:
+        probe.annotate_contacts(channel_name=np_probe_info["channel_names"])
 
     chans_saved = get_saved_channel_indices_from_openephys_settings(settings_file, stream_name=stream_name)
     if chans_saved is not None:
