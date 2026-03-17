@@ -125,6 +125,10 @@ def make_mux_table_array(mux_information) -> np.array:
 
     Returns
     -------
+    num_adcs: int
+        Number of ADCs used in the probe's readout system.
+    num_channels_per_adc: int
+        Number of readout channels assigned to each ADC.
     adc_groups_array : np.array
         Array of which channels are in each adc group, shaped (number of `adc`s, number of channels in each `adc`).
     """
@@ -334,20 +338,10 @@ def _make_npx_probe_from_description(probe_description, model_name, elec_ids, sh
     # annotate with MUX table
     if mux_info is not None:
         # annotate each contact with its mux channel
-        num_adcs, num_channels_per_adc, mux_table = make_mux_table_array(mux_info)
-        num_contacts = positions.shape[0]
-        # ADC group: which adc is used for each contact
-        adc_groups = np.zeros(num_contacts, dtype="int64")
-        # ADC sample order: order of sampling of the contact in the adc group
-        adc_sample_order = np.zeros(num_contacts, dtype="int64")
-        for adc_idx, adc_groups_per_adc in enumerate(mux_table):
-            adc_groups_per_adc = adc_groups_per_adc[adc_groups_per_adc < num_contacts]
-            adc_groups[adc_groups_per_adc] = adc_idx
-            adc_sample_order[adc_groups_per_adc] = np.arange(len(adc_groups_per_adc))
+        num_adcs, num_channels_per_adc, adc_groups_array = make_mux_table_array(mux_info)
         probe.annotate(num_adcs=num_adcs)
         probe.annotate(num_channels_per_adc=num_channels_per_adc)
-        probe.annotate_contacts(adc_group=adc_groups)
-        probe.annotate_contacts(adc_sample_order=adc_sample_order)
+        _annotate_contacts_from_mux_table(probe, adc_groups_array)
 
     return probe
 
@@ -486,6 +480,74 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
         probe.annotate(adc_sampling_table=adc_sampling_table)
 
     return probe
+
+
+def _annotate_contacts_from_mux_table(probe: Probe, adc_groups_array: np.array):
+    """
+    Annotate a Probe object with ADC group and sample order information based on the MUX table.
+
+    This function is used when building a complete Neuropixels probe from the ProbeTable specifications
+    (via build_neuropixels_probe) to assign per-contact annotations for adc_group and adc_sample_order,
+    which describe how each contact maps to the ADCs during recording.
+    The function annotates the probe in place.
+
+    Parameters
+    ----------
+    probe : Probe
+        The Probe object to annotate. Must have device_channel_indices set.
+    adc_groups_array : np.array
+        The ADC groups array from the probe features, which describes how readout channels map to ADCs.
+    """
+    # Map readout channels to ADC groups and sample order
+    num_readout_channels = probe.get_contact_count()
+    adc_groups = np.zeros(num_readout_channels, dtype="int64")
+    adc_sample_order = np.zeros(num_readout_channels, dtype="int64")
+    for adc_index, channels_per_adc in enumerate(adc_groups_array):
+        # Filter out placeholder values (e.g., 128 in mux_np1200 for unused slots)
+        valid_channels = channels_per_adc[channels_per_adc < num_readout_channels]
+        adc_groups[valid_channels] = adc_index
+        adc_sample_order[valid_channels] = np.arange(len(valid_channels))
+
+    probe.annotate_contacts(adc_group=adc_groups)
+    probe.annotate_contacts(adc_sample_order=adc_sample_order)
+
+
+def annotate_probe_with_adc_sampling_info(probe: Probe, adc_sampling_table: str | None):
+    """
+    Annotate a Probe object with ADC group and sample order information based on the ADC sampling table.
+
+    This function is used when reading a recording with a known channel map (via read_spikeglx, read_openephys)
+    to assign per-contact annotations for adc_group and adc_sample_order, which describe how
+    each contact maps to the ADCs during recording, and global annotations for num_adcs and num_channels_per_adc.
+
+    Parameters
+    ----------
+    probe : Probe
+        The Probe object to annotate. Must have device_channel_indices set.
+    adc_sampling_table : str
+        The ADC sampling table string from the probe features, which describes how readout channels map to ADCs.
+
+    Returns
+    -------
+    None
+        The function modifies the Probe object in place.
+    """
+    # Parse table string: (num_adcs,num_channels_per_adc)(ch ch ...)(ch ch ...)...
+    if adc_sampling_table is None:
+        return
+    adc_info = adc_sampling_table.split(")(")[0]
+    split_mux = adc_sampling_table.split(")(")[1:]
+    num_adcs, num_channels_per_adc = map(int, adc_info[1:].split(","))
+    probe.annotate(num_adcs=num_adcs)
+    probe.annotate(num_channels_per_adc=num_channels_per_adc)
+
+    adc_groups_list = [
+        np.array(each_mux.replace("(", "").replace(")", "").split(" ")).astype("int") for each_mux in split_mux
+    ]
+    adc_groups_array = np.transpose(np.array(adc_groups_list))
+
+    # Map readout channels to ADC groups and sample order
+    _annotate_contacts_from_mux_table(probe, adc_groups_array)
 
 
 def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe:
@@ -883,30 +945,7 @@ def read_spikeglx(file: str | Path) -> Probe:
     # apply the mapping. This must be done here (not in build_neuropixels_probe)
     # because the table indices are readout channel indices, not electrode indices.
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
-    if adc_sampling_table is not None:
-        # Parse table string: (num_adcs,num_channels_per_adc)(ch ch ...)(ch ch ...)...
-        adc_info = adc_sampling_table.split(")(")[0]
-        split_mux = adc_sampling_table.split(")(")[1:]
-        num_adcs, num_channels_per_adc = map(int, adc_info[1:].split(","))
-        adc_groups_list = [
-            np.array(each_mux.replace("(", "").replace(")", "").split(" ")).astype("int") for each_mux in split_mux
-        ]
-        mux_table = np.transpose(np.array(adc_groups_list))
-
-        # Map readout channels to ADC groups and sample order
-        num_readout_channels = probe.get_contact_count()
-        adc_groups = np.zeros(num_readout_channels, dtype="int64")
-        adc_sample_order = np.zeros(num_readout_channels, dtype="int64")
-        for adc_index, channels_per_adc in enumerate(mux_table):
-            # Filter out placeholder values (e.g., 128 in mux_np1200 for unused slots)
-            valid_channels = channels_per_adc[channels_per_adc < num_readout_channels]
-            adc_groups[valid_channels] = adc_index
-            adc_sample_order[valid_channels] = np.arange(len(valid_channels))
-
-        probe.annotate(num_adcs=num_adcs)
-        probe.annotate(num_channels_per_adc=num_channels_per_adc)
-        probe.annotate_contacts(adc_group=adc_groups)
-        probe.annotate_contacts(adc_sample_order=adc_sample_order)
+    annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
     # ===== 7. Slice to saved channels (if subset was saved) =====
     # This is DIFFERENT from IMRO selection: IMRO selects which electrodes to acquire,
@@ -1059,7 +1098,7 @@ def _parse_openephys_settings(
         - probe_part_number, serial_number, name, slot, port, dock
         - selected_electrode_indices: list of int (from SELECTED_ELECTRODES), or None
         - contact_ids: list of str (reverse-engineered from CHANNELS), or None
-        - channel_names: np.array of str, or None
+        - settings_channel_keys: np.array of str, or None
         - elec_ids, shank_ids, pt_metadata, mux_info: for legacy fallback
     """
     ET = import_safely("xml.etree.ElementTree")
@@ -1207,8 +1246,7 @@ def _parse_openephys_settings(
             "mux_info": mux_info,
             "selected_electrode_indices": None,
             "contact_ids": None,
-            "channel_names": None,
-            "plugin_channel_keys": None,
+            "settings_channel_keys": None,
             "elec_ids": None,
             "shank_ids": None,
         }
@@ -1287,8 +1325,7 @@ def _parse_openephys_settings(
                     )
                 elec_ids.append(elec_id)
 
-            info["channel_names"] = channel_names
-            info["plugin_channel_keys"] = channel_names
+            info["settings_channel_keys"] = channel_names
             info["shank_ids"] = shank_ids
             info["elec_ids"] = elec_ids
 
@@ -1419,13 +1456,12 @@ def _select_openephys_probe_info(
         return probes_info[0]
 
 
-def _slice_catalogue_probe(full_probe: Probe, probe_info: dict) -> Probe:
+def _slice_openephys_catalogue_probe(full_probe: Probe, probe_info: dict) -> Probe:
     """
     Slice a full catalogue probe using the electrode selection from probe_info.
 
     For SELECTED_ELECTRODES (newer plugin), uses the indices directly.
     For CHANNELS (older plugin), matches reverse-engineered contact_ids to the catalogue.
-    Falls back to legacy `_make_npx_probe_from_description` if matching fails.
 
     Parameters
     ----------
@@ -1467,9 +1503,6 @@ def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:
     probe_info : dict
         Probe info dict from `_parse_openephys_settings`.
     """
-    if probe_info["channel_names"] is not None:
-        probe.annotate_contacts(channel_name=probe_info["channel_names"])
-
     probe.serial_number = probe_info["serial_number"]
     probe.name = probe_info["name"]
     probe.annotate(part_number=probe_info["probe_part_number"])
@@ -1480,8 +1513,11 @@ def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:
         probe.annotate(port=probe_info["port"])
     if probe_info["dock"] is not None:
         probe.annotate(dock=probe_info["dock"])
-    if probe_info.get("plugin_channel_keys") is not None:
-        probe.annotate_contacts(plugin_channel_key=probe_info["plugin_channel_keys"])
+    if probe_info.get("settings_channel_keys") is not None:
+        probe.annotate_contacts(settings_channel_key=probe_info["settings_channel_keys"])
+
+    adc_sampling_table = probe.annotations.get("adc_sampling_table")
+    annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
 
 def _compute_device_channel_indices_from_oebin(
@@ -1501,7 +1537,7 @@ def _compute_device_channel_indices_from_oebin(
     Parameters
     ----------
     probe : Probe
-        Probe with contact_ids set (e.g. from ``_slice_catalogue_probe``).
+        Probe with contact_ids set (e.g. from ``_slice_openephys_catalogue_probe``).
     oebin_file : str or Path
         Path to the structure.oebin JSON file.
     stream_name : str
@@ -1541,16 +1577,11 @@ def _compute_device_channel_indices_from_oebin(
     # This was added in neuropixels-pxi plugin v0.5.0 (January 2023).
     oebin_electrode_indices = []
     for ch in oebin_channels:
-        electrode_index = None
         for m in ch.get("channel_metadata", []):
             if m.get("name") == "electrode_index":
                 electrode_index = m["value"][0]
+                oebin_electrode_indices.append(electrode_index)
                 break
-        oebin_electrode_indices.append(electrode_index)
-
-    # Filter out non-electrode channels (e.g. the sync channel) that lack electrode_index
-    electrode_channel_indices = [i for i, ei in enumerate(oebin_electrode_indices) if ei is not None]
-    oebin_electrode_indices = [oebin_electrode_indices[i] for i in electrode_channel_indices]
 
     if len(oebin_electrode_indices) != num_contacts:
         raise ValueError(
@@ -1680,7 +1711,7 @@ def read_openephys(
         return None
 
     full_probe = build_neuropixels_probe(probe_part_number=probe_info["probe_part_number"])
-    probe = _slice_catalogue_probe(full_probe, probe_info)
+    probe = _slice_openephys_catalogue_probe(full_probe, probe_info)
     _annotate_openephys_probe(probe, probe_info)
 
     chans_saved = get_saved_channel_indices_from_openephys_settings(settings_file, stream_name=stream_name)

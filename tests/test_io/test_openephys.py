@@ -9,12 +9,33 @@ import json
 
 from probeinterface import read_openephys
 from probeinterface.neuropixels_tools import _parse_openephys_settings, _select_openephys_probe_info
-from probeinterface.neuropixels_tools import _slice_catalogue_probe, build_neuropixels_probe
+from probeinterface.neuropixels_tools import _slice_openephys_catalogue_probe, build_neuropixels_probe
 from probeinterface.testing import validate_probe_dict
 
 data_path = Path(__file__).absolute().parent.parent / "data" / "openephys"
 
 
+### HELPER FUNCTIONS ###
+def _build_probe_from_settings(settings_file, **kwargs):
+    """Helper: parse settings, select probe, build from catalogue, slice."""
+    probes_info = _parse_openephys_settings(settings_file)
+    info = _select_openephys_probe_info(probes_info, **kwargs)
+    full_probe = build_neuropixels_probe(info["probe_part_number"])
+    return _slice_openephys_catalogue_probe(full_probe, info)
+
+
+def _assert_contact_ids_match_canonical_pattern(probe, label=""):
+    """Assert that a probe's contact_ids are a subset of the canonical IDs from build_neuropixels_probe."""
+    part_number = probe.annotations["part_number"]
+    catalogue = build_neuropixels_probe(part_number)
+    catalogue_ids = set(catalogue.contact_ids)
+    probe_ids = set(probe.contact_ids)
+    assert probe_ids.issubset(
+        catalogue_ids
+    ), f"{label} ({part_number}): contact_ids not in canonical pattern: {probe_ids - catalogue_ids}"
+
+
+### TESTS ###
 def test_NP2_OE_1_0():
     # NP2 1-shank
     probeA = read_openephys(data_path / "OE_1.0_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA")
@@ -22,6 +43,8 @@ def test_NP2_OE_1_0():
     validate_probe_dict(probe_dict)
     assert probeA.get_shank_count() == 1
     assert probeA.get_contact_count() == 384
+    assert "adc_group" in probeA.contact_annotations
+    assert "adc_sample_order" in probeA.contact_annotations
 
 
 def test_NP2():
@@ -30,6 +53,8 @@ def test_NP2():
     probe_dict = probe.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     assert probe.get_shank_count() == 1
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
 
 def test_NP2_four_shank():
@@ -39,6 +64,8 @@ def test_NP2_four_shank():
     validate_probe_dict(probe_dict)
     # on this case, only shanks 2-3 are used
     assert probe.get_shank_count() == 2
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
 
 def test_NP_Ultra():
@@ -53,6 +80,8 @@ def test_NP_Ultra():
     assert probeD.get_contact_count() == 384
     # for this probe model, all channels are aligned
     assert len(np.unique(probeD.contact_positions[:, 0])) == 1
+    assert "adc_group" in probeD.contact_annotations
+    assert "adc_sample_order" in probeD.contact_annotations
 
 
 def test_probe_part_number_mismatch_with_catalogue():
@@ -79,6 +108,8 @@ def test_NP1_subset():
     assert probe_ap.get_shank_count() == 1
     assert "1.0" in probe_ap.description
     assert probe_ap.get_contact_count() == 200
+    assert "adc_group" in probe_ap.contact_annotations
+    assert "adc_sample_order" in probe_ap.contact_annotations
 
     probe_lf = read_openephys(data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-LFP")
     probe_dict = probe_lf.to_dict(array_as_list=True)
@@ -87,6 +118,9 @@ def test_NP1_subset():
     assert probe_lf.get_shank_count() == 1
     assert "1.0" in probe_lf.description
     assert len(probe_lf.contact_positions) == 200
+    assert "adc_group" in probe_lf.contact_annotations
+    assert "adc_sample_order" in probe_lf.contact_annotations
+    # raise
 
     # Not specifying the stream_name should raise an Exception, because both the ProbeA-AP and
     # ProbeA-LFP have custom channel selections
@@ -102,6 +136,8 @@ def test_multiple_probes():
 
     assert probeA.get_shank_count() == 1
     assert "1.0" in probeA.description
+    assert "adc_group" in probeA.contact_annotations
+    assert "adc_sample_order" in probeA.contact_annotations
 
     probeB = read_openephys(
         data_path / "OE_Neuropix-PXI-multi-probe" / "settings.xml",
@@ -111,6 +147,8 @@ def test_multiple_probes():
     validate_probe_dict(probe_dict)
 
     assert probeB.get_shank_count() == 1
+    assert "adc_group" in probeB.contact_annotations
+    assert "adc_sample_order" in probeB.contact_annotations
 
     probeC = read_openephys(
         data_path / "OE_Neuropix-PXI-multi-probe" / "settings.xml",
@@ -120,12 +158,16 @@ def test_multiple_probes():
     validate_probe_dict(probe_dict)
 
     assert probeC.get_shank_count() == 1
+    assert "adc_group" in probeC.contact_annotations
+    assert "adc_sample_order" in probeC.contact_annotations
 
     probeD = read_openephys(data_path / "OE_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeD")
     probe_dict = probeD.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
 
     assert probeD.get_shank_count() == 1
+    assert "adc_group" in probeD.contact_annotations
+    assert "adc_sample_order" in probeD.contact_annotations
 
     assert probeA.serial_number == "17131307831"
     assert probeB.serial_number == "20403311724"
@@ -162,6 +204,8 @@ def test_multiple_probes_enabled():
     validate_probe_dict(probe_dict)
 
     assert probe.get_shank_count() == 1
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
     probe = read_openephys(
         data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-enabled.xml", probe_name="ProbeB"
@@ -169,6 +213,8 @@ def test_multiple_probes_enabled():
     probe_dict = probe.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     assert probe.get_shank_count() == 4
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
 
 def test_multiple_probes_disabled():
@@ -179,6 +225,8 @@ def test_multiple_probes_disabled():
     probe_dict = probe.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     assert probe.get_shank_count() == 1
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
     # Fail as this is disabled:
     with pytest.raises(Exception) as e:
@@ -195,6 +243,8 @@ def test_np_opto_with_sync():
     validate_probe_dict(probe_dict)
     assert probe.get_shank_count() == 1
     assert probe.get_contact_count() == 384
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
 
 def test_older_than_06_format():
@@ -204,6 +254,9 @@ def test_older_than_06_format():
     probe_dict = probe.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     assert probe.get_shank_count() == 4
+    assert probe.get_contact_count() == 384
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
     ypos = probe.contact_positions[:, 1]
     assert np.min(ypos) >= 0
 
@@ -214,7 +267,8 @@ def test_multiple_signal_chains():
     probe = read_openephys(data_path / "OE_Neuropix-PXI-multiple-signalchains" / "settings.xml")
     probe_dict = probe.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
-
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
 def test_quadbase():
     # This dataset has a Neuropixels Quad Base (4 NP2 probes on different shanks)
@@ -225,6 +279,8 @@ def test_quadbase():
         assert probe.get_shank_count() == 1
         assert probe.get_contact_count() == 384
         assert set(probe.shank_ids) == set([str(i)])
+        assert "adc_group" in probe.contact_annotations
+        assert "adc_sample_order" in probe.contact_annotations
 
 
 def test_quadbase_custom_names():
@@ -240,6 +296,8 @@ def test_quadbase_custom_names():
         assert probe.get_contact_count() == 384
         assert set(probe.shank_ids) == set([str(i)])
         assert probe.name == f"{sn}-{i+1}"
+        assert "adc_group" in probe.contact_annotations
+        assert "adc_sample_order" in probe.contact_annotations
 
 
 def test_onebox():
@@ -249,6 +307,9 @@ def test_onebox():
     validate_probe_dict(probe_dict)
     assert probe.get_shank_count() == 1
     assert probe.get_contact_count() == 384
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
+
 
 
 def test_onix_np1():
@@ -262,6 +323,8 @@ def test_onix_np1():
     # bank A starts at y=0 and ends at y=3820
     assert np.min(probe_bankA.contact_positions[:, 1]) == 0
     assert np.max(probe_bankA.contact_positions[:, 1]) == 3820
+    assert "adc_group" in probe_bankA.contact_annotations
+    assert "adc_sample_order" in probe_bankA.contact_annotations
 
     probe_bankB = read_openephys(data_path / "OE_ONIX-NP" / "settings_bankB.xml")
     probe_dict = probe_bankB.to_dict(array_as_list=True)
@@ -272,6 +335,8 @@ def test_onix_np1():
     # bank B starts at y=3840 and ends at y=7660
     assert np.min(probe_bankB.contact_positions[:, 1]) == 3840
     assert np.max(probe_bankB.contact_positions[:, 1]) == 7660
+    assert "adc_group" in probe_bankB.contact_annotations
+    assert "adc_sample_order" in probe_bankB.contact_annotations
 
     probe_bankC = read_openephys(data_path / "OE_ONIX-NP" / "settings_bankC.xml")
     probe_dict = probe_bankC.to_dict(array_as_list=True)
@@ -282,10 +347,16 @@ def test_onix_np1():
     # bank C starts at y=7680 and ends at y=11520
     assert np.min(probe_bankC.contact_positions[:, 1]) == 5760
     assert np.max(probe_bankC.contact_positions[:, 1]) == 9580
+    assert "adc_group" in probe_bankC.contact_annotations
+    assert "adc_sample_order" in probe_bankC.contact_annotations
 
     # for the tetrode configuration, we expect to have 96 tetrodes
     probe_tetrodes = read_openephys(data_path / "OE_ONIX-NP" / "settings_tetrodes.xml")
     probe_dict = probe_tetrodes.to_dict(array_as_list=True)
+
+    assert "adc_group" in probe_tetrodes.contact_annotations
+    assert "adc_sample_order" in probe_tetrodes.contact_annotations
+
     validate_probe_dict(probe_dict)
     contact_positions = probe_tetrodes.contact_positions
     distances = np.sqrt(np.sum((contact_positions[:, np.newaxis] - contact_positions[np.newaxis, :]) ** 2, axis=2))
@@ -314,6 +385,8 @@ def test_onix_np2():
     validate_probe_dict(probe_dict)
     assert probe_np2_probe0.get_contact_count() == 384
     assert probe_np2_probe0.get_shank_count() == 1
+    assert "adc_group" in probe_np2_probe0.contact_annotations
+    assert "adc_sample_order" in probe_np2_probe0.contact_annotations
 
     probe_np2_probe1 = read_openephys(
         data_path / "OE_ONIX-NP" / "settings_NP2.xml", probe_name="PortA-Neuropixels2.0eHeadstage-Neuropixels2.0-Probe1"
@@ -322,6 +395,8 @@ def test_onix_np2():
     validate_probe_dict(probe_dict)
     assert probe_np2_probe1.get_contact_count() == 384
     assert probe_np2_probe1.get_shank_count() == 4
+    assert "adc_group" in probe_np2_probe1.contact_annotations
+    assert "adc_sample_order" in probe_np2_probe1.contact_annotations
 
     for i in range(4):
         probe_0 = read_openephys(
@@ -336,6 +411,11 @@ def test_onix_np2():
         )
         probe_dict = probe_1.to_dict(array_as_list=True)
         validate_probe_dict(probe_dict)
+        assert "adc_group" in probe_0.contact_annotations
+        assert "adc_sample_order" in probe_0.contact_annotations
+        assert "adc_group" in probe_1.contact_annotations
+        assert "adc_sample_order" in probe_1.contact_annotations
+
 
         # all should have 384 contacts and one shank, except for i == 3, where electrodes are
         # selected on all 4 shanks
@@ -348,14 +428,6 @@ def test_onix_np2():
             assert probe_1.get_shank_count() == 4
 
 
-def _build_probe_from_settings(settings_file, **kwargs):
-    """Helper: parse settings, select probe, build from catalogue, slice."""
-    probes_info = _parse_openephys_settings(settings_file)
-    info = _select_openephys_probe_info(probes_info, **kwargs)
-    full_probe = build_neuropixels_probe(info["probe_part_number"])
-    return _slice_catalogue_probe(full_probe, info)
-
-
 def test_build_openephys_probe_no_wiring():
     # Path A (SELECTED_ELECTRODES): ONIX dataset
     probe_a = _build_probe_from_settings(data_path / "OE_ONIX-NP" / "settings_bankA.xml")
@@ -366,17 +438,6 @@ def test_build_openephys_probe_no_wiring():
     probe_b = _build_probe_from_settings(data_path / "OE_Neuropix-PXI" / "settings.xml")
     assert probe_b is not None
     assert probe_b.device_channel_indices is None
-
-
-def _assert_contact_ids_match_canonical_pattern(probe, label=""):
-    """Assert that a probe's contact_ids are a subset of the canonical IDs from build_neuropixels_probe."""
-    part_number = probe.annotations["part_number"]
-    catalogue = build_neuropixels_probe(part_number)
-    catalogue_ids = set(catalogue.contact_ids)
-    probe_ids = set(probe.contact_ids)
-    assert probe_ids.issubset(
-        catalogue_ids
-    ), f"{label} ({part_number}): contact_ids not in canonical pattern: {probe_ids - catalogue_ids}"
 
 
 def test_read_openephys_contact_ids_match_canonical_pattern():
@@ -519,10 +580,12 @@ def test_read_openephys_with_oebin_sync_channel_filtered():
 
     probe = read_openephys(settings, stream_name="Neuropix-PXI-100.ProbeA-AP", oebin_file=oebin)
     assert probe.get_contact_count() == 384
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
 
-def test_read_openephys_with_oebin_plugin_channel_key():
-    """Verify that plugin_channel_key annotation is set when using oebin_file."""
+def test_read_openephys_with_oebin_settings_channel_key():
+    """Verify that settings_channel_key annotation is set when using oebin_file."""
     settings = data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "settings.xml"
     oebin = (
         data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "experiment1" / "recording1" / "structure.oebin"
@@ -530,10 +593,12 @@ def test_read_openephys_with_oebin_plugin_channel_key():
     stream_name = "Neuropix-PXI-100.ProbeA"
 
     probe = read_openephys(settings, stream_name=stream_name, oebin_file=oebin)
-    keys = probe.contact_annotations.get("plugin_channel_key", None)
-    assert keys is not None, "plugin_channel_key annotation not set"
+    keys = probe.contact_annotations.get("settings_channel_key", None)
+    assert keys is not None, "settings_channel_key annotation not set"
     assert len(keys) == probe.get_contact_count()
     assert all(k.startswith("CH") for k in keys)
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
 
 def test_read_openephys_with_oebin_no_matching_stream():
@@ -580,6 +645,8 @@ def test_read_openephys_multishank_wiring():
 
     assert probe.get_contact_count() == 384
     assert probe.device_channel_indices is not None
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
     # Wiring invariant: for each contact, the oebin's electrode_index at the
     # assigned binary column must match the contact's global electrode index.
