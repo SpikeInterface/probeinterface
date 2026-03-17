@@ -1728,9 +1728,7 @@ def read_openephys(
         probe = probe.get_slice(chans_saved)
 
     if oebin_file is not None:
-        device_channel_indices = _compute_wiring_from_oebin(
-            probe, oebin_file, stream_name, settings_file
-        )
+        device_channel_indices = _compute_wiring_from_oebin(probe, oebin_file, stream_name, settings_file)
         probe.set_device_channel_indices(device_channel_indices)
     else:
         probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
