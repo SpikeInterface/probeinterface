@@ -435,7 +435,6 @@ def test_read_openephys_contact_ids_match_canonical_pattern():
         _assert_contact_ids_match_canonical_pattern(probe, f"QuadBase ProbeC-{i+1}")
 
 
-
 def _read_oebin_electrode_indices(oebin_file, stream_name):
     """Read electrode_index metadata from an oebin file for a given stream."""
     with open(oebin_file) as f:
