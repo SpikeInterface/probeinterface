@@ -270,6 +270,7 @@ def test_multiple_signal_chains():
     assert "adc_group" in probe.contact_annotations
     assert "adc_sample_order" in probe.contact_annotations
 
+
 def test_quadbase():
     # This dataset has a Neuropixels Quad Base (4 NP2 probes on different shanks)
     for i in range(4):
@@ -309,7 +310,6 @@ def test_onebox():
     assert probe.get_contact_count() == 384
     assert "adc_group" in probe.contact_annotations
     assert "adc_sample_order" in probe.contact_annotations
-
 
 
 def test_onix_np1():
@@ -415,7 +415,6 @@ def test_onix_np2():
         assert "adc_sample_order" in probe_0.contact_annotations
         assert "adc_group" in probe_1.contact_annotations
         assert "adc_sample_order" in probe_1.contact_annotations
-
 
         # all should have 384 contacts and one shank, except for i == 3, where electrodes are
         # selected on all 4 shanks
