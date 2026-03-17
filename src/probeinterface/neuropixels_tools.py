@@ -491,14 +491,21 @@ def _annotate_contacts_from_mux_table(probe: Probe, adc_groups_array: np.array):
     which describe how each contact maps to the ADCs during recording.
     The function annotates the probe in place.
 
+    This function assumes that contact index ``i`` in the probe corresponds to
+    readout channel ``i``. This holds when the probe has been sliced in readout
+    channel order, which is the case for both ``read_spikeglx`` (IMRO order) and
+    ``read_openephys`` (sorted by channel number).
+
     Parameters
     ----------
     probe : Probe
-        The Probe object to annotate. Must have device_channel_indices set.
+        The Probe object to annotate. Contacts must be in readout channel order.
     adc_groups_array : np.array
         The ADC groups array from the probe features, which describes how readout channels map to ADCs.
     """
-    # Map readout channels to ADC groups and sample order
+    # Map readout channels to ADC groups and sample order.
+    # The indices in adc_groups_array are readout channel numbers, and we
+    # use them directly as contact indices into the probe.
     num_readout_channels = probe.get_contact_count()
     adc_groups = np.zeros(num_readout_channels, dtype="int64")
     adc_sample_order = np.zeros(num_readout_channels, dtype="int64")
