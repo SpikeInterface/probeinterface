@@ -1606,11 +1606,10 @@ def read_openephys(
     mutually exclusive selectors (``stream_name``, ``probe_name``, or
     ``serial_number``) to choose which probe to return.
 
-    By default the function returns a probe with identity wiring
-    (``device_channel_indices = [0, 1, 2, ...]``). When ``oebin_file`` is also
-    provided, the function reads the structure.oebin to compute
-    ``device_channel_indices`` that map each probe contact to its column in
-    the binary data file.
+    By default the function returns a probe without ``device_channel_indices``
+    set. When ``oebin_file`` is also provided, the function reads the
+    structure.oebin to compute ``device_channel_indices`` that map each probe
+    contact to its column in the binary data file.
 
     Open Ephys versions 0.5.x, 0.6.x, and 1.0 are supported. For version
     0.6.x+, probe names are inferred from ``<STREAM>`` elements. For version
@@ -1626,12 +1625,14 @@ def read_openephys(
         for passing the correct one.
     stream_name : str or None
         Select a probe by substring match against probe names derived from
-        ``<STREAM>`` elements. For example, if the settings file has probes
-        ``"ProbeA"``, ``"ProbeB"``, ``"ProbeC"``, passing
-        ``stream_name="Record Node 104#Neuropix-PXI-100.ProbeC-AP"`` selects
-        ProbeC because ``"ProbeC"`` is a substring of the stream name. This is
-        what SpikeInterface passes (the neo stream name). Mutually exclusive
-        with ``probe_name`` and ``serial_number``.
+        ``<STREAM>`` elements in the settings.xml. For example, if the
+        settings file has probes ``"ProbeA"``, ``"ProbeB"``, ``"ProbeC"``,
+        any string containing ``"ProbeC"`` as a substring will select that
+        probe. This accepts the oebin folder name
+        (e.g. ``"Neuropix-PXI-100.ProbeC-AP"``), the short plugin stream
+        name (e.g. ``"ProbeC"``), or any other string that contains the
+        probe name. Mutually exclusive with ``probe_name`` and
+        ``serial_number``.
     probe_name : str or None
         Select a probe by exact match against its name (e.g. ``"ProbeB"``).
         Useful for interactive use. Mutually exclusive with ``stream_name``
@@ -1658,7 +1659,8 @@ def read_openephys(
     Returns
     -------
     probe : Probe or None
-        The probe with ``device_channel_indices`` set. Returns None if
+        The probe geometry. When ``oebin_file`` is provided,
+        ``device_channel_indices`` are set. Returns None if
         ``raise_error`` is False and an error occurs.
 
     Notes
@@ -1689,9 +1691,7 @@ def read_openephys(
         device_channel_indices = _compute_device_channel_indices_from_oebin(
             probe, oebin_file, stream_name, settings_file
         )
-    else:
-        device_channel_indices = np.arange(probe.get_contact_count())
-    probe.set_device_channel_indices(device_channel_indices)
+        probe.set_device_channel_indices(device_channel_indices)
     return probe
 
 

@@ -435,23 +435,6 @@ def test_read_openephys_contact_ids_match_canonical_pattern():
         _assert_contact_ids_match_canonical_pattern(probe, f"QuadBase ProbeC-{i+1}")
 
 
-def test_read_openephys_backward_compatible():
-    # Verify read_openephys still produces valid probes with device_channel_indices set
-    # Path B dataset
-    probe = read_openephys(data_path / "OE_Neuropix-PXI" / "settings.xml")
-    probe_dict = probe.to_dict(array_as_list=True)
-    validate_probe_dict(probe_dict)
-    assert probe.device_channel_indices is not None
-    assert len(probe.device_channel_indices) == probe.get_contact_count()
-    assert np.array_equal(probe.device_channel_indices, np.arange(probe.get_contact_count()))
-
-    # Path A dataset
-    probe_a = read_openephys(data_path / "OE_1.0_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA")
-    probe_dict = probe_a.to_dict(array_as_list=True)
-    validate_probe_dict(probe_dict)
-    assert probe_a.device_channel_indices is not None
-    assert np.array_equal(probe_a.device_channel_indices, np.arange(probe_a.get_contact_count()))
-
 
 def _read_oebin_electrode_indices(oebin_file, stream_name):
     """Read electrode_index metadata from an oebin file for a given stream."""
