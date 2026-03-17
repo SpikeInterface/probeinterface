@@ -1583,39 +1583,43 @@ def _compute_device_channel_indices_from_oebin(
                 oebin_electrode_indices.append(electrode_index)
                 break
 
-    if len(oebin_electrode_indices) != num_contacts:
-        raise ValueError(
-            f"Channel count mismatch: oebin '{oebin_file}' has {len(oebin_electrode_indices)} electrode channels "
-            f"but probe from settings '{settings_file}' has {num_contacts} contacts."
-        )
-
-    # Check if electrode_index values are valid (not all zeros).
-    # All-zero values occur in recordings from neuropixels-pxi < 0.5.0.
-    has_valid_electrode_indices = not all(ei == 0 for ei in oebin_electrode_indices)
-
-    if has_valid_electrode_indices:
-        # Get electrodes_per_shank from probe metadata
-        part_number = probe.annotations["part_number"]
-        probe_features = _load_np_probe_features()
-        pt_metadata, _, _ = get_probe_metadata_from_probe_features(probe_features, part_number)
-        electrodes_per_shank = pt_metadata["cols_per_shank"] * pt_metadata["rows_per_shank"]
-
-        # Map each probe contact to its binary file column using electrode_index
-        electrode_index_to_column = {ei: col for col, ei in enumerate(oebin_electrode_indices)}
-        device_channel_indices = np.zeros(num_contacts, dtype=int)
-        for i, contact_id in enumerate(probe.contact_ids):
-            electrode_index = _contact_id_to_global_electrode_index(contact_id, electrodes_per_shank)
-            if electrode_index not in electrode_index_to_column:
-                raise ValueError(
-                    f"Contact {contact_id} has global electrode_index {electrode_index} "
-                    f"not found in oebin '{oebin_file}'. This indicates a mismatch between "
-                    f"the probe configuration in settings and the recorded binary data."
-                )
-            device_channel_indices[i] = electrode_index_to_column[electrode_index]
-    else:
-        # Fallback: identity wiring. The binary .dat file is written in channel-number order
-        # (confirmed in https://github.com/open-ephys-plugins/neuropixels-pxi/issues/39).
+    # If electrode_index metadata is not found, fall back to identity mapping (assume binary file is in channel-number order).
+    if len(oebin_electrode_indices) == 0:
         device_channel_indices = np.arange(num_contacts)
+    else:
+        if len(oebin_electrode_indices) != num_contacts:
+            raise ValueError(
+                f"Channel count mismatch: oebin '{oebin_file}' has {len(oebin_electrode_indices)} electrode channels "
+                f"but probe from settings '{settings_file}' has {num_contacts} contacts."
+            )
+
+        # Check if electrode_index values are valid (not all zeros).
+        # All-zero values occur in recordings from neuropixels-pxi < 0.5.0.
+        has_valid_electrode_indices = not all(ei == 0 for ei in oebin_electrode_indices)
+
+        if has_valid_electrode_indices:
+            # Get electrodes_per_shank from probe metadata
+            part_number = probe.annotations["part_number"]
+            probe_features = _load_np_probe_features()
+            pt_metadata, _, _ = get_probe_metadata_from_probe_features(probe_features, part_number)
+            electrodes_per_shank = pt_metadata["cols_per_shank"] * pt_metadata["rows_per_shank"]
+
+            # Map each probe contact to its binary file column using electrode_index
+            electrode_index_to_column = {ei: col for col, ei in enumerate(oebin_electrode_indices)}
+            device_channel_indices = np.zeros(num_contacts, dtype=int)
+            for i, contact_id in enumerate(probe.contact_ids):
+                electrode_index = _contact_id_to_global_electrode_index(contact_id, electrodes_per_shank)
+                if electrode_index not in electrode_index_to_column:
+                    raise ValueError(
+                        f"Contact {contact_id} has global electrode_index {electrode_index} "
+                        f"not found in oebin '{oebin_file}'. This indicates a mismatch between "
+                        f"the probe configuration in settings and the recorded binary data."
+                    )
+                device_channel_indices[i] = electrode_index_to_column[electrode_index]
+        else:
+            # Fallback: identity wiring. The binary .dat file is written in channel-number order
+            # (confirmed in https://github.com/open-ephys-plugins/neuropixels-pxi/issues/39).
+            device_channel_indices = np.arange(num_contacts)
 
     return device_channel_indices
 
