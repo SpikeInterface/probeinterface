@@ -677,14 +677,7 @@ def test_read_openephys_onebox_nonsequential_wiring():
     have sequential order where identity wiring is accidentally correct.
     """
     settings = data_path / "OE_OneBox-NP2014-binary" / "Record_Node_101" / "settings.xml"
-    oebin = (
-        data_path
-        / "OE_OneBox-NP2014-binary"
-        / "Record_Node_101"
-        / "experiment1"
-        / "recording1"
-        / "structure.oebin"
-    )
+    oebin = data_path / "OE_OneBox-NP2014-binary" / "Record_Node_101" / "experiment1" / "recording1" / "structure.oebin"
     stream_name = "OneBox-111.ProbeA"
 
     probe = read_openephys(settings, stream_name=stream_name, oebin_file=oebin)
