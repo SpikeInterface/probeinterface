@@ -1581,11 +1581,16 @@ def _compute_wiring_from_oebin(
     with open(oebin_file, "r") as f:
         oebin = json.load(f)
 
+    # Neo/SpikeInterface prepends "Record Node NNN#" to stream names.
+    # Strip that prefix so we can match against the raw oebin folder_name.
+    is_neo_stream = "#" in stream_name
+    oebin_stream_name = stream_name.split("#")[-1] if is_neo_stream else stream_name
+
     continuous_streams = oebin.get("continuous", [])
     matched_stream = None
     for cs in continuous_streams:
-        folder_name = cs.get("folder_name", "")
-        if stream_name in folder_name or folder_name in stream_name:
+        folder_name = cs.get("folder_name", "").rstrip("/")
+        if folder_name == oebin_stream_name:
             matched_stream = cs
             break
 

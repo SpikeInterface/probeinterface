@@ -499,9 +499,11 @@ def _read_oebin_electrode_indices(oebin_file, stream_name):
     """Read electrode_index metadata from an oebin file for a given stream."""
     with open(oebin_file) as f:
         oebin = json.load(f)
+    is_neo_stream = "#" in stream_name
+    oebin_stream_name = stream_name.split("#")[-1] if is_neo_stream else stream_name
     for cs in oebin.get("continuous", []):
-        folder_name = cs.get("folder_name", "")
-        if stream_name in folder_name or folder_name in stream_name:
+        folder_name = cs.get("folder_name", "").rstrip("/")
+        if folder_name == oebin_stream_name:
             indices = []
             for ch in cs.get("channels", []):
                 for m in ch.get("channel_metadata", []):
