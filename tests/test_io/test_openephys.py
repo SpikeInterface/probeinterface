@@ -665,6 +665,55 @@ def test_read_openephys_multishank_wiring():
         )
 
 
+def test_read_openephys_onebox_nonsequential_wiring():
+    """Verify wiring for OneBox dataset with non-sequential oebin channel order.
+
+    The OneBox plugin writes channels in hardware multiplexing order (CH334, CH332,
+    CH330, ...) rather than sequential order (CH0, CH1, CH2, ...). This means identity
+    wiring is wrong and the electrode_index metadata in the oebin is required.
+
+    This dataset (from SpikeInterface issue #4394) is the only test data where
+    non-sequential oebin channel order occurs. All Neuropix-PXI datasets happen to
+    have sequential order where identity wiring is accidentally correct.
+    """
+    settings = data_path / "OE_OneBox-NP2014-binary" / "Record_Node_101" / "settings.xml"
+    oebin = (
+        data_path
+        / "OE_OneBox-NP2014-binary"
+        / "Record_Node_101"
+        / "experiment1"
+        / "recording1"
+        / "structure.oebin"
+    )
+    stream_name = "OneBox-111.ProbeA"
+
+    probe = read_openephys(settings, stream_name=stream_name, oebin_file=oebin)
+
+    assert probe.get_contact_count() == 384
+    assert probe.device_channel_indices is not None
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
+
+    # Wiring must NOT be identity (the key property of this dataset)
+    assert not np.array_equal(probe.device_channel_indices, np.arange(384))
+
+    # Wiring invariant
+    oebin_electrode_indices = _read_oebin_electrode_indices(oebin, stream_name)
+
+    from probeinterface.neuropixels_tools import _contact_id_to_global_electrode_index
+
+    # NP2014: 2 cols * 640 rows = 1280 electrodes per shank
+    electrodes_per_shank = 1280
+
+    for i, contact_id in enumerate(probe.contact_ids):
+        global_electrode_index = _contact_id_to_global_electrode_index(contact_id, electrodes_per_shank)
+        column = probe.device_channel_indices[i]
+        assert oebin_electrode_indices[column] == global_electrode_index, (
+            f"Contact {i} ({contact_id}): expected global electrode_index {global_electrode_index} "
+            f"at column {column}, got {oebin_electrode_indices[column]}"
+        )
+
+
 if __name__ == "__main__":
     # test_multiple_probes()
     # test_NP_Ultra()
