@@ -783,6 +783,11 @@ def _contact_id_to_global_electrode_index(contact_id: str, electrodes_per_shank:
     This is the inverse of `_build_canonical_contact_id`. For multi-shank probes,
     the global index is ``shank_id * electrodes_per_shank + local_electrode_id``.
 
+    This formula works because the neuropixels-pxi plugin assigns electrode indices
+    in left-to-right, bottom-to-top, left-shank-to-right-shank order (confirmed
+    by Josh Siegle). Shank 0 owns indices 0 to electrodes_per_shank-1, shank 1
+    owns the next block, and so on.
+
     Parameters
     ----------
     contact_id : str
@@ -1520,7 +1525,7 @@ def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:
     annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
 
-def _compute_device_channel_indices_from_oebin(
+def _compute_wiring_from_oebin(
     probe: Probe,
     oebin_file: str | Path,
     stream_name: str,
@@ -1723,7 +1728,7 @@ def read_openephys(
         probe = probe.get_slice(chans_saved)
 
     if oebin_file is not None:
-        device_channel_indices = _compute_device_channel_indices_from_oebin(
+        device_channel_indices = _compute_wiring_from_oebin(
             probe, oebin_file, stream_name, settings_file
         )
         probe.set_device_channel_indices(device_channel_indices)
