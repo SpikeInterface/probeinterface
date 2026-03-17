@@ -1575,11 +1575,11 @@ def _compute_device_channel_indices_from_oebin(
         for i, contact_id in enumerate(probe.contact_ids):
             electrode_index = _contact_id_to_global_electrode_index(contact_id, electrodes_per_shank)
             if electrode_index not in electrode_index_to_column:
-                warnings.warn(
-                    f"Contact {contact_id} has electrode_index {electrode_index} not found in oebin. "
-                    f"Falling back to identity wiring."
+                raise ValueError(
+                    f"Contact {contact_id} has global electrode_index {electrode_index} "
+                    f"not found in oebin '{oebin_file}'. This indicates a mismatch between "
+                    f"the probe configuration in settings and the recorded binary data."
                 )
-                return np.arange(num_contacts)
             device_channel_indices[i] = electrode_index_to_column[electrode_index]
     else:
         # Fallback: identity wiring. The binary .dat file is written in channel-number order
