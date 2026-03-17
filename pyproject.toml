@@ -59,6 +59,14 @@ docs = [
     "pandas",
 ]
 
+dev = [
+    {include-group = "test"},
+    {include-group = "docs"},
+    "pre-commit",
+    "tqdm",  # used in resources/generate_cambridgeneurotech_library.py
+    "shapely",  # used in resources/generate_cambridgeneurotech_library.py
+]
+
 [tool.pytest.ini_options]
 markers = [
     "library",
