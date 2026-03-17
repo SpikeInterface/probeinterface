@@ -533,7 +533,7 @@ def _annotate_contacts_from_mux_table(probe: Probe, adc_groups_array: np.array):
     probe.annotate_contacts(adc_sample_order=adc_sample_order)
 
 
-def annotate_probe_with_adc_sampling_info(probe: Probe, adc_sampling_table: str | None):
+def _annotate_probe_with_adc_sampling_info(probe: Probe, adc_sampling_table: str | None):
     """
     Annotate a Probe object with ADC group and sample order information based on the ADC sampling table.
 
@@ -971,7 +971,7 @@ def read_spikeglx(file: str | Path) -> Probe:
     # apply the mapping. This must be done here (not in build_neuropixels_probe)
     # because the table indices are readout channel indices, not electrode indices.
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
-    annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
+    _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
     # ===== 7. Slice to saved channels (if subset was saved) =====
     # This is DIFFERENT from IMRO selection: IMRO selects which electrodes to acquire,
@@ -1543,7 +1543,7 @@ def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:
         probe.annotate_contacts(settings_channel_key=probe_info["settings_channel_keys"])
 
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
-    annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
+    _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
 
 def _compute_wiring_from_oebin(
