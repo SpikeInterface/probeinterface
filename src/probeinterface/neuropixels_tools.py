@@ -486,22 +486,36 @@ def _annotate_contacts_from_mux_table(probe: Probe, adc_groups_array: np.array):
     """
     Annotate a Probe object with ADC group and sample order information based on the MUX table.
 
-    This function is used when building a complete Neuropixels probe from the ProbeTable specifications
-    (via build_neuropixels_probe) to assign per-contact annotations for adc_group and adc_sample_order,
-    which describe how each contact maps to the ADCs during recording.
-    The function annotates the probe in place.
+    Neuropixels probes multiplex their electrodes through a fixed set of ADCs. For
+    example, an NP2000 probe has 24 ADCs, each sampling 16 readout channels in
+    sequence. The ``adc_groups_array`` encodes this mapping: each row is one sampling
+    time slot, and the values are readout channel numbers that are sampled
+    simultaneously (one per ADC). For example, if row 0 contains
+    ``[0, 1, 32, 33, 64, 65, ...]``, it means readout channels 0, 1, 32, 33, 64, 65
+    are all sampled at the same time by different ADCs.
 
-    This function assumes that contact index ``i`` in the probe corresponds to
-    readout channel ``i``. This holds when the probe has been sliced in readout
-    channel order, which is the case for both ``read_spikeglx`` (IMRO order) and
-    ``read_openephys`` (sorted by channel number).
+    This function uses those readout channel numbers directly as indices into the
+    probe's contact array to assign two per-contact annotations:
+
+    - ``adc_group``: which ADC samples this contact (column index in the table)
+    - ``adc_sample_order``: at which time step within the ADC's cycle this contact
+      is sampled (row index in the table)
+
+    This means contact index ``i`` in the probe must correspond to readout channel
+    ``i``. This holds when the probe has been sliced in readout channel order, which
+    is the case for both ``read_spikeglx`` (IMRO table lists channels in readout
+    order 0-383) and ``read_openephys`` (channels sorted by ``CH`` number, which
+    corresponds to readout channel number). If the probe contacts were reordered
+    (e.g., sorted by position on the shank), these annotations would be wrong.
 
     Parameters
     ----------
     probe : Probe
         The Probe object to annotate. Contacts must be in readout channel order.
     adc_groups_array : np.array
-        The ADC groups array from the probe features, which describes how readout channels map to ADCs.
+        Array shaped ``(num_time_slots, num_adcs)`` where each value is a readout
+        channel number. Readout channel at ``adc_groups_array[slot, adc]`` is
+        sampled by ADC ``adc`` at time slot ``slot``.
     """
     # Map readout channels to ADC groups and sample order.
     # The indices in adc_groups_array are readout channel numbers, and we
