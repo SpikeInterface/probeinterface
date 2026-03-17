@@ -1723,6 +1723,8 @@ def read_openephys(
             probe, oebin_file, stream_name, settings_file
         )
         probe.set_device_channel_indices(device_channel_indices)
+    else:
+        probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
     return probe
 
 
