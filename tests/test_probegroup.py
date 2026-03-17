@@ -92,6 +92,30 @@ def test_probegroup_allows_duplicate_positions_across_probes():
     assert len(group.probes) == 2
 
 
+def test_set_contact_ids_rejects_within_probe_duplicates():
+    """Setting duplicate contact_ids within a single probe raises ValueError."""
+    from probeinterface import Probe
+
+    positions = np.array([[0, 0], [10, 10]])
+    probe = Probe(ndim=2, si_units="um")
+    probe.set_contacts(positions=positions, shapes="circle", shape_params={"radius": 5})
+
+    with pytest.raises(ValueError, match="unique within a Probe"):
+        probe.set_contact_ids(["a", "a"])
+
+
+def test_set_contact_ids_rejects_wrong_size():
+    """Setting contact_ids with wrong count raises ValueError."""
+    from probeinterface import Probe
+
+    positions = np.array([[0, 0], [10, 10]])
+    probe = Probe(ndim=2, si_units="um")
+    probe.set_contacts(positions=positions, shapes="circle", shape_params={"radius": 5})
+
+    with pytest.raises(ValueError, match="do not have the same size"):
+        probe.set_contact_ids(["a", "b", "c"])
+
+
 if __name__ == "__main__":
     test_probegroup()
     # ~ test_probegroup_3d()
