@@ -1599,55 +1599,72 @@ def read_openephys(
     raise_error: bool = True,
 ) -> Probe:
     """
-    Read probe positions from Open Ephys folder when using the Neuropix-PXI plugin.
-    The reader assumes that the NP_PROBE fields are available in the settings file.
-    Open Ephys versions 0.5.x and 0.6.x are supported:
-    * For version 0.6.x, the probe names are inferred from the STREAM field. Probe
-      information is then populated sequentially with the NP_PROBE fields.
-    * For version 0.5.x, STREAMs are not available. In this case, if multiple probes
-      are available, they are named sequentially based on the nodeId. E.g. "100.0",
-      "100.1". These substrings are used for selection.
+    Read a Neuropixels probe geometry from an Open Ephys settings.xml file.
 
-    When ``oebin_file`` is provided, the function also reads the structure.oebin to
-    compute ``device_channel_indices`` that map each probe contact to its column in
-    the binary data file. This is required for correct channel ordering when reading
-    binary recordings.
+    A single settings.xml can describe multiple probes (one ``<NP_PROBE>`` element
+    per probe). When the file contains more than one probe, use one of the three
+    mutually exclusive selectors (``stream_name``, ``probe_name``, or
+    ``serial_number``) to choose which probe to return.
+
+    By default the function returns a probe with identity wiring
+    (``device_channel_indices = [0, 1, 2, ...]``). When ``oebin_file`` is also
+    provided, the function reads the structure.oebin to compute
+    ``device_channel_indices`` that map each probe contact to its column in
+    the binary data file.
+
+    Open Ephys versions 0.5.x, 0.6.x, and 1.0 are supported. For version
+    0.6.x+, probe names are inferred from ``<STREAM>`` elements. For version
+    0.5.x (no ``<STREAM>`` elements), probes are named sequentially based on
+    the processor's ``nodeId`` (e.g. ``"100.0"``, ``"100.1"``).
 
     Parameters
     ----------
-    settings_file :  Path, str, or None
-        If more than one settings.xml file is in the folder structure, this argument
-        is required to indicate which settings file to use
+    settings_file : Path or str
+        Path to the Open Ephys settings.xml file. Each experiment under a
+        Record Node has its own settings file (``settings.xml`` for experiment 1,
+        ``settings_2.xml`` for experiment 2, etc.). The caller is responsible
+        for passing the correct one.
     stream_name : str or None
-        If more than one probe is used, the 'stream_name' indicates which probe to load base on the
-        stream. For example, if there are 3 probes ('ProbeA', 'ProbeB', ProbeC) and the stream_name is
-        contains the substring 'ProbeC' (e.g. 'my-stream-ProbeC'), then the probe associated with
-        ProbeC is returned. If this argument is used, the 'probe_name' and 'serial_number' must be None.
+        Select a probe by substring match against probe names derived from
+        ``<STREAM>`` elements. For example, if the settings file has probes
+        ``"ProbeA"``, ``"ProbeB"``, ``"ProbeC"``, passing
+        ``stream_name="Record Node 104#Neuropix-PXI-100.ProbeC-AP"`` selects
+        ProbeC because ``"ProbeC"`` is a substring of the stream name. This is
+        what SpikeInterface passes (the neo stream name). Mutually exclusive
+        with ``probe_name`` and ``serial_number``.
     probe_name : str or None
-        If more than one probe is used, the 'probe_name' indicates which probe to load base on the
-        probe name (e.g. "ProbeB"). If this argument is used, the 'stream_name' and 'serial_number'
-        must be None.
+        Select a probe by exact match against its name (e.g. ``"ProbeB"``).
+        Useful for interactive use. Mutually exclusive with ``stream_name``
+        and ``serial_number``.
     serial_number : str or None
-        If more than one probe is used, the 'serial_number' indicates which probe to load base on the
-        serial number. If this argument is used, the 'stream_name' and 'probe_name'
-        must be None.
+        Select a probe by exact match against its serial number. Useful for
+        automated pipelines that track probes by hardware serial. Mutually
+        exclusive with ``stream_name`` and ``probe_name``.
     oebin_file : Path, str, or None
-        Path to the structure.oebin JSON file. When provided, ``stream_name`` is
-        required and ``device_channel_indices`` are computed from the oebin's
-        ``electrode_index`` metadata. When None, identity wiring is used.
-    fix_x_position_for_oe_5: bool
-        The neuropixels PXI plugin in the open-ephys < 0.6.0 contains a bug in the y position. This option allow to fix it.
-    raise_error: bool
-        If True, any error would raise an exception. If False, None is returned. Default True
-
-    Note
-    ----
-    The electrode positions are only available when recording using the Neuropix-PXI plugin version >= 0.3.3
+        Path to the structure.oebin JSON file for a specific recording. When
+        provided, ``stream_name`` is required. The oebin's ``electrode_index``
+        metadata is used to compute ``device_channel_indices`` mapping each
+        probe contact to its binary file column. When None, identity wiring
+        is used.
+    fix_x_position_for_oe_5 : bool
+        Correct a y-position bug in the Neuropix-PXI plugin for Open Ephys
+        < 0.6.0, where multi-shank probe y-coordinates included an erroneous
+        shank pitch offset. Despite the parameter name, this corrects the y
+        (not x) position. Default True.
+    raise_error : bool
+        If True, any error raises an exception. If False, None is returned.
+        Default True.
 
     Returns
     -------
-    probe : Probe object
+    probe : Probe or None
+        The probe with ``device_channel_indices`` set. Returns None if
+        ``raise_error`` is False and an error occurs.
 
+    Notes
+    -----
+    Electrode positions are only available when recording with the
+    Neuropix-PXI plugin version >= 0.3.3.
     """
     if oebin_file is not None and stream_name is None:
         raise ValueError("stream_name is required when oebin_file is provided.")
@@ -1676,46 +1693,6 @@ def read_openephys(
         device_channel_indices = np.arange(probe.get_contact_count())
     probe.set_device_channel_indices(device_channel_indices)
     return probe
-
-
-def read_openephys_binary(
-    settings_file: str | Path,
-    oebin_file: str | Path,
-    stream_name: str,
-    fix_x_position_for_oe_5: bool = True,
-) -> Probe:
-    """
-    Read probe positions from an Open Ephys binary format recording.
-
-    .. deprecated::
-        Use ``read_openephys(..., oebin_file=...)`` instead.
-
-    Parameters
-    ----------
-    settings_file : Path or str
-        Path to the Open Ephys settings.xml file.
-    oebin_file : Path or str
-        Path to the structure.oebin JSON file.
-    stream_name : str
-        Stream name to select which probe and oebin stream to use.
-    fix_x_position_for_oe_5 : bool
-        Fix a y-position bug in Open Ephys < 0.6.0. Default True.
-
-    Returns
-    -------
-    probe : Probe
-    """
-    warnings.warn(
-        "read_openephys_binary is deprecated. Use read_openephys(..., oebin_file=...) instead.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    return read_openephys(
-        settings_file,
-        stream_name=stream_name,
-        oebin_file=oebin_file,
-        fix_x_position_for_oe_5=fix_x_position_for_oe_5,
-    )
 
 
 def get_saved_channel_indices_from_openephys_settings(

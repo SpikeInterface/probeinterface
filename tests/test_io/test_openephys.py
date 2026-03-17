@@ -9,7 +9,7 @@ import json
 
 from probeinterface import read_openephys
 from probeinterface.neuropixels_tools import _parse_openephys_settings, _select_openephys_probe_info
-from probeinterface.neuropixels_tools import _slice_catalogue_probe, build_neuropixels_probe, read_openephys_binary
+from probeinterface.neuropixels_tools import _slice_catalogue_probe, build_neuropixels_probe
 from probeinterface.testing import validate_probe_dict
 
 data_path = Path(__file__).absolute().parent.parent / "data" / "openephys"
@@ -469,7 +469,7 @@ def _read_oebin_electrode_indices(oebin_file, stream_name):
     return []
 
 
-def test_read_openephys_binary_wiring():
+def test_read_openephys_with_oebin_wiring():
     """Verify wiring invariant: for each contact, the oebin's electrode_index at the
     assigned binary column matches the contact's electrode index."""
     settings = data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "settings.xml"
@@ -478,7 +478,7 @@ def test_read_openephys_binary_wiring():
     )
     stream_name = "Neuropix-PXI-100.ProbeA"
 
-    probe = read_openephys_binary(settings, oebin, stream_name)
+    probe = read_openephys(settings, stream_name=stream_name, oebin_file=oebin)
 
     assert probe.get_contact_count() == 384
     assert probe.device_channel_indices is not None
@@ -494,31 +494,36 @@ def test_read_openephys_binary_wiring():
         )
 
 
-def test_read_openephys_binary_contact_ids_match_canonical_pattern():
-    """Verify that read_openephys_binary contact_ids are consistent with SpikeGLX (issue #394)."""
+def test_read_openephys_with_oebin_contact_ids_match_canonical_pattern():
+    """Verify that contact_ids with oebin are consistent with SpikeGLX (issue #394)."""
     # NP2014 single-shank
-    probe = read_openephys_binary(
+    probe = read_openephys(
         data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "settings.xml",
-        data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "experiment1" / "recording1" / "structure.oebin",
-        "Neuropix-PXI-100.ProbeA",
+        stream_name="Neuropix-PXI-100.ProbeA",
+        oebin_file=data_path
+        / "OE_Neuropix-PXI-NP1-binary"
+        / "Record_Node_101"
+        / "experiment1"
+        / "recording1"
+        / "structure.oebin",
     )
     _assert_contact_ids_match_canonical_pattern(probe, "NP2014 binary")
 
     # NP1032 4-shank
-    probe = read_openephys_binary(
+    probe = read_openephys(
         data_path / "OE_Neuropix-PXI-NP2-4shank-binary" / "Record_Node_101" / "settings.xml",
-        data_path
+        stream_name="Neuropix-PXI-100.ProbeA-AP",
+        oebin_file=data_path
         / "OE_Neuropix-PXI-NP2-4shank-binary"
         / "Record_Node_101"
         / "experiment4"
         / "recording2"
         / "structure.oebin",
-        "Neuropix-PXI-100.ProbeA-AP",
     )
     _assert_contact_ids_match_canonical_pattern(probe, "NP1032 binary")
 
 
-def test_read_openephys_binary_sync_channel_filtered():
+def test_read_openephys_with_oebin_sync_channel_filtered():
     """Verify that the oebin sync channel (385 channels) is filtered, producing 384 contacts."""
     settings = data_path / "OE_Neuropix-PXI-NP2-4shank-binary" / "Record_Node_101" / "settings.xml"
     oebin = (
@@ -530,78 +535,11 @@ def test_read_openephys_binary_sync_channel_filtered():
         / "structure.oebin"
     )
 
-    probe = read_openephys_binary(settings, oebin, "Neuropix-PXI-100.ProbeA-AP")
+    probe = read_openephys(settings, stream_name="Neuropix-PXI-100.ProbeA-AP", oebin_file=oebin)
     assert probe.get_contact_count() == 384
 
 
-def test_read_openephys_binary_plugin_channel_key():
-    """Verify that plugin_channel_key annotation is set."""
-    settings = data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "settings.xml"
-    oebin = (
-        data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "experiment1" / "recording1" / "structure.oebin"
-    )
-    stream_name = "Neuropix-PXI-100.ProbeA"
-
-    probe = read_openephys_binary(settings, oebin, stream_name)
-    keys = probe.contact_annotations.get("plugin_channel_key", None)
-    assert keys is not None, "plugin_channel_key annotation not set"
-    assert len(keys) == probe.get_contact_count()
-    # Keys should be like "CH0", "CH1", etc.
-    assert all(k.startswith("CH") for k in keys)
-
-
-def test_read_openephys_binary_no_matching_stream():
-    """Verify error when stream_name doesn't match any oebin stream."""
-    settings = data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "settings.xml"
-    oebin = (
-        data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "experiment1" / "recording1" / "structure.oebin"
-    )
-
-    with pytest.raises(Exception, match="Inconsistency between provided stream"):
-        read_openephys_binary(settings, oebin, "NonExistentStream")
-
-
-def test_read_openephys_with_oebin_file():
-    """Verify read_openephys(..., oebin_file=...) matches read_openephys_binary results."""
-    settings = data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "settings.xml"
-    oebin = (
-        data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "experiment1" / "recording1" / "structure.oebin"
-    )
-    stream_name = "Neuropix-PXI-100.ProbeA"
-
-    probe = read_openephys(settings, stream_name=stream_name, oebin_file=oebin)
-
-    assert probe.get_contact_count() == 384
-    assert probe.device_channel_indices is not None
-
-    # Wiring invariant
-    oebin_electrode_indices = _read_oebin_electrode_indices(oebin, stream_name)
-    for i, contact_id in enumerate(probe.contact_ids):
-        electrode_index = int(contact_id.split("e")[-1])
-        column = probe.device_channel_indices[i]
-        assert oebin_electrode_indices[column] == electrode_index
-
-
-def test_read_openephys_with_oebin_file_4shank():
-    """Verify read_openephys(..., oebin_file=...) works for 4-shank probes."""
-    settings = data_path / "OE_Neuropix-PXI-NP2-4shank-binary" / "Record_Node_101" / "settings.xml"
-    oebin = (
-        data_path
-        / "OE_Neuropix-PXI-NP2-4shank-binary"
-        / "Record_Node_101"
-        / "experiment4"
-        / "recording2"
-        / "structure.oebin"
-    )
-    stream_name = "Neuropix-PXI-100.ProbeA-AP"
-
-    probe = read_openephys(settings, stream_name=stream_name, oebin_file=oebin)
-
-    assert probe.get_contact_count() == 384
-    _assert_contact_ids_match_canonical_pattern(probe, "NP1032 oebin_file")
-
-
-def test_read_openephys_with_oebin_file_plugin_channel_key():
+def test_read_openephys_with_oebin_plugin_channel_key():
     """Verify that plugin_channel_key annotation is set when using oebin_file."""
     settings = data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "settings.xml"
     oebin = (
@@ -614,6 +552,17 @@ def test_read_openephys_with_oebin_file_plugin_channel_key():
     assert keys is not None, "plugin_channel_key annotation not set"
     assert len(keys) == probe.get_contact_count()
     assert all(k.startswith("CH") for k in keys)
+
+
+def test_read_openephys_with_oebin_no_matching_stream():
+    """Verify error when stream_name doesn't match any probe in settings."""
+    settings = data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "settings.xml"
+    oebin = (
+        data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "experiment1" / "recording1" / "structure.oebin"
+    )
+
+    with pytest.raises(Exception, match="Inconsistency between provided stream"):
+        read_openephys(settings, stream_name="NonExistentStream", oebin_file=oebin)
 
 
 def test_read_openephys_oebin_file_requires_stream_name():
@@ -666,18 +615,6 @@ def test_read_openephys_multishank_wiring():
             f"Contact {i} ({contact_id}): expected global electrode_index {global_electrode_index} "
             f"at column {column}, got {oebin_electrode_indices[column]}"
         )
-
-
-def test_read_openephys_binary_deprecation_warning():
-    """Verify that read_openephys_binary emits a DeprecationWarning."""
-    settings = data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "settings.xml"
-    oebin = (
-        data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "experiment1" / "recording1" / "structure.oebin"
-    )
-    stream_name = "Neuropix-PXI-100.ProbeA"
-
-    with pytest.warns(DeprecationWarning, match="read_openephys_binary is deprecated"):
-        read_openephys_binary(settings, oebin, stream_name)
 
 
 if __name__ == "__main__":
