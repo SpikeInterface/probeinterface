@@ -1537,7 +1537,7 @@ def _slice_openephys_catalogue_probe(full_probe: Probe, probe_info: dict) -> Pro
     For SELECTED_ELECTRODES (newer plugin), uses the indices directly.
     For CHANNELS (older plugin), matches reverse-engineered contact_ids to the catalogue.
 
-    If the `custom_channel_map` field is present in probe_info, due to a "Channel Map" processor in the signal 
+    If the `custom_channel_map` field is present in probe_info, due to a "Channel Map" processor in the signal
     chain that comes before the "Record Node", it is applied as a further slice after electrode selection.
 
     Parameters
