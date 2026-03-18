@@ -625,7 +625,7 @@ def test_read_openephys_multishank_wiring():
 def test_read_openephys_onebox_nonsequential_wiring():
     """Verify wiring for a OneBox dataset with a Channel Map plugin in the signal chain.
 
-    The Channel Map reorders channels before the Record Node writes to disk.
+    The Channel Map plugin reorders channels before the Record Node writes to disk.
     For this dataset the output order is CH334, CH332, CH330, ... which appears
     in both the oebin channel_name fields and the probe's settings_channel_key
     contact annotations.  The two must agree column-by-column so that
