@@ -1312,7 +1312,7 @@ def _parse_openephys_settings(
             "settings_channel_keys": None,
             "elec_ids": None,
             "shank_ids": None,
-            "custom_channel_map": None
+            "custom_channel_map": None,
         }
 
         if selected_electrodes is not None:
@@ -1321,7 +1321,7 @@ def _parse_openephys_settings(
             if probe_custom_channel_maps is not None:
                 # Slice custom channel maps to match the number of selected electrodes
                 # (required when SYNC channel is present)
-                custom_indices = probe_custom_channel_maps[probe_idx][:len(info["selected_electrode_indices"])]
+                custom_indices = probe_custom_channel_maps[probe_idx][: len(info["selected_electrode_indices"])]
                 info["custom_channel_map"] = custom_indices
         else:
             # Older plugin versions: reverse-engineer electrode IDs from positions
@@ -1407,7 +1407,7 @@ def _parse_openephys_settings(
             if probe_custom_channel_maps is not None:
                 # Slice custom channel maps to match the number of selected electrodes
                 # (required when SYNC channel is present)
-                custom_indices = probe_custom_channel_maps[probe_idx][:len(info["contact_ids"])]
+                custom_indices = probe_custom_channel_maps[probe_idx][: len(info["contact_ids"])]
                 info["custom_channel_map"] = custom_indices
 
         probes_info.append(info)
@@ -1532,28 +1532,28 @@ def _select_openephys_probe_info(
 
 def _slice_openephys_catalogue_probe(full_probe: Probe, probe_info: dict) -> Probe:
     """
-    Slice a full catalogue probe using the electrode selection from probe_info.
+        Slice a full catalogue probe using the electrode selection from probe_info.
 
-    For SELECTED_ELECTRODES (newer plugin), uses the indices directly.
-    For CHANNELS (older plugin), matches reverse-engineered contact_ids to the catalogue.
+        For SELECTED_ELECTRODES (newer plugin), uses the indices directly.
+        For CHANNELS (older plugin), matches reverse-engineered contact_ids to the catalogue.
 
-<<<<<<< HEAD
-    If the `custom_channel_map` field is present in probe_info, due to a "Channel Map" processor in the signal 
-=======
-    If the `custom_channel_indices` field is present in probe_info, due to a "Channel Map" processor in the signal
->>>>>>> 1c54d3c9e9e2aefd2a4e678a1e36a242ccfde719
-    chain that comes before the "Record Node", it is applied as a further slice after electrode selection.
+    <<<<<<< HEAD
+        If the `custom_channel_map` field is present in probe_info, due to a "Channel Map" processor in the signal
+    =======
+        If the `custom_channel_indices` field is present in probe_info, due to a "Channel Map" processor in the signal
+    >>>>>>> 1c54d3c9e9e2aefd2a4e678a1e36a242ccfde719
+        chain that comes before the "Record Node", it is applied as a further slice after electrode selection.
 
-    Parameters
-    ----------
-    full_probe : Probe
-        Full catalogue probe from `build_neuropixels_probe`.
-    probe_info : dict
-        Probe info dict from `_parse_openephys_settings`.
+        Parameters
+        ----------
+        full_probe : Probe
+            Full catalogue probe from `build_neuropixels_probe`.
+        probe_info : dict
+            Probe info dict from `_parse_openephys_settings`.
 
-    Returns
-    -------
-    probe : Probe
+        Returns
+        -------
+        probe : Probe
     """
     custom_channel_map = probe_info.get("custom_channel_map")
     if probe_info["selected_electrode_indices"] is not None:
