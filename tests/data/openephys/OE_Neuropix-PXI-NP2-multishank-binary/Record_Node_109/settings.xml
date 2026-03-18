@@ -1,0 +1,1223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<SETTINGS>
+  <INFO>
+    <VERSION>0.6.7</VERSION>
+    <PLUGIN_API_VERSION>8</PLUGIN_API_VERSION>
+    <DATE>15 Dec 2024 15:08:45</DATE>
+    <OS>Windows 10</OS>
+    <MACHINE name="DESKTOP-RGH0LDT" cpu_model="Intel(R) Xeon(R) CPU E3-1225 v5 @ 3.30GHz"
+             cpu_num_cores="4"/>
+  </INFO>
+  <SIGNALCHAIN>
+    <PROCESSOR name="Neuropix-PXI" insertionPoint="0" pluginName="Neuropix-PXI"
+               type="4" index="0" libraryName="Neuropix-PXI" libraryVersion="0.6.4"
+               processorType="2" nodeId="103">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels 2.0 - Multishank">
+        <PARAMETERS/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Neuropix-PXI" activeStream="0"
+              Type="Visualizer">
+        <TAB Active="1" Index="3"/>
+        <WINDOW Active="0"/>
+        <NEUROPIXELS_EDITOR MainSyncSlot="0" SendSyncAsContinuous="1" SyncDirection="0" SyncFreq="0">
+          <BASESTATION Directory="" Slot="2" NamingScheme="0" port1dock1="slot2-port1-1"
+                       port1dock2="slot2-port1-2" port2dock1="slot2-port2-1" port2dock2="slot2-port2-2"
+                       port3dock1="slot2-port3-1" port3dock2="slot2-port3-2" port4dock1="slot2-port4-1"
+                       port4dock2="slot2-port4-2"/>
+          <CUSTOM_PROBE_NAMES/>
+        </NEUROPIXELS_EDITOR>
+        <NP_PROBE slot="2" bs_firmware_version="2.0169" bs_hardware_version="UNKNOWN"
+                  bs_serial_number="0" bs_part_number="NeurPix2 PXI Carrier" bsc_firmware_version="3.2189"
+                  bsc_hardware_version="2.2" bsc_serial_number="23361422" bsc_part_number="NP2_QBSC_00"
+                  headstage_serial_number="24150435" headstage_part_number="NPM_HS_31"
+                  flex_version="0.1" flex_part_number="NPM_HS_31" port="1" dock="1"
+                  probe_serial_number="22420002164" probe_part_number="NP2013"
+                  probe_name="Neuropixels 2.0 - Multishank" num_adcs="24" custom_probe_name="22420002164"
+                  ZoomHeight="80" ZoomOffset="0" electrodeConfigurationPreset="NONE"
+                  referenceChannel="Ext" referenceChannelIndex="0" visualizationMode="0"
+                  activityToView="0">
+          <CHANNELS CH306="0:0" CH307="0:0" CH308="0:0" CH309="0:0" CH310="0:0" CH311="0:0"
+                    CH312="0:0" CH313="0:0" CH314="0:0" CH315="0:0" CH316="0:0" CH317="0:0"
+                    CH318="0:0" CH319="0:0" CH320="0:0" CH321="0:0" CH322="0:0" CH323="0:0"
+                    CH324="0:0" CH325="0:0" CH326="0:0" CH327="0:0" CH328="0:0" CH329="0:0"
+                    CH330="0:0" CH331="0:0" CH332="0:0" CH333="0:0" CH334="0:0" CH335="0:0"
+                    CH240="0:0" CH241="0:0" CH242="0:0" CH243="0:0" CH244="0:0" CH245="0:0"
+                    CH246="0:0" CH247="0:0" CH248="0:0" CH249="0:0" CH250="0:0" CH251="0:0"
+                    CH252="0:0" CH253="0:0" CH254="0:0" CH255="0:0" CH256="0:0" CH257="0:0"
+                    CH258="0:0" CH259="0:0" CH260="0:0" CH261="0:0" CH262="0:0" CH263="0:0"
+                    CH264="0:0" CH265="0:0" CH266="0:0" CH267="0:0" CH268="0:0" CH269="0:0"
+                    CH270="0:0" CH271="0:0" CH272="0:0" CH273="0:0" CH274="0:0" CH275="0:0"
+                    CH276="0:1" CH277="0:1" CH278="0:1" CH279="0:1" CH280="0:1" CH281="0:1"
+                    CH282="0:1" CH283="0:1" CH284="0:1" CH285="0:1" CH286="0:1" CH287="0:1"
+                    CH336="0:1" CH337="0:1" CH338="0:1" CH339="0:1" CH340="0:1" CH341="0:1"
+                    CH342="0:1" CH343="0:1" CH344="0:1" CH345="0:1" CH346="0:1" CH347="0:1"
+                    CH348="0:1" CH349="0:1" CH350="0:1" CH351="0:1" CH352="0:1" CH353="0:1"
+                    CH354="0:1" CH355="0:1" CH356="0:1" CH357="0:1" CH358="0:1" CH359="0:1"
+                    CH360="0:1" CH361="0:1" CH362="0:1" CH363="0:1" CH364="0:1" CH365="0:1"
+                    CH366="0:1" CH367="0:1" CH368="0:1" CH369="0:1" CH370="0:1" CH371="0:1"
+                    CH372="0:1" CH373="0:1" CH374="0:1" CH375="0:1" CH376="0:1" CH377="0:1"
+                    CH378="0:1" CH379="0:1" CH380="0:1" CH381="0:1" CH382="0:1" CH383="0:1"
+                    CH192="0:1" CH193="0:1" CH194="0:1" CH195="0:1" CH196="0:1" CH197="0:1"
+                    CH198="0:1" CH199="0:1" CH200="0:1" CH201="0:1" CH202="0:1" CH203="0:1"
+                    CH204="0:1" CH205="0:1" CH206="0:1" CH207="0:1" CH208="0:1" CH209="0:1"
+                    CH210="0:1" CH211="0:1" CH212="0:1" CH213="0:1" CH214="0:1" CH215="0:1"
+                    CH216="0:1" CH217="0:1" CH218="0:1" CH219="0:1" CH220="0:1" CH221="0:1"
+                    CH222="0:1" CH223="0:1" CH224="0:1" CH225="0:1" CH226="0:1" CH227="0:1"
+                    CH228="0:1" CH229="0:1" CH230="0:1" CH231="0:1" CH232="0:1" CH233="0:1"
+                    CH234="0:1" CH235="0:1" CH236="0:1" CH237="0:1" CH238="0:1" CH239="0:1"
+                    CH288="0:1" CH289="0:1" CH290="0:1" CH291="0:1" CH292="0:1" CH293="0:1"
+                    CH294="0:1" CH295="0:1" CH296="0:1" CH297="0:1" CH298="0:1" CH299="0:1"
+                    CH300="0:1" CH301="0:1" CH302="0:1" CH303="0:1" CH304="0:1" CH305="0:1"
+                    CH10="0:2" CH11="0:2" CH12="0:2" CH13="0:2" CH14="0:2" CH15="0:2"
+                    CH16="0:2" CH17="0:2" CH18="0:2" CH19="0:2" CH20="0:2" CH21="0:2"
+                    CH22="0:2" CH23="0:2" CH24="0:2" CH25="0:2" CH26="0:2" CH27="0:2"
+                    CH28="0:2" CH29="0:2" CH30="0:2" CH31="0:2" CH32="0:2" CH33="0:2"
+                    CH34="0:2" CH35="0:2" CH36="0:2" CH37="0:2" CH38="0:2" CH39="0:2"
+                    CH40="0:2" CH41="0:2" CH42="0:2" CH43="0:2" CH44="0:2" CH45="0:2"
+                    CH46="0:2" CH47="0:2" CH96="0:2" CH97="0:2" CH98="0:2" CH99="0:2"
+                    CH100="0:2" CH101="0:2" CH102="0:2" CH103="0:2" CH104="0:2" CH105="0:2"
+                    CH106="0:2" CH107="0:2" CH108="0:2" CH109="0:2" CH110="0:2" CH111="0:2"
+                    CH112="0:2" CH113="0:2" CH114="0:2" CH115="0:2" CH116="0:2" CH117="0:2"
+                    CH118="0:2" CH119="0:2" CH120="0:2" CH121="0:2" CH122="0:2" CH123="0:2"
+                    CH124="0:2" CH125="0:2" CH126="0:2" CH127="0:2" CH128="0:2" CH129="0:2"
+                    CH130="0:2" CH131="0:2" CH132="0:2" CH133="0:2" CH134="0:2" CH135="0:2"
+                    CH136="0:2" CH137="0:2" CH138="0:2" CH139="0:2" CH140="0:2" CH141="0:2"
+                    CH142="0:2" CH143="0:2" CH48="0:2" CH49="0:2" CH50="0:2" CH51="0:2"
+                    CH52="0:2" CH53="0:2" CH54="0:2" CH55="0:2" CH56="0:2" CH57="0:2"
+                    CH58="0:3" CH59="0:3" CH60="0:3" CH61="0:3" CH62="0:3" CH63="0:3"
+                    CH64="0:3" CH65="0:3" CH66="0:3" CH67="0:3" CH68="0:3" CH69="0:3"
+                    CH70="0:3" CH71="0:3" CH72="0:3" CH73="0:3" CH74="0:3" CH75="0:3"
+                    CH76="0:3" CH77="0:3" CH78="0:3" CH79="0:3" CH80="0:3" CH81="0:3"
+                    CH82="0:3" CH83="0:3" CH84="0:3" CH85="0:3" CH86="0:3" CH87="0:3"
+                    CH88="0:3" CH89="0:3" CH90="0:3" CH91="0:3" CH92="0:3" CH93="0:3"
+                    CH94="0:3" CH95="0:3" CH144="0:3" CH145="0:3" CH146="0:3" CH147="0:3"
+                    CH148="0:3" CH149="0:3" CH150="0:3" CH151="0:3" CH152="0:3" CH153="0:3"
+                    CH154="0:3" CH155="0:3" CH156="0:3" CH157="0:3" CH158="0:3" CH159="0:3"
+                    CH160="0:3" CH161="0:3" CH162="0:3" CH163="0:3" CH164="0:3" CH165="0:3"
+                    CH166="0:3" CH167="0:3" CH168="0:3" CH169="0:3" CH170="0:3" CH171="0:3"
+                    CH172="0:3" CH173="0:3" CH174="0:3" CH175="0:3" CH176="0:3" CH177="0:3"
+                    CH178="0:3" CH179="0:3" CH180="0:3" CH181="0:3" CH182="0:3" CH183="0:3"
+                    CH184="0:3" CH185="0:3" CH186="0:3" CH187="0:3" CH188="0:3" CH189="0:3"
+                    CH190="0:3" CH191="0:3" CH0="0:3" CH1="0:3" CH2="0:3" CH3="0:3"
+                    CH4="0:3" CH5="0:3" CH6="0:3" CH7="0:3" CH8="0:3" CH9="0:3"/>
+          <ELECTRODE_XPOS CH306="8" CH307="40" CH308="8" CH309="40" CH310="8" CH311="40"
+                          CH312="8" CH313="40" CH314="8" CH315="40" CH316="8" CH317="40"
+                          CH318="8" CH319="40" CH320="8" CH321="40" CH322="8" CH323="40"
+                          CH324="8" CH325="40" CH326="8" CH327="40" CH328="8" CH329="40"
+                          CH330="8" CH331="40" CH332="8" CH333="40" CH334="8" CH335="40"
+                          CH240="8" CH241="40" CH242="8" CH243="40" CH244="8" CH245="40"
+                          CH246="8" CH247="40" CH248="8" CH249="40" CH250="8" CH251="40"
+                          CH252="8" CH253="40" CH254="8" CH255="40" CH256="8" CH257="40"
+                          CH258="8" CH259="40" CH260="8" CH261="40" CH262="8" CH263="40"
+                          CH264="8" CH265="40" CH266="8" CH267="40" CH268="8" CH269="40"
+                          CH270="8" CH271="40" CH272="8" CH273="40" CH274="8" CH275="40"
+                          CH276="258" CH277="290" CH278="258" CH279="290" CH280="258" CH281="290"
+                          CH282="258" CH283="290" CH284="258" CH285="290" CH286="258" CH287="290"
+                          CH336="258" CH337="290" CH338="258" CH339="290" CH340="258" CH341="290"
+                          CH342="258" CH343="290" CH344="258" CH345="290" CH346="258" CH347="290"
+                          CH348="258" CH349="290" CH350="258" CH351="290" CH352="258" CH353="290"
+                          CH354="258" CH355="290" CH356="258" CH357="290" CH358="258" CH359="290"
+                          CH360="258" CH361="290" CH362="258" CH363="290" CH364="258" CH365="290"
+                          CH366="258" CH367="290" CH368="258" CH369="290" CH370="258" CH371="290"
+                          CH372="258" CH373="290" CH374="258" CH375="290" CH376="258" CH377="290"
+                          CH378="258" CH379="290" CH380="258" CH381="290" CH382="258" CH383="290"
+                          CH192="258" CH193="290" CH194="258" CH195="290" CH196="258" CH197="290"
+                          CH198="258" CH199="290" CH200="258" CH201="290" CH202="258" CH203="290"
+                          CH204="258" CH205="290" CH206="258" CH207="290" CH208="258" CH209="290"
+                          CH210="258" CH211="290" CH212="258" CH213="290" CH214="258" CH215="290"
+                          CH216="258" CH217="290" CH218="258" CH219="290" CH220="258" CH221="290"
+                          CH222="258" CH223="290" CH224="258" CH225="290" CH226="258" CH227="290"
+                          CH228="258" CH229="290" CH230="258" CH231="290" CH232="258" CH233="290"
+                          CH234="258" CH235="290" CH236="258" CH237="290" CH238="258" CH239="290"
+                          CH288="258" CH289="290" CH290="258" CH291="290" CH292="258" CH293="290"
+                          CH294="258" CH295="290" CH296="258" CH297="290" CH298="258" CH299="290"
+                          CH300="258" CH301="290" CH302="258" CH303="290" CH304="258" CH305="290"
+                          CH10="508" CH11="540" CH12="508" CH13="540" CH14="508" CH15="540"
+                          CH16="508" CH17="540" CH18="508" CH19="540" CH20="508" CH21="540"
+                          CH22="508" CH23="540" CH24="508" CH25="540" CH26="508" CH27="540"
+                          CH28="508" CH29="540" CH30="508" CH31="540" CH32="508" CH33="540"
+                          CH34="508" CH35="540" CH36="508" CH37="540" CH38="508" CH39="540"
+                          CH40="508" CH41="540" CH42="508" CH43="540" CH44="508" CH45="540"
+                          CH46="508" CH47="540" CH96="508" CH97="540" CH98="508" CH99="540"
+                          CH100="508" CH101="540" CH102="508" CH103="540" CH104="508" CH105="540"
+                          CH106="508" CH107="540" CH108="508" CH109="540" CH110="508" CH111="540"
+                          CH112="508" CH113="540" CH114="508" CH115="540" CH116="508" CH117="540"
+                          CH118="508" CH119="540" CH120="508" CH121="540" CH122="508" CH123="540"
+                          CH124="508" CH125="540" CH126="508" CH127="540" CH128="508" CH129="540"
+                          CH130="508" CH131="540" CH132="508" CH133="540" CH134="508" CH135="540"
+                          CH136="508" CH137="540" CH138="508" CH139="540" CH140="508" CH141="540"
+                          CH142="508" CH143="540" CH48="508" CH49="540" CH50="508" CH51="540"
+                          CH52="508" CH53="540" CH54="508" CH55="540" CH56="508" CH57="540"
+                          CH58="758" CH59="790" CH60="758" CH61="790" CH62="758" CH63="790"
+                          CH64="758" CH65="790" CH66="758" CH67="790" CH68="758" CH69="790"
+                          CH70="758" CH71="790" CH72="758" CH73="790" CH74="758" CH75="790"
+                          CH76="758" CH77="790" CH78="758" CH79="790" CH80="758" CH81="790"
+                          CH82="758" CH83="790" CH84="758" CH85="790" CH86="758" CH87="790"
+                          CH88="758" CH89="790" CH90="758" CH91="790" CH92="758" CH93="790"
+                          CH94="758" CH95="790" CH144="758" CH145="790" CH146="758" CH147="790"
+                          CH148="758" CH149="790" CH150="758" CH151="790" CH152="758" CH153="790"
+                          CH154="758" CH155="790" CH156="758" CH157="790" CH158="758" CH159="790"
+                          CH160="758" CH161="790" CH162="758" CH163="790" CH164="758" CH165="790"
+                          CH166="758" CH167="790" CH168="758" CH169="790" CH170="758" CH171="790"
+                          CH172="758" CH173="790" CH174="758" CH175="790" CH176="758" CH177="790"
+                          CH178="758" CH179="790" CH180="758" CH181="790" CH182="758" CH183="790"
+                          CH184="758" CH185="790" CH186="758" CH187="790" CH188="758" CH189="790"
+                          CH190="758" CH191="790" CH0="758" CH1="790" CH2="758" CH3="790"
+                          CH4="758" CH5="790" CH6="758" CH7="790" CH8="758" CH9="790"/>
+          <ELECTRODE_YPOS CH306="1215" CH307="1215" CH308="1230" CH309="1230" CH310="1245"
+                          CH311="1245" CH312="1260" CH313="1260" CH314="1275" CH315="1275"
+                          CH316="1290" CH317="1290" CH318="1305" CH319="1305" CH320="1320"
+                          CH321="1320" CH322="1335" CH323="1335" CH324="1350" CH325="1350"
+                          CH326="1365" CH327="1365" CH328="1380" CH329="1380" CH330="1395"
+                          CH331="1395" CH332="1410" CH333="1410" CH334="1425" CH335="1425"
+                          CH240="1440" CH241="1440" CH242="1455" CH243="1455" CH244="1470"
+                          CH245="1470" CH246="1485" CH247="1485" CH248="1500" CH249="1500"
+                          CH250="1515" CH251="1515" CH252="1530" CH253="1530" CH254="1545"
+                          CH255="1545" CH256="1560" CH257="1560" CH258="1575" CH259="1575"
+                          CH260="1590" CH261="1590" CH262="1605" CH263="1605" CH264="1620"
+                          CH265="1620" CH266="1635" CH267="1635" CH268="1650" CH269="1650"
+                          CH270="1665" CH271="1665" CH272="1680" CH273="1680" CH274="1695"
+                          CH275="1695" CH276="990" CH277="990" CH278="1005" CH279="1005"
+                          CH280="1020" CH281="1020" CH282="1035" CH283="1035" CH284="1050"
+                          CH285="1050" CH286="1065" CH287="1065" CH336="1080" CH337="1080"
+                          CH338="1095" CH339="1095" CH340="1110" CH341="1110" CH342="1125"
+                          CH343="1125" CH344="1140" CH345="1140" CH346="1155" CH347="1155"
+                          CH348="1170" CH349="1170" CH350="1185" CH351="1185" CH352="1200"
+                          CH353="1200" CH354="1215" CH355="1215" CH356="1230" CH357="1230"
+                          CH358="1245" CH359="1245" CH360="1260" CH361="1260" CH362="1275"
+                          CH363="1275" CH364="1290" CH365="1290" CH366="1305" CH367="1305"
+                          CH368="1320" CH369="1320" CH370="1335" CH371="1335" CH372="1350"
+                          CH373="1350" CH374="1365" CH375="1365" CH376="1380" CH377="1380"
+                          CH378="1395" CH379="1395" CH380="1410" CH381="1410" CH382="1425"
+                          CH383="1425" CH192="1440" CH193="1440" CH194="1455" CH195="1455"
+                          CH196="1470" CH197="1470" CH198="1485" CH199="1485" CH200="1500"
+                          CH201="1500" CH202="1515" CH203="1515" CH204="1530" CH205="1530"
+                          CH206="1545" CH207="1545" CH208="1560" CH209="1560" CH210="1575"
+                          CH211="1575" CH212="1590" CH213="1590" CH214="1605" CH215="1605"
+                          CH216="1620" CH217="1620" CH218="1635" CH219="1635" CH220="1650"
+                          CH221="1650" CH222="1665" CH223="1665" CH224="1680" CH225="1680"
+                          CH226="1695" CH227="1695" CH228="1710" CH229="1710" CH230="1725"
+                          CH231="1725" CH232="1740" CH233="1740" CH234="1755" CH235="1755"
+                          CH236="1770" CH237="1770" CH238="1785" CH239="1785" CH288="1800"
+                          CH289="1800" CH290="1815" CH291="1815" CH292="1830" CH293="1830"
+                          CH294="1845" CH295="1845" CH296="1860" CH297="1860" CH298="1875"
+                          CH299="1875" CH300="1890" CH301="1890" CH302="1905" CH303="1905"
+                          CH304="1920" CH305="1920" CH10="795" CH11="795" CH12="810" CH13="810"
+                          CH14="825" CH15="825" CH16="840" CH17="840" CH18="855" CH19="855"
+                          CH20="870" CH21="870" CH22="885" CH23="885" CH24="900" CH25="900"
+                          CH26="915" CH27="915" CH28="930" CH29="930" CH30="945" CH31="945"
+                          CH32="960" CH33="960" CH34="975" CH35="975" CH36="990" CH37="990"
+                          CH38="1005" CH39="1005" CH40="1020" CH41="1020" CH42="1035" CH43="1035"
+                          CH44="1050" CH45="1050" CH46="1065" CH47="1065" CH96="1080" CH97="1080"
+                          CH98="1095" CH99="1095" CH100="1110" CH101="1110" CH102="1125"
+                          CH103="1125" CH104="1140" CH105="1140" CH106="1155" CH107="1155"
+                          CH108="1170" CH109="1170" CH110="1185" CH111="1185" CH112="1200"
+                          CH113="1200" CH114="1215" CH115="1215" CH116="1230" CH117="1230"
+                          CH118="1245" CH119="1245" CH120="1260" CH121="1260" CH122="1275"
+                          CH123="1275" CH124="1290" CH125="1290" CH126="1305" CH127="1305"
+                          CH128="1320" CH129="1320" CH130="1335" CH131="1335" CH132="1350"
+                          CH133="1350" CH134="1365" CH135="1365" CH136="1380" CH137="1380"
+                          CH138="1395" CH139="1395" CH140="1410" CH141="1410" CH142="1425"
+                          CH143="1425" CH48="1440" CH49="1440" CH50="1455" CH51="1455"
+                          CH52="1470" CH53="1470" CH54="1485" CH55="1485" CH56="1500" CH57="1500"
+                          CH58="795" CH59="795" CH60="810" CH61="810" CH62="825" CH63="825"
+                          CH64="840" CH65="840" CH66="855" CH67="855" CH68="870" CH69="870"
+                          CH70="885" CH71="885" CH72="900" CH73="900" CH74="915" CH75="915"
+                          CH76="930" CH77="930" CH78="945" CH79="945" CH80="960" CH81="960"
+                          CH82="975" CH83="975" CH84="990" CH85="990" CH86="1005" CH87="1005"
+                          CH88="1020" CH89="1020" CH90="1035" CH91="1035" CH92="1050" CH93="1050"
+                          CH94="1065" CH95="1065" CH144="1080" CH145="1080" CH146="1095"
+                          CH147="1095" CH148="1110" CH149="1110" CH150="1125" CH151="1125"
+                          CH152="1140" CH153="1140" CH154="1155" CH155="1155" CH156="1170"
+                          CH157="1170" CH158="1185" CH159="1185" CH160="1200" CH161="1200"
+                          CH162="1215" CH163="1215" CH164="1230" CH165="1230" CH166="1245"
+                          CH167="1245" CH168="1260" CH169="1260" CH170="1275" CH171="1275"
+                          CH172="1290" CH173="1290" CH174="1305" CH175="1305" CH176="1320"
+                          CH177="1320" CH178="1335" CH179="1335" CH180="1350" CH181="1350"
+                          CH182="1365" CH183="1365" CH184="1380" CH185="1380" CH186="1395"
+                          CH187="1395" CH188="1410" CH189="1410" CH190="1425" CH191="1425"
+                          CH0="1440" CH1="1440" CH2="1455" CH3="1455" CH4="1470" CH5="1470"
+                          CH6="1485" CH7="1485" CH8="1500" CH9="1500"/>
+          <IMRO_FILES>
+            <FILE PATH="C:\Users\nolan\Desktop\high_yield_channel_map_m29.imro"/>
+            <FILE PATH="C:\Users\nolan\Desktop\high_yield_channel_map_m29.imro"/>
+          </IMRO_FILES>
+        </NP_PROBE>
+      </EDITOR>
+    </PROCESSOR>
+    <PROCESSOR name="Record Node" insertionPoint="1" pluginName="Record Node"
+               type="0" index="3" libraryName="" libraryVersion="" processorType="8"
+               nodeId="109">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels 2.0 - Multishank">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS path="C:\Users\nolan\Documents\Open Ephys" engine="BINARY" recordEvents="0"
+                         recordSpikes="0" fifoMonitorsVisible="1">
+        <STREAM isMainStream="1" sync_line="0" name="ProbeA" source_node_id="103"
+                sample_rate="30000.0" channel_count="385" device_name="Neuropixels 2.0 - Multishank"
+                recording_state="ALL"/>
+      </CUSTOM_PARAMETERS>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Record Node" activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="Common Avg Ref" insertionPoint="1" pluginName="Common Avg Ref"
+               type="1" index="4" libraryName="Common Average Reference" libraryVersion="0.6.7"
+               processorType="1" nodeId="110">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels 2.0 - Multishank">
+        <PARAMETERS enable_stream="1" Affected="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,347,348,349,350,351,352,353,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371,372,373,374,375,376,377,378,379,380,381,382,383,384"
+                    Reference="1,42,43,44,45,46,52,68,87,88,89,90,91,103,104,105,106,107,114,115,119,120,121,122,123,130,131,135,136,137,138,139,141,142,143,146,147,151,152,153,154,155,157,158,159,162,163,164,165,166,173,174,175,204,205,212,217,220,221,233,236,237,244,249,253,261,262,263,269,274,277,278,279,285,310,311,312,313,314,316,326,327,328,329,330,332,339,16,32,48,64,80,96,112,128,144,160,176,192,208,224,240,256,15,31,47,63,79,95,111,127,143,159,175,191,207,223,239,255,271,272,287,288,303,304,319,320,335,336,351,352,368,384,7,23,39,8,24,40,55,56,71,72,87,88,103,104,119,120,135,136,151,152,167,168,183,184,199,200,215,216,231,232,247,248,263,264,279,280,295,296,311,312,327,328,343,344,359,360,375,376,2,18,34,50,3,19,35,51,66,67,82,83,98,99,114,115,130,131,146,147,162,163,178,179,194,195,210,211,226,227,242,243,258,259,274,290,306,275,291,307,322,323,338,339,354,355,370,371,12,11,27,43,59,75,91,107,123,139,155,171,187,203,219,235,10,26,42,58,74,90,106,122,138,154,170,186,202,218,234,250,251,266,267,282,283,298,299,314,315,330,331,347,28,44,60,76,92,108,124,140,156,172,188,204,220,236,252,268,284,300,316,332,348,364,380"
+                    gain_level="100.0"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="1" displayName="Common Avg Ref"
+              activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="Splitter" insertionPoint="1" pluginName="Splitter" type="0"
+               index="1" libraryName="" libraryVersion="" processorType="4"
+               nodeId="105">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels 2.0 - Multishank">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS activePath="0"/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Splitter"/>
+    </PROCESSOR>
+    <PROCESSOR name="Bandpass Filter" insertionPoint="1" pluginName="Bandpass Filter"
+               type="1" index="5" libraryName="Bandpass Filter" libraryVersion="0.6.7"
+               processorType="1" nodeId="112">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-A" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels 2.0 - Multishank">
+        <PARAMETERS enable_stream="1" high_cut="6000.0" low_cut="300.0" Channels=""/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Bandpass Filter"
+              activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="Channel Map" insertionPoint="1" pluginName="Channel Map"
+               type="1" index="3" libraryName="Channel Mapper" libraryVersion="0.6.7"
+               processorType="1" nodeId="111">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-A" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels 2.0 - Multishank">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS>
+        <STREAM>
+          <CH index="0" enabled="1"/>
+          <CH index="1" enabled="1"/>
+          <CH index="2" enabled="1"/>
+          <CH index="3" enabled="1"/>
+          <CH index="4" enabled="1"/>
+          <CH index="5" enabled="1"/>
+          <CH index="6" enabled="1"/>
+          <CH index="7" enabled="1"/>
+          <CH index="8" enabled="1"/>
+          <CH index="9" enabled="1"/>
+          <CH index="10" enabled="1"/>
+          <CH index="11" enabled="1"/>
+          <CH index="12" enabled="1"/>
+          <CH index="13" enabled="1"/>
+          <CH index="14" enabled="1"/>
+          <CH index="15" enabled="1"/>
+          <CH index="16" enabled="1"/>
+          <CH index="17" enabled="1"/>
+          <CH index="18" enabled="1"/>
+          <CH index="19" enabled="1"/>
+          <CH index="20" enabled="1"/>
+          <CH index="21" enabled="1"/>
+          <CH index="22" enabled="1"/>
+          <CH index="23" enabled="1"/>
+          <CH index="24" enabled="1"/>
+          <CH index="25" enabled="1"/>
+          <CH index="26" enabled="1"/>
+          <CH index="27" enabled="1"/>
+          <CH index="28" enabled="1"/>
+          <CH index="29" enabled="1"/>
+          <CH index="30" enabled="1"/>
+          <CH index="31" enabled="1"/>
+          <CH index="32" enabled="1"/>
+          <CH index="33" enabled="1"/>
+          <CH index="34" enabled="1"/>
+          <CH index="35" enabled="1"/>
+          <CH index="36" enabled="1"/>
+          <CH index="37" enabled="1"/>
+          <CH index="38" enabled="1"/>
+          <CH index="39" enabled="1"/>
+          <CH index="40" enabled="1"/>
+          <CH index="41" enabled="1"/>
+          <CH index="42" enabled="1"/>
+          <CH index="43" enabled="1"/>
+          <CH index="44" enabled="1"/>
+          <CH index="45" enabled="1"/>
+          <CH index="46" enabled="1"/>
+          <CH index="47" enabled="1"/>
+          <CH index="48" enabled="1"/>
+          <CH index="49" enabled="1"/>
+          <CH index="50" enabled="1"/>
+          <CH index="51" enabled="1"/>
+          <CH index="52" enabled="1"/>
+          <CH index="53" enabled="1"/>
+          <CH index="54" enabled="1"/>
+          <CH index="55" enabled="1"/>
+          <CH index="56" enabled="1"/>
+          <CH index="57" enabled="1"/>
+          <CH index="58" enabled="1"/>
+          <CH index="59" enabled="1"/>
+          <CH index="60" enabled="1"/>
+          <CH index="61" enabled="1"/>
+          <CH index="62" enabled="1"/>
+          <CH index="63" enabled="1"/>
+          <CH index="64" enabled="1"/>
+          <CH index="65" enabled="1"/>
+          <CH index="66" enabled="1"/>
+          <CH index="67" enabled="1"/>
+          <CH index="68" enabled="1"/>
+          <CH index="69" enabled="1"/>
+          <CH index="70" enabled="1"/>
+          <CH index="71" enabled="1"/>
+          <CH index="72" enabled="1"/>
+          <CH index="73" enabled="1"/>
+          <CH index="74" enabled="1"/>
+          <CH index="75" enabled="1"/>
+          <CH index="76" enabled="1"/>
+          <CH index="77" enabled="1"/>
+          <CH index="78" enabled="1"/>
+          <CH index="79" enabled="1"/>
+          <CH index="80" enabled="1"/>
+          <CH index="81" enabled="1"/>
+          <CH index="82" enabled="1"/>
+          <CH index="83" enabled="1"/>
+          <CH index="84" enabled="1"/>
+          <CH index="85" enabled="1"/>
+          <CH index="86" enabled="1"/>
+          <CH index="87" enabled="1"/>
+          <CH index="88" enabled="1"/>
+          <CH index="89" enabled="1"/>
+          <CH index="90" enabled="1"/>
+          <CH index="91" enabled="1"/>
+          <CH index="92" enabled="1"/>
+          <CH index="93" enabled="1"/>
+          <CH index="94" enabled="1"/>
+          <CH index="95" enabled="1"/>
+          <CH index="96" enabled="1"/>
+          <CH index="97" enabled="1"/>
+          <CH index="98" enabled="1"/>
+          <CH index="99" enabled="1"/>
+          <CH index="100" enabled="1"/>
+          <CH index="101" enabled="1"/>
+          <CH index="102" enabled="1"/>
+          <CH index="103" enabled="1"/>
+          <CH index="104" enabled="1"/>
+          <CH index="105" enabled="1"/>
+          <CH index="106" enabled="1"/>
+          <CH index="107" enabled="1"/>
+          <CH index="108" enabled="1"/>
+          <CH index="109" enabled="1"/>
+          <CH index="110" enabled="1"/>
+          <CH index="111" enabled="1"/>
+          <CH index="112" enabled="1"/>
+          <CH index="113" enabled="1"/>
+          <CH index="114" enabled="1"/>
+          <CH index="115" enabled="1"/>
+          <CH index="116" enabled="1"/>
+          <CH index="117" enabled="1"/>
+          <CH index="118" enabled="1"/>
+          <CH index="119" enabled="1"/>
+          <CH index="120" enabled="1"/>
+          <CH index="121" enabled="1"/>
+          <CH index="122" enabled="1"/>
+          <CH index="123" enabled="1"/>
+          <CH index="124" enabled="1"/>
+          <CH index="125" enabled="1"/>
+          <CH index="126" enabled="1"/>
+          <CH index="127" enabled="1"/>
+          <CH index="128" enabled="1"/>
+          <CH index="129" enabled="1"/>
+          <CH index="130" enabled="1"/>
+          <CH index="131" enabled="1"/>
+          <CH index="132" enabled="1"/>
+          <CH index="133" enabled="1"/>
+          <CH index="134" enabled="1"/>
+          <CH index="135" enabled="1"/>
+          <CH index="136" enabled="1"/>
+          <CH index="137" enabled="1"/>
+          <CH index="138" enabled="1"/>
+          <CH index="139" enabled="1"/>
+          <CH index="140" enabled="1"/>
+          <CH index="141" enabled="1"/>
+          <CH index="142" enabled="1"/>
+          <CH index="143" enabled="1"/>
+          <CH index="144" enabled="1"/>
+          <CH index="145" enabled="1"/>
+          <CH index="146" enabled="1"/>
+          <CH index="147" enabled="1"/>
+          <CH index="148" enabled="1"/>
+          <CH index="149" enabled="1"/>
+          <CH index="150" enabled="1"/>
+          <CH index="151" enabled="1"/>
+          <CH index="152" enabled="1"/>
+          <CH index="153" enabled="1"/>
+          <CH index="154" enabled="1"/>
+          <CH index="155" enabled="1"/>
+          <CH index="156" enabled="1"/>
+          <CH index="157" enabled="1"/>
+          <CH index="158" enabled="1"/>
+          <CH index="159" enabled="1"/>
+          <CH index="160" enabled="1"/>
+          <CH index="161" enabled="1"/>
+          <CH index="162" enabled="1"/>
+          <CH index="163" enabled="1"/>
+          <CH index="164" enabled="1"/>
+          <CH index="165" enabled="1"/>
+          <CH index="166" enabled="1"/>
+          <CH index="167" enabled="1"/>
+          <CH index="168" enabled="1"/>
+          <CH index="169" enabled="1"/>
+          <CH index="170" enabled="1"/>
+          <CH index="171" enabled="1"/>
+          <CH index="172" enabled="1"/>
+          <CH index="173" enabled="1"/>
+          <CH index="174" enabled="1"/>
+          <CH index="175" enabled="1"/>
+          <CH index="176" enabled="1"/>
+          <CH index="177" enabled="1"/>
+          <CH index="178" enabled="1"/>
+          <CH index="179" enabled="1"/>
+          <CH index="180" enabled="1"/>
+          <CH index="181" enabled="1"/>
+          <CH index="182" enabled="1"/>
+          <CH index="183" enabled="1"/>
+          <CH index="184" enabled="1"/>
+          <CH index="185" enabled="1"/>
+          <CH index="186" enabled="1"/>
+          <CH index="187" enabled="1"/>
+          <CH index="188" enabled="1"/>
+          <CH index="189" enabled="1"/>
+          <CH index="190" enabled="1"/>
+          <CH index="191" enabled="1"/>
+          <CH index="192" enabled="1"/>
+          <CH index="193" enabled="1"/>
+          <CH index="194" enabled="1"/>
+          <CH index="195" enabled="1"/>
+          <CH index="196" enabled="1"/>
+          <CH index="197" enabled="1"/>
+          <CH index="198" enabled="1"/>
+          <CH index="199" enabled="1"/>
+          <CH index="200" enabled="1"/>
+          <CH index="201" enabled="1"/>
+          <CH index="202" enabled="1"/>
+          <CH index="203" enabled="1"/>
+          <CH index="204" enabled="1"/>
+          <CH index="205" enabled="1"/>
+          <CH index="206" enabled="1"/>
+          <CH index="207" enabled="1"/>
+          <CH index="208" enabled="1"/>
+          <CH index="209" enabled="1"/>
+          <CH index="210" enabled="1"/>
+          <CH index="211" enabled="1"/>
+          <CH index="212" enabled="1"/>
+          <CH index="213" enabled="1"/>
+          <CH index="214" enabled="1"/>
+          <CH index="215" enabled="1"/>
+          <CH index="216" enabled="1"/>
+          <CH index="217" enabled="1"/>
+          <CH index="218" enabled="1"/>
+          <CH index="219" enabled="1"/>
+          <CH index="220" enabled="1"/>
+          <CH index="221" enabled="1"/>
+          <CH index="222" enabled="1"/>
+          <CH index="223" enabled="1"/>
+          <CH index="224" enabled="1"/>
+          <CH index="225" enabled="1"/>
+          <CH index="226" enabled="1"/>
+          <CH index="227" enabled="1"/>
+          <CH index="228" enabled="1"/>
+          <CH index="229" enabled="1"/>
+          <CH index="230" enabled="1"/>
+          <CH index="231" enabled="1"/>
+          <CH index="232" enabled="1"/>
+          <CH index="233" enabled="1"/>
+          <CH index="234" enabled="1"/>
+          <CH index="235" enabled="1"/>
+          <CH index="236" enabled="1"/>
+          <CH index="237" enabled="1"/>
+          <CH index="238" enabled="1"/>
+          <CH index="239" enabled="1"/>
+          <CH index="240" enabled="1"/>
+          <CH index="241" enabled="1"/>
+          <CH index="242" enabled="1"/>
+          <CH index="243" enabled="1"/>
+          <CH index="244" enabled="1"/>
+          <CH index="245" enabled="1"/>
+          <CH index="246" enabled="1"/>
+          <CH index="247" enabled="1"/>
+          <CH index="248" enabled="1"/>
+          <CH index="249" enabled="1"/>
+          <CH index="250" enabled="1"/>
+          <CH index="251" enabled="1"/>
+          <CH index="252" enabled="1"/>
+          <CH index="253" enabled="1"/>
+          <CH index="254" enabled="1"/>
+          <CH index="255" enabled="1"/>
+          <CH index="256" enabled="1"/>
+          <CH index="257" enabled="1"/>
+          <CH index="258" enabled="1"/>
+          <CH index="259" enabled="1"/>
+          <CH index="260" enabled="1"/>
+          <CH index="261" enabled="1"/>
+          <CH index="262" enabled="1"/>
+          <CH index="263" enabled="1"/>
+          <CH index="264" enabled="1"/>
+          <CH index="265" enabled="1"/>
+          <CH index="266" enabled="1"/>
+          <CH index="267" enabled="1"/>
+          <CH index="268" enabled="1"/>
+          <CH index="269" enabled="1"/>
+          <CH index="270" enabled="1"/>
+          <CH index="271" enabled="1"/>
+          <CH index="272" enabled="1"/>
+          <CH index="273" enabled="1"/>
+          <CH index="274" enabled="1"/>
+          <CH index="275" enabled="1"/>
+          <CH index="276" enabled="1"/>
+          <CH index="277" enabled="1"/>
+          <CH index="278" enabled="1"/>
+          <CH index="279" enabled="1"/>
+          <CH index="280" enabled="1"/>
+          <CH index="281" enabled="1"/>
+          <CH index="282" enabled="1"/>
+          <CH index="283" enabled="1"/>
+          <CH index="284" enabled="1"/>
+          <CH index="285" enabled="1"/>
+          <CH index="286" enabled="1"/>
+          <CH index="287" enabled="1"/>
+          <CH index="288" enabled="1"/>
+          <CH index="289" enabled="1"/>
+          <CH index="290" enabled="1"/>
+          <CH index="291" enabled="1"/>
+          <CH index="292" enabled="1"/>
+          <CH index="293" enabled="1"/>
+          <CH index="294" enabled="1"/>
+          <CH index="295" enabled="1"/>
+          <CH index="296" enabled="1"/>
+          <CH index="297" enabled="1"/>
+          <CH index="298" enabled="1"/>
+          <CH index="299" enabled="1"/>
+          <CH index="300" enabled="1"/>
+          <CH index="301" enabled="1"/>
+          <CH index="302" enabled="1"/>
+          <CH index="303" enabled="1"/>
+          <CH index="304" enabled="1"/>
+          <CH index="305" enabled="1"/>
+          <CH index="306" enabled="1"/>
+          <CH index="307" enabled="1"/>
+          <CH index="308" enabled="1"/>
+          <CH index="309" enabled="1"/>
+          <CH index="310" enabled="1"/>
+          <CH index="311" enabled="1"/>
+          <CH index="312" enabled="1"/>
+          <CH index="313" enabled="1"/>
+          <CH index="314" enabled="1"/>
+          <CH index="315" enabled="1"/>
+          <CH index="316" enabled="1"/>
+          <CH index="317" enabled="1"/>
+          <CH index="318" enabled="1"/>
+          <CH index="319" enabled="1"/>
+          <CH index="320" enabled="1"/>
+          <CH index="321" enabled="1"/>
+          <CH index="322" enabled="1"/>
+          <CH index="323" enabled="1"/>
+          <CH index="324" enabled="1"/>
+          <CH index="325" enabled="1"/>
+          <CH index="326" enabled="1"/>
+          <CH index="327" enabled="1"/>
+          <CH index="328" enabled="1"/>
+          <CH index="329" enabled="1"/>
+          <CH index="330" enabled="1"/>
+          <CH index="331" enabled="1"/>
+          <CH index="332" enabled="1"/>
+          <CH index="333" enabled="1"/>
+          <CH index="334" enabled="1"/>
+          <CH index="335" enabled="1"/>
+          <CH index="336" enabled="1"/>
+          <CH index="337" enabled="1"/>
+          <CH index="338" enabled="1"/>
+          <CH index="339" enabled="1"/>
+          <CH index="340" enabled="1"/>
+          <CH index="341" enabled="1"/>
+          <CH index="342" enabled="1"/>
+          <CH index="343" enabled="1"/>
+          <CH index="344" enabled="1"/>
+          <CH index="345" enabled="1"/>
+          <CH index="346" enabled="1"/>
+          <CH index="347" enabled="1"/>
+          <CH index="348" enabled="1"/>
+          <CH index="349" enabled="1"/>
+          <CH index="350" enabled="1"/>
+          <CH index="351" enabled="1"/>
+          <CH index="352" enabled="1"/>
+          <CH index="353" enabled="1"/>
+          <CH index="354" enabled="1"/>
+          <CH index="355" enabled="1"/>
+          <CH index="356" enabled="1"/>
+          <CH index="357" enabled="1"/>
+          <CH index="358" enabled="1"/>
+          <CH index="359" enabled="1"/>
+          <CH index="360" enabled="1"/>
+          <CH index="361" enabled="1"/>
+          <CH index="362" enabled="1"/>
+          <CH index="363" enabled="1"/>
+          <CH index="364" enabled="1"/>
+          <CH index="365" enabled="1"/>
+          <CH index="366" enabled="1"/>
+          <CH index="367" enabled="1"/>
+          <CH index="368" enabled="1"/>
+          <CH index="369" enabled="1"/>
+          <CH index="370" enabled="1"/>
+          <CH index="371" enabled="1"/>
+          <CH index="372" enabled="1"/>
+          <CH index="373" enabled="1"/>
+          <CH index="374" enabled="1"/>
+          <CH index="375" enabled="1"/>
+          <CH index="376" enabled="1"/>
+          <CH index="377" enabled="1"/>
+          <CH index="378" enabled="1"/>
+          <CH index="379" enabled="1"/>
+          <CH index="380" enabled="1"/>
+          <CH index="381" enabled="1"/>
+          <CH index="382" enabled="1"/>
+          <CH index="383" enabled="1"/>
+          <CH index="384" enabled="1"/>
+        </STREAM>
+      </CUSTOM_PARAMETERS>
+      <EDITOR isCollapsed="0" isDrawerOpen="1" displayName="Channel Map" activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="LFP Viewer" insertionPoint="1" pluginName="LFP Viewer"
+               type="1" index="6" libraryName="LFP viewer" libraryVersion="0.6.7"
+               processorType="3" nodeId="113">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-A" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels 2.0 - Multishank">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="lowpass" activeStream="0"
+              Type="LfpDisplayEditor">
+        <TAB Active="1" Index="9"/>
+        <WINDOW Active="0"/>
+        <VALUES SelectedLayout="2"/>
+        <LFPDISPLAY0 SubprocessorID="10001" Range="50,2000,2.0" Timebase="2.0" Spread="10"
+                     colourScheme="1" colorGrouping="1" spikeRaster="OFF" clipWarning="1"
+                     satWarning="1" reverseOrder="0" sortByDepth="0" channelSkip="1"
+                     showChannelNum="0" subtractOffset="0" isInverted="0" triggerSource="1"
+                     trialAvg="0" singleChannelView="-1" EventButtonState="255" ChannelDisplayState="1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                     ScrollX="0" ScrollY="2495"/>
+        <LFPDISPLAY1 SubprocessorID="10001" Range="50,2000,10.0" Timebase="2.0" Spread="30"
+                     colourScheme="1" colorGrouping="1" spikeRaster="OFF" clipWarning="1"
+                     satWarning="1" reverseOrder="0" sortByDepth="0" channelSkip="1"
+                     showChannelNum="0" subtractOffset="0" isInverted="0" triggerSource="1"
+                     trialAvg="0" singleChannelView="-1" EventButtonState="255" ChannelDisplayState="1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                     ScrollX="0" ScrollY="0"/>
+        <LFPDISPLAY2 SubprocessorID="10001" Range="250,2000,10.0" Timebase="2.0" Spread="40"
+                     colourScheme="1" colorGrouping="1" spikeRaster="OFF" clipWarning="1"
+                     satWarning="1" reverseOrder="0" sortByDepth="0" channelSkip="1"
+                     showChannelNum="0" subtractOffset="0" isInverted="0" triggerSource="1"
+                     trialAvg="0" singleChannelView="-1" EventButtonState="255" ChannelDisplayState="1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                     ScrollX="0" ScrollY="0"/>
+        <CANVAS doubleVerticalSplitRatio="0.342342346906662" doubleHorizontalSplitRatio="0.5"
+                tripleHorizontalSplitRatio="0.33,0.66" tripleVerticalSplitRatio="0.33,0.66"
+                showAllOptions="0"/>
+      </EDITOR>
+    </PROCESSOR>
+    <SWITCH number="3"/>
+    <PROCESSOR name="Bandpass Filter" insertionPoint="1" pluginName="Bandpass Filter"
+               type="1" index="5" libraryName="Bandpass Filter" libraryVersion="0.6.7"
+               processorType="1" nodeId="106">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-B" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels 2.0 - Multishank">
+        <PARAMETERS enable_stream="1" high_cut="300.0" low_cut="0.5" Channels=""/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="1" displayName="Bandpass Filter"
+              activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="Channel Map" insertionPoint="1" pluginName="Channel Map"
+               type="1" index="3" libraryName="Channel Mapper" libraryVersion="0.6.7"
+               processorType="1" nodeId="107">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-B" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels 2.0 - Multishank">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS>
+        <STREAM>
+          <CH index="0" enabled="1"/>
+          <CH index="1" enabled="1"/>
+          <CH index="2" enabled="1"/>
+          <CH index="3" enabled="1"/>
+          <CH index="4" enabled="1"/>
+          <CH index="5" enabled="1"/>
+          <CH index="6" enabled="1"/>
+          <CH index="7" enabled="1"/>
+          <CH index="8" enabled="1"/>
+          <CH index="9" enabled="1"/>
+          <CH index="10" enabled="1"/>
+          <CH index="11" enabled="1"/>
+          <CH index="12" enabled="1"/>
+          <CH index="13" enabled="1"/>
+          <CH index="14" enabled="1"/>
+          <CH index="15" enabled="1"/>
+          <CH index="16" enabled="1"/>
+          <CH index="17" enabled="1"/>
+          <CH index="18" enabled="1"/>
+          <CH index="19" enabled="1"/>
+          <CH index="20" enabled="1"/>
+          <CH index="21" enabled="1"/>
+          <CH index="22" enabled="1"/>
+          <CH index="23" enabled="1"/>
+          <CH index="24" enabled="1"/>
+          <CH index="25" enabled="1"/>
+          <CH index="26" enabled="1"/>
+          <CH index="27" enabled="1"/>
+          <CH index="28" enabled="1"/>
+          <CH index="29" enabled="1"/>
+          <CH index="30" enabled="1"/>
+          <CH index="31" enabled="1"/>
+          <CH index="32" enabled="1"/>
+          <CH index="33" enabled="1"/>
+          <CH index="34" enabled="1"/>
+          <CH index="35" enabled="1"/>
+          <CH index="36" enabled="1"/>
+          <CH index="37" enabled="1"/>
+          <CH index="38" enabled="1"/>
+          <CH index="39" enabled="1"/>
+          <CH index="40" enabled="1"/>
+          <CH index="41" enabled="1"/>
+          <CH index="42" enabled="1"/>
+          <CH index="43" enabled="1"/>
+          <CH index="44" enabled="1"/>
+          <CH index="45" enabled="1"/>
+          <CH index="46" enabled="1"/>
+          <CH index="47" enabled="1"/>
+          <CH index="48" enabled="1"/>
+          <CH index="49" enabled="1"/>
+          <CH index="50" enabled="1"/>
+          <CH index="51" enabled="1"/>
+          <CH index="52" enabled="1"/>
+          <CH index="53" enabled="1"/>
+          <CH index="54" enabled="1"/>
+          <CH index="55" enabled="1"/>
+          <CH index="56" enabled="1"/>
+          <CH index="57" enabled="1"/>
+          <CH index="58" enabled="1"/>
+          <CH index="59" enabled="1"/>
+          <CH index="60" enabled="1"/>
+          <CH index="61" enabled="1"/>
+          <CH index="62" enabled="1"/>
+          <CH index="63" enabled="1"/>
+          <CH index="64" enabled="1"/>
+          <CH index="65" enabled="1"/>
+          <CH index="66" enabled="1"/>
+          <CH index="67" enabled="1"/>
+          <CH index="68" enabled="1"/>
+          <CH index="69" enabled="1"/>
+          <CH index="70" enabled="1"/>
+          <CH index="71" enabled="1"/>
+          <CH index="72" enabled="1"/>
+          <CH index="73" enabled="1"/>
+          <CH index="74" enabled="1"/>
+          <CH index="75" enabled="1"/>
+          <CH index="76" enabled="1"/>
+          <CH index="77" enabled="1"/>
+          <CH index="78" enabled="1"/>
+          <CH index="79" enabled="1"/>
+          <CH index="80" enabled="1"/>
+          <CH index="81" enabled="1"/>
+          <CH index="82" enabled="1"/>
+          <CH index="83" enabled="1"/>
+          <CH index="84" enabled="1"/>
+          <CH index="85" enabled="1"/>
+          <CH index="86" enabled="1"/>
+          <CH index="87" enabled="1"/>
+          <CH index="88" enabled="1"/>
+          <CH index="89" enabled="1"/>
+          <CH index="90" enabled="1"/>
+          <CH index="91" enabled="1"/>
+          <CH index="92" enabled="1"/>
+          <CH index="93" enabled="1"/>
+          <CH index="94" enabled="1"/>
+          <CH index="95" enabled="1"/>
+          <CH index="96" enabled="1"/>
+          <CH index="97" enabled="1"/>
+          <CH index="98" enabled="1"/>
+          <CH index="99" enabled="1"/>
+          <CH index="100" enabled="1"/>
+          <CH index="101" enabled="1"/>
+          <CH index="102" enabled="1"/>
+          <CH index="103" enabled="1"/>
+          <CH index="104" enabled="1"/>
+          <CH index="105" enabled="1"/>
+          <CH index="106" enabled="1"/>
+          <CH index="107" enabled="1"/>
+          <CH index="108" enabled="1"/>
+          <CH index="109" enabled="1"/>
+          <CH index="110" enabled="1"/>
+          <CH index="111" enabled="1"/>
+          <CH index="112" enabled="1"/>
+          <CH index="113" enabled="1"/>
+          <CH index="114" enabled="1"/>
+          <CH index="115" enabled="1"/>
+          <CH index="116" enabled="1"/>
+          <CH index="117" enabled="1"/>
+          <CH index="118" enabled="1"/>
+          <CH index="119" enabled="1"/>
+          <CH index="120" enabled="1"/>
+          <CH index="121" enabled="1"/>
+          <CH index="122" enabled="1"/>
+          <CH index="123" enabled="1"/>
+          <CH index="124" enabled="1"/>
+          <CH index="125" enabled="1"/>
+          <CH index="126" enabled="1"/>
+          <CH index="127" enabled="1"/>
+          <CH index="128" enabled="1"/>
+          <CH index="129" enabled="1"/>
+          <CH index="130" enabled="1"/>
+          <CH index="131" enabled="1"/>
+          <CH index="132" enabled="1"/>
+          <CH index="133" enabled="1"/>
+          <CH index="134" enabled="1"/>
+          <CH index="135" enabled="1"/>
+          <CH index="136" enabled="1"/>
+          <CH index="137" enabled="1"/>
+          <CH index="138" enabled="1"/>
+          <CH index="139" enabled="1"/>
+          <CH index="140" enabled="1"/>
+          <CH index="141" enabled="1"/>
+          <CH index="142" enabled="1"/>
+          <CH index="143" enabled="1"/>
+          <CH index="144" enabled="1"/>
+          <CH index="145" enabled="1"/>
+          <CH index="146" enabled="1"/>
+          <CH index="147" enabled="1"/>
+          <CH index="148" enabled="1"/>
+          <CH index="149" enabled="1"/>
+          <CH index="150" enabled="1"/>
+          <CH index="151" enabled="1"/>
+          <CH index="152" enabled="1"/>
+          <CH index="153" enabled="1"/>
+          <CH index="154" enabled="1"/>
+          <CH index="155" enabled="1"/>
+          <CH index="156" enabled="1"/>
+          <CH index="157" enabled="1"/>
+          <CH index="158" enabled="1"/>
+          <CH index="159" enabled="1"/>
+          <CH index="160" enabled="1"/>
+          <CH index="161" enabled="1"/>
+          <CH index="162" enabled="1"/>
+          <CH index="163" enabled="1"/>
+          <CH index="164" enabled="1"/>
+          <CH index="165" enabled="1"/>
+          <CH index="166" enabled="1"/>
+          <CH index="167" enabled="1"/>
+          <CH index="168" enabled="1"/>
+          <CH index="169" enabled="1"/>
+          <CH index="170" enabled="1"/>
+          <CH index="171" enabled="1"/>
+          <CH index="172" enabled="1"/>
+          <CH index="173" enabled="1"/>
+          <CH index="174" enabled="1"/>
+          <CH index="175" enabled="1"/>
+          <CH index="176" enabled="1"/>
+          <CH index="177" enabled="1"/>
+          <CH index="178" enabled="1"/>
+          <CH index="179" enabled="1"/>
+          <CH index="180" enabled="1"/>
+          <CH index="181" enabled="1"/>
+          <CH index="182" enabled="1"/>
+          <CH index="183" enabled="1"/>
+          <CH index="184" enabled="1"/>
+          <CH index="185" enabled="1"/>
+          <CH index="186" enabled="1"/>
+          <CH index="187" enabled="1"/>
+          <CH index="188" enabled="1"/>
+          <CH index="189" enabled="1"/>
+          <CH index="190" enabled="1"/>
+          <CH index="191" enabled="1"/>
+          <CH index="192" enabled="1"/>
+          <CH index="193" enabled="1"/>
+          <CH index="194" enabled="1"/>
+          <CH index="195" enabled="1"/>
+          <CH index="196" enabled="1"/>
+          <CH index="197" enabled="1"/>
+          <CH index="198" enabled="1"/>
+          <CH index="199" enabled="1"/>
+          <CH index="200" enabled="1"/>
+          <CH index="201" enabled="1"/>
+          <CH index="202" enabled="1"/>
+          <CH index="203" enabled="1"/>
+          <CH index="204" enabled="1"/>
+          <CH index="205" enabled="1"/>
+          <CH index="206" enabled="1"/>
+          <CH index="207" enabled="1"/>
+          <CH index="208" enabled="1"/>
+          <CH index="209" enabled="1"/>
+          <CH index="210" enabled="1"/>
+          <CH index="211" enabled="1"/>
+          <CH index="212" enabled="1"/>
+          <CH index="213" enabled="1"/>
+          <CH index="214" enabled="1"/>
+          <CH index="215" enabled="1"/>
+          <CH index="216" enabled="1"/>
+          <CH index="217" enabled="1"/>
+          <CH index="218" enabled="1"/>
+          <CH index="219" enabled="1"/>
+          <CH index="220" enabled="1"/>
+          <CH index="221" enabled="1"/>
+          <CH index="222" enabled="1"/>
+          <CH index="223" enabled="1"/>
+          <CH index="224" enabled="1"/>
+          <CH index="225" enabled="1"/>
+          <CH index="226" enabled="1"/>
+          <CH index="227" enabled="1"/>
+          <CH index="228" enabled="1"/>
+          <CH index="229" enabled="1"/>
+          <CH index="230" enabled="1"/>
+          <CH index="231" enabled="1"/>
+          <CH index="232" enabled="1"/>
+          <CH index="233" enabled="1"/>
+          <CH index="234" enabled="1"/>
+          <CH index="235" enabled="1"/>
+          <CH index="236" enabled="1"/>
+          <CH index="237" enabled="1"/>
+          <CH index="238" enabled="1"/>
+          <CH index="239" enabled="1"/>
+          <CH index="240" enabled="1"/>
+          <CH index="241" enabled="1"/>
+          <CH index="242" enabled="1"/>
+          <CH index="243" enabled="1"/>
+          <CH index="244" enabled="1"/>
+          <CH index="245" enabled="1"/>
+          <CH index="246" enabled="1"/>
+          <CH index="247" enabled="1"/>
+          <CH index="248" enabled="1"/>
+          <CH index="249" enabled="1"/>
+          <CH index="250" enabled="1"/>
+          <CH index="251" enabled="1"/>
+          <CH index="252" enabled="1"/>
+          <CH index="253" enabled="1"/>
+          <CH index="254" enabled="1"/>
+          <CH index="255" enabled="1"/>
+          <CH index="256" enabled="1"/>
+          <CH index="257" enabled="1"/>
+          <CH index="258" enabled="1"/>
+          <CH index="259" enabled="1"/>
+          <CH index="260" enabled="1"/>
+          <CH index="261" enabled="1"/>
+          <CH index="262" enabled="1"/>
+          <CH index="263" enabled="1"/>
+          <CH index="264" enabled="1"/>
+          <CH index="265" enabled="1"/>
+          <CH index="266" enabled="1"/>
+          <CH index="267" enabled="1"/>
+          <CH index="268" enabled="1"/>
+          <CH index="269" enabled="1"/>
+          <CH index="270" enabled="1"/>
+          <CH index="271" enabled="1"/>
+          <CH index="272" enabled="1"/>
+          <CH index="273" enabled="1"/>
+          <CH index="274" enabled="1"/>
+          <CH index="275" enabled="1"/>
+          <CH index="276" enabled="1"/>
+          <CH index="277" enabled="1"/>
+          <CH index="278" enabled="1"/>
+          <CH index="279" enabled="1"/>
+          <CH index="280" enabled="1"/>
+          <CH index="281" enabled="1"/>
+          <CH index="282" enabled="1"/>
+          <CH index="283" enabled="1"/>
+          <CH index="284" enabled="1"/>
+          <CH index="285" enabled="1"/>
+          <CH index="286" enabled="1"/>
+          <CH index="287" enabled="1"/>
+          <CH index="288" enabled="1"/>
+          <CH index="289" enabled="1"/>
+          <CH index="290" enabled="1"/>
+          <CH index="291" enabled="1"/>
+          <CH index="292" enabled="1"/>
+          <CH index="293" enabled="1"/>
+          <CH index="294" enabled="1"/>
+          <CH index="295" enabled="1"/>
+          <CH index="296" enabled="1"/>
+          <CH index="297" enabled="1"/>
+          <CH index="298" enabled="1"/>
+          <CH index="299" enabled="1"/>
+          <CH index="300" enabled="1"/>
+          <CH index="301" enabled="1"/>
+          <CH index="302" enabled="1"/>
+          <CH index="303" enabled="1"/>
+          <CH index="304" enabled="1"/>
+          <CH index="305" enabled="1"/>
+          <CH index="306" enabled="1"/>
+          <CH index="307" enabled="1"/>
+          <CH index="308" enabled="1"/>
+          <CH index="309" enabled="1"/>
+          <CH index="310" enabled="1"/>
+          <CH index="311" enabled="1"/>
+          <CH index="312" enabled="1"/>
+          <CH index="313" enabled="1"/>
+          <CH index="314" enabled="1"/>
+          <CH index="315" enabled="1"/>
+          <CH index="316" enabled="1"/>
+          <CH index="317" enabled="1"/>
+          <CH index="318" enabled="1"/>
+          <CH index="319" enabled="1"/>
+          <CH index="320" enabled="1"/>
+          <CH index="321" enabled="1"/>
+          <CH index="322" enabled="1"/>
+          <CH index="323" enabled="1"/>
+          <CH index="324" enabled="1"/>
+          <CH index="325" enabled="1"/>
+          <CH index="326" enabled="1"/>
+          <CH index="327" enabled="1"/>
+          <CH index="328" enabled="1"/>
+          <CH index="329" enabled="1"/>
+          <CH index="330" enabled="1"/>
+          <CH index="331" enabled="1"/>
+          <CH index="332" enabled="1"/>
+          <CH index="333" enabled="1"/>
+          <CH index="334" enabled="1"/>
+          <CH index="335" enabled="1"/>
+          <CH index="336" enabled="1"/>
+          <CH index="337" enabled="1"/>
+          <CH index="338" enabled="1"/>
+          <CH index="339" enabled="1"/>
+          <CH index="340" enabled="1"/>
+          <CH index="341" enabled="1"/>
+          <CH index="342" enabled="1"/>
+          <CH index="343" enabled="1"/>
+          <CH index="344" enabled="1"/>
+          <CH index="345" enabled="1"/>
+          <CH index="346" enabled="1"/>
+          <CH index="347" enabled="1"/>
+          <CH index="348" enabled="1"/>
+          <CH index="349" enabled="1"/>
+          <CH index="350" enabled="1"/>
+          <CH index="351" enabled="1"/>
+          <CH index="352" enabled="1"/>
+          <CH index="353" enabled="1"/>
+          <CH index="354" enabled="1"/>
+          <CH index="355" enabled="1"/>
+          <CH index="356" enabled="1"/>
+          <CH index="357" enabled="1"/>
+          <CH index="358" enabled="1"/>
+          <CH index="359" enabled="1"/>
+          <CH index="360" enabled="1"/>
+          <CH index="361" enabled="1"/>
+          <CH index="362" enabled="1"/>
+          <CH index="363" enabled="1"/>
+          <CH index="364" enabled="1"/>
+          <CH index="365" enabled="1"/>
+          <CH index="366" enabled="1"/>
+          <CH index="367" enabled="1"/>
+          <CH index="368" enabled="1"/>
+          <CH index="369" enabled="1"/>
+          <CH index="370" enabled="1"/>
+          <CH index="371" enabled="1"/>
+          <CH index="372" enabled="1"/>
+          <CH index="373" enabled="1"/>
+          <CH index="374" enabled="1"/>
+          <CH index="375" enabled="1"/>
+          <CH index="376" enabled="1"/>
+          <CH index="377" enabled="1"/>
+          <CH index="378" enabled="1"/>
+          <CH index="379" enabled="1"/>
+          <CH index="380" enabled="1"/>
+          <CH index="381" enabled="1"/>
+          <CH index="382" enabled="1"/>
+          <CH index="383" enabled="1"/>
+          <CH index="384" enabled="1"/>
+        </STREAM>
+      </CUSTOM_PARAMETERS>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Channel Map" activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="LFP Viewer" insertionPoint="1" pluginName="LFP Viewer"
+               type="1" index="6" libraryName="LFP viewer" libraryVersion="0.6.7"
+               processorType="3" nodeId="108">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-B" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels 2.0 - Multishank">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="highpass" activeStream="0"
+              Type="LfpDisplayEditor">
+        <TAB Active="1" Index="6"/>
+        <WINDOW Active="0"/>
+        <VALUES SelectedLayout="2"/>
+        <LFPDISPLAY0 SubprocessorID="10001" Range="250,2000,2.0" Timebase="2.0" Spread="20"
+                     colourScheme="1" colorGrouping="1" spikeRaster="OFF" clipWarning="1"
+                     satWarning="1" reverseOrder="0" sortByDepth="0" channelSkip="1"
+                     showChannelNum="0" subtractOffset="0" isInverted="0" triggerSource="1"
+                     trialAvg="0" singleChannelView="-1" EventButtonState="255" ChannelDisplayState="1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                     ScrollX="0" ScrollY="414"/>
+        <LFPDISPLAY1 SubprocessorID="10001" Range="250,2000,10.0" Timebase="2.0" Spread="40"
+                     colourScheme="1" colorGrouping="1" spikeRaster="OFF" clipWarning="1"
+                     satWarning="1" reverseOrder="0" sortByDepth="0" channelSkip="1"
+                     showChannelNum="0" subtractOffset="0" isInverted="0" triggerSource="1"
+                     trialAvg="0" singleChannelView="-1" EventButtonState="255" ChannelDisplayState="1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                     ScrollX="0" ScrollY="0"/>
+        <LFPDISPLAY2 SubprocessorID="10001" Range="250,2000,10.0" Timebase="2.0" Spread="40"
+                     colourScheme="1" colorGrouping="1" spikeRaster="OFF" clipWarning="1"
+                     satWarning="1" reverseOrder="0" sortByDepth="0" channelSkip="1"
+                     showChannelNum="0" subtractOffset="0" isInverted="0" triggerSource="1"
+                     trialAvg="0" singleChannelView="-1" EventButtonState="255" ChannelDisplayState="1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                     ScrollX="0" ScrollY="0"/>
+        <CANVAS doubleVerticalSplitRatio="0.5" doubleHorizontalSplitRatio="0.5"
+                tripleHorizontalSplitRatio="0.33,0.66" tripleVerticalSplitRatio="0.33,0.66"
+                showAllOptions="0"/>
+      </EDITOR>
+    </PROCESSOR>
+  </SIGNALCHAIN>
+  <EDITORVIEWPORT scroll="0">
+    <NEUROPIX-PXI ID="103"/>
+    <RECORD_NODE ID="109"/>
+    <COMMON_AVG_REF ID="110"/>
+    <SPLITTER ID="105"/>
+    <BANDPASS_FILTER ID="112"/>
+    <CHANNEL_MAP ID="111"/>
+    <LFP_VIEWER ID="113"/>
+  </EDITORVIEWPORT>
+  <DATAVIEWPORT selectedTab="9"/>
+  <AUDIO sampleRate="48000.0" bufferSize="1024" deviceType="Windows Audio">
+    <DEVICESETUP deviceType="Windows Audio" audioOutputDeviceName="Speakers (2- High Definition Audio Device)"
+                 audioInputDeviceName="" audioDeviceRate="48000.0" audioDeviceBufferSize="1024"/>
+  </AUDIO>
+  <CONTROLPANEL isOpen="1" recordPath="C:\Users\nolan\Documents\Open Ephys" recordEngine="BINARY"
+                clockMode="0"/>
+  <AUDIOEDITOR isMuted="0" volume="21.0" noiseGate="0.0"/>
+  <FILENAMECONFIG>
+    <PREPEND state="2" value="M29_D28_"/>
+    <MAIN state="1" value="2024-12-15_15-08-45"/>
+    <APPEND state="2" value="_MCVR1"/>
+  </FILENAMECONFIG>
+  <PROCESSORLIST>
+    <COLOR ID="801" R="59" G="59" B="59"/>
+    <COLOR ID="804" R="241" G="90" B="41"/>
+    <COLOR ID="802" R="0" G="174" B="239"/>
+    <COLOR ID="803" R="0" G="166" B="81"/>
+    <COLOR ID="805" R="147" G="149" B="152"/>
+    <COLOR ID="806" R="255" G="0" B="0"/>
+    <COLOR ID="807" R="0" G="0" B="0"/>
+  </PROCESSORLIST>
+  <UICOMPONENT isProcessorListOpen="1" isEditorViewportOpen="1"/>
+</SETTINGS>
