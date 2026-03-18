@@ -1312,7 +1312,7 @@ def _parse_openephys_settings(
             "settings_channel_keys": None,
             "elec_ids": None,
             "shank_ids": None,
-            "custom_channel_map": None
+            "custom_channel_map": None,
         }
 
         if selected_electrodes is not None:
@@ -1321,7 +1321,7 @@ def _parse_openephys_settings(
             if probe_custom_channel_maps is not None:
                 # Slice custom channel maps to match the number of selected electrodes
                 # (required when SYNC channel is present)
-                custom_indices = probe_custom_channel_maps[probe_idx][:len(info["selected_electrode_indices"])]
+                custom_indices = probe_custom_channel_maps[probe_idx][: len(info["selected_electrode_indices"])]
                 info["custom_channel_map"] = custom_indices
         else:
             # Older plugin versions: reverse-engineer electrode IDs from positions
@@ -1407,7 +1407,7 @@ def _parse_openephys_settings(
             if probe_custom_channel_maps is not None:
                 # Slice custom channel maps to match the number of selected electrodes
                 # (required when SYNC channel is present)
-                custom_indices = probe_custom_channel_maps[probe_idx][:len(info["contact_ids"])]
+                custom_indices = probe_custom_channel_maps[probe_idx][: len(info["contact_ids"])]
                 info["custom_channel_map"] = custom_indices
 
         probes_info.append(info)
