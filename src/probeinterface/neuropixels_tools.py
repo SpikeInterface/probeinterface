@@ -1198,7 +1198,6 @@ def _parse_openephys_settings(
     if len(stream_fields) > 0:
         has_streams = True
         probe_names_used = []
-        probe_custom_channel_indices = []
         for i, stream_field in enumerate(stream_fields):
             stream = stream_field.attrib["name"]
             # exclude ADC streams
@@ -1211,7 +1210,6 @@ def _parse_openephys_settings(
     else:
         has_streams = False
         probe_names_used = None
-        probe_custom_channel_indices = None
 
     if onix_processor is not None:
         probe_names_used = [pn for pn in probe_names_used if "Probe" in pn]
