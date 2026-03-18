@@ -797,38 +797,6 @@ def _build_canonical_contact_id(electrode_id: int, shank_id: int | None = None) 
         return f"e{electrode_id}"
 
 
-def _contact_id_to_global_electrode_index(contact_id: str, electrodes_per_shank: int) -> int:
-    """
-    Convert a canonical contact ID back to a global electrode index.
-
-    This is the inverse of `_build_canonical_contact_id`. For multi-shank probes,
-    the global index is ``shank_id * electrodes_per_shank + local_electrode_id``.
-
-    This formula works because the neuropixels-pxi plugin assigns electrode indices
-    in left-to-right, bottom-to-top, left-shank-to-right-shank order (confirmed
-    by Josh Siegle). Shank 0 owns indices 0 to electrodes_per_shank-1, shank 1
-    owns the next block, and so on.
-
-    Parameters
-    ----------
-    contact_id : str
-        Canonical contact ID, e.g. "e123" or "s2e45".
-    electrodes_per_shank : int
-        Number of electrodes per shank (cols_per_shank * rows_per_shank).
-
-    Returns
-    -------
-    int
-        Global electrode index.
-    """
-    if contact_id.startswith("s"):
-        shank_str, elec_str = contact_id.split("e")
-        shank_id = int(shank_str[1:])
-        local_id = int(elec_str)
-        return shank_id * electrodes_per_shank + local_id
-    else:
-        return int(contact_id[1:])
-
 
 def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
     """
