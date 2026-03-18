@@ -499,11 +499,9 @@ def _read_oebin_electrode_indices(oebin_file, stream_name):
     """Read electrode_index metadata from an oebin file for a given stream."""
     with open(oebin_file) as f:
         oebin = json.load(f)
-    is_neo_stream = "#" in stream_name
-    oebin_stream_name = stream_name.split("#")[-1] if is_neo_stream else stream_name
     for cs in oebin.get("continuous", []):
         folder_name = cs.get("folder_name", "").rstrip("/")
-        if folder_name == oebin_stream_name:
+        if folder_name == stream_name:
             indices = []
             for ch in cs.get("channels", []):
                 for m in ch.get("channel_metadata", []):
@@ -526,6 +524,8 @@ def test_read_openephys_with_oebin_wiring():
 
     assert probe.get_contact_count() == 384
     assert probe.device_channel_indices is not None
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
     # Wiring invariant
     oebin_electrode_indices = _read_oebin_electrode_indices(oebin, stream_name)
@@ -707,7 +707,6 @@ def test_read_openephys_onebox_nonsequential_wiring():
             f"Contact {i} ({contact_id}): expected global electrode_index {global_electrode_index} "
             f"at column {column}, got {oebin_electrode_indices[column]}"
         )
-
 
 if __name__ == "__main__":
     # test_multiple_probes()

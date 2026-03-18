@@ -1752,6 +1752,12 @@ def read_openephys(
     if oebin_file is not None:
         device_channel_indices = _compute_wiring_from_oebin(probe, oebin_file, stream_name, settings_file)
         probe.set_device_channel_indices(device_channel_indices)
+
+        # re-order contact annotations to match device channel order
+        ordered_adc_groups = [probe.contact_annotations["adc_group"][i] for i in device_channel_indices]
+        probe.annotate_contacts(adc_group=ordered_adc_groups)
+        ordered_adc_sample_orders = [probe.contact_annotations["adc_sample_order"][i] for i in device_channel_indices]
+        probe.annotate_contacts(adc_sample_order=ordered_adc_sample_orders)
     else:
         probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
     return probe
