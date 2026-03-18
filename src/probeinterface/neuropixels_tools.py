@@ -593,54 +593,38 @@ def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe
 
     """
 
-    probe_type_num_chans, *imro_table_values_list, _ = imro_str.strip().split(")")
+    # Extract probe_type from the IMRO header "(probe_type,num_chans)"
+    probe_type = imro_str.strip().split(")")[0].split(",")[0][1:]
 
-    # probe_type_num_chans looks like f"({probe_type},{num_chans}"
-    probe_type = probe_type_num_chans.split(",")[0][1:]
+    # Parse the IMRO table into per-channel data (same parser used by read_spikeglx)
+    imro_per_channel = _parse_imro_string(imro_str, imDatPrb_pn)
 
-    probe_features = _load_np_probe_features()
-    pt_metadata, fields, mux_info = get_probe_metadata_from_probe_features(probe_features, imDatPrb_pn)
+    # Build full catalogue probe and slice to active electrodes
+    full_probe = build_neuropixels_probe(probe_part_number=imDatPrb_pn)
 
-    # fields = probe_description["fields_in_imro_table"]
-    contact_info = {k: [] for k in fields}
-    for field_values_str in imro_table_values_list:  # Imro table values look like '(value, value, value, ... '
-        # Split them by space to get int('value'), int('value'), int('value'), ...)
-        values = tuple(map(int, field_values_str[1:].split(" ")))
-        for field, field_value in zip(fields, values):
-            contact_info[field].append(field_value)
+    elec_ids = imro_per_channel["electrode"]
+    shank_ids = imro_per_channel.get("shank", [None] * len(elec_ids))
+    active_contact_ids = [
+        _build_canonical_contact_id(elec_id, shank_id) for shank_id, elec_id in zip(shank_ids, elec_ids)
+    ]
 
-    channel_ids = np.array(contact_info["channel"])
-    if "electrode" in contact_info:
-        elec_ids = np.array(contact_info["electrode"])
-    else:
-        if contact_info.get("bank") is not None:
-            bank_key = "bank"
-        elif contact_info.get("bank_mask") is not None:
-            bank_key = "bank_mask"
-        banks = np.array(contact_info[bank_key])
-        elec_ids = banks * 384 + channel_ids
+    contact_id_to_index = {cid: i for i, cid in enumerate(full_probe.contact_ids)}
+    selected_indices = np.array([contact_id_to_index[cid] for cid in active_contact_ids])
+    probe = full_probe.get_slice(selected_indices)
 
-    if pt_metadata["num_shanks"] > 1:
-        shank_ids = np.array(contact_info["shank"])
-    else:
-        shank_ids = None
+    # ADC sampling annotations
+    adc_sampling_table = probe.annotations.get("adc_sampling_table")
+    _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
-    probe = _make_npx_probe_from_description(pt_metadata, imDatPrb_pn, elec_ids, shank_ids, mux_info)
+    # Scalar annotations
+    probe.annotate(probe_type=probe_type)
 
-    # scalar annotations
-    probe.annotate(
-        probe_type=probe_type,
-    )
-
-    # vector annotations
+    # Vector annotations from IMRO fields
     vector_properties = ("channel", "bank", "bank_mask", "ref_id", "ap_gain", "lf_gain", "ap_hipas_flt")
-
     vector_properties_available = {}
-    for k, v in contact_info.items():
-        if (k in vector_properties) and (len(v) > 0):
-            # convert to ProbeInterface naming for backwards compatibility
+    for k, v in imro_per_channel.items():
+        if k in vector_properties and len(v) > 0:
             vector_properties_available[imro_field_to_pi_field.get(k)] = v
-
     probe.annotate_contacts(**vector_properties_available)
 
     return probe
