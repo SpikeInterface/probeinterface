@@ -1198,7 +1198,7 @@ def _parse_openephys_settings(
     if len(stream_fields) > 0:
         has_streams = True
         probe_names_used = []
-        for i, stream_field in enumerate(stream_fields):
+        for stream_field in stream_fields:
             stream = stream_field.attrib["name"]
             # exclude ADC streams
             if "ADC" in stream:
@@ -1216,14 +1216,14 @@ def _parse_openephys_settings(
 
     # Load custom channel maps, if channel map is present and comes before record node
     # (if not, it won't be applied to the recording)
-    probe_custom_channel_indices = None
+    probe_custom_channel_maps = None
     if channel_map is not None and channel_map_before_record_node:
         stream_fields = channel_map.findall("STREAM")
         custom_parameters = channel_map.findall("CUSTOM_PARAMETERS")
         if custom_parameters is not None:
             custom_parameters = custom_parameters[0]
             custom_maps_all = custom_parameters.findall("STREAM")
-            probe_custom_channel_indices = []
+            probe_custom_channel_maps = []
             # filter ADC streams and keep custom maps for probe streams
             for i, stream_field in enumerate(stream_fields):
                 stream = stream_field.attrib["name"]
@@ -1231,7 +1231,7 @@ def _parse_openephys_settings(
                 if "ADC" in stream:
                     continue
                 custom_indices = [int(ch.attrib["index"]) for ch in custom_maps_all[i].findall("CH")]
-                probe_custom_channel_indices.append(custom_indices)
+                probe_custom_channel_maps.append(custom_indices)
 
     # For Open Ephys version < 1.0 np_probes is in the EDITOR field.
     # For Open Ephys version >= 1.0 np_probes is in the CUSTOM_PARAMETERS field.
@@ -1312,17 +1312,17 @@ def _parse_openephys_settings(
             "settings_channel_keys": None,
             "elec_ids": None,
             "shank_ids": None,
-            "custom_channel_indices": None
+            "custom_channel_map": None
         }
 
         if selected_electrodes is not None:
             # Newer plugin versions provide electrode indices directly
             info["selected_electrode_indices"] = [int(ei) for ei in selected_electrodes.attrib.values()]
-            if probe_custom_channel_indices is not None:
-                # Slice custom channel indices to match the number of selected electrodes
+            if probe_custom_channel_maps is not None:
+                # Slice custom channel maps to match the number of selected electrodes
                 # (required when SYNC channel is present)
-                custom_indices = probe_custom_channel_indices[probe_idx][:len(info["selected_electrode_indices"])]
-                info["custom_channel_indices"] = custom_indices
+                custom_indices = probe_custom_channel_maps[probe_idx][:len(info["selected_electrode_indices"])]
+                info["custom_channel_map"] = custom_indices
         else:
             # Older plugin versions: reverse-engineer electrode IDs from positions
             channel_names = np.array(list(channels.attrib.keys()))
@@ -1404,11 +1404,11 @@ def _parse_openephys_settings(
                 info["contact_ids"] = [
                     _build_canonical_contact_id(eid, sid) for sid, eid in zip(shank_ids_iter, elec_ids)
                 ]
-            if probe_custom_channel_indices is not None:
-                # Slice custom channel indices to match the number of selected electrodes
+            if probe_custom_channel_maps is not None:
+                # Slice custom channel maps to match the number of selected electrodes
                 # (required when SYNC channel is present)
-                custom_indices = probe_custom_channel_indices[probe_idx][:len(info["contact_ids"])]
-                info["custom_channel_indices"] = custom_indices
+                custom_indices = probe_custom_channel_maps[probe_idx][:len(info["contact_ids"])]
+                info["custom_channel_map"] = custom_indices
 
         probes_info.append(info)
 
@@ -1537,7 +1537,7 @@ def _slice_openephys_catalogue_probe(full_probe: Probe, probe_info: dict) -> Pro
     For SELECTED_ELECTRODES (newer plugin), uses the indices directly.
     For CHANNELS (older plugin), matches reverse-engineered contact_ids to the catalogue.
 
-    If the `custom_channel_indices` field is present in probe_info, due to a "Channel Map" processor in the signal 
+    If the `custom_channel_map` field is present in probe_info, due to a "Channel Map" processor in the signal 
     chain that comes before the "Record Node", it is applied as a further slice after electrode selection.
 
     Parameters
@@ -1551,11 +1551,11 @@ def _slice_openephys_catalogue_probe(full_probe: Probe, probe_info: dict) -> Pro
     -------
     probe : Probe
     """
-    custom_channel_indices = probe_info.get("custom_channel_indices")
+    custom_channel_map = probe_info.get("custom_channel_map")
     if probe_info["selected_electrode_indices"] is not None:
         selected_electrode_indices = np.array(probe_info["selected_electrode_indices"])
-        if custom_channel_indices is not None:
-            selected_electrode_indices = selected_electrode_indices[custom_channel_indices]
+        if custom_channel_map is not None:
+            selected_electrode_indices = selected_electrode_indices[custom_channel_map]
         return full_probe.get_slice(selection=selected_electrode_indices)
 
     contact_ids = probe_info["contact_ids"]
@@ -1564,8 +1564,8 @@ def _slice_openephys_catalogue_probe(full_probe: Probe, probe_info: dict) -> Pro
         if all(cid in catalogue_ids for cid in contact_ids):
             contact_id_to_index = {cid: i for i, cid in enumerate(full_probe.contact_ids)}
             selected_indices = np.array([contact_id_to_index[cid] for cid in contact_ids])
-            if custom_channel_indices is not None:
-                selected_indices = selected_indices[custom_channel_indices]
+            if custom_channel_map is not None:
+                selected_indices = selected_indices[custom_channel_map]
             return full_probe.get_slice(selection=selected_indices)
         else:
             raise ValueError(
@@ -1598,8 +1598,8 @@ def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:
         probe.annotate(dock=probe_info["dock"])
     if probe_info.get("settings_channel_keys") is not None:
         settings_channel_keys = probe_info["settings_channel_keys"]
-        if probe_info.get("custom_channel_indices") is not None:
-            settings_channel_keys = np.array(settings_channel_keys)[probe_info["custom_channel_indices"]]
+        if probe_info.get("custom_channel_map") is not None:
+            settings_channel_keys = np.array(settings_channel_keys)[probe_info["custom_channel_map"]]
         probe.annotate_contacts(settings_channel_key=settings_channel_keys)
 
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
