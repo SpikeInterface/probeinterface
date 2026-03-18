@@ -1537,7 +1537,11 @@ def _slice_openephys_catalogue_probe(full_probe: Probe, probe_info: dict) -> Pro
     For SELECTED_ELECTRODES (newer plugin), uses the indices directly.
     For CHANNELS (older plugin), matches reverse-engineered contact_ids to the catalogue.
 
+<<<<<<< HEAD
     If the `custom_channel_map` field is present in probe_info, due to a "Channel Map" processor in the signal 
+=======
+    If the `custom_channel_indices` field is present in probe_info, due to a "Channel Map" processor in the signal
+>>>>>>> 1c54d3c9e9e2aefd2a4e678a1e36a242ccfde719
     chain that comes before the "Record Node", it is applied as a further slice after electrode selection.
 
     Parameters
@@ -1623,7 +1627,7 @@ def read_openephys(
     ``serial_number``) to choose which probe to return.
 
     In case of a "Channel Map" processor in the signal chain that comes before the "Record Node",
-    the probe geometry and settings channel names will be sliced to the order of channels specified 
+    the probe geometry and settings channel names will be sliced to the order of channels specified
     in the channel map. Therefore, the probe is always wired from 0 to N-1.
 
     Open Ephys versions 0.5.x, 0.6.x, and 1.0 are supported. For version
@@ -1691,7 +1695,7 @@ def read_openephys(
     if chans_saved is not None:
         probe = probe.get_slice(chans_saved)
 
-    # Wire the probe: in case of a channel map preceding the record node, the probe is already sliced to the custom 
+    # Wire the probe: in case of a channel map preceding the record node, the probe is already sliced to the custom
     # channel selection, so we can use identity mapping.
     probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
     return probe
