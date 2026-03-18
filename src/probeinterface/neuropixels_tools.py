@@ -797,7 +797,6 @@ def _build_canonical_contact_id(electrode_id: int, shank_id: int | None = None) 
         return f"e{electrode_id}"
 
 
-
 def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
     """
     Parse IMRO (Imec ReadOut) table string into structured per-channel data.
