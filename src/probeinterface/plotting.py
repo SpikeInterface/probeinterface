@@ -19,7 +19,7 @@ def create_probe_polygons(
     cmap: str = "viridis",
     contact_kwargs: dict = {},
     probe_shape_kwargs: dict = {},
-    contacts_kargs = None,  # DEPRECATED
+    contacts_kargs=None,  # DEPRECATED
 ):
     """Create PolyCollection objects for a Probe.
 
@@ -270,12 +270,12 @@ def plot_probegroup(probegroup, same_axes: bool = True, **kwargs):
     same_axes : bool, default: True
         If True, the probes are plotted on the same axis
     kwargs: dict
-        Additional keyword arguments to pass to plot_probe. 
-        If same_axes is True, the same kwargs are passed to all probes. 
-        If same_axes is False, the kwargs are passed separately to each probe, 
-        if they have the same length as the total number of contacts in the ProbeGroup. 
-        For example, if contacts_colors is given and has the same length as the total 
-        number of contacts in the ProbeGroup, then the colors are split and passed 
+        Additional keyword arguments to pass to plot_probe.
+        If same_axes is True, the same kwargs are passed to all probes.
+        If same_axes is False, the kwargs are passed separately to each probe,
+        if they have the same length as the total number of contacts in the ProbeGroup.
+        For example, if contacts_colors is given and has the same length as the total
+        number of contacts in the ProbeGroup, then the colors are split and passed
         separately to each probe.
 
         Available kwargs:
