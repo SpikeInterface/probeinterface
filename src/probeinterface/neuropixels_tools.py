@@ -257,25 +257,21 @@ def read_imro(file_path: Union[str, Path]) -> Probe:
         if imDatPrb_type == probe_type:
             imDatPrb_pn = probe_part_number
 
-    # ===== 2. Interpret IMRO table to extract recorded electrodes and acquisition settings =====
-    imro_per_channel = _interpret_imro_string(imro_str, imDatPrb_pn)
+    # ===== 2. Interpret IMRO table =====
+    imro_per_channel = _parse_imro_string(imro_str, imDatPrb_pn)
 
     # ===== 3. Build full probe with all possible contacts =====
     full_probe = build_neuropixels_probe(probe_part_number=imDatPrb_pn)
 
     # ===== 4. Build contact IDs for active electrodes =====
-    elec_ids = imro_per_channel["electrode"]
-    shank_ids = imro_per_channel.get("shank", [None] * len(elec_ids))
-    active_contact_ids = [
-        _build_canonical_contact_id(elec_id, shank_id) for shank_id, elec_id in zip(shank_ids, elec_ids)
-    ]
+    active_contact_ids = _get_active_contact_ids(imro_per_channel, imro_str)
 
     # ===== 5. Slice full probe to active electrodes =====
     contact_id_to_index = {cid: i for i, cid in enumerate(full_probe.contact_ids)}
     selected_indices = np.array([contact_id_to_index[cid] for cid in active_contact_ids])
     probe = full_probe.get_slice(selected_indices)
 
-    # ===== 6. Annotate probe with recording-specific metadata =====
+    # ===== 7. Annotate probe with recording-specific metadata =====
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
@@ -670,7 +666,7 @@ def _build_canonical_contact_id(electrode_id: int, shank_id: int | None = None) 
         return f"e{electrode_id}"
 
 
-def _interpret_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
+def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
     """
     Parse IMRO (Imec ReadOut) table string into structured per-channel data.
 
@@ -692,12 +688,13 @@ def _interpret_imro_string(imro_table_string: str, probe_part_number: str) -> di
     Returns
     -------
     imro_per_channel : dict
-        Dictionary where each key maps to a list of values (one per channel).
-        Keys are IMRO fields like "channel", "bank", "electrode", "ap_gain", etc.
-        The "electrode" key always contains physical electrode IDs (0-959 for NP1.0, etc.).
-        For NP2.0+: electrode IDs come directly from IMRO data.
-        For NP1.0: electrode IDs are computed as bank * 384 + channel.
-        Example: {"channel": [0,1,2,...], "bank": [1,0,0,...], "electrode": [384,1,2,...], "ap_gain": [500,500,...]}
+        Dictionary where each key maps to a list of values (one per entry).
+        Keys correspond to the IMRO field names from the catalogue.
+        NP2.x+ probes will have an "electrode" key directly. NP1.x probes will not
+        (electrode IDs must be resolved separately via _get_active_contact_ids).
+        Example for NP1.0: {"channel": [0,1,...], "bank": [0,0,...], "ref_id": [0,0,...], ...}
+        Example for NP2.0: {"channel": [0,1,...], "bank_mask": [1,1,...], "electrode": [0,1,...], ...}
+        Example for NP1110: {"group": [0,1,...], "bankA": [0,0,...], "bankB": [0,0,...]}
     """
     # Get IMRO field format from catalogue
     probe_features = _load_np_probe_features()
@@ -715,15 +712,44 @@ def _interpret_imro_string(imro_table_string: str, probe_part_number: str) -> di
         for field, field_value in zip(imro_fields, values):
             imro_per_channel[field].append(field_value)
 
-    # Resolve activate electrodes (i.e. `electrodes` entry) for probe types whose IMRO format does not include them.
-    # NP2.x+ probes have "electrode" directly in the IMRO table. NP1.x probes encode
-    # electrode selection indirectly and need computation.
+    return imro_per_channel
+
+
+def _get_active_contact_ids(imro_per_channel: dict, imro_table_string: str) -> list[str]:
+    """
+    Get canonical contact ID strings for the active electrodes in a parsed IMRO table.
+
+    If the IMRO format includes electrode IDs directly (NP2.x+), uses them as-is.
+    If not (NP1.x), resolves them first via the appropriate addressing scheme
+    (simple bank for NP1.0-like probes, UHD group-based for NP1110).
+
+    Parameters
+    ----------
+    imro_per_channel : dict
+        Parsed IMRO data from _parse_imro_string. Modified in place if electrode
+        IDs need to be resolved.
+    imro_table_string : str
+        Raw IMRO table string, needed by NP1110 to extract col_mode from the header.
+
+    Returns
+    -------
+    list of str
+        Canonical contact ID strings (e.g., ["e0", "e384", ...] or ["s0e123", ...]).
+    """
     if "electrode" not in imro_per_channel:
         _resolve_active_contacts_for_np1(imro_per_channel)
     if "electrode" not in imro_per_channel:
         _resolve_active_contacts_for_np1110(imro_per_channel, imro_table_string)
+    assert "electrode" in imro_per_channel, (
+        f"Could not resolve electrode IDs from IMRO fields: {list(imro_per_channel.keys())}"
+    )
 
-    return imro_per_channel
+    elec_ids = imro_per_channel["electrode"]
+    shank_ids = imro_per_channel.get("shank", [None] * len(elec_ids))
+    return [
+        _build_canonical_contact_id(elec_id, shank_id)
+        for shank_id, elec_id in zip(shank_ids, elec_ids)
+    ]
 
 
 def _resolve_active_contacts_for_np1(imro_per_channel: dict) -> None:
@@ -739,7 +765,7 @@ def _resolve_active_contacts_for_np1(imro_per_channel: dict) -> None:
     Parameters
     ----------
     imro_per_channel : dict
-        Parsed IMRO data from _interpret_imro_string. Modified in place.
+        Parsed IMRO data from _parse_imro_string. Modified in place.
     """
     if "channel" not in imro_per_channel:
         return
@@ -784,7 +810,7 @@ def _resolve_active_contacts_for_np1110(imro_per_channel: dict, imro_table_strin
         "been validated against real NP1110 recordings. Please double-check the electrode "
         "selection and report any issues at https://github.com/SpikeInterface/probeinterface/issues",
         UserWarning,
-        stacklevel=3,  # Points to read_imro / read_spikeglx (caller of _interpret_imro_string)
+        stacklevel=3,  # Points to read_imro / read_spikeglx (caller of _ensure_active_contacts_available)
     )
 
     # Extract col_mode from IMRO header: (type,col_mode,ref_id,ap_gain,lf_gain,ap_hipas_flt)
@@ -899,15 +925,10 @@ def read_spikeglx(file: str | Path) -> Probe:
     # Specifies which electrodes were selected for recording (e.g., 384 of 960) plus their
     # acquisition settings (gains, references, filters). See: https://billkarsh.github.io/SpikeGLX/help/imroTables/
     imro_table_string = meta["imroTbl"]
-    imro_per_channel = _interpret_imro_string(imro_table_string, imDatPrb_pn)
+    imro_per_channel = _parse_imro_string(imro_table_string, imDatPrb_pn)
 
     # ===== 4. Build contact IDs for active electrodes =====
-    # Convert physical electrode IDs to probeinterface canonical contact ID strings
-    imro_electrode = imro_per_channel["electrode"]
-    imro_shank = imro_per_channel.get("shank", [None] * len(imro_electrode))
-    active_contact_ids = [
-        _build_canonical_contact_id(elec_id, shank_id) for shank_id, elec_id in zip(imro_shank, imro_electrode)
-    ]
+    active_contact_ids = _get_active_contact_ids(imro_per_channel, imro_table_string)
 
     # ===== 5. Slice full probe to active electrodes =====
     # Find indices of active contacts in the full probe, preserving IMRO order
@@ -944,7 +965,7 @@ def read_spikeglx(file: str | Path) -> Probe:
     if saved_chans.size != probe.get_contact_count():
         probe = probe.get_slice(saved_chans)
 
-    # ===== 6. Add recording-specific annotations =====
+    # ===== 8. Add recording-specific annotations =====
     # These annotations identify the physical probe instance and recording setup
     imDatPrb_serial_number = meta.get("imDatPrb_sn") or meta.get("imProbeSN")  # Phase3A uses imProbeSN
     imDatPrb_port = meta.get("imDatPrb_port", None)
@@ -954,7 +975,7 @@ def read_spikeglx(file: str | Path) -> Probe:
     probe.annotate(port=imDatPrb_port)
     probe.annotate(slot=imDatPrb_slot)
 
-    # ===== 7. Set device channel indices (wiring) =====
+    # ===== 9. Set device channel indices (wiring) =====
     probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
 
     return probe
