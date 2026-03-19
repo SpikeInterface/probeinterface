@@ -17,7 +17,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from probeinterface import Probe, ProbeGroup
-from probeinterface.plotting import plot_probe, plot_probe_group
+from probeinterface.plotting import plot_probe, plot_probegroup
 
 ##############################################################################
 # Generate 4 tetrodes:
@@ -35,7 +35,7 @@ probegroup.set_global_device_channel_indices(np.arange(16))
 df = probegroup.to_dataframe()
 df
 
-plot_probe_group(probegroup, with_contact_id=True, same_axes=True)
+plot_probegroup(probegroup, with_contact_id=True, same_axes=True)
 
 ##############################################################################
 # Generate a linear probe:
