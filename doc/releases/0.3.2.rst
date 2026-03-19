@@ -25,7 +25,7 @@ Deprecations
 
 * Removed deprecated ``plot_probe_group`` (#397)
 
-Testing 
+Testing
 ^^^^^^^
 
 * Force Agg backend for tests (#395)
