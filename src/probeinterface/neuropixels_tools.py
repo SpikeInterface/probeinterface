@@ -755,10 +755,7 @@ def _get_active_contact_ids(imro_per_channel: dict) -> list[str]:
 
     elec_ids = imro_per_channel["electrode"]
     shank_ids = imro_per_channel.get("shank", [None] * len(elec_ids))
-    return [
-        _build_canonical_contact_id(elec_id, shank_id)
-        for shank_id, elec_id in zip(shank_ids, elec_ids)
-    ]
+    return [_build_canonical_contact_id(elec_id, shank_id) for shank_id, elec_id in zip(shank_ids, elec_ids)]
 
 
 def _resolve_active_contacts_for_np1(imro_per_channel: dict) -> None:
