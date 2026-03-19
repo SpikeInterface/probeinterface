@@ -1,0 +1,36 @@
+probeinterface 0.3.2
+--------------------
+
+Mar, 20th 2026
+
+
+Features
+^^^^^^^^
+
+* Make shank_ids optional (None) instead of array of [""] (#391,#393)
+* Enhance ``plot_probegroup`` to handle varying contact values (#397)
+* Updates to Neuropixels probe features (#392, #399)
+* Update ``read_openephys`` construction using catalogue probes and handle channel maps (#406, #409)
+
+Bug fixes
+^^^^^^^^^
+
+* Fixes to ``generate_cambridgeneurotech_library.py`` file name(#389, #390)
+* Fix static annotation of ``pi.generate_multi_columns_probe`` (#385)
+* Fix unclosed file warnings in ``json.load()`` calls (#396)
+* Fix missing raise in ``Probe.set_contact_ids()`` size validation (#401)
+
+Deprecations
+^^^^^^^^^^^^
+
+* Removed deprecated ``plot_probe_group`` (#397)
+
+Testing 
+^^^^^^^
+
+* Force Agg backend for tests (#395)
+
+Packaging
+^^^^^^^^^
+
+* Migrate test and docs extras to PEP 735 dependency groups (#408)
