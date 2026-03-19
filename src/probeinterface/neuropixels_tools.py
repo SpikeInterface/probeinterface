@@ -263,15 +263,13 @@ def read_imro(file_path: Union[str, Path]) -> Probe:
     # ===== 3. Build full probe with all possible contacts =====
     full_probe = build_neuropixels_probe(probe_part_number=imDatPrb_pn)
 
-    # ===== 4. Build contact IDs for active electrodes =====
+    # ===== 4. Slice full probe to active electrodes =====
     active_contact_ids = _get_active_contact_ids(imro_per_channel)
-
-    # ===== 5. Slice full probe to active electrodes =====
     contact_id_to_index = {cid: i for i, cid in enumerate(full_probe.contact_ids)}
     selected_indices = np.array([contact_id_to_index[cid] for cid in active_contact_ids])
     probe = full_probe.get_slice(selected_indices)
 
-    # ===== 7. Annotate probe with recording-specific metadata =====
+    # ===== 5. Annotate probe with recording-specific metadata =====
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
@@ -929,17 +927,13 @@ def read_spikeglx(file: str | Path) -> Probe:
     imro_table_string = meta["imroTbl"]
     imro_per_channel = _parse_imro_string(imro_table_string, imDatPrb_pn)
 
-    # ===== 4. Build contact IDs for active electrodes =====
+    # ===== 4. Slice full probe to active electrodes =====
     active_contact_ids = _get_active_contact_ids(imro_per_channel)
-
-    # ===== 5. Slice full probe to active electrodes =====
-    # Find indices of active contacts in the full probe, preserving IMRO order
     contact_id_to_index = {contact_id: idx for idx, contact_id in enumerate(full_probe.contact_ids)}
     selected_contact_indices = np.array([contact_id_to_index[contact_id] for contact_id in active_contact_ids])
-
     probe = full_probe.get_slice(selected_contact_indices)
 
-    # ===== 6. Store IMRO properties (acquisition settings) as annotations =====
+    # ===== 5. Store IMRO properties (acquisition settings) as annotations =====
     # Filter IMRO data to only the properties we want to add as annotations
     imro_properties_to_add = ("channel", "bank", "bank_mask", "ref_id", "ap_gain", "lf_gain", "ap_hipas_flt")
     imro_filtered = {k: v for k, v in imro_per_channel.items() if k in imro_properties_to_add and len(v) > 0}
@@ -950,7 +944,7 @@ def read_spikeglx(file: str | Path) -> Probe:
         annotations[pi_field] = values
     probe.annotate_contacts(**annotations)
 
-    # ===== 6b. Add ADC sampling annotations =====
+    # ===== 5b. Add ADC sampling annotations =====
     # The ADC sampling table describes which ADC samples each readout channel and in what order.
     # At this point, contacts are ordered by readout channel (0-383), so we can directly
     # apply the mapping. This must be done here (not in build_neuropixels_probe)
@@ -958,7 +952,7 @@ def read_spikeglx(file: str | Path) -> Probe:
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
-    # ===== 7. Slice to saved channels (if subset was saved) =====
+    # ===== 6. Slice to saved channels (if subset was saved) =====
     # This is DIFFERENT from IMRO selection: IMRO selects which electrodes to acquire,
     # but SpikeGLX can optionally save only a subset of acquired channels to reduce file size.
     # For example: IMRO selects 384 electrodes, but only 300 are saved to disk.
@@ -967,7 +961,7 @@ def read_spikeglx(file: str | Path) -> Probe:
     if saved_chans.size != probe.get_contact_count():
         probe = probe.get_slice(saved_chans)
 
-    # ===== 8. Add recording-specific annotations =====
+    # ===== 7. Add recording-specific annotations =====
     # These annotations identify the physical probe instance and recording setup
     imDatPrb_serial_number = meta.get("imDatPrb_sn") or meta.get("imProbeSN")  # Phase3A uses imProbeSN
     imDatPrb_port = meta.get("imDatPrb_port", None)
@@ -977,7 +971,7 @@ def read_spikeglx(file: str | Path) -> Probe:
     probe.annotate(port=imDatPrb_port)
     probe.annotate(slot=imDatPrb_slot)
 
-    # ===== 9. Set device channel indices (wiring) =====
+    # ===== 8. Set device channel indices (wiring) =====
     probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
 
     return probe
