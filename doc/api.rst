@@ -65,7 +65,7 @@ Plotting
 
     .. autofunction:: plot_probe
 
-    .. autofunction:: plot_probe_group
+    .. autofunction:: plot_probegroup
 
 Library
 -------

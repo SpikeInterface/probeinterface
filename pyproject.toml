@@ -37,7 +37,7 @@ build-backend = "hatchling.build"
 [tool.hatch.build]
 sources = ["src"]
 
-[project.optional-dependencies]
+[dependency-groups]
 
 test = [
     "jsonschema",
@@ -47,16 +47,24 @@ test = [
     "scipy",
     "pandas",
     "h5py",
-    "zarr>=2.16.0,<3.0.0"
+    "zarr>=2.16.0,<3.0.0",
 ]
 
 docs = [
     "pillow",
     "sphinx-gallery",
     "sphinx_rtd_theme",
-    "matplotlib==3.2.2",
+    "matplotlib",
     "scipy",
     "pandas",
+]
+
+dev = [
+    {include-group = "test"},
+    {include-group = "docs"},
+    "pre-commit",
+    "tqdm",  # used in resources/generate_cambridgeneurotech_library.py
+    "shapely",  # used in resources/generate_cambridgeneurotech_library.py
 ]
 
 [tool.pytest.ini_options]
