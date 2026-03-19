@@ -715,7 +715,7 @@ def _interpret_imro_string(imro_table_string: str, probe_part_number: str) -> di
         for field, field_value in zip(imro_fields, values):
             imro_per_channel[field].append(field_value)
 
-    # Resolve electrode IDs for probe types whose IMRO format does not include them.
+    # Resolve activate electrodes (i.e. `electrodes` entry) for probe types whose IMRO format does not include them.
     # NP2.x+ probes have "electrode" directly in the IMRO table. NP1.x probes encode
     # electrode selection indirectly and need computation.
     if "electrode" not in imro_per_channel:
@@ -776,6 +776,17 @@ def _resolve_active_contacts_for_np1110(imro_per_channel: dict, imro_table_strin
     if "group" not in imro_per_channel:
         return
 
+    # TODO: Remove this warning once we have test data for NP1110 recordings.
+    warnings.warn(
+        "NP1110 (Neuropixels 1.0 UHD2 active) support is experimental. "
+        "The active electrode selection logic is translated directly from SpikeGLX "
+        "(https://github.com/billkarsh/SpikeGLX, Src-imro/IMROTbl_T1110.cpp) but has not "
+        "been validated against real NP1110 recordings. Please double-check the electrode "
+        "selection and report any issues at https://github.com/SpikeInterface/probeinterface/issues",
+        UserWarning,
+        stacklevel=3,  # Points to read_imro / read_spikeglx (caller of _interpret_imro_string)
+    )
+
     # Extract col_mode from IMRO header: (type,col_mode,ref_id,ap_gain,lf_gain,ap_hipas_flt)
     header_str = imro_table_string.strip().split(")")[0][1:]  # remove leading "("
     header_fields = header_str.split(",")
@@ -784,14 +795,17 @@ def _resolve_active_contacts_for_np1110(imro_per_channel: dict, imro_table_strin
     groups_bankA = imro_per_channel["bankA"]
     groups_bankB = imro_per_channel["bankB"]
 
+    # With pain in my heart, I am following here the C++ convention of terse naming from the
+    # original SpikeGLX implementation (IMROTbl_T1110.cpp). The purpose is to make it easy to
+    # spot differences when comparing against the original code, until we have real NP1110 test
+    # data to validate against and feel comfortable (if ever) renaming to our own conventions.
     col_tbl = [0, 3, 1, 2, 1, 2, 0, 3]
 
-    def _grp_idx(ch):
+    def grpIdx(ch):
         return 2 * ((ch % 384) // 32) + ((ch % 384) & 1)
 
-    def _col(ch, bank):
-        grp_index = _grp_idx(ch)
-        grp_col = col_tbl[4 * (bank & 1) + (grp_index % 4)]
+    def col(ch, bank):
+        grp_col = col_tbl[4 * (bank & 1) + (grpIdx(ch) % 4)]
         crossed = (bank // 4) & 1
         ingrp_col = ((((ch % 64) % 32) // 2) & 1) ^ crossed
         if ch & 1:
@@ -799,9 +813,8 @@ def _resolve_active_contacts_for_np1110(imro_per_channel: dict, imro_table_strin
         else:
             return 2 * grp_col + ingrp_col
 
-    def _row(ch, bank):
-        grp_index = _grp_idx(ch)
-        grp_row = grp_index // 4
+    def row(ch, bank):
+        grp_row = grpIdx(ch) // 4
         ingrp_row = ((ch % 64) % 32) // 4
         if ch & 1:
             b0_row = 8 * grp_row + (7 - ingrp_row)
@@ -809,26 +822,27 @@ def _resolve_active_contacts_for_np1110(imro_per_channel: dict, imro_table_strin
             b0_row = 8 * grp_row + ingrp_row
         return 48 * bank + b0_row
 
-    def _bank_for_channel(ch, bankA, bankB):
+    def bank(ch, bankA, bankB):
         if col_mode == 2:  # ALL
             return bankA
         # INNER (0) or OUTER (1): choose bankA or bankB based on column position
-        c = _col(ch, bankA)
-        if c < 4:
-            use_bankA = (c % 2 == 0) if col_mode == 1 else (c % 2 == 1)
+        c = col(ch, bankA)
+        if c <= 3:
+            if col_mode == 1:  # OUTER
+                return bankA if not (c & 1) else bankB
+            else:  # INNER
+                return bankA if (c & 1) else bankB
         else:
-            use_bankA = (c % 2 == 1) if col_mode == 1 else (c % 2 == 0)
-        return bankA if use_bankA else bankB
+            if col_mode == 1:  # OUTER
+                return bankA if (c & 1) else bankB
+            else:  # INNER
+                return bankA if not (c & 1) else bankB
 
     electrode_ids = []
     for ch in range(384):
-        grp = _grp_idx(ch)
-        bankA = groups_bankA[grp]
-        bankB = groups_bankB[grp]
-        bank = _bank_for_channel(ch, bankA, bankB)
-        row = _row(ch, bank)
-        col = _col(ch, bank)
-        electrode_ids.append(8 * row + col)
+        grp = grpIdx(ch)
+        b = bank(ch, groups_bankA[grp], groups_bankB[grp])
+        electrode_ids.append(8 * row(ch, b) + col(ch, b))
 
     imro_per_channel["electrode"] = electrode_ids
     # Also add the "channel" key (0-383) since the IMRO entries are per-group, not per-channel
