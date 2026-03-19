@@ -264,7 +264,7 @@ def read_imro(file_path: Union[str, Path]) -> Probe:
     full_probe = build_neuropixels_probe(probe_part_number=imDatPrb_pn)
 
     # ===== 4. Build contact IDs for active electrodes =====
-    active_contact_ids = _get_active_contact_ids(imro_per_channel, imro_str)
+    active_contact_ids = _get_active_contact_ids(imro_per_channel)
 
     # ===== 5. Slice full probe to active electrodes =====
     contact_id_to_index = {cid: i for i, cid in enumerate(full_probe.contact_ids)}
@@ -688,13 +688,17 @@ def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
     Returns
     -------
     imro_per_channel : dict
-        Dictionary where each key maps to a list of values (one per entry).
-        Keys correspond to the IMRO field names from the catalogue.
+        Dictionary with a "header" key containing parsed header fields, and one key per
+        IMRO entry field mapping to a list of values. The number of entries varies by probe
+        type (384 per channel for most probes, 24 per group for NP1110).
         NP2.x+ probes will have an "electrode" key directly. NP1.x probes will not
         (electrode IDs must be resolved separately via _get_active_contact_ids).
-        Example for NP1.0: {"channel": [0,1,...], "bank": [0,0,...], "ref_id": [0,0,...], ...}
-        Example for NP2.0: {"channel": [0,1,...], "bank_mask": [1,1,...], "electrode": [0,1,...], ...}
-        Example for NP1110: {"group": [0,1,...], "bankA": [0,0,...], "bankB": [0,0,...]}
+        Example for NP1.0: {"header": {"type": 0, "num_channels": 384},
+            "channel": [0,1,...], "bank": [0,0,...], "ref_id": [0,0,...], ...}
+        Example for NP2.0: {"header": {"type": 21, "num_channels": 384},
+            "channel": [0,1,...], "bank_mask": [1,1,...], "electrode": [0,1,...], ...}
+        Example for NP1110: {"header": {"type": 1110, "col_mode": 2, "ref_id": 0, ...},
+            "group": [0,1,...], "bankA": [0,0,...], "bankB": [0,0,...]}  # 24 entries, not 384
     """
     # Get IMRO field format from catalogue
     probe_features = _load_np_probe_features()
@@ -703,10 +707,17 @@ def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
     imro_fields_string = probe_features["z_imro_formats"][imro_format + "_elm_flds"]
     imro_fields = tuple(imro_fields_string.replace("(", "").replace(")", "").split(" "))
 
-    # Parse IMRO table values into per-channel data
-    # Skip the header "(probe_type,num_chans)" and trailing empty string
-    _, *imro_table_values_list, _ = imro_table_string.strip().split(")")
-    imro_per_channel = {k: [] for k in imro_fields}
+    # Parse IMRO header and per-entry values
+    header_str, *imro_table_values_list, _ = imro_table_string.strip().split(")")
+
+    # Parse header fields using the catalogue schema
+    imro_header_fields_string = probe_features["z_imro_formats"][imro_format + "_hdr_flds"]
+    imro_header_fields = tuple(imro_header_fields_string.replace("(", "").replace(")", "").split(","))
+    header_values = tuple(map(int, header_str[1:].split(",")))
+    # Initialize with parsed header and empty lists for per-entry fields (filled below)
+    imro_per_channel = {"header": dict(zip(imro_header_fields, header_values))}
+    for field in imro_fields:
+        imro_per_channel[field] = []
     for field_values_str in imro_table_values_list:
         values = tuple(map(int, field_values_str[1:].split(" ")))
         for field, field_value in zip(imro_fields, values):
@@ -715,7 +726,7 @@ def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
     return imro_per_channel
 
 
-def _get_active_contact_ids(imro_per_channel: dict, imro_table_string: str) -> list[str]:
+def _get_active_contact_ids(imro_per_channel: dict) -> list[str]:
     """
     Get canonical contact ID strings for the active electrodes in a parsed IMRO table.
 
@@ -728,8 +739,6 @@ def _get_active_contact_ids(imro_per_channel: dict, imro_table_string: str) -> l
     imro_per_channel : dict
         Parsed IMRO data from _parse_imro_string. Modified in place if electrode
         IDs need to be resolved.
-    imro_table_string : str
-        Raw IMRO table string, needed by NP1110 to extract col_mode from the header.
 
     Returns
     -------
@@ -739,7 +748,7 @@ def _get_active_contact_ids(imro_per_channel: dict, imro_table_string: str) -> l
     if "electrode" not in imro_per_channel:
         _resolve_active_contacts_for_np1(imro_per_channel)
     if "electrode" not in imro_per_channel:
-        _resolve_active_contacts_for_np1110(imro_per_channel, imro_table_string)
+        _resolve_active_contacts_for_np1110(imro_per_channel)
     assert "electrode" in imro_per_channel, (
         f"Could not resolve electrode IDs from IMRO fields: {list(imro_per_channel.keys())}"
     )
@@ -776,7 +785,7 @@ def _resolve_active_contacts_for_np1(imro_per_channel: dict) -> None:
     imro_per_channel["electrode"] = (bank_indices * 384 + readout_channel_ids).tolist()
 
 
-def _resolve_active_contacts_for_np1110(imro_per_channel: dict, imro_table_string: str) -> None:
+def _resolve_active_contacts_for_np1110(imro_per_channel: dict) -> None:
     """
     Compute electrode IDs for NP1110 (UHD2 active) probes that use group-based addressing.
 
@@ -791,9 +800,8 @@ def _resolve_active_contacts_for_np1110(imro_per_channel: dict, imro_table_strin
     Parameters
     ----------
     imro_per_channel : dict
-        Parsed IMRO data with keys "group", "bankA", "bankB" (24 entries each).
-    imro_table_string : str
-        Raw IMRO table string, needed to extract col_mode from the header.
+        Parsed IMRO data with keys "group", "bankA", "bankB" (24 entries each)
+        and "header" dict containing "col_mode".
 
     References
     ----------
@@ -813,10 +821,7 @@ def _resolve_active_contacts_for_np1110(imro_per_channel: dict, imro_table_strin
         stacklevel=3,  # Points to read_imro / read_spikeglx (caller of _ensure_active_contacts_available)
     )
 
-    # Extract col_mode from IMRO header: (type,col_mode,ref_id,ap_gain,lf_gain,ap_hipas_flt)
-    header_str = imro_table_string.strip().split(")")[0][1:]  # remove leading "("
-    header_fields = header_str.split(",")
-    col_mode = int(header_fields[1])  # 0=INNER, 1=OUTER, 2=ALL
+    col_mode = imro_per_channel["header"]["col_mode"]  # 0=INNER, 1=OUTER, 2=ALL
 
     groups_bankA = imro_per_channel["bankA"]
     groups_bankB = imro_per_channel["bankB"]
@@ -928,7 +933,7 @@ def read_spikeglx(file: str | Path) -> Probe:
     imro_per_channel = _parse_imro_string(imro_table_string, imDatPrb_pn)
 
     # ===== 4. Build contact IDs for active electrodes =====
-    active_contact_ids = _get_active_contact_ids(imro_per_channel, imro_table_string)
+    active_contact_ids = _get_active_contact_ids(imro_per_channel)
 
     # ===== 5. Slice full probe to active electrodes =====
     # Find indices of active contacts in the full probe, preserving IMRO order
