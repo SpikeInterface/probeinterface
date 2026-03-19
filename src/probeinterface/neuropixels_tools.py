@@ -835,7 +835,6 @@ def _resolve_active_contacts_for_np1110(imro_per_channel: dict, imro_table_strin
     imro_per_channel["channel"] = list(range(384))
 
 
-
 def read_spikeglx(file: str | Path) -> Probe:
     """
     Read probe geometry and configuration from a SpikeGLX metadata file.
