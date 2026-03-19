@@ -740,16 +740,13 @@ def _get_active_contact_ids(imro_per_channel: dict, imro_table_string: str) -> l
         _resolve_active_contacts_for_np1(imro_per_channel)
     if "electrode" not in imro_per_channel:
         _resolve_active_contacts_for_np1110(imro_per_channel, imro_table_string)
-    assert "electrode" in imro_per_channel, (
-        f"Could not resolve electrode IDs from IMRO fields: {list(imro_per_channel.keys())}"
-    )
+    assert (
+        "electrode" in imro_per_channel
+    ), f"Could not resolve electrode IDs from IMRO fields: {list(imro_per_channel.keys())}"
 
     elec_ids = imro_per_channel["electrode"]
     shank_ids = imro_per_channel.get("shank", [None] * len(elec_ids))
-    return [
-        _build_canonical_contact_id(elec_id, shank_id)
-        for shank_id, elec_id in zip(shank_ids, elec_ids)
-    ]
+    return [_build_canonical_contact_id(elec_id, shank_id) for shank_id, elec_id in zip(shank_ids, elec_ids)]
 
 
 def _resolve_active_contacts_for_np1(imro_per_channel: dict) -> None:
