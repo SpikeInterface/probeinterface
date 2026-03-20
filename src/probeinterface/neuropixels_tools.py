@@ -22,15 +22,9 @@ global _np_probe_features
 _np_probe_features = None
 
 
-def _load_np_probe_features():
-    # this avoid loading the json several times
-    global _np_probe_features
-    if _np_probe_features is None:
-        probe_features_filepath = Path(__file__).absolute().parent / Path("resources/neuropixels_probe_features.json")
-        with open(probe_features_filepath, "r") as f:
-            _np_probe_features = json.load(f)
-    return _np_probe_features
-
+###############
+# Utils zone  #
+###############
 
 # Map imDatPrb_pn (probe number) to imDatPrb_type (probe type) when the latter is missing
 # ONLY needed for `read_imro` function
@@ -90,7 +84,17 @@ imro_field_to_pi_field = {
 }
 
 
-def get_probe_length(probe_part_number: str) -> int:
+def _load_np_probe_features():
+    # this avoid loading the json several times
+    global _np_probe_features
+    if _np_probe_features is None:
+        probe_features_filepath = Path(__file__).absolute().parent / Path("resources/neuropixels_probe_features.json")
+        with open(probe_features_filepath, "r") as f:
+            _np_probe_features = json.load(f)
+    return _np_probe_features
+
+
+def _get_probe_length(probe_part_number: str) -> int:
     """
     Returns the length of a given probe from ProbeTable specifications.
 
@@ -114,43 +118,7 @@ def get_probe_length(probe_part_number: str) -> int:
     return 10_000
 
 
-def make_mux_table_array(mux_information) -> np.array:
-    """
-    Function to parse the mux_table from ProbeTable.
-
-    Parameters
-    ----------
-    mux_information : str
-        The information from `z_mux_tables` in the ProbeTable `probe_feature.json` file
-
-    Returns
-    -------
-    num_adcs: int
-        Number of ADCs used in the probe's readout system.
-    num_channels_per_adc: int
-        Number of readout channels assigned to each ADC.
-    adc_groups_array : np.array
-        Array of which channels are in each adc group, shaped (number of `adc`s, number of channels in each `adc`).
-    """
-
-    # mux_information looks like (num_adcs num_channels_per_adc)(int int int ...)(int int int ...)...(int int int ...)
-    # First split on ')(' to get a list of the information in the brackets, and remove the leading data
-    adc_info = mux_information.split(")(")[0]
-    split_mux = mux_information.split(")(")[1:]
-
-    # The first element is the number of ADCs and the number of channels per ADC
-    num_adcs, num_channels_per_adc = map(int, adc_info[1:].split(","))
-
-    # Then remove the brackets, and split using " " to get each integer as a list
-    adc_groups = [
-        np.array(each_mux.replace("(", "").replace(")", "").split(" ")).astype("int") for each_mux in split_mux
-    ]
-    adc_groups_array = np.transpose(np.array(adc_groups))
-
-    return num_adcs, num_channels_per_adc, adc_groups_array
-
-
-def get_probe_contour_vertices(shank_width, tip_length, probe_length) -> list:
+def _get_probe_contour_vertices(shank_width, tip_length, probe_length) -> list:
     """
     Function to get the vertices of the probe contour from probe properties.
     The probe contour can be constructed from five points.
@@ -208,84 +176,6 @@ def get_probe_contour_vertices(shank_width, tip_length, probe_length) -> list:
     )
 
     return polygon_vertices
-
-
-def read_imro(file_path: Union[str, Path]) -> Probe:
-    """
-    Read a Neuropixels probe from an IMRO (Imec ReadOut) table file.
-
-    IMRO files (.imro) are used by SpikeGLX and Open Ephys to configure which electrodes
-    are recorded and their acquisition settings (gains, references, filters). This function
-    reads the file, determines the probe part number from the IMRO header, builds the full
-    catalogue probe, and slices it to the active electrodes specified in the table.
-
-    Parameters
-    ----------
-    file_path : Path or str
-        The .imro file path
-
-    Returns
-    -------
-    probe : Probe
-        Probe object with geometry, contact annotations, and device channel mapping.
-
-    See Also
-    --------
-    https://billkarsh.github.io/SpikeGLX/help/imroTables/
-
-    """
-    # ===== 1. Read file and determine probe part number from IMRO header =====
-    meta_file = Path(file_path)
-    assert meta_file.suffix == ".imro", "'file' should point to the .imro file"
-    with meta_file.open(mode="r") as f:
-        imro_str = str(f.read())
-
-    imro_table_header_str, *imro_table_values_list, _ = imro_str.strip().split(")")
-    imro_table_header = tuple(map(int, imro_table_header_str[1:].split(",")))
-
-    if len(imro_table_header) == 3:
-        # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently.
-        # We use probe_type "0", which maps to probe_part_number NP1010 as a proxy for Phase3a.
-        imDatPrb_type = "0"
-    elif len(imro_table_header) == 2:
-        imDatPrb_type, _ = imro_table_header
-    else:
-        raise ValueError(f"read_imro error, the header has a strange length: {imro_table_header}")
-    imDatPrb_type = str(imDatPrb_type)
-
-    for probe_part_number, probe_type in probe_part_number_to_probe_type.items():
-        if imDatPrb_type == probe_type:
-            imDatPrb_pn = probe_part_number
-
-    # ===== 2. Interpret IMRO table =====
-    imro_per_channel = _parse_imro_string(imro_str, imDatPrb_pn)
-
-    # ===== 3. Build full probe with all possible contacts =====
-    full_probe = build_neuropixels_probe(probe_part_number=imDatPrb_pn)
-
-    # ===== 4. Slice full probe to active electrodes =====
-    active_contact_ids = _get_active_contact_ids(imro_per_channel)
-    contact_id_to_index = {cid: i for i, cid in enumerate(full_probe.contact_ids)}
-    selected_indices = np.array([contact_id_to_index[cid] for cid in active_contact_ids])
-    probe = full_probe.get_slice(selected_indices)
-
-    # ===== 5. Annotate probe with recording-specific metadata =====
-    adc_sampling_table = probe.annotations.get("adc_sampling_table")
-    _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
-
-    # Scalar annotations
-    probe_type = imro_str.strip().split(")")[0].split(",")[0][1:]
-    probe.annotate(probe_type=probe_type)
-
-    # Vector annotations from IMRO fields
-    vector_properties = ("channel", "bank", "bank_mask", "ref_id", "ap_gain", "lf_gain", "ap_hipas_flt")
-    vector_properties_available = {}
-    for k, v in imro_per_channel.items():
-        if k in vector_properties and len(v) > 0:
-            vector_properties_available[imro_field_to_pi_field.get(k)] = v
-    probe.annotate_contacts(**vector_properties_available)
-
-    return probe
 
 
 def build_neuropixels_probe(probe_part_number: str) -> Probe:
@@ -374,7 +264,7 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
     # ===== 6. Build probe contour and shank tips =====
     shank_width = float(probe_spec_dict["shank_width_um"])
     tip_length = float(probe_spec_dict["tip_length_um"])
-    polygon = np.array(get_probe_contour_vertices(shank_width, tip_length, get_probe_length(probe_part_number)))
+    polygon = np.array(_get_probe_contour_vertices(shank_width, tip_length, _get_probe_length(probe_part_number)))
 
     # Build contour for all shanks
     contour = []
@@ -393,7 +283,7 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
     contour = np.array(contour) + contour_shift
     probe.set_planar_contour(contour)
 
-    # Calculate shank tips (polygon[2] is the tip vertex from get_probe_contour_vertices)
+    # Calculate shank tips (polygon[2] is the tip vertex from _get_probe_contour_vertices)
     tip_vertex = polygon[2]
     shank_tips = []
     for shank_id in range(num_shanks):
@@ -513,122 +403,9 @@ def _annotate_probe_with_adc_sampling_info(probe: Probe, adc_sampling_table: str
     _annotate_contacts_from_mux_table(probe, adc_groups_array)
 
 
-def get_probe_metadata_from_probe_features(probe_features: dict, imDatPrb_pn: str):
-    """
-    Parses the `probe_features` dict, to cast string to appropriate types
-    and parses the imro_table_fields string. Returns the metadata needed
-    to construct a probe with part number `imDatPrb_pn`.
-
-    Parameters
-    ----------
-    probe_features : dict
-        Dictionary obtained when reading in the `neuropixels_probe_features.json` file.
-    imDatPrb_pn : str
-       Probe part number.
-
-    Returns
-    -------
-    probe_metadata, imro_field, mux_information
-        Dictionary of probe metadata.
-        Tuple of fields included in the `imro_table_fields`.
-        Mux table information, if available, as a string.
-    """
-
-    probe_metadata = probe_features["neuropixels_probes"].get(imDatPrb_pn)
-    for key in probe_metadata.keys():
-        if key in ["num_shanks", "cols_per_shank", "rows_per_shank", "adc_bit_depth", "num_readout_channels"]:
-            probe_metadata[key] = int(probe_metadata[key])
-        elif key in [
-            "electrode_pitch_horz_um",
-            "electrode_pitch_vert_um",
-            "electrode_size_horz_direction_um",
-            "shank_pitch_um",
-            "shank_width_um",
-            "tip_length_um",
-            "even_row_horz_offset_left_edge_to_leftmost_electrode_center_um",
-            "odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um",
-        ]:
-            probe_metadata[key] = float(probe_metadata[key])
-
-    # Read the imro table formats to find out which fields the imro tables contain
-    imro_table_format_type = probe_metadata["imro_table_format_type"]
-    imro_table_fields = probe_features["z_imro_formats"][imro_table_format_type + "_elm_flds"]
-
-    # parse the imro_table_fields, which look like (value value value ...)
-    list_of_imro_fields = imro_table_fields.replace("(", "").replace(")", "").split(" ")
-
-    imro_fields_list = []
-    for imro_field in list_of_imro_fields:
-        imro_fields_list.append(imro_field)
-
-    imro_fields = tuple(imro_fields_list)
-
-    # Read MUX table information
-    mux_information = None
-
-    if "z_mux_tables" in probe_features:
-        mux_table_format_type = probe_metadata.get("mux_table_format_type", None)
-        mux_information = probe_features["z_mux_tables"].get(mux_table_format_type, None)
-
-    return probe_metadata, imro_fields, mux_information
-
-
-def write_imro(file: str | Path, probe: Probe):
-    """
-    save imro file (`.imrc`, imec readout) in a file.
-    https://github.com/open-ephys-plugins/neuropixels-pxi/blob/master/Source/Formats/IMRO.h
-
-    Parameters
-    ----------
-    file : Path or str
-        The file path
-    probe : Probe object
-
-    """
-    probe_type = probe.annotations["probe_type"]
-    data = probe.to_dataframe(complete=True).sort_values("device_channel_indices")
-    annotations = probe.contact_annotations
-    ret = [f"({probe_type},{len(data)})"]
-
-    if probe_type == "0":
-        # Phase3a probe does not have `ap_hp_filters` annotation
-        if annotations.get("ap_hp_filters") is not None:
-
-            for ch in range(len(data)):
-                ret.append(
-                    f"({ch} 0 {annotations['references'][ch]} {annotations['ap_gains'][ch]} "
-                    f"{annotations['lf_gains'][ch]} {annotations['ap_hp_filters'][ch]})"
-                )
-        else:
-
-            for ch in range(len(data)):
-                ret.append(
-                    f"({ch} 0 {annotations['references'][ch]} {annotations['ap_gains'][ch]} "
-                    f"{annotations['lf_gains'][ch]})"
-                )
-
-    elif probe_type in ("21", "2003", "2004"):
-        for ch in range(len(data)):
-            ret.append(
-                f"({data['device_channel_indices'][ch]} {annotations['banks'][ch]} "
-                f"{annotations['references'][ch]} {data['contact_ids'][ch][1:]})"
-            )
-
-    elif probe_type in ("24", "2013", "2014"):
-        for ch in range(len(data)):
-            ret.append(
-                f"({data['device_channel_indices'][ch]} {data['shank_ids'][ch]} {annotations['banks'][ch]} "
-                f"{annotations['references'][ch]} {data['contact_ids'][ch][3:]})"
-            )
-    else:
-        raise ValueError(f"unknown imro type : {probe_type}")
-    with open(file, "w") as f:
-        f.write("".join(ret))
-
-
-##
-# SpikeGLX zone for neuropixel
-##
+#########################
+# SpikeGLX / IMRO zone  #
+#########################
 
 
 def _build_canonical_contact_id(electrode_id: int, shank_id: int | None = None) -> str:
@@ -690,7 +467,7 @@ def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
         IMRO entry field mapping to a list of values. The number of entries varies by probe
         type (384 per channel for most probes, 24 per group for NP1110).
         NP2.x+ probes will have an "electrode" key directly. NP1.x probes will not
-        (electrode IDs must be resolved separately via _get_active_contact_ids).
+        (electrode IDs must be resolved separately via _get_imro_active_contact_ids).
         Example for NP1.0: {"header": {"type": 0, "num_channels": 384},
             "channel": [0,1,...], "bank": [0,0,...], "ref_id": [0,0,...], ...}
         Example for NP2.0: {"header": {"type": 21, "num_channels": 384},
@@ -724,7 +501,60 @@ def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
     return imro_per_channel
 
 
-def _get_active_contact_ids(imro_per_channel: dict) -> list[str]:
+def write_imro(file: str | Path, probe: Probe):
+    """
+    save imro file (`.imrc`, imec readout) in a file.
+    https://github.com/open-ephys-plugins/neuropixels-pxi/blob/master/Source/Formats/IMRO.h
+
+    Parameters
+    ----------
+    file : Path or str
+        The file path
+    probe : Probe object
+
+    """
+    probe_type = probe.annotations["probe_type"]
+    data = probe.to_dataframe(complete=True).sort_values("device_channel_indices")
+    annotations = probe.contact_annotations
+    ret = [f"({probe_type},{len(data)})"]
+
+    if probe_type == "0":
+        # Phase3a probe does not have `ap_hp_filters` annotation
+        if annotations.get("ap_hp_filters") is not None:
+
+            for ch in range(len(data)):
+                ret.append(
+                    f"({ch} 0 {annotations['references'][ch]} {annotations['ap_gains'][ch]} "
+                    f"{annotations['lf_gains'][ch]} {annotations['ap_hp_filters'][ch]})"
+                )
+        else:
+
+            for ch in range(len(data)):
+                ret.append(
+                    f"({ch} 0 {annotations['references'][ch]} {annotations['ap_gains'][ch]} "
+                    f"{annotations['lf_gains'][ch]})"
+                )
+
+    elif probe_type in ("21", "2003", "2004"):
+        for ch in range(len(data)):
+            ret.append(
+                f"({data['device_channel_indices'][ch]} {annotations['banks'][ch]} "
+                f"{annotations['references'][ch]} {data['contact_ids'][ch][1:]})"
+            )
+
+    elif probe_type in ("24", "2013", "2014"):
+        for ch in range(len(data)):
+            ret.append(
+                f"({data['device_channel_indices'][ch]} {data['shank_ids'][ch]} {annotations['banks'][ch]} "
+                f"{annotations['references'][ch]} {data['contact_ids'][ch][3:]})"
+            )
+    else:
+        raise ValueError(f"unknown imro type : {probe_type}")
+    with open(file, "w") as f:
+        f.write("".join(ret))
+
+
+def _get_imro_active_contact_ids(imro_per_channel: dict) -> list[str]:
     """
     Get canonical contact ID strings for the active electrodes in a parsed IMRO table.
 
@@ -875,6 +705,84 @@ def _resolve_active_contacts_for_np1110(imro_per_channel: dict) -> None:
     imro_per_channel["channel"] = list(range(384))
 
 
+def read_imro(file_path: Union[str, Path]) -> Probe:
+    """
+    Read a Neuropixels probe from an IMRO (Imec ReadOut) table file.
+
+    IMRO files (.imro) are used by SpikeGLX and Open Ephys to configure which electrodes
+    are recorded and their acquisition settings (gains, references, filters). This function
+    reads the file, determines the probe part number from the IMRO header, builds the full
+    catalogue probe, and slices it to the active electrodes specified in the table.
+
+    Parameters
+    ----------
+    file_path : Path or str
+        The .imro file path
+
+    Returns
+    -------
+    probe : Probe
+        Probe object with geometry, contact annotations, and device channel mapping.
+
+    See Also
+    --------
+    https://billkarsh.github.io/SpikeGLX/help/imroTables/
+
+    """
+    # ===== 1. Read file and determine probe part number from IMRO header =====
+    meta_file = Path(file_path)
+    assert meta_file.suffix == ".imro", "'file' should point to the .imro file"
+    with meta_file.open(mode="r") as f:
+        imro_str = str(f.read())
+
+    imro_table_header_str, *imro_table_values_list, _ = imro_str.strip().split(")")
+    imro_table_header = tuple(map(int, imro_table_header_str[1:].split(",")))
+
+    if len(imro_table_header) == 3:
+        # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently.
+        # We use probe_type "0", which maps to probe_part_number NP1010 as a proxy for Phase3a.
+        imDatPrb_type = "0"
+    elif len(imro_table_header) == 2:
+        imDatPrb_type, _ = imro_table_header
+    else:
+        raise ValueError(f"read_imro error, the header has a strange length: {imro_table_header}")
+    imDatPrb_type = str(imDatPrb_type)
+
+    for probe_part_number, probe_type in probe_part_number_to_probe_type.items():
+        if imDatPrb_type == probe_type:
+            imDatPrb_pn = probe_part_number
+
+    # ===== 2. Interpret IMRO table =====
+    imro_per_channel = _parse_imro_string(imro_str, imDatPrb_pn)
+
+    # ===== 3. Build full probe with all possible contacts =====
+    full_probe = build_neuropixels_probe(probe_part_number=imDatPrb_pn)
+
+    # ===== 4. Slice full probe to active electrodes =====
+    active_contact_ids = _get_imro_active_contact_ids(imro_per_channel)
+    contact_id_to_index = {cid: i for i, cid in enumerate(full_probe.contact_ids)}
+    selected_indices = np.array([contact_id_to_index[cid] for cid in active_contact_ids])
+    probe = full_probe.get_slice(selected_indices)
+
+    # ===== 5. Annotate probe with recording-specific metadata =====
+    adc_sampling_table = probe.annotations.get("adc_sampling_table")
+    _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
+
+    # Scalar annotations
+    probe_type = imro_str.strip().split(")")[0].split(",")[0][1:]
+    probe.annotate(probe_type=probe_type)
+
+    # Vector annotations from IMRO fields
+    vector_properties = ("channel", "bank", "bank_mask", "ref_id", "ap_gain", "lf_gain", "ap_hipas_flt")
+    vector_properties_available = {}
+    for k, v in imro_per_channel.items():
+        if k in vector_properties and len(v) > 0:
+            vector_properties_available[imro_field_to_pi_field.get(k)] = v
+    probe.annotate_contacts(**vector_properties_available)
+
+    return probe
+
+
 def read_spikeglx(file: str | Path) -> Probe:
     """
     Read probe geometry and configuration from a SpikeGLX metadata file.
@@ -928,7 +836,7 @@ def read_spikeglx(file: str | Path) -> Probe:
     imro_per_channel = _parse_imro_string(imro_table_string, imDatPrb_pn)
 
     # ===== 4. Slice full probe to active electrodes =====
-    active_contact_ids = _get_active_contact_ids(imro_per_channel)
+    active_contact_ids = _get_imro_active_contact_ids(imro_per_channel)
     contact_id_to_index = {contact_id: idx for idx, contact_id in enumerate(full_probe.contact_ids)}
     selected_contact_indices = np.array([contact_id_to_index[contact_id] for contact_id in active_contact_ids])
     probe = full_probe.get_slice(selected_contact_indices)
@@ -1035,10 +943,6 @@ def parse_spikeglx_snsGeomMap(meta):
     return num_shank, shank_width, shank_pitch, shank_ids, x_pos, y_pos, activated
 
 
-# def spikeglx_snsGeomMap_to_probe(meta):
-#     parse_spikeglx_snsGeomMap(meta)
-
-
 def get_saved_channel_indices_from_spikeglx_meta(meta_file: str | Path) -> np.array:
     """
     Utils function to get the saved channels.
@@ -1070,9 +974,9 @@ def get_saved_channel_indices_from_spikeglx_meta(meta_file: str | Path) -> np.ar
     return chans
 
 
-##
-# OpenEphys zone for neuropixel
-##
+###################
+# OpenEphys zone  #
+###################
 
 
 def _parse_openephys_settings(
@@ -1104,7 +1008,7 @@ def _parse_openephys_settings(
         - selected_electrode_indices: list of int (from SELECTED_ELECTRODES), or None
         - contact_ids: list of str (reverse-engineered from CHANNELS), or None
         - settings_channel_keys: np.array of str, or None
-        - elec_ids, shank_ids, pt_metadata, mux_info: for legacy fallback
+        - elec_ids, shank_ids: for legacy fallback
     """
     ET = import_safely("xml.etree.ElementTree")
     tree = ET.parse(str(settings_file))
@@ -1269,7 +1173,7 @@ def _parse_openephys_settings(
         selected_electrodes = np_probe.find("SELECTED_ELECTRODES")
         channels = np_probe.find("CHANNELS")
 
-        pt_metadata, _, mux_info = get_probe_metadata_from_probe_features(probe_features, probe_part_number)
+        pt_metadata = probe_features["neuropixels_probes"].get(probe_part_number)
 
         # Assign probe name
         if "custom_probe_name" in np_probe.attrib and np_probe.attrib["custom_probe_name"] != probe_serial_number:
@@ -1285,7 +1189,6 @@ def _parse_openephys_settings(
             "port": port,
             "dock": dock,
             "pt_metadata": pt_metadata,
-            "mux_info": mux_info,
             "selected_electrode_indices": None,
             "contact_ids": None,
             "settings_channel_keys": None,
@@ -1330,7 +1233,7 @@ def _parse_openephys_settings(
             ypos = np.array([float(electrode_ypos.attrib[ch]) for ch in channel_names])
             positions = np.array([xpos, ypos]).T
 
-            shank_pitch = pt_metadata["shank_pitch_um"]
+            shank_pitch = float(pt_metadata["shank_pitch_um"])
 
             if fix_x_position_for_oe_5 and oe_version < parse("0.6.0") and shank_ids is not None:
                 positions[:, 1] = positions[:, 1] - shank_pitch * shank_ids
@@ -1341,14 +1244,13 @@ def _parse_openephys_settings(
                 offset -= np.min(shank_ids) * shank_pitch
             positions[:, 0] -= offset
 
-            y_pitch = pt_metadata["electrode_pitch_vert_um"]
-            x_pitch = pt_metadata["electrode_pitch_horz_um"]
-            number_of_columns = pt_metadata["cols_per_shank"]
-            probe_stagger = (
+            y_pitch = float(pt_metadata["electrode_pitch_vert_um"])
+            x_pitch = float(pt_metadata["electrode_pitch_horz_um"])
+            number_of_columns = int(pt_metadata["cols_per_shank"])
+            probe_stagger = float(
                 pt_metadata["even_row_horz_offset_left_edge_to_leftmost_electrode_center_um"]
-                - pt_metadata["odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um"]
-            )
-            num_shanks = pt_metadata["num_shanks"]
+            ) - float(pt_metadata["odd_row_horz_offset_left_edge_to_leftmost_electrode_center_um"])
+            num_shanks = int(pt_metadata["num_shanks"])
             description = pt_metadata.get("description")
 
             elec_ids = []

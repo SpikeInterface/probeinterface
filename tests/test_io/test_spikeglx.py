@@ -289,9 +289,9 @@ def test_NPH_short_linear_probe_type_0():
     assert np.allclose(filters, 1)
 
 
-def test_ultra_probe():
+def test_np_ultra_probe():
     # Data provided by Alessio
-    probe = read_spikeglx(data_path / "npUltra.meta")
+    probe = read_spikeglx(data_path / "NP-Ultra.meta")
 
     assert probe.manufacturer == "imec"
 
@@ -311,6 +311,68 @@ def test_ultra_probe():
     assert unique_x_values.size == expected_electrode_columns
 
     expected_electode_rows = 48
+    unique_y_values = np.unique(y)
+    assert unique_y_values.size == expected_electode_rows
+
+
+def test_NP1110_probe_bank0():
+    # For bank0, all electrodes are packet at the tip, in an 48x8 grid
+    probe = read_spikeglx(data_path / "NP1110_bank0_g0_t0.imec0.ap")
+
+    assert probe.manufacturer == "imec"
+
+    # Test contact geometry
+    contact_width = 5.0
+    contact_shape = "square"
+
+    assert np.all(probe.contact_shape_params == {"width": contact_width})
+    assert np.all(probe.contact_shapes == contact_shape)
+
+    contact_positions = probe.contact_positions
+    x = contact_positions[:, 0]
+    y = contact_positions[:, 1]
+
+    min_y = 0
+    max_y = 282
+    assert np.all((y >= min_y) & (y <= max_y))
+
+    expected_electrode_columns = 8
+    unique_x_values = np.unique(x)
+    assert unique_x_values.size == expected_electrode_columns
+
+    expected_electode_rows = 48
+    unique_y_values = np.unique(y)
+    assert unique_y_values.size == expected_electode_rows
+
+
+def test_NP1110_probe_bank4_2_192():
+    # For this dataset, bank4 is selected with a 2x192 configuration
+    probe = read_spikeglx(data_path / "NP1110_2x192_bank4_g0_t0.imec0.ap.meta")
+
+    assert probe.manufacturer == "imec"
+
+    # Test contact geometry
+    contact_width = 5.0
+    contact_shape = "square"
+
+    assert np.all(probe.contact_shape_params == {"width": contact_width})
+    assert np.all(probe.contact_shapes == contact_shape)
+
+    contact_positions = probe.contact_positions
+    x = contact_positions[:, 0]
+    y = contact_positions[:, 1]
+
+    # For bank0, all electrodes are packet at the tip, in an 48x8 grid
+    min_y = 1152
+    max_y = 2298
+    assert np.all((y >= min_y) & (y <= max_y))
+
+    # For bank4 with 2x192, we expect 4 columns (2 banks interleaved) and 192 rows
+    expected_electrode_columns = 4
+    unique_x_values = np.unique(x)
+    assert unique_x_values.size == expected_electrode_columns
+
+    expected_electode_rows = 192
     unique_y_values = np.unique(y)
     assert unique_y_values.size == expected_electode_rows
 
@@ -400,4 +462,4 @@ def test_snsGeomMap():
 
 if __name__ == "__main__":
     # test_NP2_1_shanks()
-    test_snsGeomMap()
+    test_NP1110_probes()
