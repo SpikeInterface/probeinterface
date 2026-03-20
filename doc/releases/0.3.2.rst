@@ -1,0 +1,44 @@
+probeinterface 0.3.2
+--------------------
+
+Mar, 20th 2026
+
+
+Features
+^^^^^^^^
+
+* Remove legacy probe construction for ``read_imro`` path for read_imro and support NP1110 (#410)
+* Make shank_ids optional (None) instead of array of [""] (#391,#393)
+* Enhance ``plot_probegroup`` to handle varying contact values (#397)
+* Updates to Neuropixels probe features (#392, #399)
+* Update ``read_openephys`` construction using catalogue probes and handle channel maps (#406, #409)
+* Neuropixels: Add mux information to catalogue probes (#383)
+* Support double-sided probes (#382)
+
+
+Bug fixes
+^^^^^^^^^
+
+* Fix quad-base with custom names (#413)
+* Fix missing raise in ``Probe.set_contact_ids()`` size validation (#401)
+* Fixes to ``generate_cambridgeneurotech_library.py`` file name(#389, #390)
+* Fix static annotation of ``pi.generate_multi_columns_probe`` (#385)
+* Fix unclosed file warnings in ``json.load()`` calls (#396)
+
+Deprecations
+^^^^^^^^^^^^
+
+* Deprecated ``contacts_kargs`` in ``plot_probe`` in favor of ``contact_kwargs`` (#414, #397)
+* Removed deprecated ``plot_probe_group`` (#397)
+
+Testing
+^^^^^^^
+
+* Force Agg backend for tests (#395)
+* Add missing library marks (#384)
+
+Packaging
+^^^^^^^^^
+
+* Support Python >= 3.10 and fix annotations (#414)
+* Migrate test and docs extras to PEP 735 dependency groups (#408)
