@@ -5,7 +5,6 @@ import numpy as np
 import pytest
 
 from probeinterface import (
-    probe,
     read_spikeglx,
     parse_spikeglx_meta,
     get_saved_channel_indices_from_spikeglx_meta,
@@ -346,12 +345,14 @@ def test_np_ultra_probe():
 
 
 def test_NP1110_probes():
+    sns_channel_offset = np.array([15.5, 0.0])
     # For bank0, all electrodes are packet at the tip, in an 48x8 grid
     expected_electrode_columns = 8
     expected_electode_rows = 48
     min_y = 0
     max_y = 292
-    probe = read_spikeglx(data_path / "NP1110_bank0_g0_t0.imec0.ap.meta")
+    meta_file = data_path / "NP1110_bank0_g0_t0.imec0.ap.meta"
+    probe = read_spikeglx(meta_file)
 
     assert probe.manufacturer == "imec"
     assert probe.model_name == "NP1110"
@@ -375,6 +376,12 @@ def test_NP1110_probes():
     assert unique_x_values.size == expected_electrode_columns
     unique_y_values = np.unique(y)
     assert unique_y_values.size == expected_electode_rows
+
+    # Test against snsGeomMap parsing for the same file, which should give the same result
+    meta = parse_spikeglx_meta(meta_file)
+    _, _, _, _, x_pos, y_pos, _ = parse_spikeglx_snsGeomMap(meta)
+    sns_map_positions = np.column_stack((x_pos, y_pos)) - sns_channel_offset
+    np.testing.assert_array_equal(probe.contact_positions, sns_map_positions)
 
     # For this dataset, bank4 is selected with a 2x192 configuration
     # (2 banks interleaved, so 4 columns) and 192 rows
@@ -383,7 +390,8 @@ def test_NP1110_probes():
     min_y = 1152
     max_y = 2298
 
-    probe = read_spikeglx(data_path / "NP1110_2x192_bank4_g0_t0.imec0.ap.meta")
+    meta_file = data_path / "NP1110_2x192_bank4_g0_t0.imec0.ap.meta"
+    probe = read_spikeglx(meta_file)
     assert probe.manufacturer == "imec"
     assert probe.model_name == "NP1110"
     assert "adc_group" in probe.contact_annotations
@@ -406,13 +414,20 @@ def test_NP1110_probes():
     assert unique_x_values.size == expected_electrode_columns
     unique_y_values = np.unique(y)
     assert unique_y_values.size == expected_electode_rows
+
+    # Test against snsGeomMap parsing for the same file, which should give the same result
+    meta = parse_spikeglx_meta(meta_file)
+    _, _, _, _, x_pos, y_pos, _ = parse_spikeglx_snsGeomMap(meta)
+    sns_map_positions = np.column_stack((x_pos, y_pos)) - sns_channel_offset
+    np.testing.assert_array_equal(probe.contact_positions, sns_map_positions)
 
     # For this dataset, a 48x8 config in the middle of the probe is used
     expected_electrode_columns = 8
     expected_electode_rows = 48
     min_y = 480
     max_y = 862
-    probe = read_spikeglx(data_path / "NP1110_botrow80_g0_t0.imec0.ap.meta")
+    meta_file = data_path / "NP1110_botrow80_g0_t0.imec0.ap.meta"
+    probe = read_spikeglx(meta_file)
 
     assert probe.manufacturer == "imec"
     assert probe.model_name == "NP1110"
@@ -436,13 +451,20 @@ def test_NP1110_probes():
     assert unique_x_values.size == expected_electrode_columns
     unique_y_values = np.unique(y)
     assert unique_y_values.size == expected_electode_rows
+
+    # Test against snsGeomMap parsing for the same file, which should give the same result
+    meta = parse_spikeglx_meta(meta_file)
+    _, _, _, _, x_pos, y_pos, _ = parse_spikeglx_snsGeomMap(meta)
+    sns_map_positions = np.column_stack((x_pos, y_pos)) - sns_channel_offset
+    np.testing.assert_array_equal(probe.contact_positions, sns_map_positions)
 
     # For this dataset, a 384x1 config is selectedin the middle of the probe, with interleaved columns
     expected_electrode_columns = 2
     expected_electode_rows = 384
     min_y = 2304
     max_y = 4602
-    probe = read_spikeglx(data_path / "NP1110_vstripe_g0_t0.imec0.ap.meta")
+    meta_file = data_path / "NP1110_vstripe_g0_t0.imec0.ap.meta"
+    probe = read_spikeglx(meta_file)
 
     assert probe.manufacturer == "imec"
     assert probe.model_name == "NP1110"
@@ -466,6 +488,12 @@ def test_NP1110_probes():
     assert unique_x_values.size == expected_electrode_columns
     unique_y_values = np.unique(y)
     assert unique_y_values.size == expected_electode_rows
+
+    # Test against snsGeomMap parsing for the same file, which should give the same result
+    meta = parse_spikeglx_meta(meta_file)
+    _, _, _, _, x_pos, y_pos, _ = parse_spikeglx_snsGeomMap(meta)
+    sns_map_positions = np.column_stack((x_pos, y_pos)) - sns_channel_offset
+    np.testing.assert_array_equal(probe.contact_positions, sns_map_positions)
 
 
 def test_CatGT_NP1():

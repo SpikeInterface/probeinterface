@@ -633,17 +633,6 @@ def _resolve_active_contacts_for_np1110(imro_per_channel: dict) -> None:
     if "group" not in imro_per_channel:
         return
 
-    # TODO: Remove this warning once we have test data for NP1110 recordings.
-    warnings.warn(
-        "NP1110 (Neuropixels 1.0 UHD2 active) support is experimental. "
-        "The active electrode selection logic is translated directly from SpikeGLX "
-        "(https://github.com/billkarsh/SpikeGLX, Src-imro/IMROTbl_T1110.cpp) but has not "
-        "been validated against real NP1110 recordings. Please double-check the electrode "
-        "selection and report any issues at https://github.com/SpikeInterface/probeinterface/issues",
-        UserWarning,
-        stacklevel=3,  # Points to read_imro / read_spikeglx (caller of _ensure_active_contacts_available)
-    )
-
     col_mode = imro_per_channel["header"]["col_mode"]  # 0=INNER, 1=OUTER, 2=ALL
 
     groups_bankA = imro_per_channel["bankA"]
