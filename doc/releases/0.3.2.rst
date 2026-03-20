@@ -7,6 +7,7 @@ Mar, 20th 2026
 Features
 ^^^^^^^^
 
+* Remove legacy probe construction for ``read_imro`` path for read_imro and support NP1110 (#410)
 * Make shank_ids optional (None) instead of array of [""] (#391,#393)
 * Enhance ``plot_probegroup`` to handle varying contact values (#397)
 * Updates to Neuropixels probe features (#392, #399)
