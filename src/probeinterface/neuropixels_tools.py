@@ -1265,6 +1265,18 @@ def _parse_openephys_settings(
         else:
             name = probe_names_used[probe_idx]
 
+        # For Quad Base probes, the stream name is the same for all 4 shanks,
+        # so we append the shank id to match the stream name (if not already present)
+        # and ensure consistency with stream names.
+        shank = np_probe.attrib.get("shank")
+        if shank is not None:
+            shank_str = f"-{int(shank) + 1}"
+            if shank_str not in name:
+                name = f"{name}{shank_str}"
+                # update the name in the probe_name_used so that the correct probe name
+                # shows up in the list of available probe names
+                probe_names_used[probe_idx] = name
+
         info = {
             "probe_part_number": probe_part_number,
             "serial_number": probe_serial_number,
