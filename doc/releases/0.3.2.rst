@@ -12,15 +12,18 @@ Features
 * Enhance ``plot_probegroup`` to handle varying contact values (#397)
 * Updates to Neuropixels probe features (#392, #399)
 * Update ``read_openephys`` construction using catalogue probes and handle channel maps (#406, #409)
+* Neuropixels: Add mux information to catalogue probes (#383)
+* Support double-sided probes (#382)
+
 
 Bug fixes
 ^^^^^^^^^
 
 * Fix quad-base with custom names (#413)
+* Fix missing raise in ``Probe.set_contact_ids()`` size validation (#401)
 * Fixes to ``generate_cambridgeneurotech_library.py`` file name(#389, #390)
 * Fix static annotation of ``pi.generate_multi_columns_probe`` (#385)
 * Fix unclosed file warnings in ``json.load()`` calls (#396)
-* Fix missing raise in ``Probe.set_contact_ids()`` size validation (#401)
 
 Deprecations
 ^^^^^^^^^^^^
@@ -32,6 +35,7 @@ Testing
 ^^^^^^^
 
 * Force Agg backend for tests (#395)
+* Add missing library marks (#384)
 
 Packaging
 ^^^^^^^^^
