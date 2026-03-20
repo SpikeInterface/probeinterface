@@ -15,6 +15,7 @@ Features
 Bug fixes
 ^^^^^^^^^
 
+* Fix quad-base with custom names (#413)
 * Fixes to ``generate_cambridgeneurotech_library.py`` file name(#389, #390)
 * Fix static annotation of ``pi.generate_multi_columns_probe`` (#385)
 * Fix unclosed file warnings in ``json.load()`` calls (#396)
