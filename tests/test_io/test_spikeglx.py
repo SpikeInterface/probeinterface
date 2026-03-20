@@ -5,6 +5,7 @@ import numpy as np
 import pytest
 
 from probeinterface import (
+    probe,
     read_spikeglx,
     parse_spikeglx_meta,
     get_saved_channel_indices_from_spikeglx_meta,
@@ -44,6 +45,8 @@ def test_get_saved_channel_indices_from_spikeglx_meta():
 def test_NP1():
     probe = read_spikeglx(data_path / "Noise_g0_t0.imec0.ap.meta")
     assert "1.0" in probe.description
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
 
 def test_NP_phase3A():
@@ -62,12 +65,16 @@ def test_NP_phase3A():
 
     assert np.all(probe.contact_shape_params == {"width": contact_width})
     assert np.all(probe.contact_shapes == contact_shape)
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
 
 def test_NP2_1_shanks():
     probe = read_spikeglx(data_path / "p2_g0_t0.imec0.ap.meta")
     assert "2.0" in probe.description
     assert probe.get_shank_count() == 1
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
 
 def test_NP2_4_shanks():
@@ -78,6 +85,8 @@ def test_NP2_4_shanks():
     assert probe.ndim == 2
     assert probe.get_shank_count() == 4
     assert probe.get_contact_count() == 384
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
     # Test contact geometry
     contact_width = 12.0
@@ -101,6 +110,8 @@ def test_NP2_2013_all():
     # all channels are from the first shank
     assert probe.get_shank_count() == 4
     assert probe.get_contact_count() == 384
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
     # Test contact geometry
     contact_width = 12.0
@@ -124,6 +135,8 @@ def test_NP2_2013_subset():
     # all channels are from the first shank
     assert probe.get_shank_count() == 4
     assert probe.get_contact_count() == 120
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
     # Test contact geometry
     contact_width = 12.0
@@ -146,6 +159,8 @@ def test_NP2_4_shanks_with_different_electrodes_saved():
     assert probe.ndim == 2
     assert probe.get_shank_count() == 4
     assert probe.get_contact_count() == 384
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
     # Test contact geometry
     contact_width = 12.0
@@ -165,6 +180,9 @@ def test_NP1_large_depth_span():
     probe = read_spikeglx(data_path / "allan-longcol_g0_t0.imec0.ap.meta")
     assert "1.0" in probe.description
     assert probe.get_shank_count() == 1
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
+
     ypos = probe.contact_positions[:, 1]
     assert (np.max(ypos) - np.min(ypos)) > 7600
 
@@ -175,6 +193,9 @@ def test_NP1_other_example():
     print(probe)
     assert "1.0" in probe.description
     assert probe.get_shank_count() == 1
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
+
     ypos = probe.contact_positions[:, 1]
     assert (np.max(ypos) - np.min(ypos)) > 7600
 
@@ -184,6 +205,9 @@ def tes_NP1_384_channels():
     probe = read_spikeglx(data_path / "NP1_saved_only_subset_of_channels.meta")
     assert probe.get_shank_count() == 1
     assert probe.get_contact_count() == 151
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
+
     assert 152 not in probe.contact_annotations["channel_ids"]
 
 
@@ -196,6 +220,8 @@ def test_NPH_long_staggered():
     assert probe.ndim == 2
     assert probe.get_shank_count() == 1
     assert probe.get_contact_count() == 384
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
     # Test contact geometry
     x_pitch = 56.0
@@ -250,6 +276,8 @@ def test_NPH_short_linear_probe_type_0():
     assert probe.ndim == 2
     assert probe.get_shank_count() == 1
     assert probe.get_contact_count() == 384
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
     # Test contact geometry
     x_pitch = 56.0
@@ -294,6 +322,8 @@ def test_np_ultra_probe():
     probe = read_spikeglx(data_path / "NP-Ultra.meta")
 
     assert probe.manufacturer == "imec"
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
     # Test contact geometry
     contact_width = 5.0
@@ -315,41 +345,18 @@ def test_np_ultra_probe():
     assert unique_y_values.size == expected_electode_rows
 
 
-def test_NP1110_probe_bank0():
+def test_NP1110_probes():
     # For bank0, all electrodes are packet at the tip, in an 48x8 grid
-    probe = read_spikeglx(data_path / "NP1110_bank0_g0_t0.imec0.ap")
-
-    assert probe.manufacturer == "imec"
-
-    # Test contact geometry
-    contact_width = 5.0
-    contact_shape = "square"
-
-    assert np.all(probe.contact_shape_params == {"width": contact_width})
-    assert np.all(probe.contact_shapes == contact_shape)
-
-    contact_positions = probe.contact_positions
-    x = contact_positions[:, 0]
-    y = contact_positions[:, 1]
-
+    expected_electrode_columns = 8
+    expected_electode_rows = 48
     min_y = 0
-    max_y = 282
-    assert np.all((y >= min_y) & (y <= max_y))
-
-    expected_electrode_columns = 8
-    unique_x_values = np.unique(x)
-    assert unique_x_values.size == expected_electrode_columns
-
-    expected_electode_rows = 48
-    unique_y_values = np.unique(y)
-    assert unique_y_values.size == expected_electode_rows
-
-
-def test_NP1110_probe_bank4_2_192():
-    # For this dataset, bank4 is selected with a 2x192 configuration
-    probe = read_spikeglx(data_path / "NP1110_2x192_bank4_g0_t0.imec0.ap.meta")
+    max_y = 292
+    probe = read_spikeglx(data_path / "NP1110_bank0_g0_t0.imec0.ap.meta")
 
     assert probe.manufacturer == "imec"
+    assert probe.model_name == "NP1110"
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
 
     # Test contact geometry
     contact_width = 5.0
@@ -358,21 +365,105 @@ def test_NP1110_probe_bank4_2_192():
     assert np.all(probe.contact_shape_params == {"width": contact_width})
     assert np.all(probe.contact_shapes == contact_shape)
 
+    # Check contact positions are within expected bounds
     contact_positions = probe.contact_positions
     x = contact_positions[:, 0]
     y = contact_positions[:, 1]
 
-    # For bank0, all electrodes are packet at the tip, in an 48x8 grid
+    assert np.all((y >= min_y) & (y <= max_y))
+    unique_x_values = np.unique(x)
+    assert unique_x_values.size == expected_electrode_columns
+    unique_y_values = np.unique(y)
+    assert unique_y_values.size == expected_electode_rows
+
+    # For this dataset, bank4 is selected with a 2x192 configuration
+    # (2 banks interleaved, so 4 columns) and 192 rows
+    expected_electrode_columns = 4
+    expected_electode_rows = 192
     min_y = 1152
     max_y = 2298
-    assert np.all((y >= min_y) & (y <= max_y))
 
-    # For bank4 with 2x192, we expect 4 columns (2 banks interleaved) and 192 rows
-    expected_electrode_columns = 4
+    probe = read_spikeglx(data_path / "NP1110_2x192_bank4_g0_t0.imec0.ap.meta")
+    assert probe.manufacturer == "imec"
+    assert probe.model_name == "NP1110"
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
+
+    # Test contact geometry
+    contact_width = 5.0
+    contact_shape = "square"
+
+    assert np.all(probe.contact_shape_params == {"width": contact_width})
+    assert np.all(probe.contact_shapes == contact_shape)
+
+    # Check contact positions are within expected bounds
+    contact_positions = probe.contact_positions
+    x = contact_positions[:, 0]
+    y = contact_positions[:, 1]
+
+    assert np.all((y >= min_y) & (y <= max_y))
     unique_x_values = np.unique(x)
     assert unique_x_values.size == expected_electrode_columns
+    unique_y_values = np.unique(y)
+    assert unique_y_values.size == expected_electode_rows
 
-    expected_electode_rows = 192
+    # For this dataset, a 48x8 config in the middle of the probe is used
+    expected_electrode_columns = 8
+    expected_electode_rows = 48
+    min_y = 480
+    max_y = 862
+    probe = read_spikeglx(data_path / "NP1110_botrow80_g0_t0.imec0.ap.meta")
+
+    assert probe.manufacturer == "imec"
+    assert probe.model_name == "NP1110"
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
+
+    # Test contact geometry
+    contact_width = 5.0
+    contact_shape = "square"
+
+    assert np.all(probe.contact_shape_params == {"width": contact_width})
+    assert np.all(probe.contact_shapes == contact_shape)
+
+    # Check contact positions are within expected bounds
+    contact_positions = probe.contact_positions
+    x = contact_positions[:, 0]
+    y = contact_positions[:, 1]
+
+    assert np.all((y >= min_y) & (y <= max_y))
+    unique_x_values = np.unique(x)
+    assert unique_x_values.size == expected_electrode_columns
+    unique_y_values = np.unique(y)
+    assert unique_y_values.size == expected_electode_rows
+
+    # For this dataset, a 384x1 config is selectedin the middle of the probe, with interleaved columns
+    expected_electrode_columns = 2
+    expected_electode_rows = 384
+    min_y = 2304
+    max_y = 4602
+    probe = read_spikeglx(data_path / "NP1110_vstripe_g0_t0.imec0.ap.meta")
+
+    assert probe.manufacturer == "imec"
+    assert probe.model_name == "NP1110"
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
+
+    # Test contact geometry
+    contact_width = 5.0
+    contact_shape = "square"
+
+    assert np.all(probe.contact_shape_params == {"width": contact_width})
+    assert np.all(probe.contact_shapes == contact_shape)
+
+    # Check contact positions are within expected bounds
+    contact_positions = probe.contact_positions
+    x = contact_positions[:, 0]
+    y = contact_positions[:, 1]
+
+    assert np.all((y >= min_y) & (y <= max_y))
+    unique_x_values = np.unique(x)
+    assert unique_x_values.size == expected_electrode_columns
     unique_y_values = np.unique(y)
     assert unique_y_values.size == expected_electode_rows
 
