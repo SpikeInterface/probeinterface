@@ -210,13 +210,13 @@ class ProbeGroup:
         channels["device_channel_indices"] = arr["device_channel_indices"]
         return channels
 
-    def set_global_device_channel_indices(self, channels: np.array | list):
+    def set_global_device_channel_indices(self, channels: np.ndarray | list):
         """
         Set global indices for all probes
 
         Parameters
         ----------
-        channels: np.array | list
+        channels: np.ndarray | list
             The device channal indices to be set
         """
         channels = np.asarray(channels)

@@ -8,7 +8,6 @@ Note:
 """
 
 from pathlib import Path
-from typing import Union, Optional
 import warnings
 from packaging.version import parse
 import json
@@ -113,7 +112,7 @@ def get_probe_length(probe_part_number: str) -> int:
     return 10_000
 
 
-def make_mux_table_array(mux_information) -> np.array:
+def make_mux_table_array(mux_information) -> np.ndarray:
     """
     Function to parse the mux_table from ProbeTable.
 
@@ -209,7 +208,7 @@ def get_probe_contour_vertices(shank_width, tip_length, probe_length) -> list:
     return polygon_vertices
 
 
-def read_imro(file_path: Union[str, Path]) -> Probe:
+def read_imro(file_path: str | Path) -> Probe:
     """
     Read probe position from the imro file used in input of SpikeGlx and Open-Ephys for neuropixels probes.
 
@@ -570,7 +569,7 @@ def _annotate_probe_with_adc_sampling_info(probe: Probe, adc_sampling_table: str
     _annotate_contacts_from_mux_table(probe, adc_groups_array)
 
 
-def _read_imro_string(imro_str: str, imDatPrb_pn: Optional[str] = None) -> Probe:
+def _read_imro_string(imro_str: str, imDatPrb_pn: str | None = None) -> Probe:
     """
     Parse the IMRO table when presented as a string and create a Probe object.
 
@@ -1026,7 +1025,7 @@ def parse_spikeglx_snsGeomMap(meta):
 #     parse_spikeglx_snsGeomMap(meta)
 
 
-def get_saved_channel_indices_from_spikeglx_meta(meta_file: str | Path) -> np.array:
+def get_saved_channel_indices_from_spikeglx_meta(meta_file: str | Path) -> np.ndarray:
     """
     Utils function to get the saved channels.
 
@@ -1066,7 +1065,7 @@ def _parse_openephys_settings(
     settings_file: str | Path,
     fix_x_position_for_oe_5: bool = True,
     raise_error: bool = True,
-) -> Optional[list[dict]]:
+) -> list[dict] | None:
     """
     Parse an Open Ephys settings.xml and extract per-probe metadata.
 
@@ -1395,11 +1394,11 @@ def _parse_openephys_settings(
 
 def _select_openephys_probe_info(
     probes_info: list[dict],
-    stream_name: Optional[str] = None,
-    probe_name: Optional[str] = None,
-    serial_number: Optional[str] = None,
+    stream_name: str | None = None,
+    probe_name: str | None = None,
+    serial_number: str | None = None,
     raise_error: bool = True,
-) -> Optional[dict]:
+) -> dict | None:
     """
     Select one probe's info dict from the list returned by `_parse_openephys_settings`.
 
@@ -1586,9 +1585,9 @@ def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:
 
 def read_openephys(
     settings_file: str | Path,
-    stream_name: Optional[str] = None,
-    probe_name: Optional[str] = None,
-    serial_number: Optional[str] = None,
+    stream_name: str | None = None,
+    probe_name: str | None = None,
+    serial_number: str | None = None,
     fix_x_position_for_oe_5: bool = True,
     raise_error: bool = True,
 ) -> Probe:
@@ -1675,9 +1674,7 @@ def read_openephys(
     return probe
 
 
-def get_saved_channel_indices_from_openephys_settings(
-    settings_file: str | Path, stream_name: str
-) -> Optional[np.array]:
+def get_saved_channel_indices_from_openephys_settings(settings_file: str | Path, stream_name: str) -> np.ndarray | None:
     """
     Returns an array with the subset of saved channels indices (if used)
 

@@ -10,7 +10,6 @@ Read/write probe info using a variety of formats:
 """
 
 from pathlib import Path
-from typing import Union, Optional
 import re
 import warnings
 import json
@@ -107,7 +106,7 @@ tsv_label_map_to_BIDS = {
 tsv_label_map_to_probeinterface = {v: k for k, v in tsv_label_map_to_BIDS.items()}
 
 
-def read_BIDS_probe(folder: str | Path, prefix: Optional[str] = None) -> ProbeGroup:
+def read_BIDS_probe(folder: str | Path, prefix: str | None = None) -> ProbeGroup:
     """
     Read to BIDS probe format.
 
@@ -635,8 +634,8 @@ def read_3brain(file: str | Path, mea_pitch: float = None, electrode_width: floa
 def write_prb(
     file: str,
     probegroup: ProbeGroup,
-    total_nb_channels: Optional[int] = None,
-    radius: Optional[float] = None,
+    total_nb_channels: int | None = None,
+    radius: float | None = None,
     group_mode: str = "by_probe",
 ):
     """
@@ -663,9 +662,9 @@ def write_prb(
         The name of the file to be written
     probegroup: ProbeGroup
         The Probegroup to be used for writing
-    total_nb_channels: Optional[int], default None
+    total_nb_channels: int | None, default None
         ***to do
-    radius: Optional[float], default None
+    radius: float | None, default None
         *** to do
     group_mode: str
         One of "by_probe" or "by_shank
