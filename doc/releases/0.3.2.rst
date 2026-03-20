@@ -24,6 +24,7 @@ Bug fixes
 Deprecations
 ^^^^^^^^^^^^
 
+* Deprecated ``contacts_kargs`` in ``plot_probe`` in favor of ``contact_kwargs`` (#414, #397)
 * Removed deprecated ``plot_probe_group`` (#397)
 
 Testing
@@ -34,4 +35,5 @@ Testing
 Packaging
 ^^^^^^^^^
 
+* Support Python >= 3.10 and fix annotations (#414)
 * Migrate test and docs extras to PEP 735 dependency groups (#408)
