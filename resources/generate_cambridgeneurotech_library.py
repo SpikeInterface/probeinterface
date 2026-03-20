@@ -32,7 +32,7 @@ parser.add_argument(
     help="Path to the folder containing the CambridgeNeurotech probe tables CSV files from https://github.com/cambridge-neurotech/probe_maps",
 )
 parser.add_argument(
-    "--output-folder", type=str, default="./cambridgeneurotech", help="Output folder to save the generated probes"
+    "--output-folder", type=str, default="./cambridgeneurotech_library", help="Output folder to save the generated probes"
 )
 
 
