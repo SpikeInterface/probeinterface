@@ -3,10 +3,9 @@ This module contains useful helper functions for generating probes.
 
 """
 
-from __future__ import annotations
 import numpy as np
 
-from typing import Optional
+from typing import Literal
 
 from .probe import Probe
 from .probegroup import ProbeGroup
@@ -15,7 +14,7 @@ from .utils import combine_probes
 _default_shape_to_params = {"circle": "radius", "square": "width", "rect": "height"}
 
 
-def generate_dummy_probe(elec_shapes: "circle" | "square" | "rect" = "circle") -> Probe:
+def generate_dummy_probe(elec_shapes: Literal["circle", "square", "rect"] = "circle") -> Probe:
     """
     Generate a dummy probe with 3 columns and 32 contacts.
     Mainly used for testing and examples.
@@ -103,8 +102,8 @@ def generate_multi_columns_probe(
     num_contact_per_column: int | list[int] = 10,
     xpitch: float = 20,
     ypitch: float = 20,
-    y_shift_per_column: Optional[np.array | list] = None,
-    contact_shapes: "circle" | "rect" | "square" = "circle",
+    y_shift_per_column: np.ndarray | list | None = None,
+    contact_shapes: Literal["circle", "rect", "square"] = "circle",
     contact_shape_params: dict = {"radius": 6},
 ) -> Probe:
     """Generate a Probe with several columns.
@@ -119,7 +118,7 @@ def generate_multi_columns_probe(
         Pitch in x direction
     ypitch : float, default: 20
         Pitch in y direction
-    y_shift_per_column : Optional[array-like], default: None
+    y_shift_per_column : array-like | None, default: None
         Shift in y direction per column. It needs to have the same length as num_columns, by default None
     contact_shapes : "circle" | "rect" | "square", default: "circle"
         Shape of the contacts
@@ -167,7 +166,7 @@ def generate_multi_columns_probe(
 def generate_linear_probe(
     num_elec: int = 16,
     ypitch: float = 20,
-    contact_shapes: "circle" | "rect" | "square" = "circle",
+    contact_shapes: Literal["circle", "rect", "square"] = "circle",
     contact_shape_params: dict = {"radius": 6},
 ) -> Probe:
     """Generate a one-column linear probe.
