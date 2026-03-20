@@ -5,7 +5,7 @@ using matplotlib.
 Depending on Probe.ndim, the plotting is done in 2D or 3D
 """
 
-from __future__ import annotations
+import warnings
 import numpy as np
 from matplotlib import path as mpl_path
 
@@ -46,8 +46,6 @@ def create_probe_polygons(
         The polygon collection for the probe shape
     """
     if contacts_kargs is not None:
-        import warnings
-
         warnings.warn(
             "contacts_kargs is deprecated and will be removed in 0.3.4. Please use `contacts_kwargs` instead.",
             category=DeprecationWarning,
@@ -107,13 +105,14 @@ def plot_probe(
     contacts_values: list | np.ndarray | None = None,
     cmap: str = "viridis",
     title: bool = True,
-    contacts_kargs: dict = {},
+    contact_kwargs: dict = {},
     probe_shape_kwargs: dict = {},
     xlims: tuple | None = None,
     ylims: tuple | None = None,
     zlims: tuple | None = None,
     show_channel_on_click: bool = False,
-    side=None,
+    side: str | None = None,
+    contacts_kwargs: dict | None = None,
 ):
     """Plot a Probe object.
     Generates a 2D or 3D axis, depending on Probe.ndim
@@ -138,7 +137,7 @@ def plot_probe(
          A colormap color
     title : bool, default: True
         If True, the axis title is set to the probe name
-    contacts_kargs : dict, default: {}
+    contact_kwargs : dict, default: {}
         Dict with kwargs for contacts (e.g. alpha, edgecolor, lw)
     probe_shape_kwargs : dict, default: {}
         Dict with kwargs for probe shape (e.g. alpha, edgecolor, lw)
@@ -152,6 +151,8 @@ def plot_probe(
         If True, the channel information is shown upon click
     side : None | "front" | "back"
         If the probe is two side, then the side must be given otherwise this raises an error.
+    contacts_kwargs : dict | None, default: None
+        DEPRECATED, use contact_kwargs instead. Dict with kwargs for contacts (e.g. alpha, edgecolor, lw)
 
     Returns
     -------
@@ -161,6 +162,14 @@ def plot_probe(
         The polygon collection for the probe shape
     """
     import matplotlib.pyplot as plt
+
+    if contacts_kwargs is not None:
+        warnings.warn(
+            "contacts_kwargs is deprecated and will be removed in 0.3.4. Please use `contact_kwargs` instead.",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
+        contact_kwargs = contacts_kwargs
 
     if probe.contact_sides is not None:
         if side is None or side not in ("front", "back"):
@@ -187,7 +196,7 @@ def plot_probe(
         contacts_colors=contacts_colors,
         contacts_values=contacts_values,
         cmap=cmap,
-        contacts_kargs=contacts_kargs,
+        contact_kwargs=contact_kwargs,
         probe_shape_kwargs=probe_shape_kwargs,
     )
 

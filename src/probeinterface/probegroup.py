@@ -1,4 +1,3 @@
-from __future__ import annotations
 import numpy as np
 from .utils import generate_unique_ids
 from .probe import Probe

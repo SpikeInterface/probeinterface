@@ -9,7 +9,6 @@ The gin platform enables contributions from users.
 
 """
 
-from __future__ import annotations
 import os
 import warnings
 from pathlib import Path

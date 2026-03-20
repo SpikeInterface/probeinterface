@@ -9,7 +9,6 @@ Read/write probe info using a variety of formats:
 
 """
 
-from __future__ import annotations
 from pathlib import Path
 from typing import Union, Optional
 import re
