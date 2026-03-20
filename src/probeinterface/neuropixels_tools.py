@@ -315,6 +315,39 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
     return probe
 
 
+def _build_canonical_contact_id(electrode_id: int, shank_id: int | None = None) -> str:
+    """
+    Build the canonical contact ID string for a Neuropixels electrode.
+
+    This establishes the standard naming convention used throughout probeinterface
+    for Neuropixels contact identification.
+
+    Parameters
+    ----------
+    electrode_id : int
+        Physical electrode ID on the probe (e.g., 0-959 for NP1.0)
+    shank_id : int or None, default: None
+        Shank ID for multi-shank probes. If None, assumes single-shank probe.
+
+    Returns
+    -------
+    contact_id : str
+        Canonical contact ID string, either "e{electrode_id}" for single-shank
+        or "s{shank_id}e{electrode_id}" for multi-shank probes.
+
+    Examples
+    --------
+    >>> _build_canonical_contact_id(123)
+    'e123'
+    >>> _build_canonical_contact_id(123, shank_id=0)
+    's0e123'
+    """
+    if shank_id is not None:
+        return f"s{shank_id}e{electrode_id}"
+    else:
+        return f"e{electrode_id}"
+
+
 def _annotate_contacts_from_mux_table(probe: Probe, adc_groups_array: np.array):
     """
     Annotate a Probe object with ADC group and sample order information based on the MUX table.
@@ -407,39 +440,6 @@ def _annotate_probe_with_adc_sampling_info(probe: Probe, adc_sampling_table: str
 #########################
 # SpikeGLX / IMRO zone  #
 #########################
-
-
-def _build_canonical_contact_id(electrode_id: int, shank_id: int | None = None) -> str:
-    """
-    Build the canonical contact ID string for a Neuropixels electrode.
-
-    This establishes the standard naming convention used throughout probeinterface
-    for Neuropixels contact identification.
-
-    Parameters
-    ----------
-    electrode_id : int
-        Physical electrode ID on the probe (e.g., 0-959 for NP1.0)
-    shank_id : int or None, default: None
-        Shank ID for multi-shank probes. If None, assumes single-shank probe.
-
-    Returns
-    -------
-    contact_id : str
-        Canonical contact ID string, either "e{electrode_id}" for single-shank
-        or "s{shank_id}e{electrode_id}" for multi-shank probes.
-
-    Examples
-    --------
-    >>> _build_canonical_contact_id(123)
-    'e123'
-    >>> _build_canonical_contact_id(123, shank_id=0)
-    's0e123'
-    """
-    if shank_id is not None:
-        return f"s{shank_id}e{electrode_id}"
-    else:
-        return f"e{electrode_id}"
 
 
 def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
