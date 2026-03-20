@@ -17,8 +17,9 @@ def create_probe_polygons(
     contacts_colors: list | None = None,
     contacts_values: np.ndarray | None = None,
     cmap: str = "viridis",
-    contacts_kargs: dict = {},
+    contact_kwargs: dict = {},
     probe_shape_kwargs: dict = {},
+    contacts_kargs=None,  # DEPRECATED
 ):
     """Create PolyCollection objects for a Probe.
 
@@ -32,7 +33,7 @@ def create_probe_polygons(
         Values to color the contacts with
     cmap : str, default: "viridis"
          A colormap color
-    contacts_kargs : dict, default: {}
+    contact_kwargs : dict, default: {}
         Dict with kwargs for contacts (e.g. alpha, edgecolor, lw)
     probe_shape_kwargs : dict, default: {}
         Dict with kwargs for probe shape (e.g. alpha, edgecolor, lw)
@@ -44,6 +45,16 @@ def create_probe_polygons(
     poly_contour : PolyCollection | None
         The polygon collection for the probe shape
     """
+    if contacts_kargs is not None:
+        import warnings
+
+        warnings.warn(
+            "contacts_kargs is deprecated and will be removed in 0.3.4. Please use `contacts_kwargs` instead.",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
+        contact_kwargs = contacts_kargs
+
     if probe.ndim == 2:
         from matplotlib.collections import PolyCollection
 
@@ -59,7 +70,7 @@ def create_probe_polygons(
     _probe_shape_kwargs.update(probe_shape_kwargs)
 
     _contacts_kargs = dict(alpha=0.7, edgecolor=[0.3, 0.3, 0.3], lw=0.5)
-    _contacts_kargs.update(contacts_kargs)
+    _contacts_kargs.update(contact_kwargs)
 
     n = probe.get_contact_count()
 
@@ -93,7 +104,7 @@ def plot_probe(
     with_contact_id: bool = False,
     with_device_index: bool = False,
     text_on_contact: list | np.ndarray | None = None,
-    contacts_values: np.ndarray | None = None,
+    contacts_values: list | np.ndarray | None = None,
     cmap: str = "viridis",
     title: bool = True,
     contacts_kargs: dict = {},
@@ -102,6 +113,7 @@ def plot_probe(
     ylims: tuple | None = None,
     zlims: tuple | None = None,
     show_channel_on_click: bool = False,
+    side=None,
 ):
     """Plot a Probe object.
     Generates a 2D or 3D axis, depending on Probe.ndim
@@ -118,9 +130,9 @@ def plot_probe(
         If True, channel ids are displayed on top of the channels
     with_device_index : bool, default: False
         If True, device channel indices are displayed on top of the channels
-    text_on_contact: None | list | numpy.array, default: None
+    text_on_contact: None | list | np.ndarray, default: None
         Addintional text to plot on each contact
-    contacts_values : np.array, default: None
+    contacts_values : list | np.ndarray | None, default: None
         Values to color the contacts with
     cmap : a colormap color, default: "viridis"
          A colormap color
@@ -138,6 +150,8 @@ def plot_probe(
         Limits for z dimension
     show_channel_on_click : bool, default: False
         If True, the channel information is shown upon click
+    side : None | "front" | "back"
+        If the probe is two side, then the side must be given otherwise this raises an error.
 
     Returns
     -------
@@ -147,6 +161,15 @@ def plot_probe(
         The polygon collection for the probe shape
     """
     import matplotlib.pyplot as plt
+
+    if probe.contact_sides is not None:
+        if side is None or side not in ("front", "back"):
+            raise ValueError(
+                "The probe has two side, you must give which one to plot. plot_probe(probe, side='front'|'back')"
+            )
+        mask = probe.contact_sides == side
+        probe = probe.get_slice(mask)
+        probe._contact_sides = None
 
     if ax is None:
         if probe.ndim == 2:
@@ -236,7 +259,7 @@ def plot_probe(
     return poly, poly_contour
 
 
-def plot_probegroup(probegroup, same_axes: bool = True, **kargs):
+def plot_probegroup(probegroup, same_axes: bool = True, **kwargs):
     """Plot all probes from a ProbeGroup
     Can be in an existing set of axes or separate axes.
 
@@ -246,19 +269,37 @@ def plot_probegroup(probegroup, same_axes: bool = True, **kargs):
         The ProbeGroup to plot
     same_axes : bool, default: True
         If True, the probes are plotted on the same axis
-    kargs: dict
-        see docstring for plot_probe for possible kargs
+    kwargs: dict
+        Additional keyword arguments to pass to plot_probe.
+        If same_axes is True, the same kwargs are passed to all probes.
+        If same_axes is False, the kwargs are passed separately to each probe,
+        if they have the same length as the total number of contacts in the ProbeGroup.
+        For example, if contacts_colors is given and has the same length as the total
+        number of contacts in the ProbeGroup, then the colors are split and passed
+        separately to each probe.
+
+        Available kwargs:
+
+        - contacts_colors
+        - with_contact_id
+        - with_device_index
+        - text_on_contact
+        - contacts_values
+        - cmap
+        - title
+        - contacts_kargs
+        - probe_shape_kwargs
     """
 
     import matplotlib.pyplot as plt
 
-    figsize = kargs.pop("figsize", None)
+    figsize = kwargs.pop("figsize", None)
 
     n = len(probegroup.probes)
 
     if same_axes:
-        if "ax" in kargs:
-            ax = kargs.pop("ax")
+        if "ax" in kwargs:
+            ax = kwargs.pop("ax")
         else:
             if probegroup.ndim == 2:
                 fig, ax = plt.subplots(figsize=figsize)
@@ -267,14 +308,16 @@ def plot_probegroup(probegroup, same_axes: bool = True, **kargs):
                 ax = fig.add_subplot(1, 1, 1, projection="3d")
         axs = [ax] * n
     else:
-        if "ax" in kargs:
+        if "ax" in kwargs:
             raise ValueError("when same_axes=False, an axes object cannot be passed into this function.")
         if probegroup.ndim == 2:
             fig, axs = plt.subplots(ncols=n, nrows=1, figsize=figsize)
             if n == 1:
                 axs = [axs]
         else:
-            raise NotImplementedError
+            raise NotImplementedError(
+                "same_axes=False is currently only implemented for 2D probes. For 3D probes, please set same_axes=True."
+            )
 
     if same_axes:
         # global lims
@@ -285,36 +328,34 @@ def plot_probegroup(probegroup, same_axes: bool = True, **kargs):
             ylims = min(ylims[0], ylims2[0]), max(ylims[1], ylims2[1])
             if zlims is not None:
                 zlims = min(zlims[0], zlims2[0]), max(zlims[1], zlims2[1])
-        kargs["xlims"] = xlims
-        kargs["ylims"] = ylims
-        kargs["zlims"] = zlims
+        kwargs["xlims"] = xlims
+        kwargs["ylims"] = ylims
+        kwargs["zlims"] = zlims
     else:
         # will be auto for each probe in each axis
-        kargs["xlims"] = None
-        kargs["ylims"] = None
-        kargs["zlims"] = None
+        kwargs["xlims"] = None
+        kwargs["ylims"] = None
+        kwargs["zlims"] = None
 
-    kargs["title"] = False
+    kwargs["title"] = False
+
+    cum_contact_count = 0
+    total_contacts = sum(p.get_contact_count() for p in probegroup.probes)
+
     for i, probe in enumerate(probegroup.probes):
-        plot_probe(probe, ax=axs[i], **kargs)
+        n = probe.get_contact_count()
+        kwargs_probe = kwargs.copy()
+        for key in ["contacts_colors", "contacts_values", "text_on_contact"]:
+            if kwargs.get(key) is not None:
+                val = np.array(kwargs[key])
+                if len(val) == total_contacts:
+                    kwargs_probe[key] = val[cum_contact_count : cum_contact_count + n]
+
+        plot_probe(probe, ax=axs[i], **kwargs_probe)
+        cum_contact_count += n
 
 
-def plot_probe_group(probegroup, same_axes: bool = True, **kargs):
-    """
-    This function is deprecated and will be removed in 0.2.23
-    Please use plot_probegroup instead"""
-
-    from warnings import warn
-
-    warn(
-        "`plot_probe_group` is deprecated and will be removed in 2.23. Use plot_probegroup instead",
-        category=DeprecationWarning,
-        stacklevel=2,
-    )
-
-    plot_probegroup(probegroup, same_axes=same_axes, **kargs)
-
-
+### MATPLOTLIB INTERACTION ###
 def _on_press(probe, event):
     ax = event.inaxes
     x, y = event.xdata, event.ydata

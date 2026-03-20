@@ -1,0 +1,1309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<SETTINGS>
+  <INFO>
+    <VERSION>0.6.7</VERSION>
+    <PLUGIN_API_VERSION>8</PLUGIN_API_VERSION>
+    <DATE>6 Mar 2025 14:48:00</DATE>
+    <OS>Windows 10</OS>
+    <MACHINE name="mbi-cf-spike24" cpu_model="13th Gen Intel(R) Core(TM) i7-13800H"
+             cpu_num_cores="20"/>
+  </INFO>
+  <SIGNALCHAIN>
+    <PROCESSOR name="Neuropix-PXI" insertionPoint="0" pluginName="Neuropix-PXI"
+               type="4" index="0" libraryName="Neuropix-PXI" libraryVersion="0.6.6"
+               processorType="2" nodeId="100">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-AP" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS/>
+      </STREAM>
+      <STREAM name="ProbeA-LFP" description="description" sample_rate="2500.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="1" displayName="Neuropix-PXI" activeStream="0"
+              Type="Visualizer">
+        <TAB Active="0" Index="-1"/>
+        <WINDOW Active="1" x="450" y="126" width="1020" height="780"/>
+        <NEUROPIXELS_EDITOR MainSyncSlot="0" SendSyncAsContinuous="1" SyncDirection="1" SyncFreq="0">
+          <BASESTATION Directory="" Slot="4" NamingScheme="0" port1dock1="slot2-port1-1"
+                       port1dock2="slot2-port1-2" port2dock1="slot2-port2-1" port2dock2="slot2-port2-2"
+                       port3dock1="slot2-port3-1" port3dock2="slot2-port3-2" port4dock1="slot2-port4-1"
+                       port4dock2="slot2-port4-2"/>
+          <CUSTOM_PROBE_NAMES/>
+        </NEUROPIXELS_EDITOR>
+        <NP_PROBE slot="4" bs_firmware_version="2.0169" bs_hardware_version="UNKNOWN"
+                  bs_serial_number="0" bs_part_number="NeurPix2 PXI Carrier" bsc_firmware_version="3.2189"
+                  bsc_hardware_version="2.2" bsc_serial_number="23361384" bsc_part_number="NP2_QBSC_00"
+                  headstage_serial_number="23240197" headstage_part_number="NP2_HS_30"
+                  flex_version="3.6" flex_part_number="NP2_HS_30" port="4" dock="0"
+                  probe_serial_number="22327206081" probe_part_number="NP1032"
+                  probe_name="Neuropixels NHP - Active (45 mm)" num_adcs="32" custom_probe_name="22327206081"
+                  ZoomHeight="14" ZoomOffset="58" apGainValue="500x" apGainIndex="3"
+                  lfpGainValue="250x" lfpGainIndex="2" electrodeConfigurationPreset="NONE"
+                  referenceChannel="Ext" referenceChannelIndex="0" filterCut="ON"
+                  filterCutIndex="1" visualizationMode="0" activityToView="0">
+          <CHANNELS CH1="0" CH2="0" CH4="0" CH8="0" CH10="0" CH14="0" CH16="0" CH20="0"
+                    CH22="0" CH26="0" CH28="0" CH32="0" CH34="0" CH38="0" CH40="0"
+                    CH44="0" CH46="0" CH50="0" CH52="0" CH56="0" CH58="0" CH62="0"
+                    CH64="0" CH68="0" CH70="0" CH74="0" CH76="0" CH80="0" CH82="0"
+                    CH86="0" CH88="0" CH92="0" CH94="0" CH98="0" CH100="0" CH104="0"
+                    CH106="0" CH109="0" CH110="0" CH112="0" CH116="0" CH118="0" CH121="0"
+                    CH122="0" CH124="0" CH128="0" CH130="0" CH133="0" CH134="0" CH136="0"
+                    CH140="0" CH142="0" CH145="0" CH146="0" CH148="0" CH152="0" CH154="0"
+                    CH158="0" CH162="0" CH164="0" CH168="0" CH170="0" CH173="0" CH174="0"
+                    CH176="0" CH180="0" CH182="0" CH185="0" CH186="0" CH188="0" CH190="0"
+                    CH192="0" CH194="0" CH196="0" CH198="0" CH200="0" CH202="0" CH204="0"
+                    CH206="0" CH208="0" CH210="0" CH212="0" CH214="0" CH216="0" CH218="0"
+                    CH220="0" CH222="0" CH224="0" CH226="0" CH228="0" CH230="0" CH232="0"
+                    CH234="0" CH236="0" CH238="0" CH240="0" CH242="0" CH244="0" CH246="0"
+                    CH248="0" CH250="0" CH252="0" CH254="0" CH256="0" CH258="0" CH260="0"
+                    CH262="0" CH264="0" CH266="0" CH268="0" CH270="0" CH272="0" CH274="0"
+                    CH276="0" CH278="0" CH280="0" CH282="0" CH284="0" CH286="0" CH288="0"
+                    CH290="0" CH292="0" CH294="0" CH296="0" CH298="0" CH300="0" CH302="0"
+                    CH304="0" CH306="0" CH308="0" CH310="0" CH312="0" CH314="0" CH316="0"
+                    CH318="0" CH320="0" CH322="0" CH324="0" CH326="0" CH328="0" CH330="0"
+                    CH332="0" CH334="0" CH336="0" CH338="0" CH340="0" CH342="0" CH344="0"
+                    CH346="0" CH348="0" CH350="0" CH352="0" CH354="0" CH356="0" CH358="0"
+                    CH360="0" CH362="0" CH364="0" CH366="0" CH368="0" CH370="0" CH372="0"
+                    CH374="0" CH376="0" CH378="0" CH380="0" CH382="0" CH5="1" CH7="1"
+                    CH11="1" CH13="1" CH17="1" CH19="1" CH23="1" CH25="1" CH29="1"
+                    CH31="1" CH35="1" CH37="1" CH41="1" CH43="1" CH47="1" CH49="1"
+                    CH53="1" CH55="1" CH59="1" CH61="1" CH65="1" CH67="1" CH71="1"
+                    CH73="1" CH77="1" CH79="1" CH83="1" CH85="1" CH89="1" CH91="1"
+                    CH95="1" CH97="1" CH101="1" CH103="1" CH107="1" CH113="1" CH115="1"
+                    CH119="1" CH125="1" CH127="1" CH131="1" CH137="1" CH139="1" CH143="1"
+                    CH149="1" CH151="1" CH155="1" CH157="1" CH161="1" CH165="1" CH167="1"
+                    CH171="1" CH177="1" CH179="1" CH183="1" CH189="1" CH191="1" CH193="1"
+                    CH195="1" CH197="1" CH199="1" CH201="1" CH203="1" CH205="1" CH207="1"
+                    CH209="1" CH211="1" CH213="1" CH215="1" CH217="1" CH219="1" CH221="1"
+                    CH223="1" CH225="1" CH227="1" CH229="1" CH231="1" CH233="1" CH235="1"
+                    CH237="1" CH239="1" CH241="1" CH243="1" CH245="1" CH247="1" CH249="1"
+                    CH251="1" CH253="1" CH255="1" CH257="1" CH259="1" CH261="1" CH263="1"
+                    CH265="1" CH267="1" CH269="1" CH271="1" CH273="1" CH275="1" CH277="1"
+                    CH279="1" CH281="1" CH283="1" CH285="1" CH287="1" CH289="1" CH291="1"
+                    CH293="1" CH295="1" CH297="1" CH299="1" CH301="1" CH303="1" CH305="1"
+                    CH307="1" CH309="1" CH311="1" CH313="1" CH315="1" CH317="1" CH319="1"
+                    CH321="1" CH323="1" CH325="1" CH327="1" CH329="1" CH331="1" CH333="1"
+                    CH335="1" CH337="1" CH339="1" CH341="1" CH343="1" CH345="1" CH347="1"
+                    CH349="1" CH351="1" CH353="1" CH355="1" CH357="1" CH359="1" CH361="1"
+                    CH363="1" CH365="1" CH367="1" CH369="1" CH371="1" CH373="1" CH375="1"
+                    CH377="1" CH379="1" CH381="1" CH383="1" CH0="2" CH3="2" CH6="2"
+                    CH9="2" CH12="2" CH15="2" CH18="2" CH21="2" CH24="2" CH27="2"
+                    CH30="2" CH33="2" CH36="2" CH39="2" CH42="2" CH45="2" CH48="2"
+                    CH51="2" CH54="2" CH57="2" CH60="2" CH63="2" CH66="2" CH69="2"
+                    CH72="2" CH75="2" CH78="2" CH81="2" CH84="2" CH87="2" CH90="2"
+                    CH93="2" CH96="2" CH99="2" CH102="2" CH105="2" CH108="2" CH111="2"
+                    CH114="2" CH117="2" CH120="2" CH123="2" CH126="2" CH129="2" CH132="2"
+                    CH135="2" CH138="2" CH141="2" CH144="2" CH147="2" CH150="2" CH153="2"
+                    CH156="2" CH159="2" CH160="2" CH163="2" CH166="2" CH169="2" CH172="2"
+                    CH175="2" CH178="2" CH181="2" CH184="2" CH187="2"/>
+          <ELECTRODE_XPOS CH1="114" CH2="11" CH4="11" CH8="11" CH10="11" CH14="11" CH16="11"
+                          CH20="11" CH22="11" CH26="11" CH28="11" CH32="11" CH34="11" CH38="11"
+                          CH40="11" CH44="11" CH46="11" CH50="11" CH52="11" CH56="11" CH58="11"
+                          CH62="11" CH64="11" CH68="11" CH70="11" CH74="11" CH76="11" CH80="11"
+                          CH82="11" CH86="11" CH88="11" CH92="11" CH94="11" CH98="11" CH100="11"
+                          CH104="11" CH106="11" CH109="114" CH110="11" CH112="11" CH116="11"
+                          CH118="11" CH121="114" CH122="11" CH124="11" CH128="11" CH130="11"
+                          CH133="114" CH134="11" CH136="11" CH140="11" CH142="11" CH145="114"
+                          CH146="11" CH148="11" CH152="11" CH154="11" CH158="11" CH162="11"
+                          CH164="11" CH168="11" CH170="11" CH173="114" CH174="11" CH176="11"
+                          CH180="11" CH182="11" CH185="114" CH186="11" CH188="11" CH190="11"
+                          CH192="11" CH194="11" CH196="11" CH198="11" CH200="11" CH202="11"
+                          CH204="11" CH206="11" CH208="11" CH210="11" CH212="11" CH214="11"
+                          CH216="11" CH218="11" CH220="11" CH222="11" CH224="11" CH226="11"
+                          CH228="11" CH230="11" CH232="11" CH234="11" CH236="11" CH238="11"
+                          CH240="11" CH242="11" CH244="11" CH246="11" CH248="11" CH250="11"
+                          CH252="11" CH254="11" CH256="11" CH258="11" CH260="11" CH262="11"
+                          CH264="11" CH266="11" CH268="11" CH270="11" CH272="11" CH274="11"
+                          CH276="11" CH278="11" CH280="11" CH282="11" CH284="11" CH286="11"
+                          CH288="11" CH290="11" CH292="11" CH294="11" CH296="11" CH298="11"
+                          CH300="11" CH302="11" CH304="11" CH306="11" CH308="11" CH310="11"
+                          CH312="11" CH314="11" CH316="11" CH318="11" CH320="11" CH322="11"
+                          CH324="11" CH326="11" CH328="11" CH330="11" CH332="11" CH334="11"
+                          CH336="11" CH338="11" CH340="11" CH342="11" CH344="11" CH346="11"
+                          CH348="11" CH350="11" CH352="11" CH354="11" CH356="11" CH358="11"
+                          CH360="11" CH362="11" CH364="11" CH366="11" CH368="11" CH370="11"
+                          CH372="11" CH374="11" CH376="11" CH378="11" CH380="11" CH382="11"
+                          CH5="114" CH7="114" CH11="114" CH13="114" CH17="114" CH19="114"
+                          CH23="114" CH25="114" CH29="114" CH31="114" CH35="114" CH37="114"
+                          CH41="114" CH43="114" CH47="114" CH49="114" CH53="114" CH55="114"
+                          CH59="114" CH61="114" CH65="114" CH67="114" CH71="114" CH73="114"
+                          CH77="114" CH79="114" CH83="114" CH85="114" CH89="114" CH91="114"
+                          CH95="114" CH97="114" CH101="114" CH103="114" CH107="114" CH113="114"
+                          CH115="114" CH119="114" CH125="114" CH127="114" CH131="114" CH137="114"
+                          CH139="114" CH143="114" CH149="114" CH151="114" CH155="114" CH157="114"
+                          CH161="114" CH165="114" CH167="114" CH171="114" CH177="114" CH179="114"
+                          CH183="114" CH189="114" CH191="114" CH193="114" CH195="114" CH197="114"
+                          CH199="114" CH201="114" CH203="114" CH205="114" CH207="114" CH209="114"
+                          CH211="114" CH213="114" CH215="114" CH217="114" CH219="114" CH221="114"
+                          CH223="114" CH225="114" CH227="114" CH229="114" CH231="114" CH233="114"
+                          CH235="114" CH237="114" CH239="114" CH241="114" CH243="114" CH245="114"
+                          CH247="114" CH249="114" CH251="114" CH253="114" CH255="114" CH257="114"
+                          CH259="114" CH261="114" CH263="114" CH265="114" CH267="114" CH269="114"
+                          CH271="114" CH273="114" CH275="114" CH277="114" CH279="114" CH281="114"
+                          CH283="114" CH285="114" CH287="114" CH289="114" CH291="114" CH293="114"
+                          CH295="114" CH297="114" CH299="114" CH301="114" CH303="114" CH305="114"
+                          CH307="114" CH309="114" CH311="114" CH313="114" CH315="114" CH317="114"
+                          CH319="114" CH321="114" CH323="114" CH325="114" CH327="114" CH329="114"
+                          CH331="114" CH333="114" CH335="114" CH337="114" CH339="114" CH341="114"
+                          CH343="114" CH345="114" CH347="114" CH349="114" CH351="114" CH353="114"
+                          CH355="114" CH357="114" CH359="114" CH361="114" CH363="114" CH365="114"
+                          CH367="114" CH369="114" CH371="114" CH373="114" CH375="114" CH377="114"
+                          CH379="114" CH381="114" CH383="114" CH0="11" CH3="114" CH6="11"
+                          CH9="114" CH12="11" CH15="114" CH18="11" CH21="114" CH24="11"
+                          CH27="114" CH30="11" CH33="114" CH36="11" CH39="114" CH42="11"
+                          CH45="114" CH48="11" CH51="114" CH54="11" CH57="114" CH60="11"
+                          CH63="114" CH66="11" CH69="114" CH72="11" CH75="114" CH78="11"
+                          CH81="114" CH84="11" CH87="114" CH90="11" CH93="114" CH96="11"
+                          CH99="114" CH102="11" CH105="114" CH108="11" CH111="114" CH114="11"
+                          CH117="114" CH120="11" CH123="114" CH126="11" CH129="114" CH132="11"
+                          CH135="114" CH138="11" CH141="114" CH144="11" CH147="114" CH150="11"
+                          CH153="114" CH156="11" CH159="114" CH160="11" CH163="114" CH166="11"
+                          CH169="114" CH172="11" CH175="114" CH178="11" CH181="114" CH184="11"
+                          CH187="114"/>
+          <ELECTRODE_YPOS CH1="0" CH2="20" CH4="40" CH8="80" CH10="100" CH14="140" CH16="160"
+                          CH20="200" CH22="220" CH26="260" CH28="280" CH32="320" CH34="340"
+                          CH38="380" CH40="400" CH44="440" CH46="460" CH50="500" CH52="520"
+                          CH56="560" CH58="580" CH62="620" CH64="640" CH68="680" CH70="700"
+                          CH74="740" CH76="760" CH80="800" CH82="820" CH86="860" CH88="880"
+                          CH92="920" CH94="940" CH98="980" CH100="1000" CH104="1040" CH106="1060"
+                          CH109="1080" CH110="1100" CH112="1120" CH116="1160" CH118="1180"
+                          CH121="1200" CH122="1220" CH124="1240" CH128="1280" CH130="1300"
+                          CH133="1320" CH134="1340" CH136="1360" CH140="1400" CH142="1420"
+                          CH145="1440" CH146="1460" CH148="1480" CH152="1520" CH154="1540"
+                          CH158="1580" CH162="1620" CH164="1640" CH168="1680" CH170="1700"
+                          CH173="1720" CH174="1740" CH176="1760" CH180="1800" CH182="1820"
+                          CH185="1840" CH186="1860" CH188="1880" CH190="1900" CH192="1920"
+                          CH194="1940" CH196="1960" CH198="1980" CH200="2000" CH202="2020"
+                          CH204="2040" CH206="2060" CH208="2080" CH210="2100" CH212="2120"
+                          CH214="2140" CH216="2160" CH218="2180" CH220="2200" CH222="2220"
+                          CH224="2240" CH226="2260" CH228="2280" CH230="2300" CH232="2320"
+                          CH234="2340" CH236="2360" CH238="2380" CH240="2400" CH242="2420"
+                          CH244="2440" CH246="2460" CH248="2480" CH250="2500" CH252="2520"
+                          CH254="2540" CH256="2560" CH258="2580" CH260="2600" CH262="2620"
+                          CH264="2640" CH266="2660" CH268="2680" CH270="2700" CH272="2720"
+                          CH274="2740" CH276="2760" CH278="2780" CH280="2800" CH282="2820"
+                          CH284="2840" CH286="2860" CH288="2880" CH290="2900" CH292="2920"
+                          CH294="2940" CH296="2960" CH298="2980" CH300="3000" CH302="3020"
+                          CH304="3040" CH306="3060" CH308="3080" CH310="3100" CH312="3120"
+                          CH314="3140" CH316="3160" CH318="3180" CH320="3200" CH322="3220"
+                          CH324="3240" CH326="3260" CH328="3280" CH330="3300" CH332="3320"
+                          CH334="3340" CH336="3360" CH338="3380" CH340="3400" CH342="3420"
+                          CH344="3440" CH346="3460" CH348="3480" CH350="3500" CH352="3520"
+                          CH354="3540" CH356="3560" CH358="3580" CH360="3600" CH362="3620"
+                          CH364="3640" CH366="3660" CH368="3680" CH370="3700" CH372="3720"
+                          CH374="3740" CH376="3760" CH378="3780" CH380="3800" CH382="3820"
+                          CH5="3880" CH7="3900" CH11="3940" CH13="3960" CH17="4000" CH19="4020"
+                          CH23="4060" CH25="4080" CH29="4120" CH31="4140" CH35="4180" CH37="4200"
+                          CH41="4240" CH43="4260" CH47="4300" CH49="4320" CH53="4360" CH55="4380"
+                          CH59="4420" CH61="4440" CH65="4480" CH67="4500" CH71="4540" CH73="4560"
+                          CH77="4600" CH79="4620" CH83="4660" CH85="4680" CH89="4720" CH91="4740"
+                          CH95="4780" CH97="4800" CH101="4840" CH103="4860" CH107="4900"
+                          CH113="4960" CH115="4980" CH119="5020" CH125="5080" CH127="5100"
+                          CH131="5140" CH137="5200" CH139="5220" CH143="5260" CH149="5320"
+                          CH151="5340" CH155="5380" CH157="5400" CH161="5440" CH165="5480"
+                          CH167="5500" CH171="5540" CH177="5600" CH179="5620" CH183="5660"
+                          CH189="5720" CH191="5740" CH193="5760" CH195="5780" CH197="5800"
+                          CH199="5820" CH201="5840" CH203="5860" CH205="5880" CH207="5900"
+                          CH209="5920" CH211="5940" CH213="5960" CH215="5980" CH217="6000"
+                          CH219="6020" CH221="6040" CH223="6060" CH225="6080" CH227="6100"
+                          CH229="6120" CH231="6140" CH233="6160" CH235="6180" CH237="6200"
+                          CH239="6220" CH241="6240" CH243="6260" CH245="6280" CH247="6300"
+                          CH249="6320" CH251="6340" CH253="6360" CH255="6380" CH257="6400"
+                          CH259="6420" CH261="6440" CH263="6460" CH265="6480" CH267="6500"
+                          CH269="6520" CH271="6540" CH273="6560" CH275="6580" CH277="6600"
+                          CH279="6620" CH281="6640" CH283="6660" CH285="6680" CH287="6700"
+                          CH289="6720" CH291="6740" CH293="6760" CH295="6780" CH297="6800"
+                          CH299="6820" CH301="6840" CH303="6860" CH305="6880" CH307="6900"
+                          CH309="6920" CH311="6940" CH313="6960" CH315="6980" CH317="7000"
+                          CH319="7020" CH321="7040" CH323="7060" CH325="7080" CH327="7100"
+                          CH329="7120" CH331="7140" CH333="7160" CH335="7180" CH337="7200"
+                          CH339="7220" CH341="7240" CH343="7260" CH345="7280" CH347="7300"
+                          CH349="7320" CH351="7340" CH353="7360" CH355="7380" CH357="7400"
+                          CH359="7420" CH361="7440" CH363="7460" CH365="7480" CH367="7500"
+                          CH369="7520" CH371="7540" CH373="7560" CH375="7580" CH377="7600"
+                          CH379="7620" CH381="7640" CH383="7660" CH0="7680" CH3="7700"
+                          CH6="7740" CH9="7760" CH12="7800" CH15="7820" CH18="7860" CH21="7880"
+                          CH24="7920" CH27="7940" CH30="7980" CH33="8000" CH36="8040" CH39="8060"
+                          CH42="8100" CH45="8120" CH48="8160" CH51="8180" CH54="8220" CH57="8240"
+                          CH60="8280" CH63="8300" CH66="8340" CH69="8360" CH72="8400" CH75="8420"
+                          CH78="8460" CH81="8480" CH84="8520" CH87="8540" CH90="8580" CH93="8600"
+                          CH96="8640" CH99="8660" CH102="8700" CH105="8720" CH108="8760"
+                          CH111="8780" CH114="8820" CH117="8840" CH120="8880" CH123="8900"
+                          CH126="8940" CH129="8960" CH132="9000" CH135="9020" CH138="9060"
+                          CH141="9080" CH144="9120" CH147="9140" CH150="9180" CH153="9200"
+                          CH156="9240" CH159="9260" CH160="9280" CH163="9300" CH166="9340"
+                          CH169="9360" CH172="9400" CH175="9420" CH178="9460" CH181="9480"
+                          CH184="9520" CH187="9540"/>
+        </NP_PROBE>
+      </EDITOR>
+    </PROCESSOR>
+    <PROCESSOR name="Merger" insertionPoint="1" pluginName="Merger" type="0"
+               index="0" libraryName="" libraryVersion="" processorType="5"
+               nodeId="103">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-AP" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <STREAM name="ProbeA-LFP" description="description" sample_rate="2500.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <STREAM name="PXIe-6341" description="Analog input channels from a NIDAQ device"
+              sample_rate="30000.0" channel_count="4">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS>
+        <MERGER NodeA="100" NodeB="111" activePath="0"/>
+      </CUSTOM_PARAMETERS>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Merger" activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="Record Node" insertionPoint="1" pluginName="Record Node"
+               type="0" index="3" libraryName="" libraryVersion="" processorType="8"
+               nodeId="101">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-AP" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <STREAM name="ProbeA-LFP" description="description" sample_rate="2500.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <STREAM name="PXIe-6341" description="Analog input channels from a NIDAQ device"
+              sample_rate="30000.0" channel_count="4">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS path="C:\Users\fetschlab\Documents\Open Ephys" engine="BINARY"
+                         recordEvents="1" recordSpikes="1" fifoMonitorsVisible="1">
+        <STREAM isMainStream="1" sync_line="0" name="ProbeA-AP" source_node_id="100"
+                sample_rate="30000.0" channel_count="385" device_name="Neuropixels NHP - Active (45 mm)"
+                recording_state="ALL"/>
+        <STREAM isMainStream="0" sync_line="0" name="ProbeA-LFP" source_node_id="100"
+                sample_rate="2500.0" channel_count="385" device_name="Neuropixels NHP - Active (45 mm)"
+                recording_state="ALL"/>
+        <STREAM isMainStream="0" sync_line="8" name="PXIe-6341" source_node_id="104"
+                sample_rate="30000.0" channel_count="4" recording_state="ALL"/>
+      </CUSTOM_PARAMETERS>
+      <EDITOR isCollapsed="0" isDrawerOpen="1" displayName="Record Node" activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="LFP Viewer" insertionPoint="1" pluginName="LFP Viewer"
+               type="1" index="6" libraryName="LFP viewer" libraryVersion="0.6.7"
+               processorType="3" nodeId="102">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-AP" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <STREAM name="ProbeA-LFP" description="description" sample_rate="2500.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <STREAM name="PXIe-6341" description="Analog input channels from a NIDAQ device"
+              sample_rate="30000.0" channel_count="4">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="1" displayName="LFP Viewer" activeStream="0"
+              Type="LfpDisplayEditor">
+        <TAB Active="1" Index="4"/>
+        <WINDOW Active="0"/>
+        <VALUES SelectedLayout="2"/>
+        <LFPDISPLAY0 SubprocessorID="10002" Range="750,2000,10.0" Timebase="5.0" Spread="100"
+                     colourScheme="1" colorGrouping="1" spikeRaster="OFF" clipWarning="1"
+                     satWarning="1" reverseOrder="1" sortByDepth="1" channelSkip="1"
+                     showChannelNum="0" subtractOffset="0" isInverted="0" triggerSource="1"
+                     trialAvg="0" singleChannelView="-1" EventButtonState="255" ChannelDisplayState="1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                     ScrollX="0" ScrollY="4988"/>
+        <LFPDISPLAY1 SubprocessorID="10002" Range="400,2000,10.0" Timebase="5.0" Spread="6"
+                     colourScheme="1" colorGrouping="1" spikeRaster="-50" clipWarning="1"
+                     satWarning="1" reverseOrder="1" sortByDepth="1" channelSkip="1"
+                     showChannelNum="0" subtractOffset="1" isInverted="0" triggerSource="1"
+                     trialAvg="0" singleChannelView="-1" EventButtonState="255" ChannelDisplayState="1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                     ScrollX="0" ScrollY="1705"/>
+        <LFPDISPLAY2 SubprocessorID="10002" Range="250,2000,0.5" Timebase="5.0" Spread="40"
+                     colourScheme="1" colorGrouping="1" spikeRaster="OFF" clipWarning="1"
+                     satWarning="1" reverseOrder="0" sortByDepth="0" channelSkip="1"
+                     showChannelNum="0" subtractOffset="0" isInverted="0" triggerSource="1"
+                     trialAvg="0" singleChannelView="-1" EventButtonState="255" ChannelDisplayState="1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                     ScrollX="0" ScrollY="2039"/>
+        <CANVAS doubleVerticalSplitRatio="0.550750732421875" doubleHorizontalSplitRatio="0.5"
+                tripleHorizontalSplitRatio="0.15,0.336705" tripleVerticalSplitRatio="0.33,0.66"
+                showAllOptions="1"/>
+      </EDITOR>
+    </PROCESSOR>
+    <PROCESSOR name="Audio Monitor" insertionPoint="1" pluginName="Audio Monitor"
+               type="0" index="4" libraryName="" libraryVersion="" processorType="6"
+               nodeId="106">
+      <GLOBAL_PARAMETERS audio_output="1" mute_audio="0"/>
+      <STREAM name="ProbeA-AP" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS enable_stream="1" Channels="87"/>
+      </STREAM>
+      <STREAM name="ProbeA-LFP" description="description" sample_rate="2500.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS enable_stream="1" Channels="1,2,3,4"/>
+      </STREAM>
+      <STREAM name="PXIe-6341" description="Analog input channels from a NIDAQ device"
+              sample_rate="30000.0" channel_count="4">
+        <PARAMETERS enable_stream="1" Channels="1"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Audio Monitor"
+              activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="Common Avg Ref" insertionPoint="1" pluginName="Common Avg Ref"
+               type="1" index="4" libraryName="Common Average Reference" libraryVersion="0.6.7"
+               processorType="1" nodeId="110">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-AP" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS enable_stream="1" Affected="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,347,348,349,350,351,352,353,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371,372,373,374,375,376,377,378,379,380,381,382,383,384,385"
+                    Reference="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,347,348,349,350,351,352,353,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371,372,373,374,375,376,377,378,379,380,381,382,383,384,385"
+                    gain_level="100.0"/>
+      </STREAM>
+      <STREAM name="ProbeA-LFP" description="description" sample_rate="2500.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS enable_stream="1" Affected="1" Reference="1" gain_level="100.0"/>
+      </STREAM>
+      <STREAM name="PXIe-6341" description="Analog input channels from a NIDAQ device"
+              sample_rate="30000.0" channel_count="4">
+        <PARAMETERS enable_stream="1" Affected="1" Reference="1" gain_level="100.0"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Common Avg Ref"
+              activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="Bandpass Filter" insertionPoint="1" pluginName="Bandpass Filter"
+               type="1" index="5" libraryName="Bandpass Filter" libraryVersion="0.6.7"
+               processorType="1" nodeId="105">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-AP" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS enable_stream="1" high_cut="6000.0" low_cut="300.0" Channels=""/>
+      </STREAM>
+      <STREAM name="ProbeA-LFP" description="description" sample_rate="2500.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS enable_stream="1" high_cut="6000.0" low_cut="300.0" Channels=""/>
+      </STREAM>
+      <STREAM name="PXIe-6341" description="Analog input channels from a NIDAQ device"
+              sample_rate="30000.0" channel_count="4">
+        <PARAMETERS enable_stream="1" high_cut="6000.0" low_cut="300.0" Channels=""/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Bandpass Filter"
+              activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="Spike Detector" insertionPoint="1" pluginName="Spike Detector"
+               type="1" index="1" libraryName="Basic Spike Display" libraryVersion="0.6.7"
+               processorType="1" nodeId="107">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-AP" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <STREAM name="ProbeA-LFP" description="description" sample_rate="2500.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <STREAM name="PXIe-6341" description="Analog input channels from a NIDAQ device"
+              sample_rate="30000.0" channel_count="4">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS>
+        <SPIKE_CHANNEL name="Electrode 1" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="1" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 2" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="2" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 3" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="3" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 4" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="4" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 5" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="5" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 6" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="6" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 7" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="7" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 8" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="8" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 9" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="9" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 10" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="10" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 11" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="11" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 12" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="12" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 13" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="13" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 14" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="14" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 15" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="15" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 16" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="16" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 17" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="17" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 18" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="18" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 19" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="19" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 20" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="20" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 21" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="21" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 22" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="22" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 23" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="23" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 24" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="24" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 25" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="25" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 26" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="26" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 27" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="27" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 28" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="28" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 29" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="29" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 30" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="30" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 31" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="31" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 32" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="32" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 33" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="33" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 34" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="34" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 35" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="35" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 36" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="36" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 37" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="37" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 38" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="38" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 39" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="39" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 40" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="40" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 41" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="41" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 42" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="42" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 43" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="43" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 44" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="44" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 45" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="45" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 46" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="46" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 47" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="47" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 48" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="48" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 49" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="49" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 50" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="50" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 51" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="51" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 52" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="52" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 53" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="53" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 54" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="54" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 55" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="55" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 56" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="56" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 57" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="57" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 58" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="58" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 59" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="59" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 60" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="60" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 61" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="61" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 62" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="62" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 63" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="63" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 64" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="64" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 65" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="65" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 66" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="66" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 67" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="67" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 68" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="68" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 69" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="69" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 70" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="70" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 71" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="71" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 72" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="72" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 73" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="73" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 74" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="74" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 75" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="75" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 76" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="76" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 77" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="77" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 78" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="78" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 79" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="79" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 80" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="80" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 81" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="81" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 82" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="82" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 83" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="83" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 84" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="84" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 85" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="85" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 86" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="86" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 87" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="87" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 88" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="88" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 89" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="89" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 90" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="90" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 91" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="91" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 92" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="92" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 93" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="93" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 94" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="94" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 95" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="95" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 96" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="96" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 97" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="97" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 98" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="98" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 99" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="99" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+        <SPIKE_CHANNEL name="Electrode 100" description="Electrode from Spike Detector 107"
+                       num_channels="1" sample_rate="30000.0" stream_name="ProbeA-AP"
+                       stream_source="100" local_channels="100" thrshlder_type="1" abs_threshold1="-50.0"
+                       std_threshold1="4.0" dyn_threshold1="4.0" waveform_type="0"/>
+      </CUSTOM_PARAMETERS>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Spike Detector"
+              activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="Spike Viewer" insertionPoint="1" pluginName="Spike Viewer"
+               type="1" index="2" libraryName="Basic Spike Display" libraryVersion="0.6.7"
+               processorType="3" nodeId="108">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="ProbeA-AP" description="description" sample_rate="30000.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <STREAM name="ProbeA-LFP" description="description" sample_rate="2500.0"
+              channel_count="385" device_name="Neuropixels NHP - Active (45 mm)">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <STREAM name="PXIe-6341" description="Analog input channels from a NIDAQ device"
+              sample_rate="30000.0" channel_count="4">
+        <PARAMETERS enable_stream="1"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Spike Viewer" activeStream="0"
+              Type="Visualizer" scale_factor_index="0">
+        <TAB Active="1" Index="9"/>
+        <WINDOW Active="0"/>
+        <SPIKEDISPLAY LockThresholds="0" InvertSpikes="0" NumPlots="100">
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 1" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 2" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 3" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 4" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 5" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 6" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 7" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 8" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 9" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 10" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 11" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 12" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 13" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 14" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 15" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 16" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 17" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 18" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 19" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 20" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 21" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 22" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 23" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 24" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 25" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 26" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 27" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 28" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 29" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 30" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 31" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 32" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 33" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 34" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 35" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 36" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 37" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 38" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 39" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 40" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 41" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 42" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 43" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 44" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 45" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 46" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 47" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 48" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 49" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 50" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 51" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 52" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 53" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 54" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 55" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 56" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 57" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 58" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 59" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 60" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 61" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 62" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 63" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 64" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 65" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 66" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 67" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 68" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 69" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 70" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 71" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 72" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 73" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 74" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 75" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 76" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 77" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 78" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 79" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 80" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 81" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 82" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 83" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 84" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 85" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 86" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 87" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 88" isMonitored="1">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 89" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 90" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 91" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 92" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 93" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 94" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 95" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 96" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 97" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 98" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 99" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+          <PLOT stream_source="100" stream_name="ProbeA-AP" source_node="107"
+                name="Electrode 100" isMonitored="0">
+            <AXIS thresh="0.0" range="250.0"/>
+          </PLOT>
+        </SPIKEDISPLAY>
+      </EDITOR>
+    </PROCESSOR>
+  </SIGNALCHAIN>
+  <SIGNALCHAIN>
+    <PROCESSOR name="NI-DAQmx" insertionPoint="0" pluginName="NI-DAQmx" type="4"
+               index="1" libraryName="NI-DAQmx" libraryVersion="0.3.1" processorType="2"
+               nodeId="104">
+      <GLOBAL_PARAMETERS/>
+      <STREAM name="PXIe-6341" description="Analog input channels from a NIDAQ device"
+              sample_rate="30000.0" channel_count="4">
+        <PARAMETERS/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="1" displayName="NI-DAQmx" activeStream="0"
+              deviceName="PXI1Slot6" sampleRate="30000.0" voltageRange="3"
+              numAnalog="4" numDigital="16" digitalReadSize="8" digitalPortStates="110"/>
+    </PROCESSOR>
+    <PROCESSOR name="Record Control" insertionPoint="1" pluginName="Record Control"
+               type="1" index="8" libraryName="Record Control" libraryVersion="0.6.7"
+               processorType="7" nodeId="111">
+      <GLOBAL_PARAMETERS edge="0" trigger_type="1"/>
+      <STREAM name="PXIe-6341" description="Analog input channels from a NIDAQ device"
+              sample_rate="30000.0" channel_count="4">
+        <PARAMETERS enable_stream="1" trigger_line="8"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Record Control"
+              activeStream="0"/>
+    </PROCESSOR>
+  </SIGNALCHAIN>
+  <EDITORVIEWPORT scroll="0">
+    <NEUROPIX-PXI ID="100"/>
+    <MERGER ID="103"/>
+    <RECORD_NODE ID="101"/>
+    <LFP_VIEWER ID="102"/>
+    <AUDIO_MONITOR ID="106"/>
+    <COMMON_AVG_REF ID="110"/>
+    <BANDPASS_FILTER ID="105"/>
+    <SPIKE_DETECTOR ID="107"/>
+    <SPIKE_VIEWER ID="108"/>
+  </EDITORVIEWPORT>
+  <DATAVIEWPORT selectedTab="4"/>
+  <AUDIO sampleRate="44100.0" bufferSize="2560" deviceType="DirectSound">
+    <DEVICESETUP deviceType="DirectSound" audioOutputDeviceName="Primary Sound Driver"
+                 audioInputDeviceName="" audioDeviceRate="44100.0" audioDeviceOutChans="11"/>
+  </AUDIO>
+  <CONTROLPANEL isOpen="1" recordPath="C:\Users\fetschlab\Documents\Open Ephys"
+                recordEngine="BINARY" clockMode="0"/>
+  <AUDIOEDITOR isMuted="0" volume="13.0" noiseGate="100.0"/>
+  <FILENAMECONFIG>
+    <PREPEND state="0" value=""/>
+    <MAIN state="1" value="2025-03-06_14-30-33"/>
+    <APPEND state="0" value=""/>
+  </FILENAMECONFIG>
+  <PROCESSORLIST>
+    <COLOR ID="801" R="59" G="59" B="59"/>
+    <COLOR ID="804" R="241" G="90" B="41"/>
+    <COLOR ID="802" R="0" G="174" B="239"/>
+    <COLOR ID="803" R="0" G="166" B="81"/>
+    <COLOR ID="805" R="147" G="149" B="152"/>
+    <COLOR ID="806" R="255" G="0" B="0"/>
+    <COLOR ID="807" R="0" G="0" B="0"/>
+  </PROCESSORLIST>
+  <UICOMPONENT isProcessorListOpen="1" isEditorViewportOpen="1"/>
+</SETTINGS>

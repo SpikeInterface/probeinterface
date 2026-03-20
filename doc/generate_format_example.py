@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from probeinterface import Probe, ProbeGroup, combine_probes, write_probeinterface
-from probeinterface.plotting import plot_probe, plot_probe_group
+from probeinterface.plotting import plot_probe, plot_probegroup
 
 from probeinterface import generate_tetrode
 

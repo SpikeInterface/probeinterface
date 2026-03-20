@@ -17,7 +17,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from probeinterface import Probe, ProbeGroup
-from probeinterface.plotting import plot_probe, plot_probe_group
+from probeinterface.plotting import plot_probe, plot_probegroup
 from probeinterface import generate_multi_columns_probe
 
 ##############################################################################
@@ -85,6 +85,6 @@ print(probegroup.get_global_device_channel_indices())
 # The indices of the probe group can also be plotted:
 
 fig, ax = plt.subplots()
-plot_probe_group(probegroup, with_contact_id=True, same_axes=True, ax=ax)
+plot_probegroup(probegroup, with_contact_id=True, same_axes=True, ax=ax)
 
 plt.show()

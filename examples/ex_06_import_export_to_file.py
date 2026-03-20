@@ -24,7 +24,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from probeinterface import Probe, ProbeGroup
-from probeinterface.plotting import plot_probe, plot_probe_group
+from probeinterface.plotting import plot_probe, plot_probegroup
 from probeinterface import generate_dummy_probe
 from probeinterface import write_probeinterface, read_probeinterface
 from probeinterface import write_prb, read_prb
@@ -48,7 +48,7 @@ probegroup.add_probe(probe1)
 write_probeinterface('my_two_probe_setup.json', probegroup)
 
 probegroup2 = read_probeinterface('my_two_probe_setup.json')
-plot_probe_group(probegroup2)
+plot_probegroup(probegroup2)
 
 ##############################################################################
 # The format looks like this:
@@ -98,6 +98,6 @@ with open('two_tetrodes.prb', 'w') as f:
     f.write(prb_two_tetrodes)
 
 two_tetrode = read_prb('two_tetrodes.prb')
-plot_probe_group(two_tetrode, same_axes=False, with_contact_id=True)
+plot_probegroup(two_tetrode, same_axes=False, with_contact_id=True)
 
 plt.show()

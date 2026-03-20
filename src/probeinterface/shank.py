@@ -15,7 +15,10 @@ class Shank:
         self.shank_id = shank_id
 
     def get_indices(self):
-        (inds,) = np.nonzero(self.probe.shank_ids == self.shank_id)
+        if self.probe.shank_ids is None:
+            inds = np.arange(self.probe.get_contact_count(), dtype=int)
+        else:
+            inds = np.flatnonzero(self.probe.shank_ids == self.shank_id)
         return inds
 
     def get_contact_count(self):

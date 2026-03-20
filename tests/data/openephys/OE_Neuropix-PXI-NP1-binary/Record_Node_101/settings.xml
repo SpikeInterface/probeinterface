@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<SETTINGS>
+  <INFO>
+    <VERSION>1.0.1</VERSION>
+    <PLUGIN_API_VERSION>10</PLUGIN_API_VERSION>
+    <DATE>11 Sep 2025 9:57:24</DATE>
+    <OS>Windows 11</OS>
+    <MACHINE name="NP-REC-PC" cpu_model="Intel(R) Core(TM) i7-14700K" cpu_num_cores="28"/>
+  </INFO>
+  <SIGNALCHAIN>
+    <PROCESSOR name="Neuropix-PXI" insertionPoint="0" pluginName="Neuropix-PXI"
+               type="4" index="0" libraryName="Neuropix-PXI" libraryVersion="1.0.2"
+               processorType="2" nodeId="100">
+      <PROCESSOR_PARAMETERS/>
+      <STREAM name="ProbeA" description="description" sample_rate="30000.0"
+              channel_count="384" device_name="Neuropixels 2.0 - Multishank">
+        <PARAMETERS/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Neuropix-PXI" activeStream="0"
+              Type="Visualizer" tabText="Neuropix PXI">
+        <TAB Active="1"/>
+        <WINDOW Active="0"/>
+        <NEUROPIXELS_EDITOR MainSyncSlot="-1" SendSyncAsContinuous="0" SyncDirection="0"
+                            SyncFreq="0">
+          <BASESTATION Directory="" Slot="2" NamingScheme="0" port1dock1="slot2-port1-1"
+                       port1dock2="slot2-port1-2" port2dock1="slot2-port2-1" port2dock2="slot2-port2-2"
+                       port3dock1="slot2-port3-1" port3dock2="slot2-port3-2" port4dock1="slot2-port4-1"
+                       port4dock2="slot2-port4-2"/>
+          <CUSTOM_PROBE_NAMES/>
+        </NEUROPIXELS_EDITOR>
+        <VISUALIZER_PARAMETERS/>
+        <CUSTOM_PARAMETERS>
+          <NP_PROBE slot="2" bs_firmware_version="2.0169" bs_hardware_version="UNKNOWN"
+                    bs_serial_number="0" bs_part_number="NeurPix2 PXI Carrier" bsc_firmware_version="3.2191"
+                    bsc_hardware_version="2.2" bsc_serial_number="23361456" bsc_part_number="NP2_QBSC_00"
+                    headstage_serial_number="23500499" headstage_part_number="NPM_HS_31"
+                    flex_version="0.1" flex_part_number="NPM_HS_31" port="4" dock="1"
+                    probe_serial_number="23107820944" probe_part_number="NP2014"
+                    probe_name="Neuropixels 2.0 - Multishank" num_adcs="24" custom_probe_name="23107820944"
+                    ZoomHeight="80" ZoomOffset="50" electrodeConfigurationPreset="NONE"
+                    referenceChannel="Ext" referenceChannelIndex="0" visualizationMode="4"
+                    activityToView="0" isEnabled="1">
+            <CHANNELS CH0="0:0" CH1="0:0" CH2="0:0" CH3="0:0" CH4="0:0" CH5="0:0" CH6="0:0"
+                      CH7="0:0" CH8="0:0" CH9="0:0" CH10="0:0" CH11="0:0" CH12="0:0"
+                      CH13="0:0" CH14="0:0" CH15="0:0" CH16="0:0" CH17="0:0" CH18="0:0"
+                      CH19="0:0" CH20="0:0" CH21="0:0" CH22="0:0" CH23="0:0" CH24="0:0"
+                      CH25="0:0" CH26="0:0" CH27="0:0" CH28="0:0" CH29="0:0" CH30="0:0"
+                      CH31="0:0" CH32="0:0" CH33="0:0" CH34="0:0" CH35="0:0" CH36="0:0"
+                      CH37="0:0" CH38="0:0" CH39="0:0" CH40="0:0" CH41="0:0" CH42="0:0"
+                      CH43="0:0" CH44="0:0" CH45="0:0" CH46="0:0" CH47="0:0" CH96="0:0"
+                      CH97="0:0" CH98="0:0" CH99="0:0" CH100="0:0" CH101="0:0" CH102="0:0"
+                      CH103="0:0" CH104="0:0" CH105="0:0" CH106="0:0" CH107="0:0" CH108="0:0"
+                      CH109="0:0" CH110="0:0" CH111="0:0" CH112="0:0" CH113="0:0" CH114="0:0"
+                      CH115="0:0" CH116="0:0" CH117="0:0" CH118="0:0" CH119="0:0" CH120="0:0"
+                      CH121="0:0" CH122="0:0" CH123="0:0" CH124="0:0" CH125="0:0" CH126="0:0"
+                      CH127="0:0" CH128="0:0" CH129="0:0" CH130="0:0" CH131="0:0" CH132="0:0"
+                      CH133="0:0" CH134="0:0" CH135="0:0" CH136="0:0" CH137="0:0" CH138="0:0"
+                      CH139="0:0" CH140="0:0" CH141="0:0" CH142="0:0" CH143="0:0" CH192="0:0"
+                      CH193="0:0" CH194="0:0" CH195="0:0" CH196="0:0" CH197="0:0" CH198="0:0"
+                      CH199="0:0" CH200="0:0" CH201="0:0" CH202="0:0" CH203="0:0" CH204="0:0"
+                      CH205="0:0" CH206="0:0" CH207="0:0" CH208="0:0" CH209="0:0" CH210="0:0"
+                      CH211="0:0" CH212="0:0" CH213="0:0" CH214="0:0" CH215="0:0" CH216="0:0"
+                      CH217="0:0" CH218="0:0" CH219="0:0" CH220="0:0" CH221="0:0" CH222="0:0"
+                      CH223="0:0" CH224="0:0" CH225="0:0" CH226="0:0" CH227="0:0" CH228="0:0"
+                      CH229="0:0" CH230="0:0" CH231="0:0" CH232="0:0" CH233="0:0" CH234="0:0"
+                      CH235="0:0" CH236="0:0" CH237="0:0" CH238="0:0" CH239="0:0" CH288="0:0"
+                      CH289="0:0" CH290="0:0" CH291="0:0" CH292="0:0" CH293="0:0" CH294="0:0"
+                      CH295="0:0" CH296="0:0" CH297="0:0" CH298="0:0" CH299="0:0" CH300="0:0"
+                      CH301="0:0" CH302="0:0" CH303="0:0" CH304="0:0" CH305="0:0" CH306="0:0"
+                      CH307="0:0" CH308="0:0" CH309="0:0" CH310="0:0" CH311="0:0" CH312="0:0"
+                      CH313="0:0" CH314="0:0" CH315="0:0" CH316="0:0" CH317="0:0" CH318="0:0"
+                      CH319="0:0" CH320="0:0" CH321="0:0" CH322="0:0" CH323="0:0" CH324="0:0"
+                      CH325="0:0" CH326="0:0" CH327="0:0" CH328="0:0" CH329="0:0" CH330="0:0"
+                      CH331="0:0" CH332="0:0" CH333="0:0" CH334="0:0" CH335="0:0" CH240="0:0"
+                      CH241="0:0" CH242="0:0" CH243="0:0" CH244="0:0" CH245="0:0" CH246="0:0"
+                      CH247="0:0" CH248="0:0" CH249="0:0" CH250="0:0" CH251="0:0" CH252="0:0"
+                      CH253="0:0" CH254="0:0" CH255="0:0" CH256="0:0" CH257="0:0" CH258="0:0"
+                      CH259="0:0" CH260="0:0" CH261="0:0" CH262="0:0" CH263="0:0" CH264="0:0"
+                      CH265="0:0" CH266="0:0" CH267="0:0" CH268="0:0" CH269="0:0" CH270="0:0"
+                      CH271="0:0" CH272="0:0" CH273="0:0" CH274="0:0" CH275="0:0" CH276="0:0"
+                      CH277="0:0" CH278="0:0" CH279="0:0" CH280="0:0" CH281="0:0" CH282="0:0"
+                      CH283="0:0" CH284="0:0" CH285="0:0" CH286="0:0" CH287="0:0" CH336="0:0"
+                      CH337="0:0" CH338="0:0" CH339="0:0" CH340="0:0" CH341="0:0" CH342="0:0"
+                      CH343="0:0" CH344="0:0" CH345="0:0" CH346="0:0" CH347="0:0" CH348="0:0"
+                      CH349="0:0" CH350="0:0" CH351="0:0" CH352="0:0" CH353="0:0" CH354="0:0"
+                      CH355="0:0" CH356="0:0" CH357="0:0" CH358="0:0" CH359="0:0" CH360="0:0"
+                      CH361="0:0" CH362="0:0" CH363="0:0" CH364="0:0" CH365="0:0" CH366="0:0"
+                      CH367="0:0" CH368="0:0" CH369="0:0" CH370="0:0" CH371="0:0" CH372="0:0"
+                      CH373="0:0" CH374="0:0" CH375="0:0" CH376="0:0" CH377="0:0" CH378="0:0"
+                      CH379="0:0" CH380="0:0" CH381="0:0" CH382="0:0" CH383="0:0" CH48="0:0"
+                      CH49="0:0" CH50="0:0" CH51="0:0" CH52="0:0" CH53="0:0" CH54="0:0"
+                      CH55="0:0" CH56="0:0" CH57="0:0" CH58="0:0" CH59="0:0" CH60="0:0"
+                      CH61="0:0" CH62="0:0" CH63="0:0" CH64="0:0" CH65="0:0" CH66="0:0"
+                      CH67="0:0" CH68="0:0" CH69="0:0" CH70="0:0" CH71="0:0" CH72="0:0"
+                      CH73="0:0" CH74="0:0" CH75="0:0" CH76="0:0" CH77="0:0" CH78="0:0"
+                      CH79="0:0" CH80="0:0" CH81="0:0" CH82="0:0" CH83="0:0" CH84="0:0"
+                      CH85="0:0" CH86="0:0" CH87="0:0" CH88="0:0" CH89="0:0" CH90="0:0"
+                      CH91="0:0" CH92="0:0" CH93="0:0" CH94="0:0" CH95="0:0" CH144="0:0"
+                      CH145="0:0" CH146="0:0" CH147="0:0" CH148="0:0" CH149="0:0" CH150="0:0"
+                      CH151="0:0" CH152="0:0" CH153="0:0" CH154="0:0" CH155="0:0" CH156="0:0"
+                      CH157="0:0" CH158="0:0" CH159="0:0" CH160="0:0" CH161="0:0" CH162="0:0"
+                      CH163="0:0" CH164="0:0" CH165="0:0" CH166="0:0" CH167="0:0" CH168="0:0"
+                      CH169="0:0" CH170="0:0" CH171="0:0" CH172="0:0" CH173="0:0" CH174="0:0"
+                      CH175="0:0" CH176="0:0" CH177="0:0" CH178="0:0" CH179="0:0" CH180="0:0"
+                      CH181="0:0" CH182="0:0" CH183="0:0" CH184="0:0" CH185="0:0" CH186="0:0"
+                      CH187="0:0" CH188="0:0" CH189="0:0" CH190="0:0" CH191="0:0"/>
+            <ELECTRODE_XPOS CH0="27" CH1="59" CH2="27" CH3="59" CH4="27" CH5="59" CH6="27"
+                            CH7="59" CH8="27" CH9="59" CH10="27" CH11="59" CH12="27" CH13="59"
+                            CH14="27" CH15="59" CH16="27" CH17="59" CH18="27" CH19="59" CH20="27"
+                            CH21="59" CH22="27" CH23="59" CH24="27" CH25="59" CH26="27" CH27="59"
+                            CH28="27" CH29="59" CH30="27" CH31="59" CH32="27" CH33="59" CH34="27"
+                            CH35="59" CH36="27" CH37="59" CH38="27" CH39="59" CH40="27" CH41="59"
+                            CH42="27" CH43="59" CH44="27" CH45="59" CH46="27" CH47="59" CH96="27"
+                            CH97="59" CH98="27" CH99="59" CH100="27" CH101="59" CH102="27"
+                            CH103="59" CH104="27" CH105="59" CH106="27" CH107="59" CH108="27"
+                            CH109="59" CH110="27" CH111="59" CH112="27" CH113="59" CH114="27"
+                            CH115="59" CH116="27" CH117="59" CH118="27" CH119="59" CH120="27"
+                            CH121="59" CH122="27" CH123="59" CH124="27" CH125="59" CH126="27"
+                            CH127="59" CH128="27" CH129="59" CH130="27" CH131="59" CH132="27"
+                            CH133="59" CH134="27" CH135="59" CH136="27" CH137="59" CH138="27"
+                            CH139="59" CH140="27" CH141="59" CH142="27" CH143="59" CH192="27"
+                            CH193="59" CH194="27" CH195="59" CH196="27" CH197="59" CH198="27"
+                            CH199="59" CH200="27" CH201="59" CH202="27" CH203="59" CH204="27"
+                            CH205="59" CH206="27" CH207="59" CH208="27" CH209="59" CH210="27"
+                            CH211="59" CH212="27" CH213="59" CH214="27" CH215="59" CH216="27"
+                            CH217="59" CH218="27" CH219="59" CH220="27" CH221="59" CH222="27"
+                            CH223="59" CH224="27" CH225="59" CH226="27" CH227="59" CH228="27"
+                            CH229="59" CH230="27" CH231="59" CH232="27" CH233="59" CH234="27"
+                            CH235="59" CH236="27" CH237="59" CH238="27" CH239="59" CH288="27"
+                            CH289="59" CH290="27" CH291="59" CH292="27" CH293="59" CH294="27"
+                            CH295="59" CH296="27" CH297="59" CH298="27" CH299="59" CH300="27"
+                            CH301="59" CH302="27" CH303="59" CH304="27" CH305="59" CH306="27"
+                            CH307="59" CH308="27" CH309="59" CH310="27" CH311="59" CH312="27"
+                            CH313="59" CH314="27" CH315="59" CH316="27" CH317="59" CH318="27"
+                            CH319="59" CH320="27" CH321="59" CH322="27" CH323="59" CH324="27"
+                            CH325="59" CH326="27" CH327="59" CH328="27" CH329="59" CH330="27"
+                            CH331="59" CH332="27" CH333="59" CH334="27" CH335="59" CH240="27"
+                            CH241="59" CH242="27" CH243="59" CH244="27" CH245="59" CH246="27"
+                            CH247="59" CH248="27" CH249="59" CH250="27" CH251="59" CH252="27"
+                            CH253="59" CH254="27" CH255="59" CH256="27" CH257="59" CH258="27"
+                            CH259="59" CH260="27" CH261="59" CH262="27" CH263="59" CH264="27"
+                            CH265="59" CH266="27" CH267="59" CH268="27" CH269="59" CH270="27"
+                            CH271="59" CH272="27" CH273="59" CH274="27" CH275="59" CH276="27"
+                            CH277="59" CH278="27" CH279="59" CH280="27" CH281="59" CH282="27"
+                            CH283="59" CH284="27" CH285="59" CH286="27" CH287="59" CH336="27"
+                            CH337="59" CH338="27" CH339="59" CH340="27" CH341="59" CH342="27"
+                            CH343="59" CH344="27" CH345="59" CH346="27" CH347="59" CH348="27"
+                            CH349="59" CH350="27" CH351="59" CH352="27" CH353="59" CH354="27"
+                            CH355="59" CH356="27" CH357="59" CH358="27" CH359="59" CH360="27"
+                            CH361="59" CH362="27" CH363="59" CH364="27" CH365="59" CH366="27"
+                            CH367="59" CH368="27" CH369="59" CH370="27" CH371="59" CH372="27"
+                            CH373="59" CH374="27" CH375="59" CH376="27" CH377="59" CH378="27"
+                            CH379="59" CH380="27" CH381="59" CH382="27" CH383="59" CH48="27"
+                            CH49="59" CH50="27" CH51="59" CH52="27" CH53="59" CH54="27" CH55="59"
+                            CH56="27" CH57="59" CH58="27" CH59="59" CH60="27" CH61="59" CH62="27"
+                            CH63="59" CH64="27" CH65="59" CH66="27" CH67="59" CH68="27" CH69="59"
+                            CH70="27" CH71="59" CH72="27" CH73="59" CH74="27" CH75="59" CH76="27"
+                            CH77="59" CH78="27" CH79="59" CH80="27" CH81="59" CH82="27" CH83="59"
+                            CH84="27" CH85="59" CH86="27" CH87="59" CH88="27" CH89="59" CH90="27"
+                            CH91="59" CH92="27" CH93="59" CH94="27" CH95="59" CH144="27"
+                            CH145="59" CH146="27" CH147="59" CH148="27" CH149="59" CH150="27"
+                            CH151="59" CH152="27" CH153="59" CH154="27" CH155="59" CH156="27"
+                            CH157="59" CH158="27" CH159="59" CH160="27" CH161="59" CH162="27"
+                            CH163="59" CH164="27" CH165="59" CH166="27" CH167="59" CH168="27"
+                            CH169="59" CH170="27" CH171="59" CH172="27" CH173="59" CH174="27"
+                            CH175="59" CH176="27" CH177="59" CH178="27" CH179="59" CH180="27"
+                            CH181="59" CH182="27" CH183="59" CH184="27" CH185="59" CH186="27"
+                            CH187="59" CH188="27" CH189="59" CH190="27" CH191="59"/>
+            <ELECTRODE_YPOS CH0="0" CH1="0" CH2="15" CH3="15" CH4="30" CH5="30" CH6="45"
+                            CH7="45" CH8="60" CH9="60" CH10="75" CH11="75" CH12="90" CH13="90"
+                            CH14="105" CH15="105" CH16="120" CH17="120" CH18="135" CH19="135"
+                            CH20="150" CH21="150" CH22="165" CH23="165" CH24="180" CH25="180"
+                            CH26="195" CH27="195" CH28="210" CH29="210" CH30="225" CH31="225"
+                            CH32="240" CH33="240" CH34="255" CH35="255" CH36="270" CH37="270"
+                            CH38="285" CH39="285" CH40="300" CH41="300" CH42="315" CH43="315"
+                            CH44="330" CH45="330" CH46="345" CH47="345" CH96="360" CH97="360"
+                            CH98="375" CH99="375" CH100="390" CH101="390" CH102="405" CH103="405"
+                            CH104="420" CH105="420" CH106="435" CH107="435" CH108="450" CH109="450"
+                            CH110="465" CH111="465" CH112="480" CH113="480" CH114="495" CH115="495"
+                            CH116="510" CH117="510" CH118="525" CH119="525" CH120="540" CH121="540"
+                            CH122="555" CH123="555" CH124="570" CH125="570" CH126="585" CH127="585"
+                            CH128="600" CH129="600" CH130="615" CH131="615" CH132="630" CH133="630"
+                            CH134="645" CH135="645" CH136="660" CH137="660" CH138="675" CH139="675"
+                            CH140="690" CH141="690" CH142="705" CH143="705" CH192="720" CH193="720"
+                            CH194="735" CH195="735" CH196="750" CH197="750" CH198="765" CH199="765"
+                            CH200="780" CH201="780" CH202="795" CH203="795" CH204="810" CH205="810"
+                            CH206="825" CH207="825" CH208="840" CH209="840" CH210="855" CH211="855"
+                            CH212="870" CH213="870" CH214="885" CH215="885" CH216="900" CH217="900"
+                            CH218="915" CH219="915" CH220="930" CH221="930" CH222="945" CH223="945"
+                            CH224="960" CH225="960" CH226="975" CH227="975" CH228="990" CH229="990"
+                            CH230="1005" CH231="1005" CH232="1020" CH233="1020" CH234="1035"
+                            CH235="1035" CH236="1050" CH237="1050" CH238="1065" CH239="1065"
+                            CH288="1080" CH289="1080" CH290="1095" CH291="1095" CH292="1110"
+                            CH293="1110" CH294="1125" CH295="1125" CH296="1140" CH297="1140"
+                            CH298="1155" CH299="1155" CH300="1170" CH301="1170" CH302="1185"
+                            CH303="1185" CH304="1200" CH305="1200" CH306="1215" CH307="1215"
+                            CH308="1230" CH309="1230" CH310="1245" CH311="1245" CH312="1260"
+                            CH313="1260" CH314="1275" CH315="1275" CH316="1290" CH317="1290"
+                            CH318="1305" CH319="1305" CH320="1320" CH321="1320" CH322="1335"
+                            CH323="1335" CH324="1350" CH325="1350" CH326="1365" CH327="1365"
+                            CH328="1380" CH329="1380" CH330="1395" CH331="1395" CH332="1410"
+                            CH333="1410" CH334="1425" CH335="1425" CH240="1440" CH241="1440"
+                            CH242="1455" CH243="1455" CH244="1470" CH245="1470" CH246="1485"
+                            CH247="1485" CH248="1500" CH249="1500" CH250="1515" CH251="1515"
+                            CH252="1530" CH253="1530" CH254="1545" CH255="1545" CH256="1560"
+                            CH257="1560" CH258="1575" CH259="1575" CH260="1590" CH261="1590"
+                            CH262="1605" CH263="1605" CH264="1620" CH265="1620" CH266="1635"
+                            CH267="1635" CH268="1650" CH269="1650" CH270="1665" CH271="1665"
+                            CH272="1680" CH273="1680" CH274="1695" CH275="1695" CH276="1710"
+                            CH277="1710" CH278="1725" CH279="1725" CH280="1740" CH281="1740"
+                            CH282="1755" CH283="1755" CH284="1770" CH285="1770" CH286="1785"
+                            CH287="1785" CH336="1800" CH337="1800" CH338="1815" CH339="1815"
+                            CH340="1830" CH341="1830" CH342="1845" CH343="1845" CH344="1860"
+                            CH345="1860" CH346="1875" CH347="1875" CH348="1890" CH349="1890"
+                            CH350="1905" CH351="1905" CH352="1920" CH353="1920" CH354="1935"
+                            CH355="1935" CH356="1950" CH357="1950" CH358="1965" CH359="1965"
+                            CH360="1980" CH361="1980" CH362="1995" CH363="1995" CH364="2010"
+                            CH365="2010" CH366="2025" CH367="2025" CH368="2040" CH369="2040"
+                            CH370="2055" CH371="2055" CH372="2070" CH373="2070" CH374="2085"
+                            CH375="2085" CH376="2100" CH377="2100" CH378="2115" CH379="2115"
+                            CH380="2130" CH381="2130" CH382="2145" CH383="2145" CH48="2160"
+                            CH49="2160" CH50="2175" CH51="2175" CH52="2190" CH53="2190" CH54="2205"
+                            CH55="2205" CH56="2220" CH57="2220" CH58="2235" CH59="2235" CH60="2250"
+                            CH61="2250" CH62="2265" CH63="2265" CH64="2280" CH65="2280" CH66="2295"
+                            CH67="2295" CH68="2310" CH69="2310" CH70="2325" CH71="2325" CH72="2340"
+                            CH73="2340" CH74="2355" CH75="2355" CH76="2370" CH77="2370" CH78="2385"
+                            CH79="2385" CH80="2400" CH81="2400" CH82="2415" CH83="2415" CH84="2430"
+                            CH85="2430" CH86="2445" CH87="2445" CH88="2460" CH89="2460" CH90="2475"
+                            CH91="2475" CH92="2490" CH93="2490" CH94="2505" CH95="2505" CH144="2520"
+                            CH145="2520" CH146="2535" CH147="2535" CH148="2550" CH149="2550"
+                            CH150="2565" CH151="2565" CH152="2580" CH153="2580" CH154="2595"
+                            CH155="2595" CH156="2610" CH157="2610" CH158="2625" CH159="2625"
+                            CH160="2640" CH161="2640" CH162="2655" CH163="2655" CH164="2670"
+                            CH165="2670" CH166="2685" CH167="2685" CH168="2700" CH169="2700"
+                            CH170="2715" CH171="2715" CH172="2730" CH173="2730" CH174="2745"
+                            CH175="2745" CH176="2760" CH177="2760" CH178="2775" CH179="2775"
+                            CH180="2790" CH181="2790" CH182="2805" CH183="2805" CH184="2820"
+                            CH185="2820" CH186="2835" CH187="2835" CH188="2850" CH189="2850"
+                            CH190="2865" CH191="2865"/>
+          </NP_PROBE>
+        </CUSTOM_PARAMETERS>
+      </EDITOR>
+    </PROCESSOR>
+    <PROCESSOR name="Neuropixels CAR" insertionPoint="1" pluginName="Neuropixels CAR"
+               type="1" index="9" libraryName="Neuropixels CAR" libraryVersion="1.0.0"
+               processorType="1" nodeId="109">
+      <PROCESSOR_PARAMETERS/>
+      <STREAM name="ProbeA" description="description" sample_rate="30000.0"
+              channel_count="384" device_name="Neuropixels 2.0 - Multishank">
+        <PARAMETERS enable_stream="1" Channels=""/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Neuropixels CAR"
+              activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="Record Node" insertionPoint="1" pluginName="Record Node"
+               type="0" index="3" libraryName="" libraryVersion="" processorType="8"
+               nodeId="101">
+      <PROCESSOR_PARAMETERS directory="D:\Xuanyu\Data" engine="0" events="1" spikes="1" main_sync="0"/>
+      <STREAM name="ProbeA" description="description" sample_rate="30000.0"
+              channel_count="384" device_name="Neuropixels 2.0 - Multishank">
+        <PARAMETERS channels="" sync_line="0"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS fifoMonitorsVisible="1"/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Record Node" activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="LFP Viewer" insertionPoint="1" pluginName="LFP Viewer"
+               type="1" index="4" libraryName="LFP viewer" libraryVersion="1.0.1"
+               processorType="3" nodeId="102">
+      <PROCESSOR_PARAMETERS/>
+      <STREAM name="ProbeA" description="description" sample_rate="30000.0"
+              channel_count="384" device_name="Neuropixels 2.0 - Multishank">
+        <PARAMETERS/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="LFP Viewer" activeStream="0"
+              Type="LfpDisplayEditor" tabText="LFP">
+        <TAB Active="0"/>
+        <WINDOW Active="1" x="351" y="-3823" width="1200" height="3814"/>
+        <VALUES SelectedLayout="2"/>
+        <VISUALIZER_PARAMETERS/>
+        <CUSTOM_PARAMETERS>
+          <LFPDISPLAY0 stream_key="100|ProbeA" Range="500,2000,10.0" Timebase="2.0"
+                       Spread="20" colourScheme="1" colourGrouping="1" spikeRaster="OFF"
+                       clipWarning="1" satWarning="1" reverseOrder="0" sortByDepth="0"
+                       channelSkip="1" showChannelNum="0" subtractOffset="0" isInverted="0"
+                       triggerSource="1" trialAvg="0" singleChannelView="-1" EventButtonState="255"
+                       ChannelDisplayState="111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                       selectedChannelType="0" ScrollX="0" ScrollY="92"/>
+          <LFPDISPLAY1 stream_key="100|ProbeA" Range="250,2000,10.0" Timebase="0.250"
+                       Spread="40" colourScheme="1" colourGrouping="1" spikeRaster="OFF"
+                       clipWarning="1" satWarning="1" reverseOrder="0" sortByDepth="0"
+                       channelSkip="1" showChannelNum="0" subtractOffset="0" isInverted="0"
+                       triggerSource="1" trialAvg="0" singleChannelView="-1" EventButtonState="255"
+                       ChannelDisplayState="111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                       selectedChannelType="0" ScrollX="0" ScrollY="92"/>
+          <LFPDISPLAY2 stream_key="100|ProbeA" Range="250,2000,10.0" Timebase="2.0"
+                       Spread="40" colourScheme="1" colourGrouping="1" spikeRaster="OFF"
+                       clipWarning="1" satWarning="1" reverseOrder="0" sortByDepth="0"
+                       channelSkip="1" showChannelNum="0" subtractOffset="0" isInverted="0"
+                       triggerSource="1" trialAvg="0" singleChannelView="-1" EventButtonState="255"
+                       ChannelDisplayState="111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                       selectedChannelType="0" ScrollX="0" ScrollY="0"/>
+          <CANVAS doubleVerticalSplitRatio="0.5" doubleHorizontalSplitRatio="0.5"
+                  tripleHorizontalSplitRatio="0.33,0.66" tripleVerticalSplitRatio="0.33,0.66"
+                  showAllOptions="0"/>
+        </CUSTOM_PARAMETERS>
+      </EDITOR>
+    </PROCESSOR>
+    <PROCESSOR name="Audio Monitor" insertionPoint="1" pluginName="Audio Monitor"
+               type="0" index="4" libraryName="" libraryVersion="" processorType="6"
+               nodeId="106">
+      <PROCESSOR_PARAMETERS mute_audio="0" audio_output="2"/>
+      <STREAM name="ProbeA" description="description" sample_rate="30000.0"
+              channel_count="384" device_name="Neuropixels 2.0 - Multishank">
+        <PARAMETERS channels="" spike_channel="0"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Audio Monitor"
+              activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="Bandpass Filter" insertionPoint="1" pluginName="Bandpass Filter"
+               type="1" index="1" libraryName="Bandpass Filter" libraryVersion="1.0.1"
+               processorType="1" nodeId="103">
+      <PROCESSOR_PARAMETERS threads="1"/>
+      <STREAM name="ProbeA" description="description" sample_rate="30000.0"
+              channel_count="384" device_name="Neuropixels 2.0 - Multishank">
+        <PARAMETERS enable_stream="1" low_cut="300.0" high_cut="6000.0" channels=""/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Bandpass Filter"
+              activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="Probe Viewer" insertionPoint="1" pluginName="Probe Viewer"
+               type="1" index="10" libraryName="Probe Viewer" libraryVersion="1.0.0"
+               processorType="3" nodeId="105">
+      <PROCESSOR_PARAMETERS trigger_line="-1" display_stream="0"/>
+      <STREAM name="ProbeA" description="description" sample_rate="30000.0"
+              channel_count="384" device_name="Neuropixels 2.0 - Multishank">
+        <PARAMETERS/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Probe Viewer" activeStream="0"
+              Type="Visualizer" tabText="ProbeViewer">
+        <TAB Active="0"/>
+        <WINDOW Active="1" x="1920" y="0" width="1280" height="1024"/>
+        <VISUALIZER_PARAMETERS/>
+        <CUSTOM_PARAMETERS>
+          <CANVAS>
+            <STREAM key="100|ProbeA" zoomLowerBound="394" zoomOffset="0" zoomHeight="50"/>
+            <OPTIONS renderMode="3" rmsLow="0.0" rmsHi="100.0" fftLow="-100.0" fftHi="-0.0"
+                     fftFreqBin="1" spikeLow="0.0" spikeHi="1000.0" spikeThreshold="-50.0"
+                     colourScheme="1" showAverageView="0" rollingWindowSize="8.0"
+                     averageWindowPre="0.5" averageWindowPost="0.5"/>
+          </CANVAS>
+        </CUSTOM_PARAMETERS>
+      </EDITOR>
+    </PROCESSOR>
+  </SIGNALCHAIN>
+  <SIGNALCHAIN>
+    <PROCESSOR name="NI-DAQmx" insertionPoint="0" pluginName="NI-DAQmx" type="4"
+               index="2" libraryName="NI-DAQmx" libraryVersion="1.0.1" processorType="2"
+               nodeId="107">
+      <PROCESSOR_PARAMETERS/>
+      <STREAM name="PXI-6221" description="Analog input channels from a NIDAQ device"
+              sample_rate="30000.0" channel_count="4">
+        <PARAMETERS/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="NI-DAQmx" activeStream="0"
+              deviceName="PXI1Slot3" sampleRate="30000.0" voltageRange="3"
+              numAnalog="4" numDigital="4" digitalReadSize="8" digitalPortStates="100"/>
+    </PROCESSOR>
+    <PROCESSOR name="Record Node" insertionPoint="1" pluginName="Record Node"
+               type="0" index="3" libraryName="" libraryVersion="" processorType="8"
+               nodeId="108">
+      <PROCESSOR_PARAMETERS directory="D:\Xuanyu\Data" engine="0" events="1" spikes="1" main_sync="0"/>
+      <STREAM name="PXI-6221" description="Analog input channels from a NIDAQ device"
+              sample_rate="30000.0" channel_count="4">
+        <PARAMETERS channels="" sync_line="0"/>
+      </STREAM>
+      <CUSTOM_PARAMETERS fifoMonitorsVisible="1"/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="Record Node" activeStream="0"/>
+    </PROCESSOR>
+    <PROCESSOR name="LFP Viewer" insertionPoint="1" pluginName="LFP Viewer"
+               type="1" index="4" libraryName="LFP viewer" libraryVersion="1.0.1"
+               processorType="3" nodeId="110">
+      <PROCESSOR_PARAMETERS/>
+      <STREAM name="PXI-6221" description="Analog input channels from a NIDAQ device"
+              sample_rate="30000.0" channel_count="4">
+        <PARAMETERS/>
+      </STREAM>
+      <CUSTOM_PARAMETERS/>
+      <EDITOR isCollapsed="0" isDrawerOpen="0" displayName="LFP Viewer" activeStream="0"
+              Type="LfpDisplayEditor" tabText="LFP">
+        <TAB Active="1"/>
+        <WINDOW Active="0"/>
+        <VALUES SelectedLayout="1"/>
+        <VISUALIZER_PARAMETERS/>
+        <CUSTOM_PARAMETERS>
+          <LFPDISPLAY0 stream_key="107|PXI-6221" Range="250,2000,10.0" Timebase="2.0"
+                       Spread="40" colourScheme="1" colourGrouping="1" spikeRaster="OFF"
+                       clipWarning="1" satWarning="1" reverseOrder="0" sortByDepth="0"
+                       channelSkip="1" showChannelNum="0" subtractOffset="0" isInverted="0"
+                       triggerSource="1" trialAvg="0" singleChannelView="-1" EventButtonState="255"
+                       ChannelDisplayState="1111" selectedChannelType="2" ScrollX="0"
+                       ScrollY="0"/>
+          <LFPDISPLAY1 stream_key="107|PXI-6221" Range="250,2000,10.0" Timebase="2.0"
+                       Spread="40" colourScheme="1" colourGrouping="1" spikeRaster="OFF"
+                       clipWarning="1" satWarning="1" reverseOrder="0" sortByDepth="0"
+                       channelSkip="1" showChannelNum="0" subtractOffset="0" isInverted="0"
+                       triggerSource="1" trialAvg="0" singleChannelView="-1" EventButtonState="255"
+                       ChannelDisplayState="1111" selectedChannelType="2" ScrollX="0"
+                       ScrollY="0"/>
+          <LFPDISPLAY2 stream_key="107|PXI-6221" Range="250,2000,10.0" Timebase="2.0"
+                       Spread="40" colourScheme="1" colourGrouping="1" spikeRaster="OFF"
+                       clipWarning="1" satWarning="1" reverseOrder="0" sortByDepth="0"
+                       channelSkip="1" showChannelNum="0" subtractOffset="0" isInverted="0"
+                       triggerSource="1" trialAvg="0" singleChannelView="-1" EventButtonState="255"
+                       ChannelDisplayState="1111" selectedChannelType="2" ScrollX="0"
+                       ScrollY="0"/>
+          <CANVAS doubleVerticalSplitRatio="0.5" doubleHorizontalSplitRatio="0.5"
+                  tripleHorizontalSplitRatio="0.33,0.66" tripleVerticalSplitRatio="0.33,0.66"
+                  showAllOptions="0"/>
+        </CUSTOM_PARAMETERS>
+      </EDITOR>
+    </PROCESSOR>
+  </SIGNALCHAIN>
+  <CONTROLPANEL isOpen="1" recordPath="C:\Users\agjacob18\Documents\Open Ephys"
+                recordEngine="BINARY" clockMode="0" clockReferenceTime="0" forceNewDirectory="0"/>
+  <AUDIOEDITOR isMuted="0" volume="50.0" noiseGate="0.0"/>
+  <FILENAMECONFIG>
+    <PREPEND state="2" value="eg_data_"/>
+    <MAIN state="1" value="2025-09-11_09-56-23"/>
+    <APPEND state="0" value=""/>
+  </FILENAMECONFIG>
+  <EDITORVIEWPORT selectedTab="1" scroll="0"/>
+  <GRAPHVIEWER>
+    <NODE id="100" isProcessorInfoVisible="0">
+      <STREAM key="100|ProbeA" isStreamVisible="0" isParamsVisible="0"/>
+    </NODE>
+    <NODE id="109" isProcessorInfoVisible="0">
+      <STREAM key="100|ProbeA" isStreamVisible="0" isParamsVisible="0"/>
+    </NODE>
+    <NODE id="101" isProcessorInfoVisible="0">
+      <STREAM key="100|ProbeA" isStreamVisible="0" isParamsVisible="0"/>
+    </NODE>
+    <NODE id="102" isProcessorInfoVisible="0">
+      <STREAM key="100|ProbeA" isStreamVisible="0" isParamsVisible="0"/>
+    </NODE>
+    <NODE id="106" isProcessorInfoVisible="0">
+      <STREAM key="100|ProbeA" isStreamVisible="0" isParamsVisible="0"/>
+    </NODE>
+    <NODE id="103" isProcessorInfoVisible="0">
+      <STREAM key="100|ProbeA" isStreamVisible="0" isParamsVisible="0"/>
+    </NODE>
+    <NODE id="105" isProcessorInfoVisible="0">
+      <STREAM key="100|ProbeA" isStreamVisible="0" isParamsVisible="0"/>
+    </NODE>
+    <NODE id="107" isProcessorInfoVisible="0">
+      <STREAM key="107|PXI-6221" isStreamVisible="0" isParamsVisible="0"/>
+    </NODE>
+    <NODE id="108" isProcessorInfoVisible="1">
+      <STREAM key="107|PXI-6221" isStreamVisible="0" isParamsVisible="0"/>
+    </NODE>
+    <NODE id="110" isProcessorInfoVisible="0">
+      <STREAM key="107|PXI-6221" isStreamVisible="0" isParamsVisible="0"/>
+    </NODE>
+  </GRAPHVIEWER>
+  <DATAVIEWPORT>
+    <TABBEDCOMPONENT index="0" selectedTabNodeId="1">
+      <TAB nodeId="0"/>
+      <TAB nodeId="1"/>
+      <TAB nodeId="2"/>
+      <TAB nodeId="110"/>
+      <TAB nodeId="100"/>
+    </TABBEDCOMPONENT>
+  </DATAVIEWPORT>
+  <PROCESSORLIST>
+    <COLOUR ID="801" R="50" G="50" B="50"/>
+    <COLOUR ID="804" R="241" G="90" B="41"/>
+    <COLOUR ID="802" R="0" G="174" B="239"/>
+    <COLOUR ID="803" R="0" G="166" B="81"/>
+    <COLOUR ID="805" R="90" G="110" B="110"/>
+    <COLOUR ID="806" R="255" G="0" B="0"/>
+    <COLOUR ID="807" R="0" G="0" B="0"/>
+  </PROCESSORLIST>
+  <UICOMPONENT isProcessorListOpen="1" isEditorViewportOpen="1" consoleOpenInWindow="0"/>
+  <AUDIO sampleRate="48000.0" bufferSize="1024" deviceType="Windows Audio"/>
+  <MESSAGES/>
+</SETTINGS>

@@ -2,9 +2,6 @@ from probeinterface import Probe, ProbeGroup
 from probeinterface import generate_dummy_probe, generate_dummy_probe_group
 from probeinterface.plotting import plot_probe, plot_probegroup
 
-# remove once plot_probe_group is removed
-from probeinterface.plotting import plot_probe_group
-
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -38,10 +35,6 @@ def test_plot_probegroup():
     plot_probegroup(probegroup, same_axes=True, with_contact_id=True)
     plot_probegroup(probegroup, same_axes=False)
 
-    # remove when plot_probe_group has been removed
-    with pytest.warns(DeprecationWarning):
-        plot_probe_group(probegroup)
-
     # 3d
     probegroup_3d = ProbeGroup()
     for probe in probegroup.probes:
@@ -50,7 +43,29 @@ def test_plot_probegroup():
     plot_probegroup(probegroup_3d, same_axes=True)
 
 
+def test_plot_probe_two_side():
+    probe = Probe()
+    probe.set_contacts(
+        positions=np.array(
+            [
+                [0, 0],
+                [0, 10],
+                [0, 20],
+                [0, 0],
+                [0, 10],
+                [0, 20],
+            ]
+        ),
+        shapes="circle",
+        contact_ids=["F1", "F2", "F3", "B1", "B2", "B3"],
+        contact_sides=["front", "front", "front", "back", "back", "back"],
+    )
+
+    plot_probe(probe, with_contact_id=True, side="front")
+    plot_probe(probe, with_contact_id=True, side="back")
+
+
 if __name__ == "__main__":
-    test_plot_probe()
-    # test_plot_probe_group()
+    # test_plot_probe()
+    test_plot_probe_two_side()
     plt.show()

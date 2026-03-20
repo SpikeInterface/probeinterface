@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from probeinterface import Probe, ProbeGroup
-from probeinterface.plotting import plot_probe_group
+from probeinterface.plotting import plot_probegroup
 from probeinterface import generate_dummy_probe
 
 ##############################################################################
@@ -39,11 +39,11 @@ print('probegroup.get_contact_count()', probegroup.get_contact_count())
 ##############################################################################
 #  We can now plot all probes in the same axis:
 
-plot_probe_group(probegroup, same_axes=True)
+plot_probegroup(probegroup, same_axes=True)
 
 ##############################################################################
 #  or in separate axes:
 
-plot_probe_group(probegroup, same_axes=False, with_contact_id=True)
+plot_probegroup(probegroup, same_axes=False, with_contact_id=True)
 
 plt.show()
