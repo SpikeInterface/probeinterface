@@ -112,7 +112,7 @@ def plot_probe(
     zlims: tuple | None = None,
     show_channel_on_click: bool = False,
     side: str | None = None,
-    contacts_kwargs: dict | None = None,
+    contacts_kargs: dict | None = None,
 ):
     """Plot a Probe object.
     Generates a 2D or 3D axis, depending on Probe.ndim
@@ -151,7 +151,7 @@ def plot_probe(
         If True, the channel information is shown upon click
     side : None | "front" | "back"
         If the probe is two side, then the side must be given otherwise this raises an error.
-    contacts_kwargs : dict | None, default: None
+    contacts_kargs : dict | None, default: None
         DEPRECATED, use contact_kwargs instead. Dict with kwargs for contacts (e.g. alpha, edgecolor, lw)
 
     Returns
@@ -163,13 +163,13 @@ def plot_probe(
     """
     import matplotlib.pyplot as plt
 
-    if contacts_kwargs is not None:
+    if contacts_kargs is not None:
         warnings.warn(
             "contacts_kwargs is deprecated and will be removed in 0.3.4. Please use `contact_kwargs` instead.",
             category=DeprecationWarning,
             stacklevel=2,
         )
-        contact_kwargs = contacts_kwargs
+        contact_kwargs = contacts_kargs
 
     if probe.contact_sides is not None:
         if side is None or side not in ("front", "back"):
