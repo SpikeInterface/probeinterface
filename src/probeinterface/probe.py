@@ -1,6 +1,5 @@
-from __future__ import annotations
 import numpy as np
-from typing import Optional
+from typing import Literal
 from pathlib import Path
 
 from .shank import Shank
@@ -56,10 +55,10 @@ class Probe:
         self,
         ndim: int = 2,
         si_units: str = "um",
-        name: Optional[str] = None,
-        serial_number: Optional[str] = None,
-        model_name: Optional[str] = None,
-        manufacturer: Optional[str] = None,
+        name: str | None = None,
+        serial_number: str | None = None,
+        model_name: str | None = None,
+        manufacturer: str | None = None,
     ):
         """
         Some attributes are protected and have to be set with setters:
@@ -427,7 +426,7 @@ class Probe:
             raise ValueError(f"contour_polygon.shape[1] {contour_polygon.shape[1]} and ndim {self.ndim} do not match!")
         self.probe_planar_contour = contour_polygon
 
-    def create_auto_shape(self, probe_type: "tip" | "rect" | "circular" = "tip", margin: float = 20.0):
+    def create_auto_shape(self, probe_type: Literal["tip", "rect", "circular"] = "tip", margin: float = 20.0):
         """Create a planar contour automatically based on probe contact positions.
 
         This function generates a 2D polygon that outlines the shape of the probe, adjusted
@@ -515,7 +514,7 @@ class Probe:
 
         self.set_planar_contour(polygon)
 
-    def set_device_channel_indices(self, channel_indices: np.array | list):
+    def set_device_channel_indices(self, channel_indices: np.ndarray | list):
         """
         Manually set the device channel indices.
 
@@ -553,7 +552,7 @@ class Probe:
 
         wire_probe(self, pathway, channel_offset=channel_offset)
 
-    def set_contact_ids(self, contact_ids: np.array | list):
+    def set_contact_ids(self, contact_ids: np.ndarray | list):
         """
         Set contact ids. Channel ids are converted to strings.
         Contact ids must be **unique** for the **Probe**
@@ -586,7 +585,7 @@ class Probe:
         if self._probe_group is not None:
             self._probe_group.check_global_device_wiring_and_ids()
 
-    def set_shank_ids(self, shank_ids: np.array | list):
+    def set_shank_ids(self, shank_ids: np.ndarray | list):
         """
         Set shank ids.
 
@@ -682,7 +681,7 @@ class Probe:
         # channel_indices are not copied
         return other
 
-    def to_3d(self, axes: "xy" | "yz" | "xz" = "xz"):
+    def to_3d(self, axes: Literal["xy", "yz", "xz"] = "xz"):
         """
         Transform 2d probe to 3d probe.
 
@@ -719,7 +718,7 @@ class Probe:
 
         return probe3d
 
-    def to_2d(self, axes: "xy" | "yz" | "xz" = "xy"):
+    def to_2d(self, axes: Literal["xy", "yz", "xz"] = "xy"):
         """
         Transform 3d probe to 2d probe.
 
@@ -790,7 +789,7 @@ class Probe:
             vertices.append(one_vertice)
         return vertices
 
-    def move(self, translation_vector: np.array | list):
+    def move(self, translation_vector: np.ndarray | list):
         """
         Translate the probe in one direction.
 
@@ -808,7 +807,9 @@ class Probe:
         if self.probe_planar_contour is not None:
             self.probe_planar_contour += translation_vector
 
-    def rotate(self, theta: float, center: list | np.ndarray | None = None, axis: "xy" | "yz" | "xz" | None = None):
+    def rotate(
+        self, theta: float, center: list | np.ndarray | None = None, axis: Literal["xy", "yz", "xz"] | None = None
+    ):
         """
         Rotate the probe around a specified axis.
 
@@ -856,7 +857,7 @@ class Probe:
             new_vertices = (self.probe_planar_contour - center) @ R + center
             self.probe_planar_contour = new_vertices
 
-    def rotate_contacts(self, thetas: float | np.array[float] | list[float]):
+    def rotate_contacts(self, thetas: float | np.ndarray[float] | list[float]):
         """
         Rotate each contact of the probe.
         Internally, it modifies the contact_plane_axes.
@@ -976,7 +977,7 @@ class Probe:
 
         return probe
 
-    def to_numpy(self, complete: bool = False) -> np.array:
+    def to_numpy(self, complete: bool = False) -> np.ndarray:
         """
         Export the probe to a numpy structured array.
         This array handles all contact attributes.
@@ -1387,12 +1388,12 @@ class Probe:
 
     def to_image(
         self,
-        values: np.array | list,
+        values: np.ndarray | list,
         pixel_size: float = 0.5,
-        num_pixel: Optional[int] = None,
-        method: "linear" | "nearest" | "cubic" = "linear",
-        xlims: Optional[tuple] = None,
-        ylims: Optional[tuple] = None,
+        num_pixel: int | None = None,
+        method: Literal["linear", "nearest", "cubic"] = "linear",
+        xlims: tuple | None = None,
+        ylims: tuple | None = None,
     ) -> tuple[np.ndarray, tuple, tuple]:
         """
         Generated a 2d (image) from a values vector with an interpolation
@@ -1404,13 +1405,13 @@ class Probe:
             vector same size as contact number to be color plotted
         pixel_size : float, default: 0.5
             size of one pixel in micrometers
-        num_pixel : Optional[int] | None, default: None
+        num_pixel : int | None, default: None
             alternative to pixel_size give pixel number of the image width
         method : "linear" | "nearest" | "cubic", default: "linear"
             Method of interpolation to generate a grid mesh
-        xlims : Optional[tuple], default: None
+        xlims : tuple | None, default: None
             Force image xlims
-        ylims : Optional[tuple], default: None
+        ylims : tuple | None, default: None
             Force image ylims
 
         Returns
@@ -1511,7 +1512,7 @@ class Probe:
         return sliced_probe
 
 
-def _2d_to_3d(data2d: np.ndarray, axes: "xy" | "yz" | "xz") -> np.ndarray:
+def _2d_to_3d(data2d: np.ndarray, axes: Literal["xy", "yz", "xz"]) -> np.ndarray:
     """
     Add a third dimension on the given axes
 
@@ -1535,7 +1536,7 @@ def _2d_to_3d(data2d: np.ndarray, axes: "xy" | "yz" | "xz") -> np.ndarray:
     return data3d
 
 
-def select_axes(data: np.ndarray, axes: "xy" | "yz" | "xz" = "xy") -> np.ndarray:
+def select_axes(data: np.ndarray, axes: Literal["xy", "yz", "xz", "xyz"] = "xy") -> np.ndarray:
     """
     Select axes in a 3d or 2d array.
 
@@ -1558,7 +1559,7 @@ def select_axes(data: np.ndarray, axes: "xy" | "yz" | "xz" = "xy") -> np.ndarray
     return data[:, dims]
 
 
-def _3d_to_2d(data3d: np.ndarray, axes: "xy" | "yz" | "xz" = "xy") -> np.ndarray:
+def _3d_to_2d(data3d: np.ndarray, axes: Literal["xy", "yz", "xz"] = "xy") -> np.ndarray:
     """
     Reduce 3d array to 2d array on given axes.
 
@@ -1599,7 +1600,7 @@ def _rotation_matrix_2d(theta: float) -> np.ndarray:
     return R
 
 
-def _rotation_matrix_3d(axis: np.array | list, theta: float) -> np.ndarray:
+def _rotation_matrix_3d(axis: np.ndarray | list, theta: float) -> np.ndarray:
     """
     Returns 3D rotation matrix
 

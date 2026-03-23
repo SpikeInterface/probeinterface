@@ -2,7 +2,6 @@
 Some utility functions
 """
 
-from __future__ import annotations
 from importlib import import_module
 from types import ModuleType
 
@@ -104,7 +103,7 @@ def combine_probes(probes: list[Probe], connect_shape: bool = True) -> Probe:
     return multi_shank
 
 
-def generate_unique_ids(min: int, max: int, n: int, trials: int = 20) -> np.array:
+def generate_unique_ids(min: int, max: int, n: int, trials: int = 20) -> np.ndarray:
     """
     Create n unique identifiers.
     Creates `n` unique integer identifiers between `min` and `max` within a

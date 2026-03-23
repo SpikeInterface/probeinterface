@@ -271,10 +271,16 @@ def test_multiple_signal_chains():
     assert "adc_sample_order" in probe.contact_annotations
 
 
-def test_quadbase():
-    # This dataset has a Neuropixels Quad Base (4 NP2 probes on different shanks)
+def test_quadbase_no_custom_name():
+    # Neuropixels Quad Base (4 NP2 probes on different shanks) and the settings don't have custom names,
+    # so the probe name is correctly inferred from the stream names
+    shank_pitch = 250
+    quadbase_probe_name = "ProbeC"
     for i in range(4):
-        probe = read_openephys(data_path / "OE_Neuropix-PXI-QuadBase" / "settings.xml", probe_name=f"ProbeC-{i+1}")
+        shank_offset = i * shank_pitch
+        probe = read_openephys(
+            data_path / "OE_Neuropix-PXI-QuadBase" / "settings.xml", probe_name=f"{quadbase_probe_name}-{i+1}"
+        )
         probe_dict = probe.to_dict(array_as_list=True)
         validate_probe_dict(probe_dict)
         assert probe.get_shank_count() == 1
@@ -283,13 +289,44 @@ def test_quadbase():
         assert "adc_group" in probe.contact_annotations
         assert "adc_sample_order" in probe.contact_annotations
 
+        assert all(
+            (shank_offset <= probe.contact_positions[:, 0]) & (probe.contact_positions[:, 0] < shank_offset + 50)
+        )
+
+
+def test_quadbase_custom_name():
+    # Neuropixels Quad Base (4 NP2 probes on different shanks) and the settings have custom names,
+    # so the "shank" field is appended to the custom name to match the stream names.
+    shank_pitch = 250
+    quadbase_custom_names = ["50213", "46811"]
+    for probe_name in quadbase_custom_names:
+        for i in range(4):
+            shank_offset = i * shank_pitch
+            probe = read_openephys(
+                data_path / "OE_Neuropix-PXI-QuadBase" / "settings_custom_names.xml", probe_name=f"{probe_name}-{i+1}"
+            )
+            probe_dict = probe.to_dict(array_as_list=True)
+            validate_probe_dict(probe_dict)
+            assert probe.get_shank_count() == 1
+            assert probe.get_contact_count() == 384
+            assert set(probe.shank_ids) == set([str(i)])
+            assert "adc_group" in probe.contact_annotations
+            assert "adc_sample_order" in probe.contact_annotations
+
+            assert all(
+                (shank_offset <= probe.contact_positions[:, 0]) & (probe.contact_positions[:, 0] < shank_offset + 50)
+            )
+
 
 def test_quadbase_custom_names():
-    # This dataset has a Neuropixels Quad Base (4 NP2 probes on different shanks)
+    # Neuropixels Quad Base (4 NP2 probes on different shanks) with custom names, but they
+    # already contain the shank id in their name
     sn = "23207205101"
+    shank_pitch = 250
     for i in range(4):
+        shank_offset = i * shank_pitch
         probe = read_openephys(
-            data_path / "OE_Neuropix-PXI-QuadBase" / "settings_custom_names.xml", probe_name=f"{sn}-{i+1}"
+            data_path / "OE_Neuropix-PXI-QuadBase" / "settings_custom_names_w_shank.xml", probe_name=f"{sn}-{i+1}"
         )
         probe_dict = probe.to_dict(array_as_list=True)
         validate_probe_dict(probe_dict)
@@ -299,6 +336,10 @@ def test_quadbase_custom_names():
         assert probe.name == f"{sn}-{i+1}"
         assert "adc_group" in probe.contact_annotations
         assert "adc_sample_order" in probe.contact_annotations
+
+        assert all(
+            (shank_offset <= probe.contact_positions[:, 0]) & (probe.contact_positions[:, 0] < shank_offset + 50)
+        )
 
 
 def test_onebox():

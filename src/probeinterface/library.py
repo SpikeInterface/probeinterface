@@ -9,15 +9,14 @@ The gin platform enables contributions from users.
 
 """
 
-from __future__ import annotations
 import os
 import warnings
 from pathlib import Path
 from urllib.request import urlopen
 import requests
-from typing import Optional
 
 from .io import read_probeinterface
+from .probe import Probe
 
 # OLD URL on gin
 # public_url = "https://web.gin.g-node.org/spikeinterface/probeinterface_library/raw/master/"
@@ -37,7 +36,7 @@ def get_cache_folder() -> Path:
     return Path(os.path.expanduser("~")) / ".config" / "probeinterface" / "library"
 
 
-def download_probeinterface_file(manufacturer: str, probe_name: str, tag: Optional[str] = None) -> None:
+def download_probeinterface_file(manufacturer: str, probe_name: str, tag: str | None = None) -> None:
     """Download the probeinterface file to the cache directory.
     Note that the file is itself a ProbeGroup but on the repo each file
     represents one probe.
@@ -65,7 +64,7 @@ def download_probeinterface_file(manufacturer: str, probe_name: str, tag: Option
         f.write(rem.read())
 
 
-def get_from_cache(manufacturer: str, probe_name: str, tag: Optional[str] = None) -> Optional["Probe"]:
+def get_from_cache(manufacturer: str, probe_name: str, tag: str | None = None) -> Probe | None:
     """
     Get Probe from local cache
 
@@ -105,8 +104,8 @@ def get_from_cache(manufacturer: str, probe_name: str, tag: Optional[str] = None
 def get_probe(
     manufacturer: str,
     probe_name: str,
-    name: Optional[str] = None,
-    tag: Optional[str] = None,
+    name: str | None = None,
+    tag: str | None = None,
     force_download: bool = False,
 ) -> "Probe":
     """
