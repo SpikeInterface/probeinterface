@@ -5,6 +5,7 @@ import pytest
 
 import numpy as np
 
+
 @pytest.fixture
 def probegroup():
     """Fixture: a ProbeGroup with 3 probes, each with device channel indices set."""
@@ -18,6 +19,7 @@ def probegroup():
         probegroup.add_probe(probe)
         nchan += n
     return probegroup
+
 
 def test_probegroup(probegroup):
     indices = probegroup.get_global_device_channel_indices()
@@ -105,6 +107,7 @@ def test_set_contact_ids_rejects_wrong_size():
     with pytest.raises(ValueError, match="do not have the same size"):
         probe.set_contact_ids(["a", "b", "c"])
 
+
 # ── get_global_contact_positions() tests ────────────────────────────────────
 
 
@@ -124,7 +127,9 @@ def test_get_global_contact_positions_matches_per_probe(probegroup):
 
 def test_get_global_contact_positions_single_probe(probegroup):
     pos = probegroup.get_global_contact_positions()
-    np.testing.assert_array_equal(pos[: probegroup.probes[0].get_contact_count()], probegroup.probes[0].contact_positions)
+    np.testing.assert_array_equal(
+        pos[: probegroup.probes[0].get_contact_count()], probegroup.probes[0].contact_positions
+    )
 
 
 def test_get_global_contact_positions_3d():
@@ -147,6 +152,7 @@ def test_get_global_contact_positions_reflects_move():
     pg.add_probe(probe)
     pos = pg.get_global_contact_positions()
     np.testing.assert_array_equal(pos, original_pos + np.array([50, 60]))
+
 
 # ── copy() tests ────────────────────────────────────────────────────────────
 
