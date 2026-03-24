@@ -50,6 +50,22 @@ class ProbeGroup:
     def ndim(self):
         return self.probes[0].ndim
 
+    def copy(self) -> "ProbeGroup":
+        """
+        Create a copy of the ProbeGroup
+
+        Returns
+        -------
+        copy: ProbeGroup
+            A copy of the ProbeGroup
+        """
+        copy = ProbeGroup()
+        for probe in self.probes:
+            copy.add_probe(probe.copy())
+        global_device_channel_indices = self.get_global_device_channel_indices()["device_channel_indices"]
+        copy.set_global_device_channel_indices(global_device_channel_indices)
+        return copy
+
     def get_contact_count(self) -> int:
         """
         Total number of channels.
@@ -248,6 +264,79 @@ class ProbeGroup:
         """
         contact_ids = self.to_numpy(complete=True)["contact_ids"]
         return contact_ids
+
+    def get_global_contact_positions(self) -> np.ndarray:
+        """
+        Gets all contact positions concatenated across probes
+
+        Returns
+        -------
+        contact_positions: np.ndarray
+            An array of the contact positions across all probes
+        """
+        contact_positions = np.vstack([probe.contact_positions for probe in self.probes])
+        return contact_positions
+
+    def get_slice(self, selection: np.ndarray[bool | int]):
+        """
+        Get a copy of the ProbeGroup with a sub selection of contacts.
+
+        Selection can be boolean or by index
+
+        Parameters
+        ----------
+        selection : np.array of bool or int (for index)
+            Either an np.array of bool or for desired selection of contacts
+            or the indices of the desired contacts
+
+        Returns
+        -------
+        sliced_probe_group: ProbeGroup
+            The sliced probe group
+
+        """
+
+        n = self.get_contact_count()
+
+        selection = np.asarray(selection)
+        if selection.dtype == "bool":
+            assert selection.shape == (n,), (
+                f"if array of bool given it must be the same size " "as the number of contacts {selection.shape} != {n}"
+            )
+            selection_indices, = np.nonzero(selection)
+        elif selection.dtype.kind == "i":
+            assert np.unique(selection).size == selection.size
+            if len(selection) > 0:
+                assert 0 <= np.min(selection) < n, f"An index within your selection is out of bounds {np.min(selection)}"
+                assert 0 <= np.max(selection) < n, f"An index within your selection is out of bounds {np.max(selection)}"
+                selection_indices = selection
+            else:
+                selection_indices = []
+        else:
+            raise TypeError(f"selection must be bool array or int array, not of type: {type(selection)}")
+
+        if len(selection_indices) == 0:
+            return ProbeGroup()
+
+        # Map selection to indices of individual probes
+        d = self.to_dict(array_as_list=False)
+        ind = 0
+        sliced_probes = []
+        for probe in self.probes:
+            n = probe.get_contact_count()
+            probe_limits = (ind, ind + n)
+            ind += n
+
+            probe_selection_indices = selection_indices[(selection_indices >= probe_limits[0]) & (selection_indices < probe_limits[1])]
+            if len(probe_selection_indices) == 0:
+                continue
+            sliced_probe = probe.get_slice(probe_selection_indices - probe_limits[0])
+            sliced_probes.append(sliced_probe)
+
+        sliced_probe_group = ProbeGroup()
+        sliced_probe_group.probes = sliced_probes
+
+        return sliced_probe_group
 
     def check_global_device_wiring_and_ids(self):
         # check unique device_channel_indices for !=-1
