@@ -303,12 +303,16 @@ class ProbeGroup:
             assert selection.shape == (n,), (
                 f"if array of bool given it must be the same size " "as the number of contacts {selection.shape} != {n}"
             )
-            selection_indices, = np.nonzero(selection)
+            (selection_indices,) = np.nonzero(selection)
         elif selection.dtype.kind == "i":
             assert np.unique(selection).size == selection.size
             if len(selection) > 0:
-                assert 0 <= np.min(selection) < n, f"An index within your selection is out of bounds {np.min(selection)}"
-                assert 0 <= np.max(selection) < n, f"An index within your selection is out of bounds {np.max(selection)}"
+                assert (
+                    0 <= np.min(selection) < n
+                ), f"An index within your selection is out of bounds {np.min(selection)}"
+                assert (
+                    0 <= np.max(selection) < n
+                ), f"An index within your selection is out of bounds {np.max(selection)}"
                 selection_indices = selection
             else:
                 selection_indices = []
@@ -327,7 +331,9 @@ class ProbeGroup:
             probe_limits = (ind, ind + n)
             ind += n
 
-            probe_selection_indices = selection_indices[(selection_indices >= probe_limits[0]) & (selection_indices < probe_limits[1])]
+            probe_selection_indices = selection_indices[
+                (selection_indices >= probe_limits[0]) & (selection_indices < probe_limits[1])
+            ]
             if len(probe_selection_indices) == 0:
                 continue
             sliced_probe = probe.get_slice(probe_selection_indices - probe_limits[0])
