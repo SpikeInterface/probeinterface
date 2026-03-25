@@ -23,7 +23,7 @@ def test_neuropixels_1_reader():
     for probe in probe_group.probes:
         probe_dict = probe.to_dict(array_as_list=True)
         validate_probe_dict(probe_dict)
-        assert "1.0" in probe.model_name
+        assert probe.model_name == ""
         assert probe.get_shank_count() == 1
         assert probe.get_contact_count() == 384
     assert probe_group.get_contact_count() == 768
