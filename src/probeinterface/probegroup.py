@@ -300,9 +300,9 @@ class ProbeGroup:
 
         selection = np.asarray(selection)
         if selection.dtype == "bool":
-            assert selection.shape == (n,), (
-                f"if array of bool given it must be the same size as the number of contacts {selection.shape} != {n}"
-            )
+            assert selection.shape == (
+                n,
+            ), f"if array of bool given it must be the same size as the number of contacts {selection.shape} != {n}"
             (selection_indices,) = np.nonzero(selection)
         elif selection.dtype.kind == "i":
             assert np.unique(selection).size == selection.size
