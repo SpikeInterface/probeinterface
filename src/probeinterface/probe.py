@@ -99,6 +99,9 @@ class Probe:
         # vertices for the shape of the probe
         self.probe_planar_contour = None
 
+        # the Probe can belong to a ProbeGroup
+        self._probe_group = None
+
         # This handles the shank id per contact
         # If None then one shank only
         self._shank_ids = None
@@ -128,9 +131,6 @@ class Probe:
 
         # same idea but handle in vector way for contacts
         self.contact_annotations = dict()
-
-        # the Probe can belong to a ProbeGroup
-        self._probe_group = None
 
     @property
     def contact_positions(self):
@@ -260,6 +260,11 @@ class Probe:
         ----------
         **kwargs : list of keyword arguments to add to the annotations (e.g., brain_area="CA1")
         """
+        if self._probe_group is not None:
+            raise ValueError(
+                "You cannot annotate a probe that belongs to a ProbeGroup. "
+                "Annotate the probe before adding it to the ProbeGroup or use the `ProbeGroup.annotate_probe` method."
+            )
         self.annotations.update(kwargs)
         self.check_annotations()
 
@@ -271,6 +276,11 @@ class Probe:
         ----------
         **kwargs : list of keyword arguments to add to the annotations (e.g., quality=["good", "bad", ...])
         """
+        if self._probe_group is not None:
+            raise ValueError(
+                "You cannot annotate contacts of a probe that belongs to a ProbeGroup. "
+                "Annotate the probe before adding it to the ProbeGroup instead."
+            )
         n = self.get_contact_count()
         for k, values in kwargs.items():
             assert len(values) == n, (
@@ -977,7 +987,7 @@ class Probe:
 
         return probe
 
-    def to_numpy(self, complete: bool = False) -> np.ndarray:
+    def to_numpy(self, complete: bool = False, probe_index: int | None = None) -> np.ndarray:
         """
         Export the probe to a numpy structured array.
         This array handles all contact attributes.
@@ -1035,7 +1045,10 @@ class Probe:
         """
 
         # First define the dtype
-        dtype = [("x", "float64"), ("y", "float64")]
+        dtype = []
+        if probe_index is not None:
+            dtype = [("probe_index", "int64")]
+        dtype += [("x", "float64"), ("y", "float64")]
         if self.ndim == 3:
             dtype += [("z", "float64")]
 
@@ -1070,6 +1083,8 @@ class Probe:
 
         # Then add the data to the structured array
         arr = np.zeros(self.get_contact_count(), dtype=dtype)
+        if probe_index is not None:
+            arr["probe_index"] = probe_index
         arr["x"] = self.contact_positions[:, 0]
         arr["y"] = self.contact_positions[:, 1]
         if self.ndim == 3:
