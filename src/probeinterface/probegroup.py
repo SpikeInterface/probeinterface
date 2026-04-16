@@ -97,9 +97,11 @@ class ProbeGroup:
             if existing_dtype != probe_dtype:
                 fields_to_add = [f for f in probe_dtype.fields if f not in existing_dtype.fields]
                 new_dtype = probe_dtype
-                    
+
                 # Create a new dtype that is the union of the existing and new dtypes
-                new_fields = list(existing_dtype.descr) + [f for f in probe_dtype.descr if f[0] not in existing_dtype.fields]
+                new_fields = list(existing_dtype.descr) + [
+                    f for f in probe_dtype.descr if f[0] not in existing_dtype.fields
+                ]
                 new_dtype = np.dtype(new_fields)
                 # Create a new array with the new dtype and copy existing data
                 new_contact_array = np.zeros(self._contact_array.shape, dtype=new_dtype)
@@ -185,11 +187,12 @@ class ProbeGroup:
                     if f not in all_probe_fields:
                         all_probe_fields.append(f)
             probe_fields = all_probe_fields
-            
+
             fields_to_remove = [f for f in self._contact_array.dtype.names if f not in probe_fields]
             dtype = [
-                (name, self._contact_array.dtype.fields[name][0]) 
-                for name in self._contact_array.dtype.names if name not in fields_to_remove
+                (name, self._contact_array.dtype.fields[name][0])
+                for name in self._contact_array.dtype.names
+                if name not in fields_to_remove
             ]
             arr = np.zeros(self._contact_array.shape, dtype=dtype)
             for name in arr.dtype.names:
@@ -397,7 +400,9 @@ class ProbeGroup:
         new_probe_contours = []
         new_annotations = []
         for new_probe_index, old_probe_index in enumerate(probe_indices):
-            sliced_contact_array["probe_index"][sliced_contact_array["probe_index"] == old_probe_index] = new_probe_index
+            sliced_contact_array["probe_index"][
+                sliced_contact_array["probe_index"] == old_probe_index
+            ] = new_probe_index
             new_probe_contours.append(self._probe_contours[old_probe_index])
             new_annotations.append(self._annotations[old_probe_index])
 
@@ -408,12 +413,12 @@ class ProbeGroup:
         sliced_probe_group._annotations = new_annotations
         return sliced_probe_group
 
-    def check_global_device_wiring_and_ids(self, new_device_channel_indices : np.ndarray | None = None) -> None:
+    def check_global_device_wiring_and_ids(self, new_device_channel_indices: np.ndarray | None = None) -> None:
         # check unique device_channel_indices for !=-1
         chans = self.get_global_device_channel_indices()["device_channel_indices"]
         if new_device_channel_indices is not None:
             chans = np.concatenate([chans, new_device_channel_indices])
-            
+
         keep = chans >= 0
         valid_chans = chans[keep]
 

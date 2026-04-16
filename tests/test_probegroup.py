@@ -244,6 +244,7 @@ def test_get_slice_all_contacts(probegroup):
         probegroup.get_global_contact_positions(),
     )
 
+
 def test_reset_of_probe_indexing(probegroup):
     """Test that after slicing, the probe indexing is reset to 0..N-1."""
     indices = np.arange(probegroup.probes[0].get_contact_count() + 2)  # some contacts from probe 0 and 1
