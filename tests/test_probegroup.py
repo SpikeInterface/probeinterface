@@ -116,6 +116,97 @@ def test_set_contact_ids_rejects_wrong_size():
         probe.set_contact_ids(["a", "b", "c"])
 
 
+def test_contact_vector_orders_connected_contacts():
+    from probeinterface import Probe
+
+    probe0 = Probe(ndim=2, si_units="um")
+    probe0.set_contacts(
+        positions=np.array([[10.0, 0.0], [30.0, 0.0]]),
+        shapes="circle",
+        shape_params={"radius": 5},
+        shank_ids=["s0", "s1"],
+        contact_sides=["front", "back"],
+    )
+    probe0.set_device_channel_indices([2, -1])
+
+    probe1 = Probe(ndim=2, si_units="um")
+    probe1.set_contacts(
+        positions=np.array([[0.0, 0.0], [20.0, 0.0]]),
+        shapes="circle",
+        shape_params={"radius": 5},
+        shank_ids=["s0", "s0"],
+        contact_sides=["front", "front"],
+    )
+    probe1.set_device_channel_indices([0, 1])
+
+    probegroup = ProbeGroup()
+    probegroup.add_probe(probe0)
+    probegroup.add_probe(probe1)
+
+    probegroup._build_contact_vector()
+    arr = probegroup.contact_vector
+
+    assert arr.dtype.names == ("probe_index", "x", "y", "shank_ids", "contact_sides")
+    assert arr.size == 3
+    assert arr.flags.writeable is False
+    assert np.array_equal(arr["probe_index"], np.array([1, 1, 0]))
+    assert np.array_equal(arr["x"], np.array([0.0, 20.0, 10.0]))
+    assert np.array_equal(np.column_stack((arr["x"], arr["y"])), np.array([[0.0, 0.0], [20.0, 0.0], [10.0, 0.0]]))
+
+
+def test_contact_vector_cache_refresh_is_explicit():
+    probegroup = ProbeGroup()
+    probe = generate_dummy_probe()
+    probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
+    probegroup.add_probe(probe)
+
+    probegroup._build_contact_vector()
+    dense_before = probegroup.contact_vector
+    dense_before_again = probegroup.contact_vector
+    assert dense_before is dense_before_again
+
+    original_positions = np.column_stack((dense_before["x"], dense_before["y"])).copy()
+    probe.move([5.0, 0.0])
+
+    dense_after_move = probegroup.contact_vector
+    assert dense_after_move is dense_before
+    assert np.array_equal(np.column_stack((dense_after_move["x"], dense_after_move["y"])), original_positions)
+
+    probegroup._build_contact_vector()
+    dense_after_refresh = probegroup.contact_vector
+    assert dense_after_refresh is not dense_before
+    assert np.array_equal(
+        np.column_stack((dense_after_refresh["x"], dense_after_refresh["y"])),
+        original_positions + np.array([5.0, 0.0]),
+    )
+
+    probe.set_shank_ids(np.array(["a"] * probe.get_contact_count()))
+    probegroup._build_contact_vector()
+    dense_with_shanks = probegroup.contact_vector
+    assert "shank_ids" in dense_with_shanks.dtype.names
+
+
+def test_contact_vector_requires_wired_contacts():
+    probegroup = ProbeGroup()
+    probe = generate_dummy_probe()
+    probegroup.add_probe(probe)
+
+    with pytest.raises(ValueError, match="requires at least one wired contact"):
+        probegroup._build_contact_vector()
+
+
+def test_contact_vector_supports_3d_positions():
+    probegroup = ProbeGroup()
+    probe = generate_dummy_probe().to_3d()
+    probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
+    probegroup.add_probe(probe)
+
+    probegroup._build_contact_vector()
+    dense = probegroup.contact_vector
+    assert dense.dtype.names[:4] == ("probe_index", "x", "y", "z")
+    assert np.column_stack((dense["x"], dense["y"], dense["z"])).shape[1] == 3
+
+
 if __name__ == "__main__":
     test_probegroup()
     # ~ test_probegroup_3d()
