@@ -13,13 +13,30 @@ class ProbeGroup:
 
     def __init__(self):
         self.probes = []
-        self._contact_vector = None
+        self._contact_vector_cache = None
 
     @property
-    def contact_vector(self):
-        if self._contact_vector is None:
+    def _contact_vector(self):
+        """
+        Channel-ordered dense view of the probegroup, built lazily on first access.
+
+        Private by convention: this handle is intended for integration with SpikeInterface
+        that needs a channel-ordered view for recording-facing queries. 
+        
+        Fields and dtype may evolve with consumer requirements, so user code should not depend on it directly. For stable probegroup state, use
+        the public `get_global_*` methods.
+
+        The cache is invalidated on probegroup-level mutations (`add_probe`,
+        `set_global_device_channel_indices`, `auto_generate_*`). Probe-level mutations
+        (for example `probe.move`, `probe.set_contact_ids`, direct writes to
+        `probe._contact_positions`) do NOT invalidate the cache by design: keeping
+        `ProbeGroup` unaware of `Probe` mutations avoids container/contained coupling.
+        Consumers that mutate a probe after attaching its probegroup must call
+        `_build_contact_vector()` explicitly to refresh.
+        """
+        if self._contact_vector_cache is None:
             self._build_contact_vector()
-        return self._contact_vector
+        return self._contact_vector_cache
 
     def add_probe(self, probe: Probe):
         """
@@ -36,7 +53,7 @@ class ProbeGroup:
 
         self.probes.append(probe)
         probe._probe_group = self
-        self._contact_vector = None
+        self._contact_vector_cache = None
 
     def _check_compatible(self, probe: Probe):
         if probe._probe_group is not None:
@@ -119,7 +136,7 @@ class ProbeGroup:
         order = np.argsort(channel_indices, kind="stable")
         contact_vector = contact_vector[order]
         contact_vector.setflags(write=False)
-        self._contact_vector = contact_vector
+        self._contact_vector_cache = contact_vector
 
     def to_numpy(self, complete: bool = False) -> np.ndarray:
         """
@@ -297,7 +314,7 @@ class ProbeGroup:
             ind += n
 
         # invalidate the cache since channel ordering changed
-        self._contact_vector = None
+        self._contact_vector_cache = None
 
     def get_global_contact_ids(self) -> np.ndarray:
         """
@@ -343,7 +360,7 @@ class ProbeGroup:
         probe_ids = generate_unique_ids(*args, **kwargs).astype(str)
         for pid, probe in enumerate(self.probes):
             probe.annotate(probe_id=probe_ids[pid])
-        self._contact_vector = None
+        self._contact_vector_cache = None
 
     def auto_generate_contact_ids(self, *args, **kwargs):
         """
@@ -366,4 +383,4 @@ class ProbeGroup:
         for probe in self.probes:
             el_ids, contact_ids = np.split(contact_ids, [probe.get_contact_count()])
             probe.set_contact_ids(el_ids)
-        self._contact_vector = None
+        self._contact_vector_cache = None

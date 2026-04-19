@@ -144,7 +144,7 @@ def test_contact_vector_orders_connected_contacts():
     probegroup.add_probe(probe1)
 
     probegroup._build_contact_vector()
-    arr = probegroup.contact_vector
+    arr = probegroup._contact_vector
 
     assert arr.dtype.names == ("probe_index", "x", "y", "shank_ids", "contact_sides")
     assert arr.size == 3
@@ -161,19 +161,19 @@ def test_contact_vector_cache_refresh_is_explicit():
     probegroup.add_probe(probe)
 
     probegroup._build_contact_vector()
-    dense_before = probegroup.contact_vector
-    dense_before_again = probegroup.contact_vector
+    dense_before = probegroup._contact_vector
+    dense_before_again = probegroup._contact_vector
     assert dense_before is dense_before_again
 
     original_positions = np.column_stack((dense_before["x"], dense_before["y"])).copy()
     probe.move([5.0, 0.0])
 
-    dense_after_move = probegroup.contact_vector
+    dense_after_move = probegroup._contact_vector
     assert dense_after_move is dense_before
     assert np.array_equal(np.column_stack((dense_after_move["x"], dense_after_move["y"])), original_positions)
 
     probegroup._build_contact_vector()
-    dense_after_refresh = probegroup.contact_vector
+    dense_after_refresh = probegroup._contact_vector
     assert dense_after_refresh is not dense_before
     assert np.array_equal(
         np.column_stack((dense_after_refresh["x"], dense_after_refresh["y"])),
@@ -182,7 +182,7 @@ def test_contact_vector_cache_refresh_is_explicit():
 
     probe.set_shank_ids(np.array(["a"] * probe.get_contact_count()))
     probegroup._build_contact_vector()
-    dense_with_shanks = probegroup.contact_vector
+    dense_with_shanks = probegroup._contact_vector
     assert "shank_ids" in dense_with_shanks.dtype.names
 
 
@@ -202,7 +202,7 @@ def test_contact_vector_supports_3d_positions():
     probegroup.add_probe(probe)
 
     probegroup._build_contact_vector()
-    dense = probegroup.contact_vector
+    dense = probegroup._contact_vector
     assert dense.dtype.names[:4] == ("probe_index", "x", "y", "z")
     assert np.column_stack((dense["x"], dense["y"], dense["z"])).shape[1] == 3
 
