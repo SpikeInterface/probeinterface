@@ -20,15 +20,35 @@ class ProbeGroup:
         """
         Channel-ordered dense view of the probegroup, built lazily on first access.
 
-        Private by convention: this handle is intended for integration with SpikeInterface
-        that needs a channel-ordered view for recording-facing queries. 
-        
-        Fields and dtype may evolve with consumer requirements, so user code should not depend on it directly. For stable probegroup state, use
-        the public `get_global_*` methods.
+        Private by convention: this handle is intended for integration with SpikeInterface,
+        which needs a channel-ordered view for recording-facing queries. Fields and dtype
+        may evolve with consumer requirements, so user code should not depend on it directly.
+        For stable probegroup state, use the public `get_global_*` methods.
 
-        The cache is invalidated on probegroup-level mutations (`add_probe`,
-        `set_global_device_channel_indices`, `auto_generate_*`). Probe-level mutations
-        (for example `probe.move`, `probe.set_contact_ids`, direct writes to
+        Invariants
+        ----------
+        - Ordering: rows are sorted ascending by `device_channel_indices` using a stable
+          sort. Ties preserve per-probe insertion order.
+        - Row count: one row per *connected* contact (`device_channel_indices >= 0`).
+          `len(self._contact_vector)` is generally smaller than `self.get_contact_count()`
+          when the probegroup has unwired contacts. This matches SpikeInterface's
+          pre-migration `contact_vector` convention.
+        - Dtype: includes `probe_index`, `x`, `y`, and `z` if `ndim == 3`. Optional fields
+          `shank_ids` and `contact_sides` appear only when at least one probe in the group
+          defines them. Consumers must guard field access accordingly.
+        - Raises `ValueError` on empty probegroups and on probegroups with no wired
+          contacts. Callers that may hold unwired probegroups should check wiring before
+          reading this attribute.
+        - The returned array is marked read-only (`setflags(write=False)`). The cache
+          object may be replaced on invalidation, so a stored reference is not guaranteed
+          to survive probegroup mutations.
+
+        Cache invalidation
+        ------------------
+        The cache is cleared on probegroup-level mutations (`add_probe`,
+        `set_global_device_channel_indices`, `auto_generate_probe_ids`,
+        `auto_generate_contact_ids`) and rebuilt on next access. Probe-level mutations
+        (for example `probe.move`, `probe.set_contact_ids`, or direct writes to
         `probe._contact_positions`) do NOT invalidate the cache by design: keeping
         `ProbeGroup` unaware of `Probe` mutations avoids container/contained coupling.
         Consumers that mutate a probe after attaching its probegroup must call
@@ -88,6 +108,15 @@ class ProbeGroup:
         return n
 
     def _build_contact_vector(self) -> None:
+        """
+        Build the channel-ordered `_contact_vector` cache.
+
+        The cache has one row per *connected* contact (`device_channel_indices >= 0`),
+        sorted ascending by `device_channel_indices`. `self._contact_vector.size` may
+        therefore be smaller than `self.get_contact_count()` when the probegroup has
+        unwired contacts; that is the intended semantics, matching SpikeInterface's
+        pre-migration `contact_vector` convention.
+        """
         if len(self.probes) == 0:
             raise ValueError("Cannot build a contact_vector for an empty ProbeGroup")
 
