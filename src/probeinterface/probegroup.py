@@ -17,6 +17,8 @@ class ProbeGroup:
 
     @property
     def contact_vector(self):
+        if self._contact_vector is None:
+            self._build_contact_vector()
         return self._contact_vector
 
     def add_probe(self, probe: Probe):
@@ -293,6 +295,9 @@ class ProbeGroup:
             n = probe.get_contact_count()
             probe.set_device_channel_indices(channels[ind : ind + n])
             ind += n
+
+        # invalidate the cache since channel ordering changed
+        self._contact_vector = None
 
     def get_global_contact_ids(self) -> np.ndarray:
         """
