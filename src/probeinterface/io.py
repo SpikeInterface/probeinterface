@@ -733,10 +733,29 @@ def write_csv(file, probe):
     raise NotImplementedError
 
 
+_SPIKEGADGETS_NEUROPIXELS_FORMATS = {
+    # SpikeConfiguration.device -> (HardwareConfiguration device name, hardcoded part number, multi-probe x-shift um)
+    #
+    # The SpikeGadgets .rec XML does not include a probe part number. For each
+    # family (NP1 and NP2 4-shank) the listed catalogue variants share identical
+    # 2D geometry in the probeinterface catalogue (contact positions, pitch,
+    # stagger, shank spacing, shank width), differing only in metadata that
+    # probeinterface does not consume (ADC resolution, databus phase, gain,
+    # on-shank reference, shank thickness). So hardcoding one representative
+    # part number produces correct geometry. `model_name` and `description` are
+    # cleared on the sliced probe to avoid claiming a specific variant.
+    #
+    # NP1 family: NP1000, NP1001, PRB_1_2_0480_2, PRB_1_4_0480_1, PRB_1_4_0480_1_C.
+    # NP2 4-shank family: NP2010, NP2013, NP2014, NP2020, NP2021.
+    "neuropixels1": ("NeuroPixels1", "NP1000", 250.0),
+    "neuropixels2": ("NeuroPixels2", "NP2014", 1000.0),
+}
+
+
 def read_spikegadgets(file: str | Path, raise_error: bool = True) -> ProbeGroup:
     """
     Find active channels of the given Neuropixels probe from a SpikeGadgets .rec file.
-    SpikeGadgets headstages support up to three Neuropixels 1.0 probes (as of March 28, 2024),
+    SpikeGadgets headstages support up to three Neuropixels probes (1.0 or 2.0),
     and information for all probes will be returned in a ProbeGroup object.
 
 
@@ -750,63 +769,34 @@ def read_spikegadgets(file: str | Path, raise_error: bool = True) -> ProbeGroup:
     probe_group : ProbeGroup object
 
     """
-    # Read the header and get Configuration elements
     header_txt = parse_spikegadgets_header(file)
     root = ElementTree.fromstring(header_txt)
     hconf = root.find("HardwareConfiguration")
     sconf = root.find("SpikeConfiguration")
 
-    # Get number of probes present (each has its own Device element)
-    probe_configs = [device for device in hconf if device.attrib["name"] == "NeuroPixels1"]
+    # SpikeConfiguration.device selects the Neuropixels family. Default to NP1
+    # when absent to preserve behavior for older files that predate the attribute.
+    sconf_device = (sconf.attrib.get("device", "") if sconf is not None else "").lower()
+    if sconf_device not in _SPIKEGADGETS_NEUROPIXELS_FORMATS:
+        sconf_device = "neuropixels1"
+    hc_device_name, part_number, multi_probe_x_shift_um = _SPIKEGADGETS_NEUROPIXELS_FORMATS[sconf_device]
+
+    probe_configs = [d for d in hconf if d.attrib.get("name") == hc_device_name]
     n_probes = len(probe_configs)
 
     if n_probes == 0:
         if raise_error:
-            raise Exception("No Neuropixels 1.0 probes found")
+            raise Exception(f"No {hc_device_name} devices found in SpikeGadgets .rec header")
         return None
 
     probe_group = ProbeGroup()
 
     for curr_probe in range(1, n_probes + 1):
-        probe_config = probe_configs[curr_probe - 1]
-
-        # Get active electrode indices from the channelsOn bitmask (960 elements, 0-indexed)
-        active_channel_str = [option for option in probe_config if option.attrib["name"] == "channelsOn"][0].attrib[
-            "data"
-        ]
-        channels_on = np.array([int(ch) for ch in active_channel_str.split(" ") if ch])
-        active_indices = np.nonzero(channels_on)[0]
-
-        # Build full catalogue probe and slice to active electrodes.
-        #
-        # The SpikeGadgets XML format does not include the probe part number, so we
-        # hardcode "NP1000" (standard Neuropixels 1.0). This is safe because the
-        # Bennu manual (Rev3, 2025) explicitly states support for "Neuropixels 1.0
-        # probes (every version except NHP) OR Neuropixels 2.0". The supported
-        # NP 1.0 variants (NP1000, NP1001, PRB_1_2_0480_2, PRB_1_4_0480_1,
-        # PRB_1_4_0480_1_C) share identical 2D geometry in the catalogue: same
-        # contact positions, pitch, stagger, shank width, tip length, shank length,
-        # contour, electrode count, and ADC/MUX tables. The only fields that differ
-        # are metadata (description, datasheet, is_commercial) and shank_thickness_um
-        # (Z-axis), none of which probeinterface uses.
-        #
-        # NP 2.0 support: the Bennu uses a different cone and firmware for 2.0
-        # probes, and the workspace creation step distinguishes "Neuropixels 1.0"
-        # from "Neuropixels 2.0". When .rec files from NP 2.0 recordings become
-        # available, this reader will need to detect the probe type (likely from
-        # the device name in the XML) and call build_neuropixels_probe with the
-        # appropriate part number.
-        full_probe = build_neuropixels_probe("NP1000")
-        probe = full_probe.get_slice(active_indices)
-
-        # Clear part-number-specific metadata since we don't know the actual part number.
-        probe.model_name = ""
-        probe.description = ""
-
-        # Parse SpikeNTrode elements to build the device channel mapping.
-        # Each SpikeNTrode has an id like "1384" where the first digit is the probe number
-        # and the remaining digits are the 1-based electrode number. The catalogue uses
+        # SpikeNTrode elements are the authoritative list of recorded electrodes.
+        # Each id is "<probe_digit><1-based electrode number>"; the catalogue uses
         # 0-based electrode indices, so catalogue_index = electrode_number - 1.
+        # This holds for both NP1 (up to 960 electrodes) and NP2 4-shank (up to
+        # 5120 electrodes, shank-major in the catalogue: s0e0..s0e1279, s1e0..).
         electrode_to_hwchan = {}
         for ntrode in sconf:
             electrode_id = ntrode.attrib["id"]
@@ -815,11 +805,20 @@ def read_spikegadgets(file: str | Path, raise_error: bool = True) -> ProbeGroup:
                 hw_chan = int(ntrode[0].attrib["hwChan"])
                 electrode_to_hwchan[catalogue_index] = hw_chan
 
+        active_indices = np.array(sorted(electrode_to_hwchan.keys()))
+
+        full_probe = build_neuropixels_probe(part_number)
+        probe = full_probe.get_slice(active_indices)
+
+        # Clear part-number-specific metadata since we don't know the actual part number.
+        probe.model_name = ""
+        probe.description = ""
+
         device_channels = np.array([electrode_to_hwchan[idx] for idx in active_indices])
         probe.set_device_channel_indices(device_channels)
 
         # Shift multiple probes so they don't overlap when plotted
-        probe.move([250 * (curr_probe - 1), 0])
+        probe.move([multi_probe_x_shift_um * (curr_probe - 1), 0])
 
         probe_group.add_probe(probe)
 
