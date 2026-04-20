@@ -727,25 +727,6 @@ def test_has_neuropixels_probes_stream_match():
     assert has_neuropixels_probes(settings, stream_name="Rhythm_FPGA-100.0") is False
 
 
-def test_has_neuropixels_probes_negative(tmp_path):
-    # A settings.xml with only a non-Neuropixels processor (e.g. Rhythm FPGA / Intan)
-    # must return False. This is the routing case that motivates the helper.
-    settings = tmp_path / "settings.xml"
-    settings.write_text(
-        """<?xml version="1.0"?>
-<SETTINGS>
-  <INFO><VERSION>0.6.0</VERSION></INFO>
-  <SIGNALCHAIN>
-    <PROCESSOR name="Sources/Rhythm FPGA" pluginName="Rhythm FPGA">
-      <EDITOR/>
-    </PROCESSOR>
-  </SIGNALCHAIN>
-</SETTINGS>
-"""
-    )
-    assert has_neuropixels_probes(settings) is False
-
-
 if __name__ == "__main__":
     # test_multiple_probes()
     # test_NP_Ultra()

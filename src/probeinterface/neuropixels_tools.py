@@ -1601,50 +1601,65 @@ def read_openephys(*args, **kwargs) -> Probe:
     return read_openephys_neuropixels(*args, **kwargs)
 
 
+_NP_PROBE_ELEMENT_TAGS = frozenset(
+    {"NP_PROBE", "NEUROPIXELSV1E", "NEUROPIXELSV1F", "NEUROPIXELSV2E"}
+)
+
+
 def has_neuropixels_probes(settings_file: str | Path, stream_name: str | None = None) -> bool:
     """
-    Return True if the Open Ephys settings file contains parseable Neuropixels
-    probe geometry.
+    Return True if the Open Ephys settings file contains Neuropixels probe
+    geometry elements.
 
-    Detection is element-based: the function parses the settings file using the
-    same path as :func:`read_openephys_neuropixels` and returns True only when
-    at least one ``<NP_PROBE>`` (or ONIX equivalent ``<NEUROPIXELSV1E>`` /
-    ``<NEUROPIXELSV1F>`` / ``<NEUROPIXELSV2E>``) element is present under a
-    Neuropixels-capable processor. This is the ground-truth signal that the
-    reader will be able to build a probe from the file.
+    Detection is element-based: the function scans the settings XML for
+    ``<NP_PROBE>`` (Neuropix-PXI / OneBox) or the ONIX equivalents
+    ``<NEUROPIXELSV1E>`` / ``<NEUROPIXELSV1F>`` / ``<NEUROPIXELSV2E>``. The
+    presence of any of these is the ground-truth signal that Neuropixels
+    geometry is described in the file, independent of processor names. This
+    is robust to ONIX streams that can carry non-Neuropixels probes and to
+    new Neuropixels-capable plugins.
 
     Intended use: callers that route heterogeneous streams (e.g. Open Ephys
     recordings mixing Intan / NI-DAQmx / Neuropixels) can gate the call to
-    :func:`read_openephys_neuropixels` on this helper and skip probe attachment
-    for non-Neuropixels streams.
+    :func:`read_openephys_neuropixels` on this helper and skip probe
+    attachment for non-Neuropixels streams.
 
     Parameters
     ----------
     settings_file : str or Path
         Path to the Open Ephys settings.xml file.
     stream_name : str or None
-        If provided, only return True when a Neuropixels probe matching this
-        stream name is present. Matching mirrors the selection logic in
-        :func:`read_openephys_neuropixels`: a probe's name must appear as a
-        substring of ``stream_name`` (so ``"ProbeC"`` matches
+        If provided, only return True when a Neuropixels probe element lives
+        under a processor whose STREAM names match ``stream_name``. Matching
+        mirrors the selection logic in :func:`read_openephys_neuropixels`: a
+        probe's STREAM name (with ``-AP`` / ``-LFP`` stripped) must appear as
+        a substring of ``stream_name`` (so ``"ProbeC"`` matches
         ``"Neuropix-PXI-100.ProbeC-AP"``). If None, returns True whenever any
-        Neuropixels probe is present.
+        Neuropixels probe element is present.
 
     Returns
     -------
     bool
-        True if Neuropixels probe geometry is present (and matches
-        ``stream_name`` when given), False otherwise.
     """
+    ET = import_safely("xml.etree.ElementTree")
     try:
-        probes_info = _parse_openephys_settings(settings_file, raise_error=False)
+        root = ET.parse(str(settings_file)).getroot()
     except Exception:
         return False
-    if not probes_info:
-        return False
-    if stream_name is None:
-        return True
-    return any(info["name"] in stream_name for info in probes_info)
+
+    for processor in root.iter("PROCESSOR"):
+        if not any(e.tag in _NP_PROBE_ELEMENT_TAGS for e in processor.iter()):
+            continue
+        if stream_name is None:
+            return True
+        for stream_field in processor.findall("STREAM"):
+            name = stream_field.attrib.get("name", "")
+            if "ADC" in name:
+                continue
+            probe_name = name.replace("-AP", "").replace("-LFP", "")
+            if probe_name and probe_name in stream_name:
+                return True
+    return False
 
 
 def get_saved_channel_indices_from_openephys_settings(settings_file: str | Path, stream_name: str) -> np.ndarray | None:
