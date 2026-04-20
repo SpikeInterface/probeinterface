@@ -1601,9 +1601,7 @@ def read_openephys(*args, **kwargs) -> Probe:
     return read_openephys_neuropixels(*args, **kwargs)
 
 
-_NP_PROBE_ELEMENT_TAGS = frozenset(
-    {"NP_PROBE", "NEUROPIXELSV1E", "NEUROPIXELSV1F", "NEUROPIXELSV2E"}
-)
+_NP_PROBE_ELEMENT_TAGS = frozenset({"NP_PROBE", "NEUROPIXELSV1E", "NEUROPIXELSV1F", "NEUROPIXELSV2E"})
 
 
 def has_neuropixels_probes(settings_file: str | Path, stream_name: str | None = None) -> bool:
