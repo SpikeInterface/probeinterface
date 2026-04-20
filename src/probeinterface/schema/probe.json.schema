@@ -102,6 +102,10 @@
             "type": "array",
             "items": { "type": "string" }
           },
+          "contact_sides": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
           "device_channel_indices": {
             "type": "array",
             "items": { "type": "integer" }
