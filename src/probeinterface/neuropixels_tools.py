@@ -865,6 +865,7 @@ def read_spikeglx(file: str | Path) -> Probe:
     probe.annotate(part_number=imDatPrb_pn)
     probe.annotate(port=imDatPrb_port)
     probe.annotate(slot=imDatPrb_slot)
+    probe.annotate(probe_type=probe_part_number_to_probe_type.get(imDatPrb_pn))
 
     # ===== 8. Set device channel indices (wiring) =====
     probe.set_device_channel_indices(np.arange(probe.get_contact_count()))

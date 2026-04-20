@@ -46,6 +46,7 @@ def test_NP1():
     assert "1.0" in probe.description
     assert "adc_group" in probe.contact_annotations
     assert "adc_sample_order" in probe.contact_annotations
+    assert probe.annotations.get("probe_type") == "0"
 
 
 def test_NP_phase3A():
