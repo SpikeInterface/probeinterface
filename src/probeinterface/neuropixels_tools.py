@@ -997,6 +997,11 @@ def _parse_openephys_settings(
         - settings_channel_keys: np.array of str, or None
         - elec_ids, shank_ids: for legacy fallback
     """
+    if not has_neuropixels_probes(settings_file):
+        if raise_error:
+            raise Exception("No Neuropixels probe geometry found in settings file")
+        return None
+
     ET = import_safely("xml.etree.ElementTree")
     tree = ET.parse(str(settings_file))
     root = tree.getroot()
@@ -1034,11 +1039,6 @@ def _parse_openephys_settings(
         and record_node_position is not None
         and channel_map_position < record_node_position
     )
-
-    if neuropix_pxi_processor is None and onebox_processor is None and onix_processor is None:
-        if raise_error:
-            raise Exception("Open Ephys can only be read from Neuropix-PXI, OneBox or ONIX plugins.")
-        return None
 
     if neuropix_pxi_processor is not None:
         assert onebox_processor is None, "Only one processor should be present"
