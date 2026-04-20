@@ -504,7 +504,12 @@ def write_imro(file: str | Path, probe: Probe) -> None:
     probe : Probe object
 
     """
-    probe_type = probe.annotations["probe_type"]
+    model_name = probe.model_name
+    probe_features = _load_np_probe_features()
+    part_number_to_format_type = {v: k for k, v in probe_features["z_imro_format_type_to_part_number"].items()}
+    probe_type = part_number_to_format_type.get(model_name)
+    if probe_type is None:
+        raise ValueError(f"Cannot resolve IMRO format type from model_name={model_name!r}")
     data = probe.to_dataframe(complete=True).sort_values("device_channel_indices")
     annotations = probe.contact_annotations
     ret = [f"({probe_type},{len(data)})"]
@@ -741,10 +746,6 @@ def read_imro(file_path: str | Path) -> Probe:
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
-    # Scalar annotations
-    probe_type = imro_str.strip().split(")")[0].split(",")[0][1:]
-    probe.annotate(probe_type=probe_type)
-
     # Vector annotations from IMRO fields
     vector_properties = ("channel", "bank", "bank_mask", "ref_id", "ap_gain", "lf_gain", "ap_hipas_flt")
     vector_properties_available = {}
@@ -851,8 +852,6 @@ def read_spikeglx(file: str | Path) -> Probe:
     probe.annotate(part_number=imDatPrb_pn)
     probe.annotate(port=imDatPrb_port)
     probe.annotate(slot=imDatPrb_slot)
-    probe_type = imro_table_string.strip().split(")")[0].split(",")[0][1:]
-    probe.annotate(probe_type=probe_type)
 
     # ===== 8. Set device channel indices (wiring) =====
     probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
