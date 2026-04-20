@@ -1484,7 +1484,7 @@ def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
 
-def read_openephys(
+def read_openephys_neuropixels(
     settings_file: str | Path,
     stream_name: str | None = None,
     probe_name: str | None = None,
@@ -1494,6 +1494,14 @@ def read_openephys(
 ) -> Probe:
     """
     Read a Neuropixels probe geometry from an Open Ephys settings.xml file.
+
+    This function only supports Neuropixels probes (those with ``<NP_PROBE>``
+    or ``<NEUROPIXELSV1E>`` / ``<NEUROPIXELSV1F>`` / ``<NEUROPIXELSV2E>``
+    elements in the settings file). It does not handle other Open Ephys
+    hardware such as Intan acquisition boards, tetrodes, NI-DAQmx, etc.
+    Use :func:`has_neuropixels_probes` to check whether a settings file (or
+    a specific stream within it) has Neuropixels probe geometry before calling
+    this reader.
 
     A single settings.xml can describe multiple probes (one ``<NP_PROBE>`` element
     per probe). When the file contains more than one probe, use one of the three
@@ -1573,6 +1581,70 @@ def read_openephys(
     # channel selection, so we can use identity mapping.
     probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
     return probe
+
+
+def read_openephys(*args, **kwargs) -> Probe:
+    """
+    Deprecated alias for :func:`read_openephys_neuropixels`.
+
+    The name ``read_openephys`` is misleading because the function only reads
+    Neuropixels probe geometry, not arbitrary Open Ephys recordings. Use
+    :func:`read_openephys_neuropixels` instead, and :func:`has_neuropixels_probes`
+    to check whether a settings file has Neuropixels geometry before calling it.
+    """
+    warnings.warn(
+        "read_openephys is deprecated and will be removed in a future release. "
+        "Use read_openephys_neuropixels instead.",
+        category=DeprecationWarning,
+        stacklevel=2,
+    )
+    return read_openephys_neuropixels(*args, **kwargs)
+
+
+def has_neuropixels_probes(settings_file: str | Path, stream_name: str | None = None) -> bool:
+    """
+    Return True if the Open Ephys settings file contains parseable Neuropixels
+    probe geometry.
+
+    Detection is element-based: the function parses the settings file using the
+    same path as :func:`read_openephys_neuropixels` and returns True only when
+    at least one ``<NP_PROBE>`` (or ONIX equivalent ``<NEUROPIXELSV1E>`` /
+    ``<NEUROPIXELSV1F>`` / ``<NEUROPIXELSV2E>``) element is present under a
+    Neuropixels-capable processor. This is the ground-truth signal that the
+    reader will be able to build a probe from the file.
+
+    Intended use: callers that route heterogeneous streams (e.g. Open Ephys
+    recordings mixing Intan / NI-DAQmx / Neuropixels) can gate the call to
+    :func:`read_openephys_neuropixels` on this helper and skip probe attachment
+    for non-Neuropixels streams.
+
+    Parameters
+    ----------
+    settings_file : str or Path
+        Path to the Open Ephys settings.xml file.
+    stream_name : str or None
+        If provided, only return True when a Neuropixels probe matching this
+        stream name is present. Matching mirrors the selection logic in
+        :func:`read_openephys_neuropixels`: a probe's name must appear as a
+        substring of ``stream_name`` (so ``"ProbeC"`` matches
+        ``"Neuropix-PXI-100.ProbeC-AP"``). If None, returns True whenever any
+        Neuropixels probe is present.
+
+    Returns
+    -------
+    bool
+        True if Neuropixels probe geometry is present (and matches
+        ``stream_name`` when given), False otherwise.
+    """
+    try:
+        probes_info = _parse_openephys_settings(settings_file, raise_error=False)
+    except Exception:
+        return False
+    if not probes_info:
+        return False
+    if stream_name is None:
+        return True
+    return any(info["name"] in stream_name for info in probes_info)
 
 
 def get_saved_channel_indices_from_openephys_settings(settings_file: str | Path, stream_name: str) -> np.ndarray | None:

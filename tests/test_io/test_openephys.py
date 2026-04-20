@@ -7,7 +7,7 @@ import pytest
 
 import json
 
-from probeinterface import read_openephys
+from probeinterface import read_openephys, read_openephys_neuropixels, has_neuropixels_probes
 from probeinterface.neuropixels_tools import _parse_openephys_settings, _select_openephys_probe_info
 from probeinterface.neuropixels_tools import _slice_openephys_catalogue_probe, build_neuropixels_probe
 from probeinterface.testing import validate_probe_dict
@@ -38,7 +38,7 @@ def _assert_contact_ids_match_canonical_pattern(probe, label=""):
 ### TESTS ###
 def test_NP2_OE_1_0():
     # NP2 1-shank
-    probeA = read_openephys(data_path / "OE_1.0_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA")
+    probeA = read_openephys_neuropixels(data_path / "OE_1.0_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA")
     probe_dict = probeA.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     assert probeA.get_shank_count() == 1
@@ -49,7 +49,7 @@ def test_NP2_OE_1_0():
 
 def test_NP2():
     # NP2
-    probe = read_openephys(data_path / "OE_Neuropix-PXI" / "settings.xml")
+    probe = read_openephys_neuropixels(data_path / "OE_Neuropix-PXI" / "settings.xml")
     probe_dict = probe.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     assert probe.get_shank_count() == 1
@@ -59,7 +59,7 @@ def test_NP2():
 
 def test_NP2_four_shank():
     # NP2
-    probe = read_openephys(data_path / "OE_Neuropix-PXI-NP2-4shank" / "settings.xml")
+    probe = read_openephys_neuropixels(data_path / "OE_Neuropix-PXI-NP2-4shank" / "settings.xml")
     probe_dict = probe.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     # on this case, only shanks 2-3 are used
@@ -70,7 +70,7 @@ def test_NP2_four_shank():
 
 def test_NP_Ultra():
     # ProbeD (NP1121) matches its catalogue geometry
-    probeD = read_openephys(
+    probeD = read_openephys_neuropixels(
         data_path / "OE_Neuropix-PXI-NP-Ultra" / "settings.xml",
         probe_name="ProbeD",
     )
@@ -93,7 +93,7 @@ def test_probe_part_number_mismatch_with_catalogue():
         "See https://github.com/SpikeInterface/probeinterface/issues/407 for details."
     )
     with pytest.raises(ValueError, match=re.escape(expected_error)):
-        read_openephys(
+        read_openephys_neuropixels(
             data_path / "OE_Neuropix-PXI-NP-Ultra" / "settings.xml",
             probe_name="ProbeA",
         )
@@ -101,7 +101,7 @@ def test_probe_part_number_mismatch_with_catalogue():
 
 def test_NP1_subset():
     # NP1 - 200 channels selected by recording_state in Record Node
-    probe_ap = read_openephys(data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-AP")
+    probe_ap = read_openephys_neuropixels(data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-AP")
     probe_dict = probe_ap.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
 
@@ -111,7 +111,7 @@ def test_NP1_subset():
     assert "adc_group" in probe_ap.contact_annotations
     assert "adc_sample_order" in probe_ap.contact_annotations
 
-    probe_lf = read_openephys(data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-LFP")
+    probe_lf = read_openephys_neuropixels(data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-LFP")
     probe_dict = probe_lf.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
 
@@ -125,12 +125,12 @@ def test_NP1_subset():
     # Not specifying the stream_name should raise an Exception, because both the ProbeA-AP and
     # ProbeA-LFP have custom channel selections
     with pytest.raises(AssertionError):
-        probe = read_openephys(data_path / "OE_Neuropix-PXI-subset" / "settings.xml")
+        probe = read_openephys_neuropixels(data_path / "OE_Neuropix-PXI-subset" / "settings.xml")
 
 
 def test_multiple_probes():
     # multiple probes
-    probeA = read_openephys(data_path / "OE_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA")
+    probeA = read_openephys_neuropixels(data_path / "OE_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA")
     probe_dict = probeA.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
 
@@ -139,7 +139,7 @@ def test_multiple_probes():
     assert "adc_group" in probeA.contact_annotations
     assert "adc_sample_order" in probeA.contact_annotations
 
-    probeB = read_openephys(
+    probeB = read_openephys_neuropixels(
         data_path / "OE_Neuropix-PXI-multi-probe" / "settings.xml",
         stream_name="RecordNode#ProbeB",
     )
@@ -150,7 +150,7 @@ def test_multiple_probes():
     assert "adc_group" in probeB.contact_annotations
     assert "adc_sample_order" in probeB.contact_annotations
 
-    probeC = read_openephys(
+    probeC = read_openephys_neuropixels(
         data_path / "OE_Neuropix-PXI-multi-probe" / "settings.xml",
         serial_number="20403311714",
     )
@@ -161,7 +161,7 @@ def test_multiple_probes():
     assert "adc_group" in probeC.contact_annotations
     assert "adc_sample_order" in probeC.contact_annotations
 
-    probeD = read_openephys(data_path / "OE_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeD")
+    probeD = read_openephys_neuropixels(data_path / "OE_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeD")
     probe_dict = probeD.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
 
@@ -174,7 +174,7 @@ def test_multiple_probes():
     assert probeC.serial_number == "20403311714"
     assert probeD.serial_number == "21144108671"
 
-    probeA2 = read_openephys(
+    probeA2 = read_openephys_neuropixels(
         data_path / "OE_Neuropix-PXI-multi-probe" / "settings_2.xml",
         probe_name="ProbeA",
     )
@@ -183,7 +183,7 @@ def test_multiple_probes():
     ypos = probeA2.contact_positions[:, 1]
     assert np.min(ypos) >= 0
 
-    probeB2 = read_openephys(
+    probeB2 = read_openephys_neuropixels(
         data_path / "OE_Neuropix-PXI-multi-probe" / "settings_2.xml",
         probe_name="ProbeB",
     )
@@ -197,7 +197,7 @@ def test_multiple_probes():
 def test_multiple_probes_enabled():
     # multiple probes, all enabled:
 
-    probe = read_openephys(
+    probe = read_openephys_neuropixels(
         data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-enabled.xml", probe_name="ProbeA"
     )
     probe_dict = probe.to_dict(array_as_list=True)
@@ -207,7 +207,7 @@ def test_multiple_probes_enabled():
     assert "adc_group" in probe.contact_annotations
     assert "adc_sample_order" in probe.contact_annotations
 
-    probe = read_openephys(
+    probe = read_openephys_neuropixels(
         data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-enabled.xml", probe_name="ProbeB"
     )
     probe_dict = probe.to_dict(array_as_list=True)
@@ -219,7 +219,7 @@ def test_multiple_probes_enabled():
 
 def test_multiple_probes_disabled():
     # multiple probes, some disabled
-    probe = read_openephys(
+    probe = read_openephys_neuropixels(
         data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-disabled.xml", probe_name="ProbeA"
     )
     probe_dict = probe.to_dict(array_as_list=True)
@@ -230,7 +230,7 @@ def test_multiple_probes_disabled():
 
     # Fail as this is disabled:
     with pytest.raises(Exception) as e:
-        probe = read_openephys(
+        probe = read_openephys_neuropixels(
             data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-disabled.xml", probe_name="ProbeB"
         )
 
@@ -238,7 +238,7 @@ def test_multiple_probes_disabled():
 
 
 def test_np_opto_with_sync():
-    probe = read_openephys(data_path / "OE_Neuropix-PXI-opto-with-sync" / "settings.xml")
+    probe = read_openephys_neuropixels(data_path / "OE_Neuropix-PXI-opto-with-sync" / "settings.xml")
     probe_dict = probe.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     assert probe.get_shank_count() == 1
@@ -250,7 +250,7 @@ def test_np_opto_with_sync():
 def test_older_than_06_format():
     ## Test with the open ephys < 0.6 format
 
-    probe = read_openephys(data_path / "OE_5_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="100.0")
+    probe = read_openephys_neuropixels(data_path / "OE_5_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="100.0")
     probe_dict = probe.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     assert probe.get_shank_count() == 4
@@ -264,7 +264,7 @@ def test_older_than_06_format():
 def test_multiple_signal_chains():
     # tests that the probe information can be loaded even if the Neuropix-PXI plugin
     # is not in the first signalchain
-    probe = read_openephys(data_path / "OE_Neuropix-PXI-multiple-signalchains" / "settings.xml")
+    probe = read_openephys_neuropixels(data_path / "OE_Neuropix-PXI-multiple-signalchains" / "settings.xml")
     probe_dict = probe.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     assert "adc_group" in probe.contact_annotations
@@ -278,7 +278,7 @@ def test_quadbase_no_custom_name():
     quadbase_probe_name = "ProbeC"
     for i in range(4):
         shank_offset = i * shank_pitch
-        probe = read_openephys(
+        probe = read_openephys_neuropixels(
             data_path / "OE_Neuropix-PXI-QuadBase" / "settings.xml", probe_name=f"{quadbase_probe_name}-{i+1}"
         )
         probe_dict = probe.to_dict(array_as_list=True)
@@ -302,7 +302,7 @@ def test_quadbase_custom_name():
     for probe_name in quadbase_custom_names:
         for i in range(4):
             shank_offset = i * shank_pitch
-            probe = read_openephys(
+            probe = read_openephys_neuropixels(
                 data_path / "OE_Neuropix-PXI-QuadBase" / "settings_custom_names.xml", probe_name=f"{probe_name}-{i+1}"
             )
             probe_dict = probe.to_dict(array_as_list=True)
@@ -325,7 +325,7 @@ def test_quadbase_custom_names():
     shank_pitch = 250
     for i in range(4):
         shank_offset = i * shank_pitch
-        probe = read_openephys(
+        probe = read_openephys_neuropixels(
             data_path / "OE_Neuropix-PXI-QuadBase" / "settings_custom_names_w_shank.xml", probe_name=f"{sn}-{i+1}"
         )
         probe_dict = probe.to_dict(array_as_list=True)
@@ -344,7 +344,7 @@ def test_quadbase_custom_names():
 
 def test_onebox():
     # This dataset has a Neuropixels Ultra probe with a onebox
-    probe = read_openephys(data_path / "OE_OneBox-NP-Ultra" / "settings.xml")
+    probe = read_openephys_neuropixels(data_path / "OE_OneBox-NP-Ultra" / "settings.xml")
     probe_dict = probe.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     assert probe.get_shank_count() == 1
@@ -355,7 +355,7 @@ def test_onebox():
 
 def test_onix_np1():
     # This dataset has a multiple settings with different banks and configs
-    probe_bankA = read_openephys(data_path / "OE_ONIX-NP" / "settings_bankA.xml")
+    probe_bankA = read_openephys_neuropixels(data_path / "OE_ONIX-NP" / "settings_bankA.xml")
     probe_dict = probe_bankA.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     assert probe_bankA.get_shank_count() == 1
@@ -367,7 +367,7 @@ def test_onix_np1():
     assert "adc_group" in probe_bankA.contact_annotations
     assert "adc_sample_order" in probe_bankA.contact_annotations
 
-    probe_bankB = read_openephys(data_path / "OE_ONIX-NP" / "settings_bankB.xml")
+    probe_bankB = read_openephys_neuropixels(data_path / "OE_ONIX-NP" / "settings_bankB.xml")
     probe_dict = probe_bankB.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     assert probe_bankB.get_shank_count() == 1
@@ -379,7 +379,7 @@ def test_onix_np1():
     assert "adc_group" in probe_bankB.contact_annotations
     assert "adc_sample_order" in probe_bankB.contact_annotations
 
-    probe_bankC = read_openephys(data_path / "OE_ONIX-NP" / "settings_bankC.xml")
+    probe_bankC = read_openephys_neuropixels(data_path / "OE_ONIX-NP" / "settings_bankC.xml")
     probe_dict = probe_bankC.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     assert probe_bankC.get_shank_count() == 1
@@ -392,7 +392,7 @@ def test_onix_np1():
     assert "adc_sample_order" in probe_bankC.contact_annotations
 
     # for the tetrode configuration, we expect to have 96 tetrodes
-    probe_tetrodes = read_openephys(data_path / "OE_ONIX-NP" / "settings_tetrodes.xml")
+    probe_tetrodes = read_openephys_neuropixels(data_path / "OE_ONIX-NP" / "settings_tetrodes.xml")
     probe_dict = probe_tetrodes.to_dict(array_as_list=True)
 
     assert "adc_group" in probe_tetrodes.contact_annotations
@@ -419,7 +419,7 @@ def test_onix_np1():
 
 def test_onix_np2():
     # NP2.0
-    probe_np2_probe0 = read_openephys(
+    probe_np2_probe0 = read_openephys_neuropixels(
         data_path / "OE_ONIX-NP" / "settings_NP2.xml", probe_name="PortA-Neuropixels2.0eHeadstage-Neuropixels2.0-Probe0"
     )
     probe_dict = probe_np2_probe0.to_dict(array_as_list=True)
@@ -429,7 +429,7 @@ def test_onix_np2():
     assert "adc_group" in probe_np2_probe0.contact_annotations
     assert "adc_sample_order" in probe_np2_probe0.contact_annotations
 
-    probe_np2_probe1 = read_openephys(
+    probe_np2_probe1 = read_openephys_neuropixels(
         data_path / "OE_ONIX-NP" / "settings_NP2.xml", probe_name="PortA-Neuropixels2.0eHeadstage-Neuropixels2.0-Probe1"
     )
     probe_dict = probe_np2_probe1.to_dict(array_as_list=True)
@@ -440,13 +440,13 @@ def test_onix_np2():
     assert "adc_sample_order" in probe_np2_probe1.contact_annotations
 
     for i in range(4):
-        probe_0 = read_openephys(
+        probe_0 = read_openephys_neuropixels(
             data_path / "OE_ONIX-NP" / f"settings_NP2_{i+1}.xml",
             probe_name=f"PortA-Neuropixels2.0eHeadstage-Neuropixels2.0-Probe0",
         )
         probe_dict = probe_0.to_dict(array_as_list=True)
         validate_probe_dict(probe_dict)
-        probe_1 = read_openephys(
+        probe_1 = read_openephys_neuropixels(
             data_path / "OE_ONIX-NP" / f"settings_NP2_{i+1}.xml",
             probe_name=f"PortA-Neuropixels2.0eHeadstage-Neuropixels2.0-Probe1",
         )
@@ -492,39 +492,39 @@ def test_read_openephys_contact_ids_match_canonical_pattern():
     (see https://github.com/SpikeInterface/probeinterface/pull/383#discussion_r2650588006).
     """
     # Path A (SELECTED_ELECTRODES): OE 1.0 dataset
-    probe = read_openephys(data_path / "OE_1.0_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA")
+    probe = read_openephys_neuropixels(data_path / "OE_1.0_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA")
     _assert_contact_ids_match_canonical_pattern(probe, "OE_1.0 ProbeA")
 
     # Path B (CHANNELS): NP2 dataset (single shank)
-    probe = read_openephys(data_path / "OE_Neuropix-PXI" / "settings.xml")
+    probe = read_openephys_neuropixels(data_path / "OE_Neuropix-PXI" / "settings.xml")
     _assert_contact_ids_match_canonical_pattern(probe, "NP2")
 
     # Path B (CHANNELS): NP2 4-shank dataset (multi-shank)
-    probe = read_openephys(data_path / "OE_Neuropix-PXI-NP2-4shank" / "settings.xml")
+    probe = read_openephys_neuropixels(data_path / "OE_Neuropix-PXI-NP2-4shank" / "settings.xml")
     _assert_contact_ids_match_canonical_pattern(probe, "NP2 4-shank")
 
     # Path B (CHANNELS): NP-Opto dataset
-    probe = read_openephys(data_path / "OE_Neuropix-PXI-opto-with-sync" / "settings.xml")
+    probe = read_openephys_neuropixels(data_path / "OE_Neuropix-PXI-opto-with-sync" / "settings.xml")
     _assert_contact_ids_match_canonical_pattern(probe, "NP-Opto")
 
     # Path B (CHANNELS): OneBox NP-Ultra (NP1110) dataset
-    probe = read_openephys(data_path / "OE_OneBox-NP-Ultra" / "settings.xml")
+    probe = read_openephys_neuropixels(data_path / "OE_OneBox-NP-Ultra" / "settings.xml")
     _assert_contact_ids_match_canonical_pattern(probe, "OneBox NP1110")
 
     # Datasets identified as inconsistent in PR #383 discussion:
 
     # NP-Ultra: NP1100 probes error due to catalogue mismatch (see issue #407), NP1121 should match
-    probe = read_openephys(data_path / "OE_Neuropix-PXI-NP-Ultra" / "settings.xml", probe_name="ProbeD")
+    probe = read_openephys_neuropixels(data_path / "OE_Neuropix-PXI-NP-Ultra" / "settings.xml", probe_name="ProbeD")
     _assert_contact_ids_match_canonical_pattern(probe, "NP-Ultra ProbeD")
 
     # enabled/disabled: NP1 and NP2014
-    probe = read_openephys(
+    probe = read_openephys_neuropixels(
         data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-enabled.xml",
         probe_name="ProbeA",
     )
     _assert_contact_ids_match_canonical_pattern(probe, "enabled-enabled ProbeA")
 
-    probe = read_openephys(
+    probe = read_openephys_neuropixels(
         data_path / "OE_6.7_enabled_disabled_Neuropix-PXI" / "settings_enabled-enabled.xml",
         probe_name="ProbeB",
     )
@@ -532,7 +532,7 @@ def test_read_openephys_contact_ids_match_canonical_pattern():
 
     # QuadBase: NP2020 (4 probes)
     for i in range(4):
-        probe = read_openephys(data_path / "OE_Neuropix-PXI-QuadBase" / "settings.xml", probe_name=f"ProbeC-{i+1}")
+        probe = read_openephys_neuropixels(data_path / "OE_Neuropix-PXI-QuadBase" / "settings.xml", probe_name=f"ProbeC-{i+1}")
         _assert_contact_ids_match_canonical_pattern(probe, f"QuadBase ProbeC-{i+1}")
 
 
@@ -561,7 +561,7 @@ def test_read_openephys_against_oebin_wiring():
     )
     stream_name = "Neuropix-PXI-100.ProbeA"
 
-    probe = read_openephys(settings, stream_name=stream_name)
+    probe = read_openephys_neuropixels(settings, stream_name=stream_name)
 
     assert probe.get_contact_count() == 384
     assert probe.device_channel_indices is not None
@@ -582,14 +582,14 @@ def test_read_openephys_against_oebin_wiring():
 def test_read_openephys_with_oebin_contact_ids_match_canonical_pattern():
     """Verify that contact_ids with oebin are consistent with SpikeGLX (issue #394)."""
     # NP2014 single-shank
-    probe = read_openephys(
+    probe = read_openephys_neuropixels(
         data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "settings.xml",
         stream_name="Neuropix-PXI-100.ProbeA",
     )
     _assert_contact_ids_match_canonical_pattern(probe, "NP2014 binary")
 
     # NP1032 4-shank
-    probe = read_openephys(
+    probe = read_openephys_neuropixels(
         data_path / "OE_Neuropix-PXI-NP2-4shank-binary" / "Record_Node_101" / "settings.xml",
         stream_name="Neuropix-PXI-100.ProbeA-AP",
     )
@@ -600,7 +600,7 @@ def test_read_openephys_with_oebin_sync_channel_filtered():
     """Verify that the oebin sync channel (385 channels) is filtered, producing 384 contacts."""
     settings = data_path / "OE_Neuropix-PXI-NP2-4shank-binary" / "Record_Node_101" / "settings.xml"
 
-    probe = read_openephys(settings, stream_name="Neuropix-PXI-100.ProbeA-AP")
+    probe = read_openephys_neuropixels(settings, stream_name="Neuropix-PXI-100.ProbeA-AP")
     assert probe.get_contact_count() == 384
     assert "adc_group" in probe.contact_annotations
     assert "adc_sample_order" in probe.contact_annotations
@@ -611,7 +611,7 @@ def test_read_openephys_with_oebin_settings_channel_key():
     settings = data_path / "OE_Neuropix-PXI-NP1-binary" / "Record_Node_101" / "settings.xml"
     stream_name = "Neuropix-PXI-100.ProbeA"
 
-    probe = read_openephys(settings, stream_name=stream_name)
+    probe = read_openephys_neuropixels(settings, stream_name=stream_name)
     keys = probe.contact_annotations.get("settings_channel_key", None)
     assert keys is not None, "settings_channel_key annotation not set"
     assert len(keys) == probe.get_contact_count()
@@ -639,7 +639,7 @@ def test_read_openephys_multishank_wiring():
     )
     stream_name = "Neuropix-PXI-103.ProbeA"
 
-    probe = read_openephys(settings, stream_name=stream_name)
+    probe = read_openephys_neuropixels(settings, stream_name=stream_name)
 
     assert probe.get_contact_count() == 384
     assert probe.device_channel_indices is not None
@@ -678,7 +678,7 @@ def test_read_openephys_onebox_nonsequential_wiring():
     )
     stream_name = "OneBox-111.ProbeA"
 
-    probe = read_openephys(settings, stream_name=stream_name)
+    probe = read_openephys_neuropixels(settings, stream_name=stream_name)
 
     assert probe.get_contact_count() == 384
     assert probe.device_channel_indices is not None
@@ -705,6 +705,45 @@ def test_read_openephys_onebox_nonsequential_wiring():
         oebin_channel_names[:n],
         err_msg="settings_channel_key and oebin channel_name disagree: Channel Map ordering was not applied correctly",
     )
+
+
+def test_read_openephys_deprecation_warning():
+    # Old read_openephys name must still work but emit DeprecationWarning pointing at the new name.
+    settings = data_path / "OE_Neuropix-PXI" / "settings.xml"
+    with pytest.warns(DeprecationWarning, match="read_openephys_neuropixels"):
+        read_openephys(settings)
+
+
+def test_has_neuropixels_probes_positive():
+    # A real Neuropixels settings.xml should report True.
+    settings = data_path / "OE_Neuropix-PXI" / "settings.xml"
+    assert has_neuropixels_probes(settings) is True
+
+
+def test_has_neuropixels_probes_stream_match():
+    # Stream-name filter: matching stream returns True, non-matching returns False.
+    settings = data_path / "OE_Neuropix-PXI-subset" / "settings.xml"
+    assert has_neuropixels_probes(settings, stream_name="ProbeA-AP") is True
+    assert has_neuropixels_probes(settings, stream_name="Rhythm_FPGA-100.0") is False
+
+
+def test_has_neuropixels_probes_negative(tmp_path):
+    # A settings.xml with only a non-Neuropixels processor (e.g. Rhythm FPGA / Intan)
+    # must return False. This is the routing case that motivates the helper.
+    settings = tmp_path / "settings.xml"
+    settings.write_text(
+        """<?xml version="1.0"?>
+<SETTINGS>
+  <INFO><VERSION>0.6.0</VERSION></INFO>
+  <SIGNALCHAIN>
+    <PROCESSOR name="Sources/Rhythm FPGA" pluginName="Rhythm FPGA">
+      <EDITOR/>
+    </PROCESSOR>
+  </SIGNALCHAIN>
+</SETTINGS>
+"""
+    )
+    assert has_neuropixels_probes(settings) is False
 
 
 if __name__ == "__main__":
