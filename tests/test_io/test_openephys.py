@@ -38,7 +38,9 @@ def _assert_contact_ids_match_canonical_pattern(probe, label=""):
 ### TESTS ###
 def test_NP2_OE_1_0():
     # NP2 1-shank
-    probeA = read_openephys_neuropixels(data_path / "OE_1.0_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA")
+    probeA = read_openephys_neuropixels(
+        data_path / "OE_1.0_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA"
+    )
     probe_dict = probeA.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
     assert probeA.get_shank_count() == 1
@@ -101,7 +103,9 @@ def test_probe_part_number_mismatch_with_catalogue():
 
 def test_NP1_subset():
     # NP1 - 200 channels selected by recording_state in Record Node
-    probe_ap = read_openephys_neuropixels(data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-AP")
+    probe_ap = read_openephys_neuropixels(
+        data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-AP"
+    )
     probe_dict = probe_ap.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
 
@@ -111,7 +115,9 @@ def test_NP1_subset():
     assert "adc_group" in probe_ap.contact_annotations
     assert "adc_sample_order" in probe_ap.contact_annotations
 
-    probe_lf = read_openephys_neuropixels(data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-LFP")
+    probe_lf = read_openephys_neuropixels(
+        data_path / "OE_Neuropix-PXI-subset" / "settings.xml", stream_name="ProbeA-LFP"
+    )
     probe_dict = probe_lf.to_dict(array_as_list=True)
     validate_probe_dict(probe_dict)
 
@@ -492,7 +498,9 @@ def test_read_openephys_contact_ids_match_canonical_pattern():
     (see https://github.com/SpikeInterface/probeinterface/pull/383#discussion_r2650588006).
     """
     # Path A (SELECTED_ELECTRODES): OE 1.0 dataset
-    probe = read_openephys_neuropixels(data_path / "OE_1.0_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA")
+    probe = read_openephys_neuropixels(
+        data_path / "OE_1.0_Neuropix-PXI-multi-probe" / "settings.xml", probe_name="ProbeA"
+    )
     _assert_contact_ids_match_canonical_pattern(probe, "OE_1.0 ProbeA")
 
     # Path B (CHANNELS): NP2 dataset (single shank)
@@ -532,7 +540,9 @@ def test_read_openephys_contact_ids_match_canonical_pattern():
 
     # QuadBase: NP2020 (4 probes)
     for i in range(4):
-        probe = read_openephys_neuropixels(data_path / "OE_Neuropix-PXI-QuadBase" / "settings.xml", probe_name=f"ProbeC-{i+1}")
+        probe = read_openephys_neuropixels(
+            data_path / "OE_Neuropix-PXI-QuadBase" / "settings.xml", probe_name=f"ProbeC-{i+1}"
+        )
         _assert_contact_ids_match_canonical_pattern(probe, f"QuadBase ProbeC-{i+1}")
 
 
@@ -731,8 +741,7 @@ def test_has_neuropixels_probes_negative(tmp_path):
     # A settings.xml with only a non-Neuropixels processor (e.g. Rhythm FPGA / Intan)
     # must return False. This is the routing case that motivates the helper.
     settings = tmp_path / "settings.xml"
-    settings.write_text(
-        """<?xml version="1.0"?>
+    settings.write_text("""<?xml version="1.0"?>
 <SETTINGS>
   <INFO><VERSION>0.6.0</VERSION></INFO>
   <SIGNALCHAIN>
@@ -741,8 +750,7 @@ def test_has_neuropixels_probes_negative(tmp_path):
     </PROCESSOR>
   </SIGNALCHAIN>
 </SETTINGS>
-"""
-    )
+""")
     assert has_neuropixels_probes(settings) is False
 
 
