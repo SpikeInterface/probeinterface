@@ -747,6 +747,12 @@ _SPIKEGADGETS_NEUROPIXELS_FORMATS = {
     #
     # NP1 family: NP1000, NP1001, PRB_1_2_0480_2, PRB_1_4_0480_1, PRB_1_4_0480_1_C.
     # NP2 4-shank family: NP2010, NP2013, NP2014, NP2020, NP2021.
+    #
+    # The multi-probe x-shift is the horizontal offset applied to successive
+    # probes so they do not overlap when plotted. Chosen larger than the probe
+    # width: NP1 is ~70 um wide (250 um shift leaves a generous gap); NP2
+    # 4-shank is ~820 um wide (4 shanks * 250 um shank pitch + ~70 um shank
+    # width), so 1000 um leaves ~180 um of gap.
     "neuropixels1": ("NeuroPixels1", "NP1000", 250.0),
     "neuropixels2": ("NeuroPixels2", "NP2014", 1000.0),
 }
@@ -797,6 +803,11 @@ def read_spikegadgets(file: str | Path, raise_error: bool = True) -> ProbeGroup:
         # 0-based electrode indices, so catalogue_index = electrode_number - 1.
         # This holds for both NP1 (up to 960 electrodes) and NP2 4-shank (up to
         # 5120 electrodes, shank-major in the catalogue: s0e0..s0e1279, s1e0..).
+        #
+        # The probe number is assumed to be a single digit (1, 2, or 3). This
+        # matches the documented SpikeGadgets limit of three simultaneous
+        # Neuropixels probes per headstage. If that limit ever changes, the
+        # id-to-(probe, electrode) split will need to be revisited.
         electrode_to_hwchan = {}
         for ntrode in sconf:
             electrode_id = ntrode.attrib["id"]
