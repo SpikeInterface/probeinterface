@@ -13,50 +13,6 @@ class ProbeGroup:
 
     def __init__(self):
         self.probes = []
-        self._contact_vector_cache = None
-
-    @property
-    def _contact_vector(self):
-        """
-        Channel-ordered dense view of the probegroup, built lazily on first access.
-
-        Private by convention: this handle is intended for integration with SpikeInterface,
-        which needs a channel-ordered view for recording-facing queries. Fields and dtype
-        may evolve with consumer requirements, so user code should not depend on it directly.
-        For stable probegroup state, use the public `get_global_*` methods.
-
-        Invariants
-        ----------
-        - Ordering: rows are sorted ascending by `device_channel_indices` using a stable
-          sort. Ties preserve per-probe insertion order.
-        - Row count: one row per *connected* contact (`device_channel_indices >= 0`).
-          `len(self._contact_vector)` is generally smaller than `self.get_contact_count()`
-          when the probegroup has unwired contacts. This matches SpikeInterface's
-          pre-migration `contact_vector` convention.
-        - Dtype: includes `probe_index`, `x`, `y`, and `z` if `ndim == 3`. Optional fields
-          `shank_ids` and `contact_sides` appear only when at least one probe in the group
-          defines them. Consumers must guard field access accordingly.
-        - Raises `ValueError` on empty probegroups and on probegroups with no wired
-          contacts. Callers that may hold unwired probegroups should check wiring before
-          reading this attribute.
-        - The returned array is marked read-only (`setflags(write=False)`). The cache
-          object may be replaced on invalidation, so a stored reference is not guaranteed
-          to survive probegroup mutations.
-
-        Cache invalidation
-        ------------------
-        The cache is cleared on probegroup-level mutations (`add_probe`,
-        `set_global_device_channel_indices`, `auto_generate_probe_ids`,
-        `auto_generate_contact_ids`) and rebuilt on next access. Probe-level mutations
-        (for example `probe.move`, `probe.set_contact_ids`, or direct writes to
-        `probe._contact_positions`) do NOT invalidate the cache by design: keeping
-        `ProbeGroup` unaware of `Probe` mutations avoids container/contained coupling.
-        Consumers that mutate a probe after attaching its probegroup must call
-        `_build_contact_vector()` explicitly to refresh.
-        """
-        if self._contact_vector_cache is None:
-            self._build_contact_vector()
-        return self._contact_vector_cache
 
     def add_probe(self, probe: Probe) -> None:
         """
@@ -73,7 +29,6 @@ class ProbeGroup:
 
         self.probes.append(probe)
         probe._probe_group = self
-        self._contact_vector_cache = None
 
     def _check_compatible(self, probe: Probe) -> None:
         if probe._probe_group is not None:
@@ -123,15 +78,32 @@ class ProbeGroup:
         n = sum(probe.get_contact_count() for probe in self.probes)
         return n
 
-    def _build_contact_vector(self) -> None:
+    def _build_contact_vector(self) -> np.ndarray:
         """
-        Build the channel-ordered `_contact_vector` cache.
+        Return the channel-ordered dense view of the probegroup, computed fresh.
 
-        The cache has one row per *connected* contact (`device_channel_indices >= 0`),
-        sorted ascending by `device_channel_indices`. `self._contact_vector.size` may
-        therefore be smaller than `self.get_contact_count()` when the probegroup has
-        unwired contacts; that is the intended semantics, matching SpikeInterface's
-        pre-migration `contact_vector` convention.
+        Private by convention: this method is intended for integration with SpikeInterface,
+        which needs a channel-ordered view for recording-facing queries. Fields and dtype
+        may evolve with consumer requirements, so user code should not depend on it directly.
+        For stable probegroup state, use the public `get_global_*` methods.
+
+        Invariants
+        ----------
+        - Ordering: rows are sorted ascending by `device_channel_indices` using a stable
+          sort. Ties preserve per-probe insertion order.
+        - Row count: one row per *connected* contact (`device_channel_indices >= 0`).
+          The returned size is generally smaller than `self.get_contact_count()` when the
+          probegroup has unwired contacts. This matches SpikeInterface's pre-migration
+          `contact_vector` convention.
+        - Dtype: includes `probe_index`, `x`, `y`, and `z` if `ndim == 3`. Optional fields
+          `shank_ids` and `contact_sides` appear only when at least one probe in the group
+          defines them. Consumers must guard field access accordingly.
+        - Raises `ValueError` on empty probegroups and on probegroups with no wired
+          contacts.
+
+        This method builds a fresh array on every call. It is not cached. Consumers that
+        need to call it repeatedly in a hot loop should cache the result at the call site,
+        where the lifetime and invalidation story are local.
         """
         if len(self.probes) == 0:
             raise ValueError("Cannot build a contact_vector for an empty ProbeGroup")
@@ -179,9 +151,7 @@ class ProbeGroup:
         channel_indices = np.concatenate(channel_index_parts, axis=0)
         contact_vector = np.concatenate(contact_vector_parts, axis=0)
         order = np.argsort(channel_indices, kind="stable")
-        contact_vector = contact_vector[order]
-        contact_vector.setflags(write=False)
-        self._contact_vector_cache = contact_vector
+        return contact_vector[order]
 
     def to_numpy(self, complete: bool = False) -> np.ndarray:
         """
@@ -358,9 +328,6 @@ class ProbeGroup:
             probe.set_device_channel_indices(channels[ind : ind + n])
             ind += n
 
-        # invalidate the cache since channel ordering changed
-        self._contact_vector_cache = None
-
     def get_global_contact_ids(self) -> np.ndarray:
         """
         Gets all contact ids concatenated across probes
@@ -484,7 +451,6 @@ class ProbeGroup:
         probe_ids = generate_unique_ids(*args, **kwargs).astype(str)
         for pid, probe in enumerate(self.probes):
             probe.annotate(probe_id=probe_ids[pid])
-        self._contact_vector_cache = None
 
     def auto_generate_contact_ids(self, *args, **kwargs) -> None:
         """
@@ -507,4 +473,3 @@ class ProbeGroup:
         for probe in self.probes:
             el_ids, contact_ids = np.split(contact_ids, [probe.get_contact_count()])
             probe.set_contact_ids(el_ids)
-        self._contact_vector_cache = None

@@ -135,46 +135,35 @@ def test_contact_vector_orders_connected_contacts():
     probegroup.add_probe(probe0)
     probegroup.add_probe(probe1)
 
-    probegroup._build_contact_vector()
-    arr = probegroup._contact_vector
+    arr = probegroup._build_contact_vector()
 
     assert arr.dtype.names == ("probe_index", "x", "y", "shank_ids", "contact_sides")
     assert arr.size == 3
-    assert arr.flags.writeable is False
     assert np.array_equal(arr["probe_index"], np.array([1, 1, 0]))
     assert np.array_equal(arr["x"], np.array([0.0, 20.0, 10.0]))
     assert np.array_equal(np.column_stack((arr["x"], arr["y"])), np.array([[0.0, 0.0], [20.0, 0.0], [10.0, 0.0]]))
 
 
-def test_contact_vector_cache_refresh_is_explicit():
+def test_contact_vector_reflects_current_probe_state():
     probegroup = ProbeGroup()
     probe = generate_dummy_probe()
     probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
     probegroup.add_probe(probe)
 
-    probegroup._build_contact_vector()
-    dense_before = probegroup._contact_vector
-    dense_before_again = probegroup._contact_vector
-    assert dense_before is dense_before_again
-
+    dense_before = probegroup._build_contact_vector()
     original_positions = np.column_stack((dense_before["x"], dense_before["y"])).copy()
+
     probe.move([5.0, 0.0])
 
-    dense_after_move = probegroup._contact_vector
-    assert dense_after_move is dense_before
-    assert np.array_equal(np.column_stack((dense_after_move["x"], dense_after_move["y"])), original_positions)
-
-    probegroup._build_contact_vector()
-    dense_after_refresh = probegroup._contact_vector
-    assert dense_after_refresh is not dense_before
+    dense_after_move = probegroup._build_contact_vector()
+    assert dense_after_move is not dense_before
     assert np.array_equal(
-        np.column_stack((dense_after_refresh["x"], dense_after_refresh["y"])),
+        np.column_stack((dense_after_move["x"], dense_after_move["y"])),
         original_positions + np.array([5.0, 0.0]),
     )
 
     probe.set_shank_ids(np.array(["a"] * probe.get_contact_count()))
-    probegroup._build_contact_vector()
-    dense_with_shanks = probegroup._contact_vector
+    dense_with_shanks = probegroup._build_contact_vector()
     assert "shank_ids" in dense_with_shanks.dtype.names
 
 
@@ -193,8 +182,7 @@ def test_contact_vector_supports_3d_positions():
     probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
     probegroup.add_probe(probe)
 
-    probegroup._build_contact_vector()
-    dense = probegroup._contact_vector
+    dense = probegroup._build_contact_vector()
     assert dense.dtype.names[:4] == ("probe_index", "x", "y", "z")
     assert np.column_stack((dense["x"], dense["y"], dense["z"])).shape[1] == 3
 
