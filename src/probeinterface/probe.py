@@ -1,4 +1,5 @@
 import numpy as np
+from copy import deepcopy
 from typing import Literal
 from pathlib import Path
 
@@ -662,24 +663,19 @@ class Probe:
 
         return True
 
-    def copy(self):
+    def copy(self) -> "Probe":
         """
-        Copy to another Probe instance.
+        Identity-preserving deep copy of the Probe.
 
-        Note: device_channel_indices are not copied
-        and contact_ids are not copied
+        Preserves contacts, contact_ids, shank_ids, contact_sides, annotations
+        (name, model_name, manufacturer, serial_number, description), and
+        contact_annotations. Does not copy ``device_channel_indices`` because
+        wiring is attached by the caller at use time, not part of the probe's
+        identity.
         """
-        other = Probe()
-        other.set_contacts(
-            positions=self.contact_positions.copy(),
-            plane_axes=self.contact_plane_axes.copy(),
-            shapes=self.contact_shapes.copy(),
-            shape_params=self.contact_shape_params.copy(),
-        )
-        if self.probe_planar_contour is not None:
-            other.set_planar_contour(self.probe_planar_contour.copy())
-        # channel_indices are not copied
-        return other
+        d = deepcopy(self.to_dict())
+        d.pop("device_channel_indices", None)
+        return Probe.from_dict(d)
 
     def to_3d(self, axes: Literal["xy", "yz", "xz"] = "xz"):
         """

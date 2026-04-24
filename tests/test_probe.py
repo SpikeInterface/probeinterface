@@ -228,6 +228,51 @@ def test_double_side_probe():
     assert probe4 == probe
 
 
+def _annotated_probe():
+    probe = generate_dummy_probe()
+    n = probe.get_contact_count()
+    probe.set_contact_ids([f"c{i}" for i in range(n)])
+    probe.set_shank_ids(np.array(["s0"] * (n // 2) + ["s1"] * (n - n // 2)))
+    probe.set_device_channel_indices(np.arange(n)[::-1])
+    probe.annotate(name="dummy", manufacturer="acme", model_name="x1", serial_number="sn-42")
+    probe.annotate_contacts(impedance=np.linspace(1.0, 2.0, n))
+    return probe
+
+
+def test_copy_preserves_identity():
+    probe = _annotated_probe()
+    probe2 = probe.copy()
+
+    assert probe2 is not probe
+    np.testing.assert_array_equal(probe2.contact_ids, probe.contact_ids)
+    np.testing.assert_array_equal(probe2.shank_ids, probe.shank_ids)
+    assert probe2.annotations == probe.annotations
+    assert probe2.contact_annotations.keys() == probe.contact_annotations.keys()
+    for key in probe.contact_annotations:
+        np.testing.assert_array_equal(probe2.contact_annotations[key], probe.contact_annotations[key])
+
+
+def test_copy_drops_device_channel_indices():
+    probe = _annotated_probe()
+    probe2 = probe.copy()
+
+    assert probe2.device_channel_indices is None
+
+
+def test_copy_is_independent():
+    probe = _annotated_probe()
+    probe2 = probe.copy()
+
+    probe2.annotations["manufacturer"] = "mutated"
+    probe2.contact_annotations["impedance"][0] = 999.0
+    probe2.move([999, 999])
+    probe2._contact_ids[0] = "zzz"
+
+    assert probe.annotations["manufacturer"] == "acme"
+    assert probe.contact_annotations["impedance"][0] != 999.0
+    assert probe.contact_ids[0] == "c0"
+
+
 if __name__ == "__main__":
     import tempfile
 
