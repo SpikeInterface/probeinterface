@@ -179,13 +179,6 @@ def test_copy_preserves_device_channel_indices(probegroup):
     )
 
 
-def test_copy_does_not_preserve_contact_ids(probegroup):
-    """Probe.copy() intentionally does not copy contact_ids."""
-    pg_copy = probegroup.copy()
-    # All contact_ids should be empty strings after copy
-    assert all(cid == "" for cid in pg_copy.get_global_contact_ids())
-
-
 def test_copy_is_independent(probegroup):
     """Mutating the copy must not affect the original."""
     original_positions = probegroup.probes[0].contact_positions.copy()

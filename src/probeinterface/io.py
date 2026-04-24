@@ -389,15 +389,6 @@ def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup
         json.dump({"ProbeId": probes_dict}, f, indent=4)
 
     # Step 3: GENERATION OF CONTACTS.TSV
-    # ensure required contact identifiers are present
-    for probe in probes:
-        if probe.contact_ids is None:
-            raise ValueError(
-                "Contacts must have unique contact ids "
-                "and not None for export to BIDS probe format."
-                "Use `probegroup.auto_generate_contact_ids`."
-            )
-
     df = probegroup.to_dataframe()
     index = range(sum([p.get_contact_count() for p in probes]))
     df.rename(columns=tsv_label_map_to_BIDS, inplace=True)

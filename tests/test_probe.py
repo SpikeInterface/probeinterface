@@ -141,6 +141,40 @@ def test_probe():
     # ~ plt.show()
 
 
+def test_set_contacts_auto_generates_contact_ids():
+    """When contact_ids is not supplied, Probe auto-generates ['0', ..., str(n-1)]."""
+    probe = Probe(ndim=2, si_units="um")
+    positions = np.array([[0, 0], [10, 0], [20, 0], [30, 0]])
+    probe.set_contacts(positions=positions, shapes="circle", shape_params={"radius": 5})
+
+    assert probe.contact_ids is not None
+    np.testing.assert_array_equal(probe.contact_ids, np.array(["0", "1", "2", "3"]))
+
+
+def test_set_contacts_respects_explicit_contact_ids():
+    """An explicit contact_ids argument is preserved verbatim."""
+    probe = Probe(ndim=2, si_units="um")
+    positions = np.array([[0, 0], [10, 0], [20, 0]])
+    probe.set_contacts(
+        positions=positions,
+        shapes="circle",
+        shape_params={"radius": 5},
+        contact_ids=["a", "b", "c"],
+    )
+
+    np.testing.assert_array_equal(probe.contact_ids, np.array(["a", "b", "c"]))
+
+
+def test_set_contact_ids_all_empty_strings_regenerates():
+    """Backward compat: older serialized probes used empty strings for 'unset'."""
+    probe = Probe(ndim=2, si_units="um")
+    positions = np.array([[0, 0], [10, 0], [20, 0]])
+    probe.set_contacts(positions=positions, shapes="circle", shape_params={"radius": 5})
+    probe.set_contact_ids(["", "", ""])
+
+    np.testing.assert_array_equal(probe.contact_ids, np.array(["0", "1", "2"]))
+
+
 def test_probe_equality_dunder():
     probe1 = generate_dummy_probe()
     probe2 = generate_dummy_probe()

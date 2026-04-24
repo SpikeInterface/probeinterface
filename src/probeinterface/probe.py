@@ -336,7 +336,10 @@ class Probe:
             Defines the two axes of the contact plane for each electrode.
             The third dimension corresponds to the probe `ndim` (2d or 3d).
         contact_ids: array[str] | None, default: None
-            Defines the contact ids for the contacts. If None, contact ids are not assigned.
+            Defines the contact ids for the contacts. If None, contact ids are
+            auto-generated as the zero-indexed strings ``["0", "1", ..., str(n - 1)]``
+            so a Probe always carries a stable, slice-invariant handle for each
+            contact. Pass an explicit array to override.
         shank_ids : array[str] | None, default: None
             Defines the shank ids for the contacts. If None, then
             these are assigned to a unique Shank.
@@ -378,8 +381,9 @@ class Probe:
         plane_axes = np.array(plane_axes)
         self._contact_plane_axes = plane_axes
 
-        if contact_ids is not None:
-            self.set_contact_ids(contact_ids)
+        if contact_ids is None:
+            contact_ids = np.arange(n).astype(str)
+        self.set_contact_ids(contact_ids)
 
         if shank_ids is None:
             # self._shank_ids = np.zeros(n, dtype=str)
@@ -566,8 +570,9 @@ class Probe:
         """
         contact_ids = np.asarray(contact_ids)
         if np.all([c == "" for c in contact_ids]):
-            self._contact_ids = None
-            return
+            # Backward compat: previous versions serialized "unset" as empty
+            # strings. A Probe now always carries contact_ids, so regenerate.
+            contact_ids = np.arange(self.get_contact_count()).astype(str)
 
         if contact_ids.size != self.get_contact_count():
             raise ValueError(
@@ -1085,10 +1090,7 @@ class Probe:
         if self._contact_sides is not None:
             arr["contact_sides"] = self.contact_sides
 
-        if self.contact_ids is None:
-            arr["contact_ids"] = [""] * self.get_contact_count()
-        else:
-            arr["contact_ids"] = self.contact_ids
+        arr["contact_ids"] = self.contact_ids
 
         if complete:
             arr["si_units"] = self.si_units
