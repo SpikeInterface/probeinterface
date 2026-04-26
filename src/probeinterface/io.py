@@ -21,6 +21,7 @@ from xml.etree import ElementTree
 from . import __version__
 from .probe import Probe
 from .probegroup import ProbeGroup
+from .neuropixels_tools import build_neuropixels_probe
 from .utils import import_safely
 
 
@@ -732,10 +733,35 @@ def write_csv(file, probe):
     raise NotImplementedError
 
 
+_SPIKEGADGETS_NEUROPIXELS_FORMATS = {
+    # SpikeConfiguration.device -> (HardwareConfiguration device name, hardcoded part number, multi-probe x-shift um)
+    #
+    # The SpikeGadgets .rec XML does not include a probe part number. For each
+    # family (NP1 and NP2 4-shank) the listed catalogue variants share identical
+    # 2D geometry in the probeinterface catalogue (contact positions, pitch,
+    # stagger, shank spacing, shank width), differing only in metadata that
+    # probeinterface does not consume (ADC resolution, databus phase, gain,
+    # on-shank reference, shank thickness). So hardcoding one representative
+    # part number produces correct geometry. `model_name` and `description` are
+    # cleared on the sliced probe to avoid claiming a specific variant.
+    #
+    # NP1 family: NP1000, NP1001, PRB_1_2_0480_2, PRB_1_4_0480_1, PRB_1_4_0480_1_C.
+    # NP2 4-shank family: NP2010, NP2013, NP2014, NP2020, NP2021.
+    #
+    # The multi-probe x-shift is the horizontal offset applied to successive
+    # probes so they do not overlap when plotted. Chosen larger than the probe
+    # width: NP1 is ~70 um wide (250 um shift leaves a generous gap); NP2
+    # 4-shank is ~820 um wide (4 shanks * 250 um shank pitch + ~70 um shank
+    # width), so 1000 um leaves ~180 um of gap.
+    "neuropixels1": ("NeuroPixels1", "NP1000", 250.0),
+    "neuropixels2": ("NeuroPixels2", "NP2014", 1000.0),
+}
+
+
 def read_spikegadgets(file: str | Path, raise_error: bool = True) -> ProbeGroup:
     """
     Find active channels of the given Neuropixels probe from a SpikeGadgets .rec file.
-    SpikeGadgets headstages support up to three Neuropixels 1.0 probes (as of March 28, 2024),
+    SpikeGadgets headstages support up to three Neuropixels probes (1.0 or 2.0),
     and information for all probes will be returned in a ProbeGroup object.
 
 
@@ -749,146 +775,62 @@ def read_spikegadgets(file: str | Path, raise_error: bool = True) -> ProbeGroup:
     probe_group : ProbeGroup object
 
     """
-    # ------------------------- #
-    #     Npix 1.0 constants    #
-    # ------------------------- #
-    TOTAL_NPIX_ELECTRODES = 960
-    MAX_ACTIVE_CHANNELS = 384
-    CONTACT_WIDTH = 16  # um
-    CONTACT_HEIGHT = 20  # um
-    # ------------------------- #
-
-    # Read the header and get Configuration elements
     header_txt = parse_spikegadgets_header(file)
     root = ElementTree.fromstring(header_txt)
     hconf = root.find("HardwareConfiguration")
     sconf = root.find("SpikeConfiguration")
 
-    # Get number of probes present (each has its own Device element)
-    probe_configs = [device for device in hconf if device.attrib["name"] == "NeuroPixels1"]
+    # SpikeConfiguration.device selects the Neuropixels family. Default to NP1
+    # when absent to preserve behavior for older files that predate the attribute.
+    sconf_device = (sconf.attrib.get("device", "") if sconf is not None else "").lower()
+    if sconf_device not in _SPIKEGADGETS_NEUROPIXELS_FORMATS:
+        sconf_device = "neuropixels1"
+    hc_device_name, part_number, multi_probe_x_shift_um = _SPIKEGADGETS_NEUROPIXELS_FORMATS[sconf_device]
+
+    probe_configs = [d for d in hconf if d.attrib.get("name") == hc_device_name]
     n_probes = len(probe_configs)
 
     if n_probes == 0:
         if raise_error:
-            raise Exception("No Neuropixels 1.0 probes found")
+            raise Exception(f"No {hc_device_name} devices found in SpikeGadgets .rec header")
         return None
 
-    # Container to store Probe objects
     probe_group = ProbeGroup()
 
     for curr_probe in range(1, n_probes + 1):
-        probe_config = probe_configs[curr_probe - 1]
-
-        # Get number of active channels from probe Device element
-        active_channel_str = [option for option in probe_config if option.attrib["name"] == "channelsOn"][0].attrib[
-            "data"
-        ]
-        active_channels = [int(ch) for ch in active_channel_str.split(" ") if ch]
-        n_active_channels = sum(active_channels)
-        assert len(active_channels) == TOTAL_NPIX_ELECTRODES
-        assert n_active_channels <= MAX_ACTIVE_CHANNELS
-
-        """
-        Within the SpikeConfiguration header element (sconf), there is a SpikeNTrode element
-        for each electrophysiology channel that contains information relevant to scaling and
-        otherwise displaying the information from that channel, as well as the id of the electrode
-        from which it is recording ('id').
-
-        Nested within each SpikeNTrode element is a SpikeChannel element with information about
-        the electrode dynamically connected to that channel.  This contains information relevant
-        for spike sorting, i.e., its spatial location along the probe shank and the hardware channel
-        to which it is connected.
-
-        Excerpt of a sample SpikeConfiguration element:
-
-        <SpikeConfiguration chanPerChip="1889715760" device="neuropixels1" categories="">
-            <SpikeNTrode viewLFPBand="0"
-                viewStimBand="0"
-                id="1384"  # @USE: The first digit is the probe number; the last three digits are the electrode number
-                lfpScalingToUv="0.018311105685598315"
-                LFPChan="1"
-                notchFreq="60"
-                rawRefOn="0"
-                refChan="1"
-                viewSpikeBand="1"
-                rawScalingToUv="0.018311105685598315"  # For Neuropixels 1.0, raw and spike scaling are identical
-                spikeScalingToUv="0.018311105685598315"  # Extracted when reading the raw data
-                refNTrodeID="1"
-                notchBW="10"
-                color="#c83200"
-                refGroup="2"
-                filterOn="1"
-                LFPHighFilter="200"
-                moduleDataOn="0"
-                groupRefOn="0"
-                lowFilter="600"
-                refOn="0"
-                notchFilterOn="0"
-                lfpRefOn="0"
-                lfpFilterOn="0"
-                highFilter="6000"
-            >
-                <SpikeChannel thresh="60"
-                    coord_dv="-480"  # @USE: dorsal-ventral coordinate in um (in pairs for staggered probe)
-                    spikeSortingGroup="1782505664"
-                    triggerOn="1"
-                    stimCapable="0"
-                    coord_ml="3192"  # @USE: medial-lateral coordinate in um
-                    coord_ap="3700"  # doesn't vary, assuming the shank's flat face is along the ML axis
-                    maxDisp="400"
-                    hwChan="735"  # @USE: unique device channel that is reading from electrode
-                />
-            </SpikeNTrode>
-            ...
-        </SpikeConfiguration>
-        """
-        # Find all channels/electrodes that belong to the current probe
-        contact_ids = []
-        device_channels = []
-        positions = np.zeros((n_active_channels, 2))
-
-        nt_i = 0  # Both probes are in sconf, so need an independent counter of probe electrodes while iterating through
+        # SpikeNTrode elements are the authoritative list of recorded electrodes.
+        # Each id is "<probe_digit><1-based electrode number>"; the catalogue uses
+        # 0-based electrode indices, so catalogue_index = electrode_number - 1.
+        # This holds for both NP1 (up to 960 electrodes) and NP2 4-shank (up to
+        # 5120 electrodes, shank-major in the catalogue: s0e0..s0e1279, s1e0..).
+        #
+        # The probe number is assumed to be a single digit (1, 2, or 3). This
+        # matches the documented SpikeGadgets limit of three simultaneous
+        # Neuropixels probes per headstage. If that limit ever changes, the
+        # id-to-(probe, electrode) split will need to be revisited.
+        electrode_to_hwchan = {}
         for ntrode in sconf:
             electrode_id = ntrode.attrib["id"]
-            if int(electrode_id[0]) == curr_probe:  # first digit of electrode id is probe number
-                contact_ids.append(electrode_id)
-                positions[nt_i, :] = (ntrode[0].attrib["coord_ml"], ntrode[0].attrib["coord_dv"])
-                device_channels.append(ntrode[0].attrib["hwChan"])
-                nt_i += 1
-        assert len(contact_ids) == n_active_channels
+            if int(electrode_id[0]) == curr_probe:
+                catalogue_index = int(electrode_id[1:]) - 1
+                hw_chan = int(ntrode[0].attrib["hwChan"])
+                electrode_to_hwchan[catalogue_index] = hw_chan
 
-        # Construct Probe object
-        probe = Probe(ndim=2, si_units="um", model_name="Neuropixels 1.0", manufacturer="IMEC")
-        probe.set_contacts(
-            contact_ids=contact_ids,
-            positions=positions,
-            shapes="square",
-            shank_ids=None,
-            shape_params={"width": CONTACT_WIDTH, "height": CONTACT_HEIGHT},
-        )
+        active_indices = np.array(sorted(electrode_to_hwchan.keys()))
 
-        # Wire it (i.e., point contact/electrode ids to corresponding hardware/channel ids)
+        full_probe = build_neuropixels_probe(part_number)
+        probe = full_probe.get_slice(active_indices)
+
+        # Clear part-number-specific metadata since we don't know the actual part number.
+        probe.model_name = ""
+        probe.description = ""
+
+        device_channels = np.array([electrode_to_hwchan[idx] for idx in active_indices])
         probe.set_device_channel_indices(device_channels)
 
-        # Create a nice polygon background when plotting the probes
-        x_min = positions[:, 0].min()
-        x_max = positions[:, 0].max()
-        x_mid = 0.5 * (x_max + x_min)
-        y_min = positions[:, 1].min()
-        y_max = positions[:, 1].max()
-        polygon_default = [
-            (x_min - 20, y_min - CONTACT_HEIGHT / 2),
-            (x_mid, y_min - 100),
-            (x_max + 20, y_min - CONTACT_HEIGHT / 2),
-            (x_max + 20, y_max + 20),
-            (x_min - 20, y_max + 20),
-        ]
-        probe.set_planar_contour(polygon_default)
+        # Shift multiple probes so they don't overlap when plotted
+        probe.move([multi_probe_x_shift_um * (curr_probe - 1), 0])
 
-        # If there are multiple probes, they must be shifted such that they don't occupy the same coordinates.
-        probe.move([250 * (curr_probe - 1), 0])
-
-        # Add the probe to the probe container
         probe_group.add_probe(probe)
 
     return probe_group
