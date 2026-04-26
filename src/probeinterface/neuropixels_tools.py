@@ -997,6 +997,11 @@ def _parse_openephys_settings(
         - settings_channel_keys: np.array of str, or None
         - elec_ids, shank_ids: for legacy fallback
     """
+    if not has_neuropixels_probes(settings_file):
+        if raise_error:
+            raise Exception("No Neuropixels probe geometry found in settings file")
+        return None
+
     ET = import_safely("xml.etree.ElementTree")
     tree = ET.parse(str(settings_file))
     root = tree.getroot()
@@ -1034,11 +1039,6 @@ def _parse_openephys_settings(
         and record_node_position is not None
         and channel_map_position < record_node_position
     )
-
-    if neuropix_pxi_processor is None and onebox_processor is None and onix_processor is None:
-        if raise_error:
-            raise Exception("Open Ephys can only be read from Neuropix-PXI, OneBox or ONIX plugins.")
-        return None
 
     if neuropix_pxi_processor is not None:
         assert onebox_processor is None, "Only one processor should be present"
@@ -1484,7 +1484,7 @@ def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
 
-def read_openephys(
+def read_openephys_neuropixels(
     settings_file: str | Path,
     stream_name: str | None = None,
     probe_name: str | None = None,
@@ -1494,6 +1494,14 @@ def read_openephys(
 ) -> Probe:
     """
     Read a Neuropixels probe geometry from an Open Ephys settings.xml file.
+
+    This function only supports Neuropixels probes (those with ``<NP_PROBE>``
+    or ``<NEUROPIXELSV1E>`` / ``<NEUROPIXELSV1F>`` / ``<NEUROPIXELSV2E>``
+    elements in the settings file). It does not handle other Open Ephys
+    hardware such as Intan acquisition boards, tetrodes, NI-DAQmx, etc.
+    Use :func:`has_neuropixels_probes` to check whether a settings file (or
+    a specific stream within it) has Neuropixels probe geometry before calling
+    this reader.
 
     A single settings.xml can describe multiple probes (one ``<NP_PROBE>`` element
     per probe). When the file contains more than one probe, use one of the three
@@ -1573,6 +1581,83 @@ def read_openephys(
     # channel selection, so we can use identity mapping.
     probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
     return probe
+
+
+def read_openephys(*args, **kwargs) -> Probe:
+    """
+    Deprecated alias for :func:`read_openephys_neuropixels`.
+
+    The name ``read_openephys`` is misleading because the function only reads
+    Neuropixels probe geometry, not arbitrary Open Ephys recordings. Use
+    :func:`read_openephys_neuropixels` instead, and :func:`has_neuropixels_probes`
+    to check whether a settings file has Neuropixels geometry before calling it.
+    """
+    warnings.warn(
+        "read_openephys is deprecated and will be removed in a future release. "
+        "Use read_openephys_neuropixels instead.",
+        category=DeprecationWarning,
+        stacklevel=2,
+    )
+    return read_openephys_neuropixels(*args, **kwargs)
+
+
+_NP_PROBE_ELEMENT_TAGS = frozenset({"NP_PROBE", "NEUROPIXELSV1E", "NEUROPIXELSV1F", "NEUROPIXELSV2E"})
+
+
+def has_neuropixels_probes(settings_file: str | Path, stream_name: str | None = None) -> bool:
+    """
+    Return True if the Open Ephys settings file contains Neuropixels probe
+    geometry elements.
+
+    Detection is element-based: the function scans the settings XML for
+    ``<NP_PROBE>`` (Neuropix-PXI / OneBox) or the ONIX equivalents
+    ``<NEUROPIXELSV1E>`` / ``<NEUROPIXELSV1F>`` / ``<NEUROPIXELSV2E>``. The
+    presence of any of these is the ground-truth signal that Neuropixels
+    geometry is described in the file, independent of processor names. This
+    is robust to ONIX streams that can carry non-Neuropixels probes and to
+    new Neuropixels-capable plugins.
+
+    Intended use: callers that route heterogeneous streams (e.g. Open Ephys
+    recordings mixing Intan / NI-DAQmx / Neuropixels) can gate the call to
+    :func:`read_openephys_neuropixels` on this helper and skip probe
+    attachment for non-Neuropixels streams.
+
+    Parameters
+    ----------
+    settings_file : str or Path
+        Path to the Open Ephys settings.xml file.
+    stream_name : str or None
+        If provided, only return True when a Neuropixels probe element lives
+        under a processor whose STREAM names match ``stream_name``. Matching
+        mirrors the selection logic in :func:`read_openephys_neuropixels`: a
+        probe's STREAM name (with ``-AP`` / ``-LFP`` stripped) must appear as
+        a substring of ``stream_name`` (so ``"ProbeC"`` matches
+        ``"Neuropix-PXI-100.ProbeC-AP"``). If None, returns True whenever any
+        Neuropixels probe element is present.
+
+    Returns
+    -------
+    bool
+    """
+    ET = import_safely("xml.etree.ElementTree")
+    try:
+        root = ET.parse(str(settings_file)).getroot()
+    except Exception:
+        return False
+
+    for processor in root.iter("PROCESSOR"):
+        if not any(e.tag in _NP_PROBE_ELEMENT_TAGS for e in processor.iter()):
+            continue
+        if stream_name is None:
+            return True
+        for stream_field in processor.findall("STREAM"):
+            name = stream_field.attrib.get("name", "")
+            if "ADC" in name:
+                continue
+            probe_name = name.replace("-AP", "").replace("-LFP", "")
+            if probe_name and probe_name in stream_name:
+                return True
+    return False
 
 
 def get_saved_channel_indices_from_openephys_settings(settings_file: str | Path, stream_name: str) -> np.ndarray | None:
