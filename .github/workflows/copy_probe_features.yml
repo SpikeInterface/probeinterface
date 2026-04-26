@@ -19,6 +19,9 @@ jobs:
         curl -o src/probeinterface/resources/neuropixels_probe_features.json \
           https://raw.githubusercontent.com/billkarsh/ProbeTable/refs/heads/main/Tables/probe_features.json
 
+    - name: Derive IMRO type mappings from catalogue
+      run: python resources/postprocess_neuropixels_probe_features.py
+
     - name: Commit changes if any
       id: commit
       run: |
