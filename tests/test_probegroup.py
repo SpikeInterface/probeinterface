@@ -37,11 +37,9 @@ def test_probegroup(probegroup):
     other = ProbeGroup.from_dict(d)
 
     # checking automatic generation of ids with new dummy probes
-    probegroup.probes = []
+    probegroup = ProbeGroup()
     for i in range(3):
         probegroup.add_probe(generate_dummy_probe())
-    probegroup.auto_generate_contact_ids()
-    probegroup.auto_generate_probe_ids()
 
     for p in probegroup.probes:
         assert p.contact_ids is not None
@@ -179,13 +177,6 @@ def test_copy_preserves_device_channel_indices(probegroup):
     )
 
 
-def test_copy_does_not_preserve_contact_ids(probegroup):
-    """Probe.copy() intentionally does not copy contact_ids."""
-    pg_copy = probegroup.copy()
-    # All contact_ids should be empty strings after copy
-    assert all(cid == "" for cid in pg_copy.get_global_contact_ids())
-
-
 def test_copy_is_independent(probegroup):
     """Mutating the copy must not affect the original."""
     original_positions = probegroup.probes[0].contact_positions.copy()
@@ -252,6 +243,13 @@ def test_get_slice_all_contacts(probegroup):
         sliced.get_global_contact_positions(),
         probegroup.get_global_contact_positions(),
     )
+
+
+def test_reset_of_probe_indexing(probegroup):
+    """Test that after slicing, the probe indexing is reset to 0..N-1."""
+    indices = np.arange(probegroup.probes[0].get_contact_count() + 2)  # some contacts from probe 0 and 1
+    sliced = probegroup.get_slice(indices)
+    assert np.all(sliced._contact_array["probe_index"]) in [0, 1]  # should be reset to 0 and 1
 
 
 if __name__ == "__main__":

@@ -202,10 +202,7 @@ def read_BIDS_probe(folder: str | Path, prefix: str | None = None) -> ProbeGroup
 
         # create probe object and register with probegroup
         probe = Probe.from_dataframe(df=df_probe)
-        probe.annotate(probe_id=probe_id)
-
         probes[str(probe_id)] = probe
-        probegroup.add_probe(probe)
 
         ignore_annotations = [
             "probe_ids",
@@ -294,6 +291,10 @@ def read_BIDS_probe(folder: str | Path, prefix: str | None = None) -> ProbeGroup
 
                 probe.annotate(**{contact_param: value_list})
 
+    # Step 5: add probes to probegroup
+    for probe in probes.values():
+        probegroup.add_probe(probe)
+
     return probegroup
 
 
@@ -337,10 +338,6 @@ def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup
 
     # Step 1: GENERATION OF PROBE.TSV
     # ensure required keys (probe_id, probe_type) are present
-
-    if any("probe_id" not in p.annotations for p in probes):
-        probegroup.auto_generate_probe_ids()
-
     for probe in probes:
         if "probe_id" not in probe.annotations:
             raise ValueError(

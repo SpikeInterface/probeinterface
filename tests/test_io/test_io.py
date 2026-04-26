@@ -69,22 +69,21 @@ def test_BIDS_format(tmp_path):
 
     # add custom probe type annotation to be
     # compatible with BIDS specifications
-    for probe in probegroup.probes:
-        probe.annotate(type="laminar")
+    for probe_index in range(probegroup.num_probes):
+        probegroup.annotate_probe(probe_index, type="laminar")
 
-    # add unique contact ids to be compatible
-    # with BIDS specifications
-    n_els = sum([p.get_contact_count() for p in probegroup.probes])
-    # using np.random.choice to ensure uniqueness of contact ids
-    el_ids = np.random.choice(np.arange(1e4, 1e5, dtype="int"), replace=False, size=n_els).astype(str)
-    for probe in probegroup.probes:
-        probe_el_ids, el_ids = np.split(el_ids, [probe.get_contact_count()])
-        probe.set_contact_ids(probe_el_ids)
+    # # add unique contact ids to be compatible
+    # # with BIDS specifications
+    # n_els = sum([p.get_contact_count() for p in probegroup.probes])
+    # # using np.random.choice to ensure uniqueness of contact ids
+    # el_ids = np.random.choice(np.arange(1e4, 1e5, dtype="int"), replace=False, size=n_els).astype(str)
+    # for probe in probegroup.probes:
+    #     probe_el_ids, el_ids = np.split(el_ids, [probe.get_contact_count()])
+    #     probe.set_contact_ids(probe_el_ids)
 
-        # switch to more generic dtype for shank_ids
-        if probe.shank_ids is not None:
-            probe.set_shank_ids(probe.shank_ids.astype(str))
-
+    #     # switch to more generic dtype for shank_ids
+    #     if probe.shank_ids is not None:
+    #         probe.set_shank_ids(probe.shank_ids.astype(str))
     write_BIDS_probe(folder_path, probegroup)
 
     probegroup_read = read_BIDS_probe(folder_path)
@@ -115,8 +114,8 @@ def test_BIDS_format(tmp_path):
             assert shape_params == probe_read.contact_shape_params[t][sid]
         for i in range(len(probe_orig.contact_positions)):
             assert all(probe_orig.contact_positions[i] == probe_read.contact_positions[t][i])
-        for i in range(len(probe.contact_plane_axes)):
-            for dim in range(len(probe.contact_plane_axes[i])):
+        for i in range(len(probe_orig.contact_plane_axes)):
+            for dim in range(len(probe_orig.contact_plane_axes[i])):
                 assert all(probe_orig.contact_plane_axes[i][dim] == probe_read.contact_plane_axes[t][i][dim])
 
 
