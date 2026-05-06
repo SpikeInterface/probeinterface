@@ -291,11 +291,14 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
     probe.annotate(shank_tips=shank_tips)
 
     # ===== 7. Add metadata annotations =====
+    lf_sampling_frequency_hz = float(probe_spec_dict["lf_sample_frequency_hz"])
+    adc_range_vpp = float(probe_spec_dict["adc_range_vpp"])
     probe.annotate(
         adc_bit_depth=int(probe_spec_dict["adc_bit_depth"]),
         num_readout_channels=int(probe_spec_dict["num_readout_channels"]),
         ap_sample_frequency_hz=float(probe_spec_dict["ap_sample_frequency_hz"]),
-        lf_sample_frequency_hz=float(probe_spec_dict["lf_sample_frequency_hz"]),
+        lf_sample_frequency_hz=lf_sampling_frequency_hz,
+        adc_range_vpp=adc_range_vpp,
     )
 
     # ===== 8. Store ADC sampling table =====
@@ -308,6 +311,28 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
     adc_sampling_table = probe_features["z_mux_tables"].get(mux_table_format_type)
     if adc_sampling_table is not None:
         probe.annotate(adc_sampling_table=adc_sampling_table)
+
+    # ===== 9. Add saturation information =====
+
+    # Since NP2.x probes, gain values are fixed, so we can directly calculate saturation levels and annotate
+    # them on the probe.
+    # For NP1.0 probes, gain values can be configured per recording, so we need to calculate them when reading
+    # the settings and retrieving AP and LF gains.
+    ap_gain_list = [float(gain) for gain in probe_spec_dict["ap_gain_list"].split(",")]
+    lf_gain_list = [float(gain) for gain in probe_spec_dict["lf_gain_list"].split(",")]
+
+    if len(ap_gain_list) == 1:
+        ap_gain = ap_gain_list[0]
+        ap_saturation_uv = (adc_range_vpp / 2) / ap_gain * 1e6
+        probe.annotate(ap_gain=ap_gain, ap_saturation_uv=ap_saturation_uv)
+
+    # Note: lf_gain and saturation level are only saved if the probe has separate AP and LF streams
+    # (i.e., LF sampling frequency > 0)
+    if lf_sampling_frequency_hz > 0:
+        if len(lf_gain_list) == 1:
+            lf_gain = lf_gain_list[0]
+            lf_saturation_uv = (adc_range_vpp / 2) / lf_gain * 1e6
+            probe.annotate(lf_gain=lf_gain, lf_saturation_uv=lf_saturation_uv)
 
     return probe
 
@@ -847,6 +872,33 @@ def read_spikeglx(file: str | Path) -> Probe:
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
+    # ===== 5c. Update gain and saturation for 1.0 probes =====
+    if "ap_saturation_uv" not in probe.annotations.keys():
+        adc_range_vpp = probe.annotations["adc_range_vpp"]
+
+        # We first look in the IMRO header
+        imro_header = imro_per_channel["header"]
+        ap_gain = imro_header.get("ap_gain", None)
+        lf_gain = imro_header.get("lf_gain", None)
+
+        # If not there, check the imro elements (gains are the same for all channels)
+        if ap_gain is None and "ap_gain" in imro_per_channel:
+            ap_gain = imro_per_channel["ap_gain"][0]
+        if lf_gain is None and "lf_gain" in imro_per_channel:
+            lf_gain = imro_per_channel["lf_gain"][0]
+
+        # The ap/lf gains should be in the contact annotations
+        if ap_gain is not None:
+            ap_saturation_uv = (adc_range_vpp / 2) / ap_gain * 1e6
+            probe.annotate(ap_gain=ap_gain, ap_saturation_uv=ap_saturation_uv)
+        else:
+            warnings.warn("AP gain not found in IMRO header or elements. AP saturation level cannot be calculated.")
+        if lf_gain is not None:
+            lf_saturation_uv = (adc_range_vpp / 2) / lf_gain * 1e6
+            probe.annotate(lf_gain=lf_gain, lf_saturation_uv=lf_saturation_uv)
+        else:
+            warnings.warn("LF gain not found in IMRO header or elements. LF saturation level cannot be calculated.")
+
     # ===== 6. Slice to saved channels (if subset was saved) =====
     # This is DIFFERENT from IMRO selection: IMRO selects which electrodes to acquire,
     # but SpikeGLX can optionally save only a subset of acquired channels to reduce file size.
@@ -1153,6 +1205,9 @@ def _parse_openephys_settings(
         slot = np_probe.attrib.get("slot")
         port = np_probe.attrib.get("port")
         dock = np_probe.attrib.get("dock")
+        ap_gain_value = np_probe.attrib.get("apGainValue")
+        lf_gain_value = np_probe.attrib.get("lfGainValue")
+
         probe_part_number = np_probe.attrib.get("probe_part_number") or np_probe.attrib.get("probePartNumber")
         probe_serial_number = np_probe.attrib.get("probe_serial_number") or np_probe.attrib.get("probeSerialNumber")
         selected_electrodes = np_probe.find("SELECTED_ELECTRODES")
@@ -1192,6 +1247,8 @@ def _parse_openephys_settings(
             "elec_ids": None,
             "shank_ids": None,
             "custom_channel_map": None,
+            "ap_gain": ap_gain_value,
+            "lf_gain": lf_gain_value,
         }
 
         if selected_electrodes is not None:
@@ -1480,8 +1537,20 @@ def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:
             settings_channel_keys = np.array(settings_channel_keys)[probe_info["custom_channel_map"]]
         probe.annotate_contacts(settings_channel_key=settings_channel_keys)
 
+    # Add ADC sampling info as annotations, which describe how the probe channels map to ADC channels and sample order.
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
+
+    # Update saturation levels based on gain values from settings
+    ap_gain = probe_info.get("ap_gain")
+    lf_gain = probe_info.get("lf_gain")
+    adc_range_vpp = probe.annotations.get("adc_range_vpp")
+    if ap_gain is not None:
+        ap_saturation_uv = (adc_range_vpp / 2) / ap_gain * 1e6
+        probe.annotate(ap_gain=ap_gain, ap_saturation_uv=ap_saturation_uv)
+    if lf_gain is not None:
+        lf_saturation_uv = (adc_range_vpp / 2) / lf_gain * 1e6
+        probe.annotate(lf_gain=lf_gain, lf_saturation_uv=lf_saturation_uv)
 
 
 def read_openephys(
