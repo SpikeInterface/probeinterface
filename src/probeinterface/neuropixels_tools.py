@@ -1206,7 +1206,7 @@ def _parse_openephys_settings(
         port = np_probe.attrib.get("port")
         dock = np_probe.attrib.get("dock")
         ap_gain_value = np_probe.attrib.get("apGainValue")
-        lf_gain_value = np_probe.attrib.get("lfGainValue")
+        lf_gain_value = np_probe.attrib.get("lfpGainValue")
 
         probe_part_number = np_probe.attrib.get("probe_part_number") or np_probe.attrib.get("probePartNumber")
         probe_serial_number = np_probe.attrib.get("probe_serial_number") or np_probe.attrib.get("probeSerialNumber")
@@ -1542,13 +1542,17 @@ def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
     # Update saturation levels based on gain values from settings
-    ap_gain = probe_info.get("ap_gain")
-    lf_gain = probe_info.get("lf_gain")
+    ap_gain_str = probe_info.get("ap_gain")
+    lf_gain_str = probe_info.get("lf_gain")
     adc_range_vpp = probe.annotations.get("adc_range_vpp")
-    if ap_gain is not None:
+    if ap_gain_str is not None:
+        # ap_gain_str is formatted as "{gain}x", e.g. "500x"
+        ap_gain = float(ap_gain_str[:-1])
         ap_saturation_uv = (adc_range_vpp / 2) / ap_gain * 1e6
         probe.annotate(ap_gain=ap_gain, ap_saturation_uv=ap_saturation_uv)
-    if lf_gain is not None:
+    if lf_gain_str is not None:
+        # lf_gain_str is formatted as "{gain}x", e.g. "250x"
+        lf_gain = float(lf_gain_str[:-1])
         lf_saturation_uv = (adc_range_vpp / 2) / lf_gain * 1e6
         probe.annotate(lf_gain=lf_gain, lf_saturation_uv=lf_saturation_uv)
 
