@@ -813,6 +813,7 @@ def read_spikeglx(file: str | Path) -> Probe:
     # This creates the complete probe geometry (e.g., 960 contacts for NP1.0)
     # based on manufacturer specifications
     full_probe = build_neuropixels_probe(probe_part_number=imDatPrb_pn)
+    print(f"{full_probe.get_contact_count()=}")
 
     # ===== 3. Parse IMRO table to extract recorded electrodes and acquisition settings =====
     # IMRO = Imec ReadOut (the configuration table format from IMEC manufacturer)
@@ -825,6 +826,7 @@ def read_spikeglx(file: str | Path) -> Probe:
     active_contact_ids = _get_imro_active_contact_ids(imro_per_channel)
     contact_id_to_index = {contact_id: idx for idx, contact_id in enumerate(full_probe.contact_ids)}
     selected_contact_indices = np.array([contact_id_to_index[contact_id] for contact_id in active_contact_ids])
+    print(f"{selected_contact_indices=}")
     probe = full_probe.get_slice(selected_contact_indices)
 
     # ===== 5. Store IMRO properties (acquisition settings) as annotations =====
@@ -907,7 +909,7 @@ def parse_spikeglx_snsGeomMap(meta: dict) -> tuple[int, float, float, np.ndarray
     geom_list = meta["snsGeomMap"].split(sep=")")
 
     # first entry is for instance (NP1000,1,0,70)
-    probe_type, num_shank, shank_pitch, shank_width = geom_list[0][1:].split(",")
+    _, num_shank, shank_pitch, shank_width = geom_list[0][1:].split(",")
     num_shank, shank_pitch, shank_width = int(num_shank), float(shank_pitch), float(shank_width)
 
     geom_list = geom_list[1:-1]
