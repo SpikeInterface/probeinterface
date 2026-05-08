@@ -486,7 +486,7 @@ def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
     # Parse header fields using the catalogue schema
     imro_header_fields_string = probe_features["z_imro_formats"][imro_format + "_hdr_flds"]
     imro_header_fields = tuple(imro_header_fields_string.replace("(", "").replace(")", "").split(","))
-    header_values = tuple(map(int, header_str[1:].split(",")))
+    header_values = tuple(header_str[1:].split(","))
     # Initialize with parsed header and empty lists for per-entry fields (filled below)
     imro_per_channel = {"header": dict(zip(imro_header_fields, header_values))}
     for field in imro_fields:
@@ -723,7 +723,7 @@ def read_imro(file_path: str | Path) -> Probe:
         imro_str = str(f.read())
 
     imro_table_header_str, *imro_table_values_list, _ = imro_str.strip().split(")")
-    imro_table_header = tuple(map(int, imro_table_header_str[1:].split(",")))
+    imro_table_header = tuple(imro_table_header_str[1:].split(","))
 
     if len(imro_table_header) == 3:
         # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently.
@@ -733,7 +733,6 @@ def read_imro(file_path: str | Path) -> Probe:
         imDatPrb_type, _ = imro_table_header
     else:
         raise ValueError(f"read_imro error, the header has a strange length: {imro_table_header}")
-    imDatPrb_type = str(imDatPrb_type)
 
     for probe_part_number, probe_type in probe_part_number_to_probe_type.items():
         if imDatPrb_type == probe_type:
