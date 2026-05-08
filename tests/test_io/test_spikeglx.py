@@ -495,6 +495,7 @@ def test_NP1110_probes():
     sns_map_positions = np.column_stack((x_pos, y_pos)) - sns_channel_offset
     np.testing.assert_array_equal(probe.contact_positions, sns_map_positions)
 
+
 def test_NP2020_probes():
 
     sns_channel_offset = np.array([27.0, 0.0])
@@ -530,13 +531,16 @@ def test_NP2020_probes():
     # Test against snsGeomMap parsing for the same file, which should give the same result
     meta = parse_spikeglx_meta(meta_file)
     _, _, _, _, x_pos, y_pos, _ = parse_spikeglx_snsGeomMap(meta)
-    for shank_id, contact_position, sns_x_position, sns_y_position in zip(probe.shank_ids, probe.contact_positions, x_pos, y_pos):
+    for shank_id, contact_position, sns_x_position, sns_y_position in zip(
+        probe.shank_ids, probe.contact_positions, x_pos, y_pos
+    ):
         assert contact_position[1] == sns_y_position
-        assert contact_position[0] == sns_x_position - 27.0 + int(shank_id)*distance_between_shanks
+        assert contact_position[0] == sns_x_position - 27.0 + int(shank_id) * distance_between_shanks
 
-    x_shift_per_shank = probe.shank_ids.astype(int)*distance_between_shanks
-    np.testing.assert_array_equal(probe.contact_positions[:,1], y_pos - sns_channel_offset[1])
-    np.testing.assert_array_equal(probe.contact_positions[:,0], x_pos - sns_channel_offset[0]  + x_shift_per_shank)
+    x_shift_per_shank = probe.shank_ids.astype(int) * distance_between_shanks
+    np.testing.assert_array_equal(probe.contact_positions[:, 1], y_pos - sns_channel_offset[1])
+    np.testing.assert_array_equal(probe.contact_positions[:, 0], x_pos - sns_channel_offset[0] + x_shift_per_shank)
+
 
 def test_CatGT_NP1():
     probe = read_spikeglx(data_path / "catgt.meta")
