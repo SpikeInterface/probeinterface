@@ -447,28 +447,41 @@ def _parse_imro_string(imro_table_string: str) -> dict:
         Example for NP1110: {"header": {"type": 1110, "col_mode": 2, "ref_id": 0, ...},
             "group": [0,1,...], "bankA": [0,0,...], "bankB": [0,0,...]}  # 24 entries, not 384
     """
-    # Parse IMRO header and per-entry values
+    # Parse IMRO header and per-entry values. Header values stay as strings; only the
+    # numeric trailing fields are cast to int below. The first field may be a numeric
+    # IMRO type code (old SpikeGLX format) or an alphanumeric probe part number such as
+    # "NP2020" (new format, SpikeGLX 20260115 onward; see issue #432).
     header_str, *imro_table_values_list, _ = imro_table_string.strip().split(")")
-    header_values = tuple(map(int, header_str[1:].split(",")))
+    header_parts = header_str[1:].split(",")
+    first_value = header_parts[0]
+    header_values = (first_value,) + tuple(map(int, header_parts[1:]))
 
-    # Extract IMRO type from header. Phase3A probes have a 3-field header; all others
-    # have 2+ fields with type as the first. Phase3A is treated as type 0.
-    if len(header_values) == 3:
-        imro_format_type = "0"
-    else:
-        imro_format_type = str(header_values[0])
-
-    # Look up the IMRO format schema from the catalogue's derived mappings
+    # Resolve the IMRO format schema. Three header layouts to handle:
+    #   1. Phase3A: 3-field header, no part number anywhere; treat as type code "0".
+    #   2. New format: first field is a probe part number (e.g. "NP2020").
+    #   3. Old format: first field is a numeric IMRO type code (e.g. "21").
     probe_features = _load_np_probe_features()
+    probes = probe_features["neuropixels_probes"]
     type_to_format = probe_features["z_imro_format_type_to_imro_format"]
 
-    if imro_format_type in type_to_format:
+    if len(header_values) == 3:
+        imro_format_type = "0"
         imro_format = type_to_format[imro_format_type]
-    elif imro_format_type in _imro_format_type_fallback:
+    elif first_value in probes:
+        imro_format = probes[first_value]["imro_table_format_type"]
+        imro_format_type = None  # not used for new-format files
+    elif first_value in type_to_format:
+        imro_format_type = first_value
+        imro_format = type_to_format[imro_format_type]
+    elif first_value in _imro_format_type_fallback:
+        imro_format_type = first_value
         imro_format = _imro_format_type_fallback[imro_format_type][0]
     else:
         valid_types = sorted(set(type_to_format) | set(_imro_format_type_fallback), key=int)
-        raise ValueError(f"Unknown IMRO type '{imro_format_type}'. Valid types: {valid_types}")
+        raise ValueError(
+            f"Unknown IMRO header first field {first_value!r}. "
+            f"Expected a probe part number from the catalogue or one of: {valid_types}"
+        )
 
     imro_fields_string = probe_features["z_imro_formats"][imro_format + "_elm_flds"]
     imro_fields = tuple(imro_fields_string.replace("(", "").replace(")", "").split(" "))
@@ -724,16 +737,24 @@ def read_imro(file_path: str | Path) -> Probe:
     imro_per_channel = _parse_imro_string(imro_str)
 
     # ===== 3. Resolve probe part number and build full probe =====
-    imro_format_type = str(imro_per_channel["header"]["type"])
+    # The header's "type" field carries either the alphanumeric probe part number
+    # (new SpikeGLX format, 20260115+) or a numeric IMRO type code (old format).
+    header_type = str(imro_per_channel["header"]["type"])
     probe_features = _load_np_probe_features()
+    probes = probe_features["neuropixels_probes"]
     type_to_pn = probe_features["z_imro_format_type_to_part_number"]
-    if imro_format_type in type_to_pn:
-        probe_part_number = type_to_pn[imro_format_type]
-    elif imro_format_type in _imro_format_type_fallback:
-        probe_part_number = _imro_format_type_fallback[imro_format_type][1]
+    if header_type in probes:
+        probe_part_number = header_type
+    elif header_type in type_to_pn:
+        probe_part_number = type_to_pn[header_type]
+    elif header_type in _imro_format_type_fallback:
+        probe_part_number = _imro_format_type_fallback[header_type][1]
     else:
         valid_types = sorted(set(type_to_pn) | set(_imro_format_type_fallback), key=int)
-        raise ValueError(f"Unknown IMRO type '{imro_format_type}'. Valid types: {valid_types}")
+        raise ValueError(
+            f"Unknown IMRO header first field {header_type!r}. "
+            f"Expected a probe part number from the catalogue or one of: {valid_types}"
+        )
     full_probe = build_neuropixels_probe(probe_part_number=probe_part_number)
 
     # ===== 4. Slice full probe to active electrodes =====
@@ -894,8 +915,9 @@ def parse_spikeglx_snsGeomMap(meta: dict) -> tuple[int, float, float, np.ndarray
 
     geom_list = meta["snsGeomMap"].split(sep=")")
 
-    # first entry is for instance (NP1000,1,0,70)
-    probe_type, num_shank, shank_pitch, shank_width = geom_list[0][1:].split(",")
+    # first entry is for instance (NP1000,1,0,70); the leading field can be a numeric
+    # type code or an alphanumeric part number depending on SpikeGLX version, and is unused
+    _, num_shank, shank_pitch, shank_width = geom_list[0][1:].split(",")
     num_shank, shank_pitch, shank_width = int(num_shank), float(shank_pitch), float(shank_width)
 
     geom_list = geom_list[1:-1]
