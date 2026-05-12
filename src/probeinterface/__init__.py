@@ -28,6 +28,8 @@ from .neuropixels_tools import (
     parse_spikeglx_snsGeomMap,
     get_saved_channel_indices_from_spikeglx_meta,
     read_openephys,
+    read_openephys_neuropixels,
+    has_neuropixels_probes,
     get_saved_channel_indices_from_openephys_settings,
 )
 from .utils import combine_probes

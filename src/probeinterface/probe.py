@@ -527,7 +527,7 @@ class Probe:
         """
         channel_indices = np.asarray(channel_indices, dtype=int)
         if channel_indices.size != self.get_contact_count():
-            ValueError(
+            raise ValueError(
                 f"channel_indices {channel_indices.size} do not have "
                 f"the same size as contacts {self.get_contact_count()}"
             )

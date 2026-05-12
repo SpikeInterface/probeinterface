@@ -24,47 +24,6 @@ _np_probe_features = None
 # Utils zone  #
 ###############
 
-# Map imDatPrb_pn (probe number) to imDatPrb_type (probe type) when the latter is missing
-# ONLY needed for `read_imro` function
-probe_part_number_to_probe_type = {
-    # for old version without a probe number we assume NP1.0
-    None: "0",
-    # NP1.0
-    "PRB_1_4_0480_1": "0",
-    "PRB_1_4_0480_1_C": "0",  # This is the metal cap version
-    "PRB_1_2_0480_2": "0",
-    "NP1010": "0",
-    # NHP probes lin
-    "NP1015": "1015",
-    "NP1016": "1015",
-    "NP1017": "1015",
-    # NHP probes stag med
-    "NP1020": "1020",
-    "NP1021": "1021",
-    "NP1022": "1022",
-    # NHP probes stag long
-    "NP1030": "1030",
-    "NP1031": "1031",
-    "NP1032": "1032",
-    # NP2.0
-    "NP2000": "21",
-    "NP2010": "24",
-    "NP2013": "2013",
-    "NP2014": "2014",
-    "NP2003": "2003",
-    "NP2004": "2004",
-    "PRB2_1_2_0640_0": "21",
-    "PRB2_4_2_0640_0": "24",
-    # NXT
-    "NP2020": "2020",
-    # Ultra
-    "NP1100": "1100",  # Ultra probe - 1 bank
-    "NP1110": "1110",  # Ultra probe - 16 banks no handle because
-    "NP1121": "1121",  # Ultra probe - beta configuration
-    # Opto
-    "NP1300": "1300",  # Opto probe
-}
-
 # Map from imro format to ProbeInterface naming conventions
 imro_field_to_pi_field = {
     "ap_gain": "ap_gains",
@@ -439,24 +398,20 @@ def _annotate_probe_with_adc_sampling_info(probe: Probe, adc_sampling_table: str
 #########################
 
 
-def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
+def _parse_imro_string(imro_table_string: str) -> dict:
     """
     Parse IMRO (Imec ReadOut) table string into structured per-channel data.
 
     IMRO format: "(probe_type,num_chans)(ch0 bank0 ref0 ...)(ch1 bank1 ref1 ...)..."
     Example: "(0,384)(0 1 0 500 250 1)(1 0 0 500 250 1)..."
 
-    Note: The IMRO header contains a probe_type field (e.g., "0", "21", "24"), which is
-    a numeric format version identifier that specifies which IMRO table structure was used.
-    Different probe generations use different IMRO formats. This is a file format detail,
-    not a physical probe property.
+    The IMRO type is extracted from the header and used to look up the field schema
+    from the catalogue (z_imro_format_type_to_imro_format). No probe part number is needed.
 
     Parameters
     ----------
     imro_table_string : str
         IMRO table string from SpikeGLX metadata file
-    probe_part_number : str
-        Probe part number (e.g., "NP1000", "NP2000")
 
     Returns
     -------
@@ -473,22 +428,51 @@ def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
         Example for NP1110: {"header": {"type": 1110, "col_mode": 2, "ref_id": 0, ...},
             "group": [0,1,...], "bankA": [0,0,...], "bankB": [0,0,...]}  # 24 entries, not 384
     """
-    # Get IMRO field format from catalogue
+    # Parse IMRO header and per-entry values. Header values stay as strings; only the
+    # numeric trailing fields are cast to int below. The first field may be a numeric
+    # IMRO type code (old SpikeGLX format) or an alphanumeric probe part number such as
+    # "NP2020" (new format, SpikeGLX 20260115 onward; see issue #432).
+    header_str, *imro_table_values_list, _ = imro_table_string.strip().split(")")
+    header_parts = header_str[1:].split(",")
+    first_value = header_parts[0]
+    header_values = (first_value,) + tuple(map(int, header_parts[1:]))
+
+    # Resolve the IMRO format schema. Three header layouts to handle:
+    #   1. Phase3A: 3-field header, no part number anywhere; treat as type code "0".
+    #   2. New format: first field is a probe part number (e.g. "NP2020").
+    #   3. Old format: first field is a numeric IMRO type code (e.g. "21").
     probe_features = _load_np_probe_features()
-    probe_spec = probe_features["neuropixels_probes"][probe_part_number]
-    imro_format = probe_spec["imro_table_format_type"]
+    probes = probe_features["neuropixels_probes"]
+    type_to_format = probe_features["z_imro_format_type_to_imro_format"]
+
+    if len(header_values) == 3:
+        imro_format_type = "0"
+        imro_format = type_to_format[imro_format_type]
+    elif first_value in probes:
+        imro_format = probes[first_value]["imro_table_format_type"]
+        imro_format_type = None  # not used for new-format files
+    elif first_value in type_to_format:
+        imro_format_type = first_value
+        imro_format = type_to_format[imro_format_type]
+    else:
+        valid_types = sorted(type_to_format, key=int)
+        raise ValueError(
+            f"Unknown IMRO header first field {first_value!r}. "
+            f"Expected a probe part number from the catalogue or one of: {valid_types}"
+        )
+
     imro_fields_string = probe_features["z_imro_formats"][imro_format + "_elm_flds"]
     imro_fields = tuple(imro_fields_string.replace("(", "").replace(")", "").split(" "))
-
-    # Parse IMRO header and per-entry values
-    header_str, *imro_table_values_list, _ = imro_table_string.strip().split(")")
 
     # Parse header fields using the catalogue schema
     imro_header_fields_string = probe_features["z_imro_formats"][imro_format + "_hdr_flds"]
     imro_header_fields = tuple(imro_header_fields_string.replace("(", "").replace(")", "").split(","))
-    header_values = tuple(map(int, header_str[1:].split(",")))
-    # Initialize with parsed header and empty lists for per-entry fields (filled below)
+    # Initialize with parsed header and empty lists for per-entry fields (filled below).
+    # For Phase3A (3-field header), zip silently drops the extra value, which is correct.
     imro_per_channel = {"header": dict(zip(imro_header_fields, header_values))}
+    # Normalize Phase3A header type to 0 so downstream code reads it consistently
+    if len(header_values) == 3:
+        imro_per_channel["header"]["type"] = 0
     for field in imro_fields:
         imro_per_channel[field] = []
     for field_values_str in imro_table_values_list:
@@ -511,7 +495,12 @@ def write_imro(file: str | Path, probe: Probe) -> None:
     probe : Probe object
 
     """
-    probe_type = probe.annotations["probe_type"]
+    model_name = probe.model_name
+    probe_features = _load_np_probe_features()
+    part_number_to_format_type = {v: k for k, v in probe_features["z_imro_format_type_to_part_number"].items()}
+    probe_type = part_number_to_format_type.get(model_name)
+    if probe_type is None:
+        raise ValueError(f"Cannot resolve IMRO format type from model_name={model_name!r}")
     data = probe.to_dataframe(complete=True).sort_values("device_channel_indices")
     annotations = probe.contact_annotations
     ret = [f"({probe_type},{len(data)})"]
@@ -716,34 +705,33 @@ def read_imro(file_path: str | Path) -> Probe:
     https://billkarsh.github.io/SpikeGLX/help/imroTables/
 
     """
-    # ===== 1. Read file and determine probe part number from IMRO header =====
+    # ===== 1. Read file =====
     meta_file = Path(file_path)
     assert meta_file.suffix == ".imro", "'file' should point to the .imro file"
     with meta_file.open(mode="r") as f:
         imro_str = str(f.read())
 
-    imro_table_header_str, *imro_table_values_list, _ = imro_str.strip().split(")")
-    imro_table_header = tuple(map(int, imro_table_header_str[1:].split(",")))
+    # ===== 2. Parse IMRO table (type is extracted from the header automatically) =====
+    imro_per_channel = _parse_imro_string(imro_str)
 
-    if len(imro_table_header) == 3:
-        # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently.
-        # We use probe_type "0", which maps to probe_part_number NP1010 as a proxy for Phase3a.
-        imDatPrb_type = "0"
-    elif len(imro_table_header) == 2:
-        imDatPrb_type, _ = imro_table_header
+    # ===== 3. Resolve probe part number and build full probe =====
+    # The header's "type" field carries either the alphanumeric probe part number
+    # (new SpikeGLX format, 20260115+) or a numeric IMRO type code (old format).
+    header_type = str(imro_per_channel["header"]["type"])
+    probe_features = _load_np_probe_features()
+    probes = probe_features["neuropixels_probes"]
+    type_to_pn = probe_features["z_imro_format_type_to_part_number"]
+    if header_type in probes:
+        probe_part_number = header_type
+    elif header_type in type_to_pn:
+        probe_part_number = type_to_pn[header_type]
     else:
-        raise ValueError(f"read_imro error, the header has a strange length: {imro_table_header}")
-    imDatPrb_type = str(imDatPrb_type)
-
-    for probe_part_number, probe_type in probe_part_number_to_probe_type.items():
-        if imDatPrb_type == probe_type:
-            imDatPrb_pn = probe_part_number
-
-    # ===== 2. Interpret IMRO table =====
-    imro_per_channel = _parse_imro_string(imro_str, imDatPrb_pn)
-
-    # ===== 3. Build full probe with all possible contacts =====
-    full_probe = build_neuropixels_probe(probe_part_number=imDatPrb_pn)
+        valid_types = sorted(type_to_pn, key=int)
+        raise ValueError(
+            f"Unknown IMRO header first field {header_type!r}. "
+            f"Expected a probe part number from the catalogue or one of: {valid_types}"
+        )
+    full_probe = build_neuropixels_probe(probe_part_number=probe_part_number)
 
     # ===== 4. Slice full probe to active electrodes =====
     active_contact_ids = _get_imro_active_contact_ids(imro_per_channel)
@@ -754,10 +742,6 @@ def read_imro(file_path: str | Path) -> Probe:
     # ===== 5. Annotate probe with recording-specific metadata =====
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
-
-    # Scalar annotations
-    probe_type = imro_str.strip().split(")")[0].split(",")[0][1:]
-    probe.annotate(probe_type=probe_type)
 
     # Vector annotations from IMRO fields
     vector_properties = ("channel", "bank", "bank_mask", "ref_id", "ap_gain", "lf_gain", "ap_hipas_flt")
@@ -820,7 +804,7 @@ def read_spikeglx(file: str | Path) -> Probe:
     # Specifies which electrodes were selected for recording (e.g., 384 of 960) plus their
     # acquisition settings (gains, references, filters). See: https://billkarsh.github.io/SpikeGLX/help/imroTables/
     imro_table_string = meta["imroTbl"]
-    imro_per_channel = _parse_imro_string(imro_table_string, imDatPrb_pn)
+    imro_per_channel = _parse_imro_string(imro_table_string)
 
     # ===== 4. Slice full probe to active electrodes =====
     active_contact_ids = _get_imro_active_contact_ids(imro_per_channel)
@@ -907,8 +891,9 @@ def parse_spikeglx_snsGeomMap(meta: dict) -> tuple[int, float, float, np.ndarray
 
     geom_list = meta["snsGeomMap"].split(sep=")")
 
-    # first entry is for instance (NP1000,1,0,70)
-    probe_type, num_shank, shank_pitch, shank_width = geom_list[0][1:].split(",")
+    # first entry is for instance (NP1000,1,0,70); the leading field can be a numeric
+    # type code or an alphanumeric part number depending on SpikeGLX version, and is unused
+    _, num_shank, shank_pitch, shank_width = geom_list[0][1:].split(",")
     num_shank, shank_pitch, shank_width = int(num_shank), float(shank_pitch), float(shank_width)
 
     geom_list = geom_list[1:-1]
@@ -997,6 +982,11 @@ def _parse_openephys_settings(
         - settings_channel_keys: np.array of str, or None
         - elec_ids, shank_ids: for legacy fallback
     """
+    if not has_neuropixels_probes(settings_file):
+        if raise_error:
+            raise Exception("No Neuropixels probe geometry found in settings file")
+        return None
+
     ET = import_safely("xml.etree.ElementTree")
     tree = ET.parse(str(settings_file))
     root = tree.getroot()
@@ -1034,11 +1024,6 @@ def _parse_openephys_settings(
         and record_node_position is not None
         and channel_map_position < record_node_position
     )
-
-    if neuropix_pxi_processor is None and onebox_processor is None and onix_processor is None:
-        if raise_error:
-            raise Exception("Open Ephys can only be read from Neuropix-PXI, OneBox or ONIX plugins.")
-        return None
 
     if neuropix_pxi_processor is not None:
         assert onebox_processor is None, "Only one processor should be present"
@@ -1484,7 +1469,7 @@ def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
 
-def read_openephys(
+def read_openephys_neuropixels(
     settings_file: str | Path,
     stream_name: str | None = None,
     probe_name: str | None = None,
@@ -1494,6 +1479,14 @@ def read_openephys(
 ) -> Probe:
     """
     Read a Neuropixels probe geometry from an Open Ephys settings.xml file.
+
+    This function only supports Neuropixels probes (those with ``<NP_PROBE>``
+    or ``<NEUROPIXELSV1E>`` / ``<NEUROPIXELSV1F>`` / ``<NEUROPIXELSV2E>``
+    elements in the settings file). It does not handle other Open Ephys
+    hardware such as Intan acquisition boards, tetrodes, NI-DAQmx, etc.
+    Use :func:`has_neuropixels_probes` to check whether a settings file (or
+    a specific stream within it) has Neuropixels probe geometry before calling
+    this reader.
 
     A single settings.xml can describe multiple probes (one ``<NP_PROBE>`` element
     per probe). When the file contains more than one probe, use one of the three
@@ -1573,6 +1566,83 @@ def read_openephys(
     # channel selection, so we can use identity mapping.
     probe.set_device_channel_indices(np.arange(probe.get_contact_count()))
     return probe
+
+
+def read_openephys(*args, **kwargs) -> Probe:
+    """
+    Deprecated alias for :func:`read_openephys_neuropixels`.
+
+    The name ``read_openephys`` is misleading because the function only reads
+    Neuropixels probe geometry, not arbitrary Open Ephys recordings. Use
+    :func:`read_openephys_neuropixels` instead, and :func:`has_neuropixels_probes`
+    to check whether a settings file has Neuropixels geometry before calling it.
+    """
+    warnings.warn(
+        "read_openephys is deprecated and will be removed in a future release. "
+        "Use read_openephys_neuropixels instead.",
+        category=DeprecationWarning,
+        stacklevel=2,
+    )
+    return read_openephys_neuropixels(*args, **kwargs)
+
+
+_NP_PROBE_ELEMENT_TAGS = frozenset({"NP_PROBE", "NEUROPIXELSV1E", "NEUROPIXELSV1F", "NEUROPIXELSV2E"})
+
+
+def has_neuropixels_probes(settings_file: str | Path, stream_name: str | None = None) -> bool:
+    """
+    Return True if the Open Ephys settings file contains Neuropixels probe
+    geometry elements.
+
+    Detection is element-based: the function scans the settings XML for
+    ``<NP_PROBE>`` (Neuropix-PXI / OneBox) or the ONIX equivalents
+    ``<NEUROPIXELSV1E>`` / ``<NEUROPIXELSV1F>`` / ``<NEUROPIXELSV2E>``. The
+    presence of any of these is the ground-truth signal that Neuropixels
+    geometry is described in the file, independent of processor names. This
+    is robust to ONIX streams that can carry non-Neuropixels probes and to
+    new Neuropixels-capable plugins.
+
+    Intended use: callers that route heterogeneous streams (e.g. Open Ephys
+    recordings mixing Intan / NI-DAQmx / Neuropixels) can gate the call to
+    :func:`read_openephys_neuropixels` on this helper and skip probe
+    attachment for non-Neuropixels streams.
+
+    Parameters
+    ----------
+    settings_file : str or Path
+        Path to the Open Ephys settings.xml file.
+    stream_name : str or None
+        If provided, only return True when a Neuropixels probe element lives
+        under a processor whose STREAM names match ``stream_name``. Matching
+        mirrors the selection logic in :func:`read_openephys_neuropixels`: a
+        probe's STREAM name (with ``-AP`` / ``-LFP`` stripped) must appear as
+        a substring of ``stream_name`` (so ``"ProbeC"`` matches
+        ``"Neuropix-PXI-100.ProbeC-AP"``). If None, returns True whenever any
+        Neuropixels probe element is present.
+
+    Returns
+    -------
+    bool
+    """
+    ET = import_safely("xml.etree.ElementTree")
+    try:
+        root = ET.parse(str(settings_file)).getroot()
+    except Exception:
+        return False
+
+    for processor in root.iter("PROCESSOR"):
+        if not any(e.tag in _NP_PROBE_ELEMENT_TAGS for e in processor.iter()):
+            continue
+        if stream_name is None:
+            return True
+        for stream_field in processor.findall("STREAM"):
+            name = stream_field.attrib.get("name", "")
+            if "ADC" in name:
+                continue
+            probe_name = name.replace("-AP", "").replace("-LFP", "")
+            if probe_name and probe_name in stream_name:
+                return True
+    return False
 
 
 def get_saved_channel_indices_from_openephys_settings(settings_file: str | Path, stream_name: str) -> np.ndarray | None:

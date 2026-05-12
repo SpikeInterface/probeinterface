@@ -141,6 +141,19 @@ def test_probe():
     # ~ plt.show()
 
 
+def test_set_device_channel_indices_rejects_wrong_size():
+    """Setting device_channel_indices with wrong count raises ValueError."""
+    probe = Probe(ndim=2, si_units="um")
+    probe.set_contacts(
+        positions=np.array([[0, 0], [10, 0], [20, 0]]),
+        shapes="circle",
+        shape_params={"radius": 5},
+    )
+
+    with pytest.raises(ValueError, match="do not have"):
+        probe.set_device_channel_indices([0, 1])
+
+
 def test_probe_equality_dunder():
     probe1 = generate_dummy_probe()
     probe2 = generate_dummy_probe()
