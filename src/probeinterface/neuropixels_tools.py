@@ -24,25 +24,6 @@ _np_probe_features = None
 # Utils zone  #
 ###############
 
-# IMRO type codes not listed in any val_def entry in the ProbeTable catalogue.
-# These probes all use the imro_np1000 or imro_np2003/imro_np2013 format, but their
-# type codes are not in the corresponding val_def type sets.
-# We don't know if SpikeGLX actually produces IMRO files with these type codes
-# (there is no test data for them). They are kept here for backwards compatibility.
-# Values are (imro_format_name, canonical_part_number).
-#
-# TODO: @team - Should these be added to ProbeTable's val_def, or can they be removed?
-# If SpikeGLX never produces these type codes, this dict can be deleted entirely.
-_imro_format_type_fallback = {
-    "1015": ("imro_np1000", "NP1015"),
-    "1021": ("imro_np1000", "NP1021"),
-    "1022": ("imro_np1000", "NP1022"),
-    "1031": ("imro_np1000", "NP1031"),
-    "1032": ("imro_np1000", "NP1032"),
-    "2004": ("imro_np2003", "NP2004"),
-    "2014": ("imro_np2013", "NP2014"),
-}
-
 # Map from imro format to ProbeInterface naming conventions
 imro_field_to_pi_field = {
     "ap_gain": "ap_gains",
@@ -473,11 +454,8 @@ def _parse_imro_string(imro_table_string: str) -> dict:
     elif first_value in type_to_format:
         imro_format_type = first_value
         imro_format = type_to_format[imro_format_type]
-    elif first_value in _imro_format_type_fallback:
-        imro_format_type = first_value
-        imro_format = _imro_format_type_fallback[imro_format_type][0]
     else:
-        valid_types = sorted(set(type_to_format) | set(_imro_format_type_fallback), key=int)
+        valid_types = sorted(type_to_format, key=int)
         raise ValueError(
             f"Unknown IMRO header first field {first_value!r}. "
             f"Expected a probe part number from the catalogue or one of: {valid_types}"
@@ -747,10 +725,8 @@ def read_imro(file_path: str | Path) -> Probe:
         probe_part_number = header_type
     elif header_type in type_to_pn:
         probe_part_number = type_to_pn[header_type]
-    elif header_type in _imro_format_type_fallback:
-        probe_part_number = _imro_format_type_fallback[header_type][1]
     else:
-        valid_types = sorted(set(type_to_pn) | set(_imro_format_type_fallback), key=int)
+        valid_types = sorted(type_to_pn, key=int)
         raise ValueError(
             f"Unknown IMRO header first field {header_type!r}. "
             f"Expected a probe part number from the catalogue or one of: {valid_types}"
