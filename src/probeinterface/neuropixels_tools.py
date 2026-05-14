@@ -1518,7 +1518,6 @@ def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:
             probe.annotate(lf_gain=lf_gain)
 
 
-
 def read_openephys_neuropixels(
     settings_file: str | Path,
     stream_name: str | None = None,
