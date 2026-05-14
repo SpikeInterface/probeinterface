@@ -53,7 +53,7 @@ def test_raising_error_when_writing_with_wrong_type(tmp_path):
     probe = read_imro(data_path / "test_old_probe.imro")
 
     file_path = tmp_path / "test_old_probe.imro"
-    probe.annotations["probe_type"] = "something_that_should_make_write_fail"
+    probe.annotations["model_name"] = "something_that_should_make_write_fail"
     with pytest.raises(ValueError):
         write_imro(file_path, probe)
 
