@@ -864,6 +864,25 @@ def read_spikeglx(file: str | Path) -> Probe:
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
+    # ===== 5c. Update probe annotation with gains if not already annotated =====
+    # We first look in the IMRO header
+    if "ap_gain" not in probe.annotations:
+        imro_header = imro_per_channel["header"]
+        ap_gain = imro_header.get("ap_gain", None)
+        lf_gain = imro_header.get("lf_gain", None)
+
+        # If not there, check the imro elements (gains are the same for all channels)
+        if ap_gain is None and "ap_gain" in imro_per_channel:
+            ap_gain = imro_per_channel["ap_gain"][0]
+        if lf_gain is None and "lf_gain" in imro_per_channel:
+            lf_gain = imro_per_channel["lf_gain"][0]
+
+        # The ap/lf gains should be in the contact annotations
+        if ap_gain is not None:
+            probe.annotate(ap_gain=ap_gain)
+        if lf_gain is not None:
+            probe.annotate(lf_gain=lf_gain)
+
     # ===== 6. Slice to saved channels (if subset was saved) =====
     # This is DIFFERENT from IMRO selection: IMRO selects which electrodes to acquire,
     # but SpikeGLX can optionally save only a subset of acquired channels to reduce file size.
@@ -1214,6 +1233,8 @@ def _parse_openephys_settings(
             "elec_ids": None,
             "shank_ids": None,
             "custom_channel_map": None,
+            "ap_gain": ap_gain_value,
+            "lf_gain": lf_gain_value,
         }
 
         if selected_electrodes is not None:
@@ -1502,6 +1523,7 @@ def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:
             settings_channel_keys = np.array(settings_channel_keys)[probe_info["custom_channel_map"]]
         probe.annotate_contacts(settings_channel_key=settings_channel_keys)
 
+    # Add ADC sampling info as annotations, which describe how the probe channels map to ADC channels and sample order.
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
