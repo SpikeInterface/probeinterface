@@ -260,9 +260,7 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
         lf_sample_frequency_hz=lf_sampling_frequency_hz,
         adc_range_vpp=adc_range_vpp,
     )
-    # If the catalogue lists a single AP gain value, annotate it directly because it is
-    # not user-configurable (NP2.x case). NP1.0 has multiple selectable gains, so the
-    # recording-time value must come from the reader.
+    # If there is only one AP gain value, annotate with gains directly since it cannot be changed.
     if len(ap_gain_list) == 1:
         probe.annotate(ap_gain=ap_gain_list[0])
     if lf_sampling_frequency_hz > 0:
@@ -764,16 +762,6 @@ def read_imro(file_path: str | Path) -> Probe:
             vector_properties_available[imro_field_to_pi_field.get(k)] = v
     probe.annotate_contacts(**vector_properties_available)
 
-    # Annotate scalar ap_gain/lf_gain from per-channel IMRO data when not already set
-    # by build_neuropixels_probe (NP1.0 has programmable gains; NP2.x is fixed).
-    if "ap_gain" not in probe.annotations:
-        ap_gain_values = imro_per_channel.get("ap_gain", [])
-        if len(ap_gain_values) > 0:
-            probe.annotate(ap_gain=float(ap_gain_values[0]))
-        lf_gain_values = imro_per_channel.get("lf_gain", [])
-        if len(lf_gain_values) > 0:
-            probe.annotate(lf_gain=float(lf_gain_values[0]))
-
     return probe
 
 
@@ -845,16 +833,6 @@ def read_spikeglx(file: str | Path) -> Probe:
         pi_field = imro_field_to_pi_field.get(imro_field)
         annotations[pi_field] = values
     probe.annotate_contacts(**annotations)
-
-    # Annotate scalar ap_gain/lf_gain from per-channel IMRO data when not already set
-    # by build_neuropixels_probe (NP1.0 has programmable gains; NP2.x is fixed).
-    if "ap_gain" not in probe.annotations:
-        ap_gain_values = imro_per_channel.get("ap_gain", [])
-        if len(ap_gain_values) > 0:
-            probe.annotate(ap_gain=float(ap_gain_values[0]))
-        lf_gain_values = imro_per_channel.get("lf_gain", [])
-        if len(lf_gain_values) > 0:
-            probe.annotate(lf_gain=float(lf_gain_values[0]))
 
     # ===== 5b. Add ADC sampling annotations =====
     # The ADC sampling table describes which ADC samples each readout channel and in what order.
@@ -1192,6 +1170,7 @@ def _parse_openephys_settings(
         dock = np_probe.attrib.get("dock")
         ap_gain_value = np_probe.attrib.get("apGainValue")
         lf_gain_value = np_probe.attrib.get("lfpGainValue")
+
         probe_part_number = np_probe.attrib.get("probe_part_number") or np_probe.attrib.get("probePartNumber")
         probe_serial_number = np_probe.attrib.get("probe_serial_number") or np_probe.attrib.get("probeSerialNumber")
         selected_electrodes = np_probe.find("SELECTED_ELECTRODES")
@@ -1224,8 +1203,6 @@ def _parse_openephys_settings(
             "slot": slot,
             "port": port,
             "dock": dock,
-            "ap_gain": ap_gain_value,
-            "lf_gain": lf_gain_value,
             "pt_metadata": pt_metadata,
             "selected_electrode_indices": None,
             "contact_ids": None,
@@ -1527,15 +1504,18 @@ def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
-    # Annotate scalar ap_gain/lf_gain from settings.xml when not already set by build_neuropixels_probe.
-    # Open Ephys stores them as "{value}x" strings, e.g. "500x".
+    # Update gain values from settings if not already annotated from table
     if "ap_gain" not in probe.annotations:
         ap_gain_str = probe_info.get("ap_gain")
-        if ap_gain_str is not None:
-            probe.annotate(ap_gain=float(ap_gain_str.rstrip("x")))
         lf_gain_str = probe_info.get("lf_gain")
+        if ap_gain_str is not None:
+            # ap_gain_str is formatted as "{gain}x", e.g. "500x"
+            ap_gain = float(ap_gain_str[:-1])
+            probe.annotate(ap_gain=ap_gain)
         if lf_gain_str is not None:
-            probe.annotate(lf_gain=float(lf_gain_str.rstrip("x")))
+            # lf_gain_str is formatted as "{gain}x", e.g. "250x"
+            lf_gain = float(lf_gain_str[:-1])
+            probe.annotate(lf_gain=lf_gain)
 
 
 def read_openephys_neuropixels(
