@@ -250,12 +250,23 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
     probe.annotate(shank_tips=shank_tips)
 
     # ===== 7. Add metadata annotations =====
+    lf_sampling_frequency_hz = float(probe_spec_dict["lf_sample_frequency_hz"])
+    adc_range_vpp = float(probe_spec_dict["adc_range_vpp"])
+    ap_gain_list = [float(gain) for gain in probe_spec_dict["ap_gain_list"].split(",")]
     probe.annotate(
         adc_bit_depth=int(probe_spec_dict["adc_bit_depth"]),
         num_readout_channels=int(probe_spec_dict["num_readout_channels"]),
         ap_sample_frequency_hz=float(probe_spec_dict["ap_sample_frequency_hz"]),
-        lf_sample_frequency_hz=float(probe_spec_dict["lf_sample_frequency_hz"]),
+        lf_sample_frequency_hz=lf_sampling_frequency_hz,
+        adc_range_vpp=adc_range_vpp,
     )
+    # If there is only one AP gain value, annotate with gains directly since it cannot be changed.
+    if len(ap_gain_list) == 1:
+        probe.annotate(ap_gain=ap_gain_list[0])
+    if lf_sampling_frequency_hz > 0:
+        lf_gain_list = [float(gain) for gain in probe_spec_dict["lf_gain_list"].split(",")]
+        if len(lf_gain_list) == 1:
+            probe.annotate(lf_gain=lf_gain_list[0])
 
     # ===== 8. Store ADC sampling table =====
     # The ADC sampling table describes how readout channels map to ADCs, not electrodes.
@@ -831,6 +842,25 @@ def read_spikeglx(file: str | Path) -> Probe:
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
+    # ===== 5c. Update probe annotation with gains if not already annotated =====
+    # We first look in the IMRO header
+    if "ap_gain" not in probe.annotations:
+        imro_header = imro_per_channel["header"]
+        ap_gain = imro_header.get("ap_gain", None)
+        lf_gain = imro_header.get("lf_gain", None)
+
+        # If not there, check the imro elements (gains are the same for all channels)
+        if ap_gain is None and "ap_gain" in imro_per_channel:
+            ap_gain = imro_per_channel["ap_gain"][0]
+        if lf_gain is None and "lf_gain" in imro_per_channel:
+            lf_gain = imro_per_channel["lf_gain"][0]
+
+        # The ap/lf gains should be in the contact annotations
+        if ap_gain is not None:
+            probe.annotate(ap_gain=ap_gain)
+        if lf_gain is not None:
+            probe.annotate(lf_gain=lf_gain)
+
     # ===== 6. Slice to saved channels (if subset was saved) =====
     # This is DIFFERENT from IMRO selection: IMRO selects which electrodes to acquire,
     # but SpikeGLX can optionally save only a subset of acquired channels to reduce file size.
@@ -1138,6 +1168,9 @@ def _parse_openephys_settings(
         slot = np_probe.attrib.get("slot")
         port = np_probe.attrib.get("port")
         dock = np_probe.attrib.get("dock")
+        ap_gain_value = np_probe.attrib.get("apGainValue")
+        lf_gain_value = np_probe.attrib.get("lfpGainValue")
+
         probe_part_number = np_probe.attrib.get("probe_part_number") or np_probe.attrib.get("probePartNumber")
         probe_serial_number = np_probe.attrib.get("probe_serial_number") or np_probe.attrib.get("probeSerialNumber")
         selected_electrodes = np_probe.find("SELECTED_ELECTRODES")
@@ -1177,6 +1210,8 @@ def _parse_openephys_settings(
             "elec_ids": None,
             "shank_ids": None,
             "custom_channel_map": None,
+            "ap_gain": ap_gain_value,
+            "lf_gain": lf_gain_value,
         }
 
         if selected_electrodes is not None:
@@ -1465,8 +1500,22 @@ def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:
             settings_channel_keys = np.array(settings_channel_keys)[probe_info["custom_channel_map"]]
         probe.annotate_contacts(settings_channel_key=settings_channel_keys)
 
+    # Add ADC sampling info as annotations, which describe how the probe channels map to ADC channels and sample order.
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
+
+    # Update gain values from settings if not already annotated from table
+    if "ap_gain" not in probe.annotations:
+        ap_gain_str = probe_info.get("ap_gain")
+        lf_gain_str = probe_info.get("lf_gain")
+        if ap_gain_str is not None:
+            # ap_gain_str is formatted as "{gain}x", e.g. "500x"
+            ap_gain = float(ap_gain_str[:-1])
+            probe.annotate(ap_gain=ap_gain)
+        if lf_gain_str is not None:
+            # lf_gain_str is formatted as "{gain}x", e.g. "250x"
+            lf_gain = float(lf_gain_str[:-1])
+            probe.annotate(lf_gain=lf_gain)
 
 
 def read_openephys_neuropixels(
