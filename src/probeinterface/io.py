@@ -21,7 +21,7 @@ from xml.etree import ElementTree
 from . import __version__
 from .probe import Probe
 from .probegroup import ProbeGroup
-from .neuropixels_tools import build_neuropixels_probe
+from .neuropixels_tools import build_neuropixels_probe, _annotate_probe_with_adc_sampling_info
 from .utils import import_safely
 
 
@@ -773,6 +773,10 @@ def read_spikegadgets(file: str | Path, raise_error: bool = True) -> ProbeGroup:
             raise Exception("No Neuropixels 1.0 probes found")
         return None
 
+    # NeuroPixels1 SourceOptions blocks carry the per-probe AP/LF gain settings.
+    # They appear in the same order as the SpikeNTrode probe digits (1, 2, 3).
+    source_options_blocks = [s for s in hconf.findall("SourceOptions") if s.attrib.get("name") == "NeuroPixels1"]
+
     probe_group = ProbeGroup()
 
     for curr_probe in range(1, n_probes + 1):
@@ -801,6 +805,26 @@ def read_spikegadgets(file: str | Path, raise_error: bool = True) -> ProbeGroup:
 
         device_channels = np.array([electrode_to_hwchan[idx] for idx in active_indices])
         probe.set_device_channel_indices(device_channels)
+
+        # Per-contact ADC group and sample order from the catalogue MUX table plus
+        # the hwChan mapping (which is the readout-channel index for each contact).
+        adc_sampling_table = probe.annotations.get("adc_sampling_table")
+        _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
+
+        # NP1.0 gain is programmable. Read APGainMode and LFPGainMode from the
+        # SourceOptions block matching this probe (blocks appear in probe order).
+        if "ap_gain" not in probe.annotations and curr_probe - 1 < len(source_options_blocks):
+            custom_options = {
+                opt.attrib["name"]: opt.attrib["data"].strip()
+                for opt in source_options_blocks[curr_probe - 1].findall("CustomOption")
+            }
+            ap_gain_str = custom_options.get("APGainMode")
+            if ap_gain_str:
+                probe.annotate(ap_gain=float(ap_gain_str))
+            if probe.annotations.get("lf_sample_frequency_hz", 0) > 0:
+                lf_gain_str = custom_options.get("LFPGainMode")
+                if lf_gain_str:
+                    probe.annotate(lf_gain=float(lf_gain_str))
 
         # Shift multiple probes so they don't overlap when plotted
         probe.move([250 * (curr_probe - 1), 0])
