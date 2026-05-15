@@ -78,6 +78,81 @@ class ProbeGroup:
         n = sum(probe.get_contact_count() for probe in self.probes)
         return n
 
+    def _build_contact_vector(self) -> np.ndarray:
+        """
+        Return the channel-ordered dense view of the probegroup, computed fresh.
+
+        Private by convention: this method is intended for integration with SpikeInterface,
+        which needs a channel-ordered view for recording-facing queries. Fields and dtype
+        may evolve with consumer requirements, so user code should not depend on it directly.
+        For stable probegroup state, use the public `get_global_*` methods.
+
+        Invariants
+        ----------
+        - Ordering: rows are sorted ascending by `device_channel_indices` using a stable
+          sort. Ties preserve per-probe insertion order.
+        - Row count: one row per *connected* contact (`device_channel_indices >= 0`).
+          The returned size is generally smaller than `self.get_contact_count()` when the
+          probegroup has unwired contacts. This matches SpikeInterface's pre-migration
+          `contact_vector` convention.
+        - Dtype: includes `probe_index`, `x`, `y`, and `z` if `ndim == 3`. Optional fields
+          `shank_ids` and `contact_sides` appear only when at least one probe in the group
+          defines them. Consumers must guard field access accordingly.
+        - Raises `ValueError` on empty probegroups and on probegroups with no wired
+          contacts.
+
+        This method builds a fresh array on every call. It is not cached. Consumers that
+        need to call it repeatedly in a hot loop should cache the result at the call site,
+        where the lifetime and invalidation story are local.
+        """
+        if len(self.probes) == 0:
+            raise ValueError("Cannot build a contact_vector for an empty ProbeGroup")
+
+        has_shank_ids = any(probe.shank_ids is not None for probe in self.probes)
+        has_contact_sides = any(probe.contact_sides is not None for probe in self.probes)
+
+        dtype = [("probe_index", "int64"), ("x", "float64"), ("y", "float64")]
+        if self.ndim == 3:
+            dtype.append(("z", "float64"))
+        if has_shank_ids:
+            dtype.append(("shank_ids", "U64"))
+        if has_contact_sides:
+            dtype.append(("contact_sides", "U8"))
+
+        channel_index_parts = []
+        contact_vector_parts = []
+        for probe_index, probe in enumerate(self.probes):
+            device_channel_indices = probe.device_channel_indices
+            if device_channel_indices is None:
+                continue
+
+            device_channel_indices = np.asarray(device_channel_indices)
+            connected = device_channel_indices >= 0
+            if not np.any(connected):
+                continue
+
+            probe_vector = np.zeros(np.sum(connected), dtype=dtype)
+            probe_vector["probe_index"] = probe_index
+            probe_vector["x"] = probe.contact_positions[connected, 0]
+            probe_vector["y"] = probe.contact_positions[connected, 1]
+            if self.ndim == 3:
+                probe_vector["z"] = probe.contact_positions[connected, 2]
+            if has_shank_ids and probe.shank_ids is not None:
+                probe_vector["shank_ids"] = probe.shank_ids[connected]
+            if has_contact_sides and probe.contact_sides is not None:
+                probe_vector["contact_sides"] = probe.contact_sides[connected]
+
+            channel_index_parts.append(device_channel_indices[connected])
+            contact_vector_parts.append(probe_vector)
+
+        if len(contact_vector_parts) == 0:
+            raise ValueError("contact_vector requires at least one wired contact")
+
+        channel_indices = np.concatenate(channel_index_parts, axis=0)
+        contact_vector = np.concatenate(contact_vector_parts, axis=0)
+        order = np.argsort(channel_indices, kind="stable")
+        return contact_vector[order]
+
     def to_numpy(self, complete: bool = False) -> np.ndarray:
         """
         Export all probes into a numpy array.

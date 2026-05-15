@@ -26,6 +26,7 @@ cov.xml
 .DS_Store
 
 uv.lock
+.codex
 
 # libraries
 **/neuropixels_library_generated
