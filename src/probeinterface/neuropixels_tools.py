@@ -478,7 +478,6 @@ def _parse_imro_string(imro_table_string: str) -> dict:
     # Parse header fields using the catalogue schema
     imro_header_fields_string = probe_features["z_imro_formats"][imro_format + "_hdr_flds"]
     imro_header_fields = tuple(imro_header_fields_string.replace("(", "").replace(")", "").split(","))
-
     # Initialize with parsed header and empty lists for per-entry fields (filled below).
     # For Phase3A (3-field header), zip silently drops the extra value, which is correct.
     imro_per_channel = {"header": dict(zip(imro_header_fields, header_values))}
