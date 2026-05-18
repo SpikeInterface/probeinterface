@@ -496,6 +496,62 @@ def test_NP1110_probes():
     np.testing.assert_array_equal(probe.contact_positions, sns_map_positions)
 
 
+def test_NP2020_probes():
+    """
+    Tests reading data for a Neuropixels 2.0 Quad Base probe, with probe part
+    number NP2020. The probe meta file uses the imro format introduced in 20260115,
+    which in turn uses probe part number rather than probe type in the imro header.
+
+    This test checks that the we can construct a probe from the file, and that
+    the electrode positions from the probeinterface construction matches those in
+    the snsGeomMap metadata.
+    """
+
+    # Probe has 4 banks, each bank has 2 columns, each column has 192 electrodes.
+    sns_channel_offset = np.array([27.0, 0.0])
+    # For bank0, all electrodes are packet at the tip, in an 48x8 grid
+    expected_electrode_columns = 8
+    expected_electode_rows = 192
+    distance_between_shanks = 250
+    meta_file = data_path / "NP2020_sample_g0_t0.imec0.ap.meta"
+    probe = read_spikeglx(meta_file)
+
+    assert probe.manufacturer == "imec"
+    assert probe.model_name == "NP2020"
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
+
+    # Test contact geometry
+    contact_width = 12.0
+    contact_shape = "square"
+
+    assert np.all(probe.contact_shape_params == {"width": contact_width})
+    assert np.all(probe.contact_shapes == contact_shape)
+
+    # Check contact positions are within expected bounds
+    contact_positions = probe.contact_positions
+    x = contact_positions[:, 0]
+    y = contact_positions[:, 1]
+
+    unique_x_values = np.unique(x)
+    assert unique_x_values.size == expected_electrode_columns
+    unique_y_values = np.unique(y)
+    assert unique_y_values.size == expected_electode_rows
+
+    # Test against snsGeomMap parsing for the same file, which should give the same result
+    meta = parse_spikeglx_meta(meta_file)
+    _, _, _, _, x_pos, y_pos, _ = parse_spikeglx_snsGeomMap(meta)
+    for shank_id, contact_position, sns_x_position, sns_y_position in zip(
+        probe.shank_ids, probe.contact_positions, x_pos, y_pos
+    ):
+        assert contact_position[1] == sns_y_position
+        assert contact_position[0] == sns_x_position - 27.0 + int(shank_id) * distance_between_shanks
+
+    x_shift_per_shank = probe.shank_ids.astype(int) * distance_between_shanks
+    np.testing.assert_array_equal(probe.contact_positions[:, 1], y_pos - sns_channel_offset[1])
+    np.testing.assert_array_equal(probe.contact_positions[:, 0], x_pos - sns_channel_offset[0] + x_shift_per_shank)
+
+
 def test_CatGT_NP1():
     probe = read_spikeglx(data_path / "catgt.meta")
     assert "1.0" in probe.description
