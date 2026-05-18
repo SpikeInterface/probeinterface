@@ -499,11 +499,11 @@ def test_NP1110_probes():
 def test_NP2020_probes():
     """
     Tests reading data for a Neuropixels 2.0 Quad Base probe, with probe part
-    number NP2020. The probe meta file uses the imro format introduced in 20260115, 
+    number NP2020. The probe meta file uses the imro format introduced in 20260115,
     which in turn uses probe part number rather than probe type in the imro header.
 
-    This test checks that the we can construct a probe from the file, and that 
-    the electrode positions from the probeinterface construction matches those in 
+    This test checks that the we can construct a probe from the file, and that
+    the electrode positions from the probeinterface construction matches those in
     the snsGeomMap metadata.
     """
 
