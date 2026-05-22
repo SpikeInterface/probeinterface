@@ -173,4 +173,4 @@ Discussion
 
 This pattern was proposed and is tracked in issue
 `#405 <https://github.com/SpikeInterface/probeinterface/issues/405>`_; if you have
-any discussion point to add please re-open the issue so the mantainers can disucss.
+any discussion point to add please re-open the issue so the maintainers can discuss.
