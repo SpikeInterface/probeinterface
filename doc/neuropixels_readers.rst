@@ -165,7 +165,7 @@ before the catalogue pattern) had three problems:
 
 The pattern also pays out on the upgrade path. When IMEC ships a new probe
 variant, the integration work is "add the part number to ProbeTable, re-run
-the postprocess script". 
+the postprocess script".
 
 
 Discussion
