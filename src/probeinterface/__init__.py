@@ -15,6 +15,8 @@ from .io import (
     read_BIDS_probe,
     write_BIDS_probe,
     read_spikegadgets,
+    read_spikegadgets_neuropixels,
+    has_spikegadgets_neuropixels_probes,
     read_mearec,
     read_nwb,
     read_maxwell,
