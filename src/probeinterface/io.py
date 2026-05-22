@@ -733,16 +733,6 @@ def write_csv(file, probe):
     raise NotImplementedError
 
 
-def _spikegadgets_chind_identity(chind: int) -> int:
-    """``channelsOn`` bit position is the catalogue contact index directly.
-
-    Used for NP1.0 standard: Trodes' ``channelsOn`` bitmask and the catalogue
-    ``NP1000`` share the same per-shank row-major ordering, so no remap is
-    needed.
-    """
-    return chind
-
-
 def _spikegadgets_chind_np2_4shank(chind: int) -> int:
     """Remap NP2.0 4-shank ``channelsOn`` bit position to catalogue index.
 
@@ -774,9 +764,10 @@ def _spikegadgets_chind_np2_4shank(chind: int) -> int:
 # and `5246-5291`). Each entry gives the HardwareConfiguration `Device` name to
 # filter on, the catalogue part number to build the full probe from, the
 # per-probe horizontal shift (um) used when plotting multi-probe ProbeGroups,
-# and the function that maps a Trodes ``channelsOn`` bit position (chind, equal
-# to ``electrode_id[1:] - 1`` in the .rec XML) to a probeinterface catalogue
-# contact index.
+# and (optionally) a function remapping Trodes' ``channelsOn`` bit position
+# (chind, equal to ``electrode_id[1:] - 1`` in the .rec XML) to a probeinterface
+# catalogue contact index. The remap is None when Trodes' ordering already
+# matches the catalogue's (NP1.0 standard).
 #
 # All NP1.0 staggered catalogue variants (NP1000, NP1001, NP1010-NP1014,
 # PRB_1_2_0480_2, PRB_1_4_0480_1, PRB_1_4_0480_1_C) share identical 2D
@@ -786,8 +777,8 @@ def _spikegadgets_chind_np2_4shank(chind: int) -> int:
 # are cleared on the sliced probe in both cases because the XML does not
 # carry a part-number field.
 _SPIKEGADGETS_NEUROPIXELS_FORMATS = {
-    # (device, deviceSubType): (HardwareConfiguration device name, part_number, multi_probe_x_shift_um, chind_to_catalogue_index)
-    ("neuropixels1", "10"): ("NeuroPixels1", "NP1000", 250.0, _spikegadgets_chind_identity),
+    # (device, deviceSubType): (HardwareConfiguration device name, part_number, multi_probe_x_shift_um, chind_to_catalogue_index | None)
+    ("neuropixels1", "10"): ("NeuroPixels1", "NP1000", 250.0, None),
     ("neuropixels2", "4_SHANK"): ("NeuroPixels2", "NP2014", 1000.0, _spikegadgets_chind_np2_4shank),
 }
 
