@@ -85,6 +85,39 @@ def test_neuropixels_2_4shank_reader():
     assert abs((dv_rec_2 - dv_cat_2) - offset_dv) < 1e-6, "dv offset must be constant across rows"
 
 
+def test_stereotactic_annotations_np1():
+    # SpikeChannel coord_ml/dv/ap from the .rec are stored as per-contact
+    # annotations on the output probe. Sentinel: chind 383 (id "1384" on probe
+    # 1) maps to catalogue idx 383 (e383) under identity remap; the matching
+    # SpikeChannel has coord_ml="-8" coord_dv="3920" coord_ap="0".
+    probe_group = read_spikegadgets_neuropixels(data_path / test_file)
+    probe = probe_group.probes[0]
+    n_contacts = probe.get_contact_count()
+    for key in ("stereotactic_ml", "stereotactic_dv", "stereotactic_ap"):
+        assert key in probe.contact_annotations
+        assert probe.contact_annotations[key].shape == (n_contacts,)
+    i = list(probe.contact_ids).index("e383")
+    assert probe.contact_annotations["stereotactic_ml"][i] == -8.0
+    assert probe.contact_annotations["stereotactic_dv"][i] == 3920.0
+    assert probe.contact_annotations["stereotactic_ap"][i] == 0.0
+
+
+def test_stereotactic_annotations_np2_4shank():
+    # Same check for NP2.0 4-shank: chind 1671 maps to catalogue idx 416
+    # (s0e416) via the row-major-to-shank-major remap; the matching SpikeChannel
+    # has coord_ml="-383" coord_dv="3295" coord_ap="0".
+    probe_group = read_spikegadgets_neuropixels(data_path / test_file_np2_4shank)
+    probe = probe_group.probes[0]
+    n_contacts = probe.get_contact_count()
+    for key in ("stereotactic_ml", "stereotactic_dv", "stereotactic_ap"):
+        assert key in probe.contact_annotations
+        assert probe.contact_annotations[key].shape == (n_contacts,)
+    i = list(probe.contact_ids).index("s0e416")
+    assert probe.contact_annotations["stereotactic_ml"][i] == -383.0
+    assert probe.contact_annotations["stereotactic_dv"][i] == 3295.0
+    assert probe.contact_annotations["stereotactic_ap"][i] == 0.0
+
+
 def test_has_spikegadgets_neuropixels_probes_np2():
     # NP2.0 4-shank .rec should also report True.
     assert has_spikegadgets_neuropixels_probes(data_path / test_file_np2_4shank) is True
@@ -110,6 +143,8 @@ if __name__ == "__main__":
     test_parse_meta()
     test_neuropixels_1_reader()
     test_neuropixels_2_4shank_reader()
+    test_stereotactic_annotations_np1()
+    test_stereotactic_annotations_np2_4shank()
     test_has_spikegadgets_neuropixels_probes_np2()
     test_read_spikegadgets_deprecation_warning()
     test_has_spikegadgets_neuropixels_probes_positive()
