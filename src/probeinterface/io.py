@@ -928,6 +928,7 @@ def read_spikegadgets_neuropixels(file: str | Path, raise_error: bool = True) ->
         # rather than a fact read from the file.
         probe.model_name = ""
         probe.description = ""
+        probe.annotations.pop("part_number", None)
 
         device_channels = np.array([electrode_to_hwchan[idx] for idx in active_indices])
         probe.set_device_channel_indices(device_channels)
