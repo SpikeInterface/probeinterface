@@ -733,54 +733,55 @@ def write_csv(file, probe):
     raise NotImplementedError
 
 
-def _spikegadgets_chind_np2_4shank(chind: int) -> int:
+def _spikegadgets_channel_index_np2_4shank(channel_index: int) -> int:
     """Remap NP2.0 4-shank ``channelsOn`` bit position to catalogue index.
 
     Trodes writes ``channelsOn`` row-major across all four shanks (eight
     contacts per row, two columns per shank), with the column-within-row
-    direction reversed relative to ``probeColumn`` (high ``chind`` -> low
+    direction reversed relative to ``probeColumn`` (high ``channel_index`` -> low
     ``probeColumn``; see Trodes `configuration.cpp:5374-5421` and the
     `probeColumn` annotations in the .rec ``SpikeChannel`` elements). The
     catalogue (``NP2014``) is shank-major instead (s0e0..s0e1279,
-    s1e0..s1e1279, ...), so chind needs remapping. Verified empirically
-    against the SpikeGadgets-provided NP2.0 4-shank fixture: chind 1671 with
-    ``probeColumn="0"`` maps to ``s0e416``, chind 1664 with ``probeColumn="7"``
-    maps to ``s3e417``, and the recovered ml/dv values match the catalogue
-    positions up to a single stereotactic offset.
+    s1e0..s1e1279, ...), so channel_index needs remapping. Verified empirically
+    against the SpikeGadgets-provided NP2.0 4-shank fixture: channel_index 1671 with
+    ``probeColumn="0"`` maps to ``s0e416``, channel_index 1664 with ``probeColumn="7"``
+    maps to ``s3e417``, and the .rec ``coord_ml``/``coord_dv`` values for those
+    SpikeChannel entries match the catalogue positions up to a single stereotactic
+    offset (these XML coords are not consumed by the reader, only used by the
+    test in `tests/test_io/test_spikegadgets.py` as an independent cross-check).
     """
     CONTACTS_PER_ROW = 8  # 2 columns per shank * 4 shanks
     COLS_PER_SHANK = 2
     CONTACTS_PER_SHANK = 1280
 
-    row = chind // CONTACTS_PER_ROW
-    col_global = (CONTACTS_PER_ROW - 1) - (chind % CONTACTS_PER_ROW)
+    row = channel_index // CONTACTS_PER_ROW
+    col_global = (CONTACTS_PER_ROW - 1) - (channel_index % CONTACTS_PER_ROW)
     shank = col_global // COLS_PER_SHANK
     col_on_shank = col_global % COLS_PER_SHANK
     return shank * CONTACTS_PER_SHANK + row * COLS_PER_SHANK + col_on_shank
 
 
-# Dispatch for `read_spikegadgets_neuropixels`, keyed by SpikeConfiguration
-# (device, deviceSubType) attributes (see Trodes `configuration.cpp:2495-2520`
-# and `5246-5291`). Each entry gives the HardwareConfiguration `Device` name to
-# filter on, the catalogue part number to build the full probe from, the
-# per-probe horizontal shift (um) used when plotting multi-probe ProbeGroups,
-# and (optionally) a function remapping Trodes' ``channelsOn`` bit position
-# (chind, equal to ``electrode_id[1:] - 1`` in the .rec XML) to a probeinterface
-# catalogue contact index. The remap is None when Trodes' ordering already
-# matches the catalogue's (NP1.0 standard).
-#
-# All NP1.0 staggered catalogue variants (NP1000, NP1001, NP1010-NP1014,
-# PRB_1_2_0480_2, PRB_1_4_0480_1, PRB_1_4_0480_1_C) share identical 2D
-# geometry, so NP1000 is the canonical pick. All NP2.0 4-shank catalogue
-# variants (NP2010, NP2013, NP2014, NP2020, NP2021) share identical 2D
-# geometry, so NP2014 is the canonical pick. model_name and description
-# are cleared on the sliced probe in both cases because the XML does not
-# carry a part-number field.
-_SPIKEGADGETS_NEUROPIXELS_FORMATS = {
-    # (device, deviceSubType): (HardwareConfiguration device name, part_number, multi_probe_x_shift_um, chind_to_catalogue_index | None)
-    ("neuropixels1", "10"): ("NeuroPixels1", "NP1000", 250.0, None),
-    ("neuropixels2", "4_SHANK"): ("NeuroPixels2", "NP2014", 1000.0, _spikegadgets_chind_np2_4shank),
-}
+def _spikegadgets_channel_index_np2_1shank(channel_index: int) -> int:
+    """Remap NP2.0 single-shank ``channelsOn`` bit position to catalogue index.
+
+    Same row-major-within-probe layout as NP2.0 4-shank (Trodes
+    `configuration.cpp:5279-5290`) but with only one shank and two
+    columns per row, so two contacts per row. The within-row direction is
+    reversed relative to the catalogue (extrapolated from NP2.0 4-shank
+    where this was empirically verified): channel_index 0 -> right column, channel_index 1
+    -> left column, channel_index 2 -> next row right, etc. The catalogue
+    (``NP2000``) lays out contacts with left column first (idx 0 = left,
+    idx 1 = right per row), so the remap pairs are swapped:
+    catalogue_idx = row * 2 + (1 - channel_index % 2).
+
+    Unverified against a real fixture; will be revisited when a NP2.0
+    single-shank .rec from a Bennu rig becomes available.
+    """
+    COLS_PER_SHANK = 2
+
+    row = channel_index // COLS_PER_SHANK
+    col_on_shank = (COLS_PER_SHANK - 1) - (channel_index % COLS_PER_SHANK)
+    return row * COLS_PER_SHANK + col_on_shank
 
 
 def read_spikegadgets_neuropixels(file: str | Path, raise_error: bool = True) -> ProbeGroup:
@@ -790,11 +791,14 @@ def read_spikegadgets_neuropixels(file: str | Path, raise_error: bool = True) ->
     and information for all probes will be returned in a ProbeGroup object.
 
     Supported Neuropixels variants: NP1.0 standard (``device="neuropixels1"``,
-    older recordings without ``deviceSubType`` are treated as standard) and
-    NP2.0 4-shank (``device="neuropixels2" deviceSubType="4_SHANK"``).
-    Other Neuropixels variants Trodes can describe (NP1.0 HD/NHP, NP2.0 single-shank,
-    NRIC) raise ``ValueError`` for now; non-Neuropixels probes (tetrodes etc.) are
-    not handled at all. Use :func:`has_spikegadgets_neuropixels_probes` to check
+    older recordings without ``deviceSubType`` are treated as standard),
+    NP2.0 single-shank (``device="neuropixels2" deviceSubType="1_SHANK"``),
+    and NP2.0 4-shank (``device="neuropixels2" deviceSubType="4_SHANK"``).
+    The single-shank channel_index remap is extrapolated from the 4-shank pattern and
+    has not been verified against a real fixture yet. Other Neuropixels variants
+    Trodes can describe (NP1.0 HD, NP1.0 NHP short/medium/long, NRIC) raise
+    ``ValueError`` for now; non-Neuropixels probes (tetrodes etc.) are not
+    handled at all. Use :func:`has_spikegadgets_neuropixels_probes` to check
     whether a ``.rec`` file contains Neuropixels probe geometry before calling
     this reader.
 
@@ -808,6 +812,44 @@ def read_spikegadgets_neuropixels(file: str | Path, raise_error: bool = True) ->
     probe_group : ProbeGroup object
 
     """
+    # Dispatch keyed by SpikeConfiguration (device, deviceSubType) attributes
+    # (see Trodes `configuration.cpp:2495-2520` and `5246-5291`). Each entry
+    # gives the HardwareConfiguration `Device` name to filter on, the catalogue
+    # part number to build the full probe from, the per-probe horizontal shift
+    # (um) used when plotting multi-probe ProbeGroups, and (optionally) a
+    # function remapping Trodes' ``channelsOn`` bit position (channel_index, equal to
+    # ``electrode_id[1:] - 1`` in the .rec XML) to a probeinterface catalogue
+    # contact index. The remap is None when Trodes' ordering already matches
+    # the catalogue's (NP1.0 standard).
+    #
+    # All NP1.0 staggered catalogue variants (NP1000, NP1001, NP1010-NP1014,
+    # PRB_1_2_0480_2, PRB_1_4_0480_1, PRB_1_4_0480_1_C) share identical 2D
+    # geometry, so NP1000 is the canonical pick. All NP2.0 4-shank catalogue
+    # variants (NP2010, NP2013, NP2014, NP2020, NP2021) share identical 2D
+    # geometry, so NP2014 is the canonical pick. model_name and description
+    # are cleared on the sliced probe in both cases because the XML does not
+    # carry a part-number field.
+    spikegadgets_neuropixels_formats = {
+        ("neuropixels1", "10"): {
+            "hardware_device_name": "NeuroPixels1",
+            "part_number": "NP1000",
+            "multi_probe_plot_offset_um": 250.0,
+            "channel_index_to_catalogue_index": None,
+        },
+        ("neuropixels2", "1_SHANK"): {
+            "hardware_device_name": "NeuroPixels2",
+            "part_number": "NP2000",
+            "multi_probe_plot_offset_um": 250.0,
+            "channel_index_to_catalogue_index": _spikegadgets_channel_index_np2_1shank,
+        },
+        ("neuropixels2", "4_SHANK"): {
+            "hardware_device_name": "NeuroPixels2",
+            "part_number": "NP2014",
+            "multi_probe_plot_offset_um": 1000.0,
+            "channel_index_to_catalogue_index": _spikegadgets_channel_index_np2_4shank,
+        },
+    }
+
     header_txt = parse_spikegadgets_header(file)
     root = ElementTree.fromstring(header_txt)
     hconf = root.find("HardwareConfiguration")
@@ -820,30 +862,25 @@ def read_spikegadgets_neuropixels(file: str | Path, raise_error: bool = True) ->
     if sconf_device == "neuropixels1" and not sconf_subtype:
         sconf_subtype = "10"
     dispatch_key = (sconf_device, sconf_subtype)
-    if dispatch_key not in _SPIKEGADGETS_NEUROPIXELS_FORMATS:
+    if dispatch_key not in spikegadgets_neuropixels_formats:
         raise ValueError(
             f"Unsupported SpikeGadgets Neuropixels variant device={sconf_device!r} "
             f"deviceSubType={sconf_subtype!r}; supported: "
-            f"{sorted(_SPIKEGADGETS_NEUROPIXELS_FORMATS)}"
+            f"{sorted(spikegadgets_neuropixels_formats)}"
         )
-    (
-        hconf_device_name,
-        part_number,
-        multi_probe_x_shift_um,
-        chind_to_catalogue_index,
-    ) = _SPIKEGADGETS_NEUROPIXELS_FORMATS[dispatch_key]
+    fmt = spikegadgets_neuropixels_formats[dispatch_key]
 
-    probe_configs = [d for d in hconf if d.attrib.get("name") == hconf_device_name]
+    probe_configs = [d for d in hconf if d.attrib.get("name") == fmt["hardware_device_name"]]
     n_probes = len(probe_configs)
 
     if n_probes == 0:
         if raise_error:
-            raise Exception(f"No {hconf_device_name} probes found")
+            raise Exception(f"No {fmt['hardware_device_name']} probes found")
         return None
 
     # SourceOptions blocks carry the per-probe AP/LF gain settings. They appear
     # in the same order as the SpikeNTrode probe digits (1, 2, 3).
-    source_options_blocks = [s for s in hconf.findall("SourceOptions") if s.attrib.get("name") == hconf_device_name]
+    source_options_blocks = [s for s in hconf.findall("SourceOptions") if s.attrib.get("name") == fmt["hardware_device_name"]]
 
     probe_group = ProbeGroup()
 
@@ -852,25 +889,30 @@ def read_spikegadgets_neuropixels(file: str | Path, raise_error: bool = True) ->
         # Each id is "<probe_digit><1-based electrode number>"; the leading digit
         # identifies the probe (1, 2, or 3, matching the documented SpikeGadgets
         # limit of three simultaneous Neuropixels probes) and the remainder is
-        # the 1-based electrode number on that probe (chind = electrode - 1).
+        # the 1-based electrode number on that probe (channel_index = electrode - 1).
         # NP1.0 standard uses maxPadsPerProbe = 1000 (ids are 4 chars wide, e.g.
         # "1384"); NP2.0 uses maxPadsPerProbe = 10000 (ids are 5 chars wide, e.g.
         # "11672"). Slicing by [1:] handles both because the probe digit is
-        # always one char. The chind_to_catalogue_index function then remaps
-        # Trodes' channelsOn bit position to the catalogue's contact order
-        # (identity for NP1.0; row-major-to-shank-major remap for NP2.0 4-shank).
+        # always one char. The format's channel_index_to_catalogue_index function
+        # then remaps Trodes' channelsOn bit position to the catalogue's contact
+        # order; it is None when no remap is needed (NP1.0, where the catalogue
+        # happens to be in Trodes' bit order already).
         electrode_to_hwchan = {}
         for ntrode in sconf:
             electrode_id = ntrode.attrib["id"]
             if int(electrode_id[0]) == curr_probe:
-                chind = int(electrode_id[1:]) - 1
-                catalogue_index = chind_to_catalogue_index(chind)
+                channel_index = int(electrode_id[1:]) - 1
+                catalogue_index = (
+                    channel_index
+                    if fmt["channel_index_to_catalogue_index"] is None
+                    else fmt["channel_index_to_catalogue_index"](channel_index)
+                )
                 hw_chan = int(ntrode[0].attrib["hwChan"])
                 electrode_to_hwchan[catalogue_index] = hw_chan
 
         active_indices = np.array(sorted(electrode_to_hwchan.keys()))
 
-        full_probe = build_neuropixels_probe(part_number)
+        full_probe = build_neuropixels_probe(fmt["part_number"])
         probe = full_probe.get_slice(active_indices)
 
         # Clear part-number-specific metadata since the .rec XML does not carry
@@ -904,7 +946,7 @@ def read_spikegadgets_neuropixels(file: str | Path, raise_error: bool = True) ->
                     probe.annotate(lf_gain=float(lf_gain_str))
 
         # Shift multiple probes so they don't overlap when plotted
-        probe.move([multi_probe_x_shift_um * (curr_probe - 1), 0])
+        probe.move([fmt["multi_probe_plot_offset_um"] * (curr_probe - 1), 0])
 
         probe_group.add_probe(probe)
 
