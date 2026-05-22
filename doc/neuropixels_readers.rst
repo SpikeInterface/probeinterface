@@ -42,8 +42,23 @@ convert raw samples to microvolts via the per-contact gains, or to plot
 the recorded contacts alongside the recorded traces.
 
 
-How readers connect the two
----------------------------
+The catalogue source
+--------------------
+
+A probe part number (SKU) is an IMEC identifier such as ``"NP1000"``,
+``"NP2000"``, or ``"NP2014"``. The part number determines the silicon
+geometry: 960 contacts on Neuropixels 1.0, 1280 per shank on Neuropixels
+2.0, plus all the per-variant pitch and shank dimensions.
+
+The data behind the catalogue comes from the
+`ProbeTable <https://github.com/billkarsh/ProbeTable>`_ repository maintained
+by `Bill Karsh <https://github.com/billkarsh>`_ (author of SpikeGLX).
+ProbeTable is the canonical machine-readable inventory of IMEC Neuropixels
+probe specifications, all keyed by part number.
+
+
+Format readers
+--------------
 
 A format reader turns a Neuropixels recording into a recording-setup probe
 in three steps:
@@ -58,30 +73,8 @@ in three steps:
 3. **Attach the recording-setup metadata.** Add the per-contact gains,
    reference settings, and sampling order, and set the probe wiring.
 
-The sections below cover where the part number comes from per reader
-(step 1) and where the catalogue data itself comes from.
-
-
-The catalogue
--------------
-
-A probe part number (SKU) is an IMEC identifier such as ``"NP1000"``,
-``"NP2000"``, or ``"NP2014"``. The part number determines the silicon
-geometry: 960 contacts on Neuropixels 1.0, 1280 per shank on Neuropixels
-2.0, plus all the per-variant pitch and shank dimensions.
-
-The data behind the catalogue comes from the
-`ProbeTable <https://github.com/billkarsh/ProbeTable>`_ repository maintained
-by `Bill Karsh <https://github.com/billkarsh>`_ (author of SpikeGLX).
-ProbeTable is the canonical machine-readable inventory of IMEC Neuropixels
-probe specifications, all keyed by part number.
-
-
-The readers
------------
-
-Four readers produce a probe from a Neuropixels recording. They differ in
-where they look up the part number:
+The four readers in probeinterface differ in step 1: where they look up the
+part number in the recording's metadata.
 
 .. list-table::
    :header-rows: 1
