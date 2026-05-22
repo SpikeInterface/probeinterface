@@ -880,7 +880,9 @@ def read_spikegadgets_neuropixels(file: str | Path, raise_error: bool = True) ->
 
     # SourceOptions blocks carry the per-probe AP/LF gain settings. They appear
     # in the same order as the SpikeNTrode probe digits (1, 2, 3).
-    source_options_blocks = [s for s in hconf.findall("SourceOptions") if s.attrib.get("name") == fmt["hardware_device_name"]]
+    source_options_blocks = [
+        s for s in hconf.findall("SourceOptions") if s.attrib.get("name") == fmt["hardware_device_name"]
+    ]
 
     probe_group = ProbeGroup()
 
