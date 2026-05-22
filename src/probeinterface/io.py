@@ -749,6 +749,12 @@ def _spikegadgets_channel_index_np2_4shank(channel_index: int) -> int:
     SpikeChannel entries match the catalogue positions up to a single stereotactic
     offset (these XML coords are not consumed by the reader, only used by the
     test in `tests/test_io/test_spikegadgets.py` as an independent cross-check).
+    Independently confirmed in May 2026 by Mattias Karlsson (SpikeGadgets /
+    Trodes author) on PR #441: "the 2.0 four-shank probe has two columns per
+    shank... the first electrode on the probe (starts with 1) is in the lower
+    right, and number 10008 is on the lower left. Then, 10009 is the second
+    row on the right, and so on", which is exactly the (row, col_global=7-x)
+    layout this function encodes.
     """
     CONTACTS_PER_ROW = 8  # 2 columns per shank * 4 shanks
     COLS_PER_SHANK = 2
