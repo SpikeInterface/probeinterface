@@ -733,12 +733,17 @@ def write_csv(file, probe):
     raise NotImplementedError
 
 
-def read_spikegadgets(file: str | Path, raise_error: bool = True) -> ProbeGroup:
+def read_spikegadgets_neuropixels(file: str | Path, raise_error: bool = True) -> ProbeGroup:
     """
     Find active channels of the given Neuropixels probe from a SpikeGadgets .rec file.
     SpikeGadgets headstages support up to three Neuropixels 1.0 probes (as of March 28, 2024),
     and information for all probes will be returned in a ProbeGroup object.
 
+    This function only supports Neuropixels probes recorded with SpikeGadgets
+    headstages (``HardwareConfiguration`` entries with ``name == "NeuroPixels1"``).
+    It does not handle tetrodes or other probe types that SpikeGadgets can
+    record. Use :func:`has_spikegadgets_neuropixels_probes` to check whether a
+    ``.rec`` file contains Neuropixels probe geometry before calling this reader.
 
     Parameters
     ----------
@@ -832,6 +837,67 @@ def read_spikegadgets(file: str | Path, raise_error: bool = True) -> ProbeGroup:
         probe_group.add_probe(probe)
 
     return probe_group
+
+
+def read_spikegadgets(*args, **kwargs) -> ProbeGroup:
+    """
+    Deprecated alias for :func:`read_spikegadgets_neuropixels`.
+
+    The name ``read_spikegadgets`` is misleading because the function only reads
+    Neuropixels probe geometry, not arbitrary SpikeGadgets ``.rec`` recordings.
+    Use :func:`read_spikegadgets_neuropixels` instead, and
+    :func:`has_spikegadgets_neuropixels_probes` to check whether a ``.rec`` file
+    has Neuropixels geometry before calling it.
+    """
+    warnings.warn(
+        "read_spikegadgets is deprecated and will be removed in a future release. "
+        "Use read_spikegadgets_neuropixels instead.",
+        category=DeprecationWarning,
+        stacklevel=2,
+    )
+    return read_spikegadgets_neuropixels(*args, **kwargs)
+
+
+def has_spikegadgets_neuropixels_probes(file: str | Path) -> bool:
+    """
+    Return True if the SpikeGadgets ``.rec`` file describes at least one
+    Neuropixels probe.
+
+    Detection scans the ``HardwareConfiguration`` block of the ``.rec`` XML
+    header for ``Device`` entries whose ``name`` attribute matches a known
+    Neuropixels source name (currently ``"NeuroPixels1"``). The presence of
+    any such entry is the ground-truth signal that the file contains
+    Neuropixels probe geometry, independent of what other hardware the
+    headstage is also streaming.
+
+    Intended use: callers that route heterogeneous SpikeGadgets recordings
+    (mixing tetrodes, Neuropixels, etc.) can gate the call to
+    :func:`read_spikegadgets_neuropixels` on this helper and skip probe
+    attachment for non-Neuropixels recordings.
+
+    Parameters
+    ----------
+    file : str or Path
+        Path to the SpikeGadgets ``.rec`` file.
+
+    Returns
+    -------
+    bool
+    """
+    try:
+        header_txt = parse_spikegadgets_header(file)
+        root = ElementTree.fromstring(header_txt)
+    except Exception:
+        return False
+
+    hconf = root.find("HardwareConfiguration")
+    if hconf is None:
+        return False
+
+    for device in hconf:
+        if device.attrib.get("name") == "NeuroPixels1":
+            return True
+    return False
 
 
 def parse_spikegadgets_header(file: str | Path) -> str:
