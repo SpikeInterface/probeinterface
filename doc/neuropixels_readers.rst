@@ -1,5 +1,5 @@
-Neuropixels format readers: catalogue construction and recording-specific wiring
-=================================================================================
+The Neuropixels catalogue pattern
+=================================
 
 .. currentmodule:: probeinterface
 
@@ -63,30 +63,31 @@ and produce a probe ready to use with SpikeInterface:
        Neuropixels 1.0, ``NP2000`` for Neuropixels 2.0 single-shank, ``NP2014``
        for Neuropixels 2.0 4-shank
 
-The first three readers identify the actual probe stock-keeping unit (SKU)
-from the recording metadata. SpikeGadgets is the exception: its ``.rec`` XML
-does not carry a part number field, so the reader cannot identify the SKU.
-It picks one representative per geometry-equivalent family (all Neuropixels
-1.0 staggered variants share contact positions; all Neuropixels 2.0
-single-shank variants share contact positions; all Neuropixels 2.0 4-shank
-variants share contact positions) and clears the ``model_name``,
-``description``, and ``part_number`` annotations on the returned probe so
-downstream code does not read the stand-in as an attribution.
+The first three readers read the part number directly from the recording
+metadata. SpikeGadgets is the exception: its ``.rec`` XML does not carry a
+part number field, so the reader cannot know which specific variant produced
+the recording. It picks one representative per geometry-equivalent family
+(all Neuropixels 1.0 staggered variants share contact positions; all
+Neuropixels 2.0 single-shank variants share contact positions; all
+Neuropixels 2.0 4-shank variants share contact positions) and clears the
+``model_name``, ``description``, and ``part_number`` annotations on the
+returned probe so downstream code does not read the stand-in as an
+attribution.
 
 
 From catalogue probe to probe in a recording setup
 --------------------------------------------------
 
-The catalogue probe is pure geometry, divorced from any session. A real
+The catalogue probe is pure geometry, divorced from any recording session. A real
 recording uses only a subset of those contacts: the Neuropixels headstage
 acquires 384 channels at a time, and the recording configuration selects
 which catalogue contacts those 384 are drawn from (384 of 960 on Neuropixels
 1.0, 384 of 1280 per shank on Neuropixels 2.0 single-shank, 384 of 5120 on
 Neuropixels 2.0 4-shank). The selection mechanism differs by recording
 format (an IMRO table for SpikeGLX, a channel map in ``settings.xml`` for
-Open Ephys, the ``SpikeNTrode`` list in SpikeGadgets's ``.rec`` XML); the
-"Matching catalogue contacts to recorded data" section below covers each
-case. On top of the selection, the recording adds session-specific state:
+Open Ephys, the ``SpikeNTrode`` list in SpikeGadgets's ``.rec`` XML); each
+reader's docstring covers the specifics for that format. On top of the
+selection, the recording adds session-specific state:
 per-contact analog band (AP) and local field potential (LFP) gains, ADC
 sample order, reference configuration, and the channel-to-file mapping that
 says where each contact's data lives in the saved binary. Probeinterface
@@ -98,7 +99,7 @@ Each reader produces the recording-setup probe in the same three steps:
 1. Build the catalogue probe by calling
    :py:func:`build_neuropixels_probe(part_number) <build_neuropixels_probe>`
    with the part number obtained from the recording metadata.
-2. Slice the catalogue probe to the active electrodes for this session via
+2. Slice the catalogue probe to the active electrodes for this recording session via
    :py:meth:`probe.get_slice(active_indices) <Probe.get_slice>`. The slice
    drops the unrecorded contacts but preserves the probe-level annotations
    and the per-contact catalogue annotations (ADC group, sample order) on the
@@ -107,35 +108,6 @@ Each reader produces the recording-setup probe in the same three steps:
    reference annotations, and finally
    :py:meth:`probe.set_device_channel_indices(...) <Probe.set_device_channel_indices>`
    to record where each surviving contact's data lives in the saved file.
-
-
-Matching catalogue contacts to recorded data
---------------------------------------------
-
-The catalogue-build step is the same across readers; the matching step is
-where the formats differ. ``active_indices`` and ``device_channel_indices``
-come from a different field in each metadata source:
-
-* **SpikeGLX:** ``active_indices`` is the electrode list parsed from the IMRO
-  table embedded in the ``.ap.meta`` file. ``device_channel_indices`` is
-  identity (``np.arange(n)``) because SpikeGLX writes one column per active
-  electrode in IMRO selection order.
-* **Open Ephys:** ``active_indices`` is the electrode list parsed from the
-  ``CHANNELS`` block in ``settings.xml``. ``device_channel_indices`` follows
-  the order the binary stream uses, which the same XML file describes.
-* **IMRO (standalone):** ``active_indices`` is parsed directly from the IMRO
-  entries. There is no recording to wire to, so :py:func:`read_imro` returns
-  the sliced probe without setting ``device_channel_indices``; callers that
-  have a corresponding ``.ap.bin`` use :py:func:`read_spikeglx` instead.
-* **SpikeGadgets:** ``active_indices`` is the list of ``SpikeNTrode``
-  electrodes from the ``.rec`` XML, remapped from Trodes' ``channelsOn`` bit
-  order to the catalogue's contact order (an identity remap for Neuropixels
-  1.0; a row-major-to-shank-major remap for Neuropixels 2.0 4-shank; a
-  per-row column swap for Neuropixels 2.0 single-shank).
-  ``device_channel_indices`` is the ``hwChan`` attribute on each
-  ``SpikeNTrode``, which happens to coincide with the column index in the
-  SpikeGadgets datalogger's binary stream because the firmware writes samples
-  in ``hwChan`` ascending order.
 
 
 What the pattern solves
@@ -161,7 +133,7 @@ before the catalogue pattern) had three problems:
   probe directly hid the fact that 576 catalogue contacts were silently
   dropped. The explicit ``probe.get_slice(active_indices)`` step makes the
   selection visible and inspectable: callers can ask "which catalogue
-  contacts did this session record?" and get a direct answer.
+  contacts did this recording session record?" and get a direct answer.
 
 The pattern also pays out on the upgrade path. When IMEC ships a new probe
 variant, the integration work is "add the part number to ProbeTable, re-run
