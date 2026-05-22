@@ -898,6 +898,7 @@ def read_spikegadgets_neuropixels(file: str | Path, raise_error: bool = True) ->
         # order; it is None when no remap is needed (NP1.0, where the catalogue
         # happens to be in Trodes' bit order already).
         electrode_to_hwchan = {}
+        electrode_to_stereotactic = {}
         for ntrode in sconf:
             electrode_id = ntrode.attrib["id"]
             if int(electrode_id[0]) == curr_probe:
@@ -907,8 +908,13 @@ def read_spikegadgets_neuropixels(file: str | Path, raise_error: bool = True) ->
                     if fmt["channel_index_to_catalogue_index"] is None
                     else fmt["channel_index_to_catalogue_index"](channel_index)
                 )
-                hw_chan = int(ntrode[0].attrib["hwChan"])
-                electrode_to_hwchan[catalogue_index] = hw_chan
+                spike_channel = ntrode[0]
+                electrode_to_hwchan[catalogue_index] = int(spike_channel.attrib["hwChan"])
+                electrode_to_stereotactic[catalogue_index] = (
+                    float(spike_channel.attrib["coord_ml"]),
+                    float(spike_channel.attrib["coord_dv"]),
+                    float(spike_channel.attrib["coord_ap"]),
+                )
 
         active_indices = np.array(sorted(electrode_to_hwchan.keys()))
 
@@ -923,6 +929,20 @@ def read_spikegadgets_neuropixels(file: str | Path, raise_error: bool = True) ->
 
         device_channels = np.array([electrode_to_hwchan[idx] for idx in active_indices])
         probe.set_device_channel_indices(device_channels)
+
+        # Stereotactic coordinates from the .rec SpikeChannel attributes
+        # (workspace probe origin + on-probe offset, in micrometres; see Trodes
+        # `configuration.cpp:5443-5445`). These are recording-specific surgical
+        # metadata, distinct from `contact_positions` which carries the pure
+        # on-probe catalogue geometry. We attach them as per-contact annotations
+        # so downstream code that wants stereotactic locations (e.g. histology
+        # registration) can read them without re-parsing the XML.
+        stereotactic = np.array([electrode_to_stereotactic[idx] for idx in active_indices])
+        probe.annotate_contacts(
+            stereotactic_ml=stereotactic[:, 0],
+            stereotactic_dv=stereotactic[:, 1],
+            stereotactic_ap=stereotactic[:, 2],
+        )
 
         # Per-contact ADC group and sample order from the catalogue MUX table plus
         # the hwChan mapping (which is the readout-channel index for each contact).
