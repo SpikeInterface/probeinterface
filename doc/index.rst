@@ -34,5 +34,6 @@ Here is a schema for the naming used in the package:
    examples/index.rst
    format_spec
    library
+   neuropixels_readers
    api
    release_notes
