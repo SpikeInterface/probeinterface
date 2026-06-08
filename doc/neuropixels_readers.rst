@@ -25,7 +25,7 @@ A catalogue probe is pure geometry, the same for every recording made with
 that variant. Use it to plot the probe layout, compute distances between
 contacts, or run any analysis that does not depend on a specific recording.
 
-**Recording-setup probe.** The catalogue probe specialised for one
+**Recording-setup probe.** The catalogue probe specialized for one
 recording session: only the contacts actually recorded are present
 (typically 384 of the 960 or more catalogue contacts), and per-contact
 recording state is attached:
