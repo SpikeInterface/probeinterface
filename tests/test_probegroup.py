@@ -6,8 +6,6 @@ import pytest
 import numpy as np
 
 
-
-
 def _make_probegroup():
     """Fixture: a ProbeGroup with 3 probes, each with device channel indices set."""
     probegroup = ProbeGroup()
@@ -265,14 +263,16 @@ def test_get_slice_all_contacts(probegroup):
         probegroup.get_global_contact_positions(),
     )
 
+
 # ── global_contact_order : to_numpy/from_numpy, to_dict/from_dict, get_slice
+
 
 def test_reordred_probegroup(probegroup):
     order = np.concatenate([np.arange(0, 96, 2), np.arange(95, 0, -2)])
-    
+
     contact_vector = probegroup.to_numpy(complete=True)
     contact_vector = contact_vector[order]
-    
+
     probegroup2 = ProbeGroup.from_numpy(contact_vector)
     assert probegroup2._global_contact_order is not None
     contact_vector2 = probegroup2.to_numpy(complete=True)
@@ -296,15 +296,12 @@ def test_reordred_probegroup(probegroup):
     # let go back to original order
     rev_order = np.argsort(order)
     probegroup6 = probegroup5.get_slice(rev_order)
-    assert probegroup6._global_contact_order is None 
-
+    assert probegroup6._global_contact_order is None
 
 
 if __name__ == "__main__":
     probegroup = _make_probegroup()
-    
+
     # test_probegroup(probegroup)
     # test_probegroup_3d()
     test_reordred_probegroup(probegroup)
-
-

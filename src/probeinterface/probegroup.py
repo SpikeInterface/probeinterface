@@ -375,7 +375,6 @@ class ProbeGroup:
 
         return sliced_probe_group
 
-
     def check_global_device_wiring_and_ids(self) -> None:
         # check unique device_channel_indices for !=-1
         chans = self.get_global_device_channel_indices()
