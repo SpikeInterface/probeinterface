@@ -8,7 +8,7 @@ from probeinterface import (
     read_spikegadgets_neuropixels,
     has_spikegadgets_neuropixels_probes,
 )
-from probeinterface.io import parse_spikegadgets_header
+from probeinterface.neuropixels_tools import parse_spikegadgets_header
 from probeinterface.testing import validate_probe_dict
 
 data_path = Path(__file__).absolute().parent.parent / "data" / "spikegadgets"
