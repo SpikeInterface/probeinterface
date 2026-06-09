@@ -151,7 +151,6 @@ class ProbeGroup:
         # Check if contacts are interleaved
         num_probes = np.unique(arr["probe_index"]).size
         is_interleaved = (num_probes > 1) and np.any(np.diff(arr["probe_index"]) < 0)
-        print('is_interleaved', is_interleaved)
         if is_interleaved:
             global_contact_order = []
 
@@ -291,7 +290,7 @@ class ProbeGroup:
             probe.set_device_channel_indices([-1] * n)
         
         if self._global_contact_order is not None:
-            # this is tricky conceptually but needed but needed for consistency
+            # this is tricky conceptually but needed for consistency
             rev_order = np.argsort(self._global_contact_order)
             device_channel_indices = device_channel_indices[rev_order]
 
@@ -346,7 +345,6 @@ class ProbeGroup:
             The sliced probe group
 
         """
-        # TODO SAM order!!!
 
         n = self.get_contact_count()
 
@@ -379,31 +377,10 @@ class ProbeGroup:
         contact_arr = contact_arr[selection]
         sliced_probe_group = ProbeGroup.from_numpy(contact_arr)
 
-        # TODO annoatation!!
+        # TODO annoatation probe per probe!!
 
         return sliced_probe_group
 
-        # # Map selection to indices of individual probes
-        # ind = 0
-        # sliced_probes = []
-        # for probe in self.probes:
-        #     n = probe.get_contact_count()
-        #     probe_limits = (ind, ind + n)
-        #     ind += n
-
-        #     probe_selection_indices = selection_indices[
-        #         (selection_indices >= probe_limits[0]) & (selection_indices < probe_limits[1])
-        #     ]
-        #     if len(probe_selection_indices) == 0:
-        #         continue
-        #     sliced_probe = probe.get_slice(probe_selection_indices - probe_limits[0])
-        #     sliced_probes.append(sliced_probe)
-
-        # sliced_probe_group = ProbeGroup()
-        # for probe in sliced_probes:
-        #     sliced_probe_group.add_probe(probe)
-
-        # return sliced_probe_group
 
     def check_global_device_wiring_and_ids(self) -> None:
         # check unique device_channel_indices for !=-1

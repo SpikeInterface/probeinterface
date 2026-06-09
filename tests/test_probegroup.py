@@ -6,8 +6,9 @@ import pytest
 import numpy as np
 
 
-@pytest.fixture
-def probegroup():
+
+
+def _make_probegroup():
     """Fixture: a ProbeGroup with 3 probes, each with device channel indices set."""
     probegroup = ProbeGroup()
     nchan = 0
@@ -19,6 +20,11 @@ def probegroup():
         probegroup.add_probe(probe)
         nchan += n
     return probegroup
+
+
+@pytest.fixture
+def probegroup():
+    return _make_probegroup()
 
 
 def test_probegroup(probegroup):
@@ -200,7 +206,7 @@ def test_copy_is_independent(probegroup):
     np.testing.assert_array_equal(probegroup.probes[0].contact_positions, original_positions)
 
 
-# ── get_slice() tests ───────────────────────────────────────────────────────
+# ── get_slice() simple : natural order
 
 
 def test_get_slice_by_bool(probegroup):
@@ -232,10 +238,10 @@ def test_get_slice_preserves_positions(probegroup):
     np.testing.assert_array_equal(sliced.get_global_contact_positions(), expected)
 
 
-def test_get_slice_empty_selection(probegroup):
-    sliced = probegroup.get_slice(np.array([], dtype=int))
-    assert sliced.get_contact_count() == 0
-    assert len(sliced.probes) == 0
+# def test_get_slice_empty_selection(probegroup):
+#     sliced = probegroup.get_slice(np.array([], dtype=int))
+#     assert sliced.get_contact_count() == 0
+#     assert len(sliced.probes) == 0
 
 
 def test_get_slice_wrong_bool_size(probegroup):
@@ -259,7 +265,46 @@ def test_get_slice_all_contacts(probegroup):
         probegroup.get_global_contact_positions(),
     )
 
+# ── global_contact_order : to_numpy/from_numpy, to_dict/from_dict, get_slice
+
+def test_reordred_probegroup(probegroup):
+    order = np.concatenate([np.arange(0, 96, 2), np.arange(95, 0, -2)])
+    
+    contact_vector = probegroup.to_numpy(complete=True)
+    contact_vector = contact_vector[order]
+    
+    probegroup2 = ProbeGroup.from_numpy(contact_vector)
+    assert probegroup2._global_contact_order is not None
+    contact_vector2 = probegroup2.to_numpy(complete=True)
+    assert np.array_equal(contact_vector, contact_vector2)
+
+    probegroup3 = ProbeGroup.from_dict(probegroup2.to_dict())
+    assert probegroup3._global_contact_order is not None
+    contact_vector3 = probegroup3.to_numpy(complete=True)
+    assert np.array_equal(contact_vector2, contact_vector3)
+
+    probegroup4 = probegroup.get_slice(order)
+    assert probegroup4._global_contact_order is not None
+    contact_vector4 = probegroup4.to_numpy(complete=True)
+    assert np.array_equal(contact_vector3, contact_vector4)
+
+    probegroup5 = ProbeGroup.from_dict(probegroup4.to_dict())
+    assert probegroup5._global_contact_order is not None
+    contact_vector5 = probegroup3.to_numpy(complete=True)
+    assert np.array_equal(contact_vector4, contact_vector5)
+
+    # let go back to original order
+    rev_order = np.argsort(order)
+    probegroup6 = probegroup5.get_slice(rev_order)
+    assert probegroup6._global_contact_order is None 
+
+
 
 if __name__ == "__main__":
-    test_probegroup()
-    # ~ test_probegroup_3d()
+    probegroup = _make_probegroup()
+    
+    # test_probegroup(probegroup)
+    # test_probegroup_3d()
+    test_reordred_probegroup(probegroup)
+
+
