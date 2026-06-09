@@ -134,7 +134,7 @@ class ProbeGroup:
         see ProbeGroup.to_numpy()
 
         Note that if the contact_vector has several probe and some contact are interleaved, then the ProbeGroup will
-        have a non natural ordering (contact from probes are stack): in short ProbeGroup._global_contact_order 
+        have a non natural ordering (contact from probes are stack): in short ProbeGroup._global_contact_order
         will be not None.
 
         Parameters
@@ -151,7 +151,7 @@ class ProbeGroup:
         # Check if contacts are interleaved
         num_probes = np.unique(arr["probe_index"]).size
         is_interleaved = (num_probes > 1) and np.any(np.diff(arr["probe_index"]) < 0)
-        print('is_interleaved', is_interleaved)
+        print("is_interleaved", is_interleaved)
         if is_interleaved:
             global_contact_order = []
 
@@ -164,7 +164,7 @@ class ProbeGroup:
 
             if is_interleaved:
                 global_contact_order.append(np.flatnonzero(mask))
-        
+
         if is_interleaved:
             # the argsort is for the 'reverse' order!
             probegroup._global_contact_order = np.argsort(np.concatenate(global_contact_order))
@@ -236,7 +236,7 @@ class ProbeGroup:
         for probe_dict in d["probes"]:
             probe = Probe.from_dict(probe_dict)
             probegroup.add_probe(probe)
-        
+
         global_contact_order = d.get("global_contact_order", None)
         if global_contact_order is not None:
             probegroup._global_contact_order = np.asarray(global_contact_order)
@@ -289,7 +289,7 @@ class ProbeGroup:
         for i, probe in enumerate(self.probes):
             n = probe.get_contact_count()
             probe.set_device_channel_indices([-1] * n)
-        
+
         if self._global_contact_order is not None:
             # this is tricky conceptually but needed but needed for consistency
             rev_order = np.argsort(self._global_contact_order)
@@ -354,7 +354,6 @@ class ProbeGroup:
         if selection.dtype.kind not in ("b", "i"):
             raise TypeError(f"selection must be bool array or int array, not of type: {type(selection)}")
 
-
         if selection.dtype == "bool":
             assert selection.shape == (
                 n,
@@ -363,17 +362,12 @@ class ProbeGroup:
 
         if len(selection) == 0:
             raise ValueError("ProbeGroup.get_slice() with empty selection is not handled")
-            # return ProbeGroup()
+            # return ProbeGroup()
 
         assert np.unique(selection).size == selection.size
-        assert (
-            0 <= np.min(selection) < n
-        ), f"An index within your selection is out of bounds {np.min(selection)}"
-        assert (
-            0 <= np.max(selection) < n
-        ), f"An index within your selection is out of bounds {np.max(selection)}"
+        assert 0 <= np.min(selection) < n, f"An index within your selection is out of bounds {np.min(selection)}"
+        assert 0 <= np.max(selection) < n, f"An index within your selection is out of bounds {np.max(selection)}"
         selection_indices = selection
-
 
         contact_arr = self.to_numpy(complete=True)
         contact_arr = contact_arr[selection]
