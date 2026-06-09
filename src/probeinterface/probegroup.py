@@ -356,7 +356,7 @@ class ProbeGroup:
             assert selection.shape == (
                 n,
             ), f"if array of bool given it must be the same size as the number of contacts {selection.shape} != {n}"
-            selection_indices = np.flatnonzero(selection)
+            selection = np.flatnonzero(selection)
 
         if len(selection) == 0:
             raise ValueError("ProbeGroup.get_slice() with empty selection is not handled")
@@ -365,7 +365,6 @@ class ProbeGroup:
         assert np.unique(selection).size == selection.size
         assert 0 <= np.min(selection) < n, f"An index within your selection is out of bounds {np.min(selection)}"
         assert 0 <= np.max(selection) < n, f"An index within your selection is out of bounds {np.max(selection)}"
-        selection_indices = selection
 
         contact_arr = self.to_numpy(complete=True)
         contact_arr = contact_arr[selection]
