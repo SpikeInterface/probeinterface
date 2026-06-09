@@ -270,7 +270,7 @@ class ProbeGroup:
         Set global indices for all probes.
 
         Important note : if the order of contacts is not "natural" then the device_channel_indices
-        is applied is the real/reordered contacts vector. In short, the device_channel_indices is ziped to
+        is applied is the real/reordered contacts vector. In short, the device_channel_indices is zipped to
         ProbeGroup.to_numpy() (always ordered).
 
         Parameters
