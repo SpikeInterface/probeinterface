@@ -179,6 +179,19 @@ def test_copy_preserves_device_channel_indices(probegroup):
     )
 
 
+def test_copy_preserves_contact_ids(probegroup):
+    """Probe.copy() preserves contact_ids when they are set on the probe."""
+    for index, probe in enumerate(probegroup.probes):
+        n = probe.get_contact_count()
+        probe.set_contact_ids([f"p{index}-c{i}" for i in range(n)])
+
+    pg_copy = probegroup.copy()
+
+    original_ids = probegroup.get_global_contact_ids()
+    copied_ids = pg_copy.get_global_contact_ids()
+    np.testing.assert_array_equal(copied_ids, original_ids)
+
+
 def test_copy_is_independent(probegroup):
     """Mutating the copy must not affect the original."""
     original_positions = probegroup.probes[0].contact_positions.copy()
