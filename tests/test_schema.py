@@ -7,9 +7,9 @@ from probeinterface.testing import schema
 def test_schema_is_annotated():
     """The schema must carry the annotations documenting what it validates."""
     assert schema.get("$schema"), "The schema must declare the JSON Schema draft it uses ('$schema')."
-    assert "specification versions" in schema.get("$comment", ""), (
-        "The schema '$comment' must document which specification versions it validates."
-    )
+    assert "specification versions" in schema.get(
+        "$comment", ""
+    ), "The schema '$comment' must document which specification versions it validates."
 
 
 def test_package_version_is_compatible_with_schema():
