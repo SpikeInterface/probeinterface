@@ -52,4 +52,8 @@ from .library import (
     cache_full_library,
     clear_cache,
 )
-from .wiring import get_available_pathways
+from .wiring import (
+    get_available_pathways,
+    get_pathway,
+    wire_probe
+)

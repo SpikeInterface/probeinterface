@@ -203,10 +203,9 @@ def read_BIDS_probe(folder: str | Path, prefix: str | None = None) -> ProbeGroup
 
         # create probe object and register with probegroup
         probe = Probe.from_dataframe(df=df_probe)
-        probe.annotate(probe_id=probe_id)
 
         probes[str(probe_id)] = probe
-        probegroup.add_probe(probe)
+        probegroup.add_probe(probe, probe_id=str(probe_id))
 
         ignore_annotations = [
             "probe_ids",
@@ -326,7 +325,7 @@ def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup
         probegroup = probe_or_probegroup
     else:
         raise TypeError(
-            f"probe_or_probegroup has to be" "of type Probe or ProbeGroup " f"not type: {type(probe_or_probegroup)}"
+            f"probe_or_probegroup has to be of type Probe or ProbeGroup not type: {type(probe_or_probegroup)}"
         )
     folder = Path(folder)
 
@@ -337,22 +336,12 @@ def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup
     probes = probegroup.probes
 
     # Step 1: GENERATION OF PROBE.TSV
-    # ensure required keys (probe_id, probe_type) are present
-
-    if any("probe_id" not in p.annotations for p in probes):
-        probegroup.auto_generate_probe_ids()
+    # ensure required keys (probe_type) are present
 
     for probe in probes:
-        if "probe_id" not in probe.annotations:
-            raise ValueError(
-                "Export to BIDS probe format requires "
-                "the probe id to be specified as an annotation "
-                "(probe_id). You can do this via "
-                "`probegroup.auto_generate_ids."
-            )
         if "type" not in probe.annotations:
             raise ValueError(
-                "Export to BIDS probe format requires " "the probe type to be specified as an " "annotation (type)"
+                "Export to BIDS probe format requires the probe type to be specified as an annotation (type)"
             )
 
     # extract all used annotation keys
@@ -361,11 +350,12 @@ def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup
     annotation_keys = np.unique(keys_concatenated)
 
     # generate a tsv table capturing probe information
-    index = range(len([p.annotations["probe_id"] for p in probes]))
+    index = range(len(probes))
     df = pd.DataFrame(index=index)
     for annotation_key in annotation_keys:
         df[annotation_key] = [p.annotations[annotation_key] for p in probes]
     df["n_shanks"] = [len(np.unique(p.shank_ids)) for p in probes]
+    df["probe_id"] = probegroup.probe_ids
 
     # Note: in principle it would also be possible to add the probe width and
     # depth here based on the probe contour information. However this would
@@ -378,8 +368,7 @@ def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup
 
     # Step 2: GENERATION OF PROBE.JSON
     probes_dict = {}
-    for probe in probes:
-        probe_id = probe.annotations["probe_id"]
+    for probe_id, probe in zip(probegroup.probe_ids, probes):
         probes_dict[probe_id] = {
             "contour": probe.probe_planar_contour.tolist(),
             "units": probe.si_units,
@@ -403,7 +392,7 @@ def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup
     index = range(sum([p.get_contact_count() for p in probes]))
     df.rename(columns=tsv_label_map_to_BIDS, inplace=True)
 
-    df["probe_id"] = [p.annotations["probe_id"] for p in probes for _ in p.contact_ids]
+    df["probe_id"] = [probe_id for probe_id, probe in zip(probegroup.probe_ids, probes) for _ in probe.contact_ids]
     df["coordinate_system"] = ["relative cartesian"] * len(index)
 
     channel_indices = []
