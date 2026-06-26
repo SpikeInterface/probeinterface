@@ -610,7 +610,11 @@ def test_select_contacts_preserves_order_in_array():
     contact_ids_list = [
         ["p0c1", "p0c0", "p2c5"],
         ["p2c5", "p0c0", "p0c1"],
-        ["p0c1", "p2c5", "p0c0",]
+        [
+            "p0c1",
+            "p2c5",
+            "p0c0",
+        ],
     ]
     for selected_ids in contact_ids_list:
         sub = pg.select_contacts(selected_ids)
