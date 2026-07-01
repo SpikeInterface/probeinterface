@@ -427,6 +427,11 @@ class ProbeGroup:
                 if k not in new_probe.annotations:
                     new_probe.annotate(**{k: orig_probe.annotations[k]})
 
+            # probe_planar_contour is a probe-level attribute, not part of the to_numpy dtype,
+            # so from_numpy cannot restore it; copy it over explicitly.
+            if orig_probe.probe_planar_contour is not None and new_probe.probe_planar_contour is None:
+                new_probe.set_planar_contour(orig_probe.probe_planar_contour)
+
         return sliced_probe_group
 
     def select_probes(self, probe_ids: str | np.ndarray | list) -> "ProbeGroup":
@@ -494,6 +499,21 @@ class ProbeGroup:
                     f"contact_ids must be unique, but {duplicated.tolist()} appear more than once. "
                     "If the same contact id is on multiple probes, use probe_ids to disambiguate."
                 )
+            # each requested contact id must live on exactly one probe; collect every
+            # ambiguous one so the user can disambiguate them all at once
+            ambiguous = {}
+            for contact_id in contact_ids:
+                probes_for_id = np.unique(all_probe_ids[all_contact_ids == contact_id]).tolist()
+                if len(probes_for_id) > 1:
+                    ambiguous[str(contact_id)] = probes_for_id
+            if ambiguous:
+                ambiguity_lines = "\n".join(
+                    f'"{contact_id}" lives on probes {probes}' for contact_id, probes in ambiguous.items()
+                )
+                message = f"""\
+Some contact ids are ambiguous because they live on multiple probes; pass probe_ids to disambiguate which probe each belongs to:
+{ambiguity_lines}"""
+                raise ValueError(message)
             probe_ids = [None] * len(contact_ids)
         else:
             if len(probe_ids) != len(contact_ids):
