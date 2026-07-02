@@ -141,6 +141,53 @@ def test_probe():
     # ~ plt.show()
 
 
+def test_set_contacts_auto_generates_contact_ids():
+    """When contact_ids is not supplied, Probe auto-generates ['0', ..., str(n-1)]."""
+    probe = Probe(ndim=2, si_units="um")
+    positions = np.array([[0, 0], [10, 0], [20, 0], [30, 0]])
+    probe.set_contacts(positions=positions, shapes="circle", shape_params={"radius": 5})
+
+    assert probe.contact_ids is not None
+    np.testing.assert_array_equal(probe.contact_ids, np.array(["0", "1", "2", "3"]))
+
+
+def test_set_contacts_respects_explicit_contact_ids():
+    """An explicit contact_ids argument is preserved verbatim."""
+    probe = Probe(ndim=2, si_units="um")
+    positions = np.array([[0, 0], [10, 0], [20, 0]])
+    probe.set_contacts(
+        positions=positions,
+        shapes="circle",
+        shape_params={"radius": 5},
+        contact_ids=["a", "b", "c"],
+    )
+
+    np.testing.assert_array_equal(probe.contact_ids, np.array(["a", "b", "c"]))
+
+
+def test_set_contact_ids_all_empty_strings_regenerates():
+    """Backward compat: older serialized probes used empty strings for 'unset'."""
+    probe = Probe(ndim=2, si_units="um")
+    positions = np.array([[0, 0], [10, 0], [20, 0]])
+    probe.set_contacts(positions=positions, shapes="circle", shape_params={"radius": 5})
+    probe.set_contact_ids(["", "", ""])
+
+    np.testing.assert_array_equal(probe.contact_ids, np.array(["0", "1", "2"]))
+
+
+def test_set_device_channel_indices_rejects_wrong_size():
+    """Setting device_channel_indices with wrong count raises ValueError."""
+    probe = Probe(ndim=2, si_units="um")
+    probe.set_contacts(
+        positions=np.array([[0, 0], [10, 0], [20, 0]]),
+        shapes="circle",
+        shape_params={"radius": 5},
+    )
+
+    with pytest.raises(ValueError, match="do not have"):
+        probe.set_device_channel_indices([0, 1])
+
+
 def test_probe_equality_dunder():
     probe1 = generate_dummy_probe()
     probe2 = generate_dummy_probe()
@@ -226,6 +273,51 @@ def test_double_side_probe():
 
     probe4 = Probe.from_dataframe(probe.to_dataframe())
     assert probe4 == probe
+
+
+def _annotated_probe():
+    probe = generate_dummy_probe()
+    n = probe.get_contact_count()
+    probe.set_contact_ids([f"c{i}" for i in range(n)])
+    probe.set_shank_ids(np.array(["s0"] * (n // 2) + ["s1"] * (n - n // 2)))
+    probe.set_device_channel_indices(np.arange(n)[::-1])
+    probe.annotate(name="dummy", manufacturer="acme", model_name="x1", serial_number="sn-42")
+    probe.annotate_contacts(impedance=np.linspace(1.0, 2.0, n))
+    return probe
+
+
+def test_copy_preserves_identity():
+    probe = _annotated_probe()
+    probe2 = probe.copy()
+
+    assert probe2 is not probe
+    np.testing.assert_array_equal(probe2.contact_ids, probe.contact_ids)
+    np.testing.assert_array_equal(probe2.shank_ids, probe.shank_ids)
+    assert probe2.annotations == probe.annotations
+    assert probe2.contact_annotations.keys() == probe.contact_annotations.keys()
+    for key in probe.contact_annotations:
+        np.testing.assert_array_equal(probe2.contact_annotations[key], probe.contact_annotations[key])
+
+
+def test_copy_drops_device_channel_indices():
+    probe = _annotated_probe()
+    probe2 = probe.copy()
+
+    assert probe2.device_channel_indices is None
+
+
+def test_copy_is_independent():
+    probe = _annotated_probe()
+    probe2 = probe.copy()
+
+    probe2.annotations["manufacturer"] = "mutated"
+    probe2.contact_annotations["impedance"][0] = 999.0
+    probe2.move([999, 999])
+    probe2._contact_ids[0] = "zzz"
+
+    assert probe.annotations["manufacturer"] == "acme"
+    assert probe.contact_annotations["impedance"][0] != 999.0
+    assert probe.contact_ids[0] == "c0"
 
 
 if __name__ == "__main__":

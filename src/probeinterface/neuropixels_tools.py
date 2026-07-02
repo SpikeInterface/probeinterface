@@ -12,8 +12,10 @@ import warnings
 from packaging.version import parse
 import json
 import numpy as np
+from xml.etree import ElementTree
 
 from .probe import Probe
+from .probegroup import ProbeGroup
 from .utils import import_safely
 
 global _np_probe_features
@@ -23,47 +25,6 @@ _np_probe_features = None
 ###############
 # Utils zone  #
 ###############
-
-# Map imDatPrb_pn (probe number) to imDatPrb_type (probe type) when the latter is missing
-# ONLY needed for `read_imro` function
-probe_part_number_to_probe_type = {
-    # for old version without a probe number we assume NP1.0
-    None: "0",
-    # NP1.0
-    "PRB_1_4_0480_1": "0",
-    "PRB_1_4_0480_1_C": "0",  # This is the metal cap version
-    "PRB_1_2_0480_2": "0",
-    "NP1010": "0",
-    # NHP probes lin
-    "NP1015": "1015",
-    "NP1016": "1015",
-    "NP1017": "1015",
-    # NHP probes stag med
-    "NP1020": "1020",
-    "NP1021": "1021",
-    "NP1022": "1022",
-    # NHP probes stag long
-    "NP1030": "1030",
-    "NP1031": "1031",
-    "NP1032": "1032",
-    # NP2.0
-    "NP2000": "21",
-    "NP2010": "24",
-    "NP2013": "2013",
-    "NP2014": "2014",
-    "NP2003": "2003",
-    "NP2004": "2004",
-    "PRB2_1_2_0640_0": "21",
-    "PRB2_4_2_0640_0": "24",
-    # NXT
-    "NP2020": "2020",
-    # Ultra
-    "NP1100": "1100",  # Ultra probe - 1 bank
-    "NP1110": "1110",  # Ultra probe - 16 banks no handle because
-    "NP1121": "1121",  # Ultra probe - beta configuration
-    # Opto
-    "NP1300": "1300",  # Opto probe
-}
 
 # Map from imro format to ProbeInterface naming conventions
 imro_field_to_pi_field = {
@@ -291,12 +252,23 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
     probe.annotate(shank_tips=shank_tips)
 
     # ===== 7. Add metadata annotations =====
+    lf_sampling_frequency_hz = float(probe_spec_dict["lf_sample_frequency_hz"])
+    adc_range_vpp = float(probe_spec_dict["adc_range_vpp"])
+    ap_gain_list = [float(gain) for gain in probe_spec_dict["ap_gain_list"].split(",")]
     probe.annotate(
         adc_bit_depth=int(probe_spec_dict["adc_bit_depth"]),
         num_readout_channels=int(probe_spec_dict["num_readout_channels"]),
         ap_sample_frequency_hz=float(probe_spec_dict["ap_sample_frequency_hz"]),
-        lf_sample_frequency_hz=float(probe_spec_dict["lf_sample_frequency_hz"]),
+        lf_sample_frequency_hz=lf_sampling_frequency_hz,
+        adc_range_vpp=adc_range_vpp,
     )
+    # If there is only one AP gain value, annotate with gains directly since it cannot be changed.
+    if len(ap_gain_list) == 1:
+        probe.annotate(ap_gain=ap_gain_list[0])
+    if lf_sampling_frequency_hz > 0:
+        lf_gain_list = [float(gain) for gain in probe_spec_dict["lf_gain_list"].split(",")]
+        if len(lf_gain_list) == 1:
+            probe.annotate(lf_gain=lf_gain_list[0])
 
     # ===== 8. Store ADC sampling table =====
     # The ADC sampling table describes how readout channels map to ADCs, not electrodes.
@@ -439,24 +411,20 @@ def _annotate_probe_with_adc_sampling_info(probe: Probe, adc_sampling_table: str
 #########################
 
 
-def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
+def _parse_imro_string(imro_table_string: str) -> dict:
     """
     Parse IMRO (Imec ReadOut) table string into structured per-channel data.
 
     IMRO format: "(probe_type,num_chans)(ch0 bank0 ref0 ...)(ch1 bank1 ref1 ...)..."
     Example: "(0,384)(0 1 0 500 250 1)(1 0 0 500 250 1)..."
 
-    Note: The IMRO header contains a probe_type field (e.g., "0", "21", "24"), which is
-    a numeric format version identifier that specifies which IMRO table structure was used.
-    Different probe generations use different IMRO formats. This is a file format detail,
-    not a physical probe property.
+    The IMRO type is extracted from the header and used to look up the field schema
+    from the catalogue (z_imro_format_type_to_imro_format). No probe part number is needed.
 
     Parameters
     ----------
     imro_table_string : str
         IMRO table string from SpikeGLX metadata file
-    probe_part_number : str
-        Probe part number (e.g., "NP1000", "NP2000")
 
     Returns
     -------
@@ -473,22 +441,51 @@ def _parse_imro_string(imro_table_string: str, probe_part_number: str) -> dict:
         Example for NP1110: {"header": {"type": 1110, "col_mode": 2, "ref_id": 0, ...},
             "group": [0,1,...], "bankA": [0,0,...], "bankB": [0,0,...]}  # 24 entries, not 384
     """
-    # Get IMRO field format from catalogue
+    # Parse IMRO header and per-entry values. Header values stay as strings; only the
+    # numeric trailing fields are cast to int below. The first field may be a numeric
+    # IMRO type code (old SpikeGLX format) or an alphanumeric probe part number such as
+    # "NP2020" (new format, SpikeGLX 20260115 onward; see issue #432).
+    header_str, *imro_table_values_list, _ = imro_table_string.strip().split(")")
+    header_parts = header_str[1:].split(",")
+    first_value = header_parts[0]
+    header_values = (first_value,) + tuple(map(int, header_parts[1:]))
+
+    # Resolve the IMRO format schema. Three header layouts to handle:
+    #   1. Phase3A: 3-field header, no part number anywhere; treat as type code "0".
+    #   2. New format: first field is a probe part number (e.g. "NP2020").
+    #   3. Old format: first field is a numeric IMRO type code (e.g. "21").
     probe_features = _load_np_probe_features()
-    probe_spec = probe_features["neuropixels_probes"][probe_part_number]
-    imro_format = probe_spec["imro_table_format_type"]
+    probes = probe_features["neuropixels_probes"]
+    type_to_format = probe_features["z_imro_format_type_to_imro_format"]
+
+    if len(header_values) == 3:
+        imro_format_type = "0"
+        imro_format = type_to_format[imro_format_type]
+    elif first_value in probes:
+        imro_format = probes[first_value]["imro_table_format_type"]
+        imro_format_type = None  # not used for new-format files
+    elif first_value in type_to_format:
+        imro_format_type = first_value
+        imro_format = type_to_format[imro_format_type]
+    else:
+        valid_types = sorted(type_to_format, key=int)
+        raise ValueError(
+            f"Unknown IMRO header first field {first_value!r}. "
+            f"Expected a probe part number from the catalogue or one of: {valid_types}"
+        )
+
     imro_fields_string = probe_features["z_imro_formats"][imro_format + "_elm_flds"]
     imro_fields = tuple(imro_fields_string.replace("(", "").replace(")", "").split(" "))
-
-    # Parse IMRO header and per-entry values
-    header_str, *imro_table_values_list, _ = imro_table_string.strip().split(")")
 
     # Parse header fields using the catalogue schema
     imro_header_fields_string = probe_features["z_imro_formats"][imro_format + "_hdr_flds"]
     imro_header_fields = tuple(imro_header_fields_string.replace("(", "").replace(")", "").split(","))
-    header_values = tuple(map(int, header_str[1:].split(",")))
-    # Initialize with parsed header and empty lists for per-entry fields (filled below)
+    # Initialize with parsed header and empty lists for per-entry fields (filled below).
+    # For Phase3A (3-field header), zip silently drops the extra value, which is correct.
     imro_per_channel = {"header": dict(zip(imro_header_fields, header_values))}
+    # Normalize Phase3A header type to 0 so downstream code reads it consistently
+    if len(header_values) == 3:
+        imro_per_channel["header"]["type"] = 0
     for field in imro_fields:
         imro_per_channel[field] = []
     for field_values_str in imro_table_values_list:
@@ -511,7 +508,12 @@ def write_imro(file: str | Path, probe: Probe) -> None:
     probe : Probe object
 
     """
-    probe_type = probe.annotations["probe_type"]
+    model_name = probe.model_name
+    probe_features = _load_np_probe_features()
+    part_number_to_format_type = {v: k for k, v in probe_features["z_imro_format_type_to_part_number"].items()}
+    probe_type = part_number_to_format_type.get(model_name)
+    if probe_type is None:
+        raise ValueError(f"Cannot resolve IMRO format type from model_name={model_name!r}")
     data = probe.to_dataframe(complete=True).sort_values("device_channel_indices")
     annotations = probe.contact_annotations
     ret = [f"({probe_type},{len(data)})"]
@@ -716,34 +718,33 @@ def read_imro(file_path: str | Path) -> Probe:
     https://billkarsh.github.io/SpikeGLX/help/imroTables/
 
     """
-    # ===== 1. Read file and determine probe part number from IMRO header =====
+    # ===== 1. Read file =====
     meta_file = Path(file_path)
     assert meta_file.suffix == ".imro", "'file' should point to the .imro file"
     with meta_file.open(mode="r") as f:
         imro_str = str(f.read())
 
-    imro_table_header_str, *imro_table_values_list, _ = imro_str.strip().split(")")
-    imro_table_header = tuple(map(int, imro_table_header_str[1:].split(",")))
+    # ===== 2. Parse IMRO table (type is extracted from the header automatically) =====
+    imro_per_channel = _parse_imro_string(imro_str)
 
-    if len(imro_table_header) == 3:
-        # In older versions of neuropixel arrays (phase 3A), imro tables were structured differently.
-        # We use probe_type "0", which maps to probe_part_number NP1010 as a proxy for Phase3a.
-        imDatPrb_type = "0"
-    elif len(imro_table_header) == 2:
-        imDatPrb_type, _ = imro_table_header
+    # ===== 3. Resolve probe part number and build full probe =====
+    # The header's "type" field carries either the alphanumeric probe part number
+    # (new SpikeGLX format, 20260115+) or a numeric IMRO type code (old format).
+    header_type = str(imro_per_channel["header"]["type"])
+    probe_features = _load_np_probe_features()
+    probes = probe_features["neuropixels_probes"]
+    type_to_pn = probe_features["z_imro_format_type_to_part_number"]
+    if header_type in probes:
+        probe_part_number = header_type
+    elif header_type in type_to_pn:
+        probe_part_number = type_to_pn[header_type]
     else:
-        raise ValueError(f"read_imro error, the header has a strange length: {imro_table_header}")
-    imDatPrb_type = str(imDatPrb_type)
-
-    for probe_part_number, probe_type in probe_part_number_to_probe_type.items():
-        if imDatPrb_type == probe_type:
-            imDatPrb_pn = probe_part_number
-
-    # ===== 2. Interpret IMRO table =====
-    imro_per_channel = _parse_imro_string(imro_str, imDatPrb_pn)
-
-    # ===== 3. Build full probe with all possible contacts =====
-    full_probe = build_neuropixels_probe(probe_part_number=imDatPrb_pn)
+        valid_types = sorted(type_to_pn, key=int)
+        raise ValueError(
+            f"Unknown IMRO header first field {header_type!r}. "
+            f"Expected a probe part number from the catalogue or one of: {valid_types}"
+        )
+    full_probe = build_neuropixels_probe(probe_part_number=probe_part_number)
 
     # ===== 4. Slice full probe to active electrodes =====
     active_contact_ids = _get_imro_active_contact_ids(imro_per_channel)
@@ -754,10 +755,6 @@ def read_imro(file_path: str | Path) -> Probe:
     # ===== 5. Annotate probe with recording-specific metadata =====
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
-
-    # Scalar annotations
-    probe_type = imro_str.strip().split(")")[0].split(",")[0][1:]
-    probe.annotate(probe_type=probe_type)
 
     # Vector annotations from IMRO fields
     vector_properties = ("channel", "bank", "bank_mask", "ref_id", "ap_gain", "lf_gain", "ap_hipas_flt")
@@ -820,7 +817,7 @@ def read_spikeglx(file: str | Path) -> Probe:
     # Specifies which electrodes were selected for recording (e.g., 384 of 960) plus their
     # acquisition settings (gains, references, filters). See: https://billkarsh.github.io/SpikeGLX/help/imroTables/
     imro_table_string = meta["imroTbl"]
-    imro_per_channel = _parse_imro_string(imro_table_string, imDatPrb_pn)
+    imro_per_channel = _parse_imro_string(imro_table_string)
 
     # ===== 4. Slice full probe to active electrodes =====
     active_contact_ids = _get_imro_active_contact_ids(imro_per_channel)
@@ -846,6 +843,25 @@ def read_spikeglx(file: str | Path) -> Probe:
     # because the table indices are readout channel indices, not electrode indices.
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
+
+    # ===== 5c. Update probe annotation with gains if not already annotated =====
+    # We first look in the IMRO header
+    if "ap_gain" not in probe.annotations:
+        imro_header = imro_per_channel["header"]
+        ap_gain = imro_header.get("ap_gain", None)
+        lf_gain = imro_header.get("lf_gain", None)
+
+        # If not there, check the imro elements (gains are the same for all channels)
+        if ap_gain is None and "ap_gain" in imro_per_channel:
+            ap_gain = imro_per_channel["ap_gain"][0]
+        if lf_gain is None and "lf_gain" in imro_per_channel:
+            lf_gain = imro_per_channel["lf_gain"][0]
+
+        # The ap/lf gains should be in the contact annotations
+        if ap_gain is not None:
+            probe.annotate(ap_gain=ap_gain)
+        if lf_gain is not None:
+            probe.annotate(lf_gain=lf_gain)
 
     # ===== 6. Slice to saved channels (if subset was saved) =====
     # This is DIFFERENT from IMRO selection: IMRO selects which electrodes to acquire,
@@ -907,8 +923,9 @@ def parse_spikeglx_snsGeomMap(meta: dict) -> tuple[int, float, float, np.ndarray
 
     geom_list = meta["snsGeomMap"].split(sep=")")
 
-    # first entry is for instance (NP1000,1,0,70)
-    probe_type, num_shank, shank_pitch, shank_width = geom_list[0][1:].split(",")
+    # first entry is for instance (NP1000,1,0,70); the leading field can be a numeric
+    # type code or an alphanumeric part number depending on SpikeGLX version, and is unused
+    _, num_shank, shank_pitch, shank_width = geom_list[0][1:].split(",")
     num_shank, shank_pitch, shank_width = int(num_shank), float(shank_pitch), float(shank_width)
 
     geom_list = geom_list[1:-1]
@@ -997,6 +1014,11 @@ def _parse_openephys_settings(
         - settings_channel_keys: np.array of str, or None
         - elec_ids, shank_ids: for legacy fallback
     """
+    if not has_neuropixels_probes(settings_file):
+        if raise_error:
+            raise Exception("No Neuropixels probe geometry found in settings file")
+        return None
+
     ET = import_safely("xml.etree.ElementTree")
     tree = ET.parse(str(settings_file))
     root = tree.getroot()
@@ -1034,11 +1056,6 @@ def _parse_openephys_settings(
         and record_node_position is not None
         and channel_map_position < record_node_position
     )
-
-    if neuropix_pxi_processor is None and onebox_processor is None and onix_processor is None:
-        if raise_error:
-            raise Exception("Open Ephys can only be read from Neuropix-PXI, OneBox or ONIX plugins.")
-        return None
 
     if neuropix_pxi_processor is not None:
         assert onebox_processor is None, "Only one processor should be present"
@@ -1153,6 +1170,9 @@ def _parse_openephys_settings(
         slot = np_probe.attrib.get("slot")
         port = np_probe.attrib.get("port")
         dock = np_probe.attrib.get("dock")
+        ap_gain_value = np_probe.attrib.get("apGainValue")
+        lf_gain_value = np_probe.attrib.get("lfpGainValue")
+
         probe_part_number = np_probe.attrib.get("probe_part_number") or np_probe.attrib.get("probePartNumber")
         probe_serial_number = np_probe.attrib.get("probe_serial_number") or np_probe.attrib.get("probeSerialNumber")
         selected_electrodes = np_probe.find("SELECTED_ELECTRODES")
@@ -1192,6 +1212,8 @@ def _parse_openephys_settings(
             "elec_ids": None,
             "shank_ids": None,
             "custom_channel_map": None,
+            "ap_gain": ap_gain_value,
+            "lf_gain": lf_gain_value,
         }
 
         if selected_electrodes is not None:
@@ -1480,11 +1502,25 @@ def _annotate_openephys_probe(probe: Probe, probe_info: dict) -> None:
             settings_channel_keys = np.array(settings_channel_keys)[probe_info["custom_channel_map"]]
         probe.annotate_contacts(settings_channel_key=settings_channel_keys)
 
+    # Add ADC sampling info as annotations, which describe how the probe channels map to ADC channels and sample order.
     adc_sampling_table = probe.annotations.get("adc_sampling_table")
     _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
 
+    # Update gain values from settings if not already annotated from table
+    if "ap_gain" not in probe.annotations:
+        ap_gain_str = probe_info.get("ap_gain")
+        lf_gain_str = probe_info.get("lf_gain")
+        if ap_gain_str is not None:
+            # ap_gain_str is formatted as "{gain}x", e.g. "500x"
+            ap_gain = float(ap_gain_str[:-1])
+            probe.annotate(ap_gain=ap_gain)
+        if lf_gain_str is not None:
+            # lf_gain_str is formatted as "{gain}x", e.g. "250x"
+            lf_gain = float(lf_gain_str[:-1])
+            probe.annotate(lf_gain=lf_gain)
 
-def read_openephys(
+
+def read_openephys_neuropixels(
     settings_file: str | Path,
     stream_name: str | None = None,
     probe_name: str | None = None,
@@ -1494,6 +1530,14 @@ def read_openephys(
 ) -> Probe:
     """
     Read a Neuropixels probe geometry from an Open Ephys settings.xml file.
+
+    This function only supports Neuropixels probes (those with ``<NP_PROBE>``
+    or ``<NEUROPIXELSV1E>`` / ``<NEUROPIXELSV1F>`` / ``<NEUROPIXELSV2E>``
+    elements in the settings file). It does not handle other Open Ephys
+    hardware such as Intan acquisition boards, tetrodes, NI-DAQmx, etc.
+    Use :func:`has_neuropixels_probes` to check whether a settings file (or
+    a specific stream within it) has Neuropixels probe geometry before calling
+    this reader.
 
     A single settings.xml can describe multiple probes (one ``<NP_PROBE>`` element
     per probe). When the file contains more than one probe, use one of the three
@@ -1575,6 +1619,83 @@ def read_openephys(
     return probe
 
 
+def read_openephys(*args, **kwargs) -> Probe:
+    """
+    Deprecated alias for :func:`read_openephys_neuropixels`.
+
+    The name ``read_openephys`` is misleading because the function only reads
+    Neuropixels probe geometry, not arbitrary Open Ephys recordings. Use
+    :func:`read_openephys_neuropixels` instead, and :func:`has_neuropixels_probes`
+    to check whether a settings file has Neuropixels geometry before calling it.
+    """
+    warnings.warn(
+        "read_openephys is deprecated and will be removed in a future release. "
+        "Use read_openephys_neuropixels instead.",
+        category=DeprecationWarning,
+        stacklevel=2,
+    )
+    return read_openephys_neuropixels(*args, **kwargs)
+
+
+_NP_PROBE_ELEMENT_TAGS = frozenset({"NP_PROBE", "NEUROPIXELSV1E", "NEUROPIXELSV1F", "NEUROPIXELSV2E"})
+
+
+def has_neuropixels_probes(settings_file: str | Path, stream_name: str | None = None) -> bool:
+    """
+    Return True if the Open Ephys settings file contains Neuropixels probe
+    geometry elements.
+
+    Detection is element-based: the function scans the settings XML for
+    ``<NP_PROBE>`` (Neuropix-PXI / OneBox) or the ONIX equivalents
+    ``<NEUROPIXELSV1E>`` / ``<NEUROPIXELSV1F>`` / ``<NEUROPIXELSV2E>``. The
+    presence of any of these is the ground-truth signal that Neuropixels
+    geometry is described in the file, independent of processor names. This
+    is robust to ONIX streams that can carry non-Neuropixels probes and to
+    new Neuropixels-capable plugins.
+
+    Intended use: callers that route heterogeneous streams (e.g. Open Ephys
+    recordings mixing Intan / NI-DAQmx / Neuropixels) can gate the call to
+    :func:`read_openephys_neuropixels` on this helper and skip probe
+    attachment for non-Neuropixels streams.
+
+    Parameters
+    ----------
+    settings_file : str or Path
+        Path to the Open Ephys settings.xml file.
+    stream_name : str or None
+        If provided, only return True when a Neuropixels probe element lives
+        under a processor whose STREAM names match ``stream_name``. Matching
+        mirrors the selection logic in :func:`read_openephys_neuropixels`: a
+        probe's STREAM name (with ``-AP`` / ``-LFP`` stripped) must appear as
+        a substring of ``stream_name`` (so ``"ProbeC"`` matches
+        ``"Neuropix-PXI-100.ProbeC-AP"``). If None, returns True whenever any
+        Neuropixels probe element is present.
+
+    Returns
+    -------
+    bool
+    """
+    ET = import_safely("xml.etree.ElementTree")
+    try:
+        root = ET.parse(str(settings_file)).getroot()
+    except Exception:
+        return False
+
+    for processor in root.iter("PROCESSOR"):
+        if not any(e.tag in _NP_PROBE_ELEMENT_TAGS for e in processor.iter()):
+            continue
+        if stream_name is None:
+            return True
+        for stream_field in processor.findall("STREAM"):
+            name = stream_field.attrib.get("name", "")
+            if "ADC" in name:
+                continue
+            probe_name = name.replace("-AP", "").replace("-LFP", "")
+            if probe_name and probe_name in stream_name:
+                return True
+    return False
+
+
 def get_saved_channel_indices_from_openephys_settings(settings_file: str | Path, stream_name: str) -> np.ndarray | None:
     """
     Returns an array with the subset of saved channels indices (if used)
@@ -1640,3 +1761,340 @@ def get_saved_channel_indices_from_openephys_settings(settings_file: str | Path,
                         if recording_state not in ("ALL", "NONE"):
                             chans_saved = np.array([chan for chan, r in enumerate(recording_state) if int(r) == 1])
     return chans_saved
+
+
+######################
+# SpikeGadgets zone  #
+######################
+
+
+def _spikegadgets_channel_index_np2_4shank(channel_index: int) -> int:
+    """Remap NP2.0 4-shank ``channelsOn`` bit position to catalogue index.
+
+    Trodes writes ``channelsOn`` row-major across all four shanks (eight
+    contacts per row, two columns per shank), with the column-within-row
+    direction reversed relative to ``probeColumn`` (high ``channel_index`` -> low
+    ``probeColumn``; see Trodes `configuration.cpp:5374-5421` and the
+    `probeColumn` annotations in the .rec ``SpikeChannel`` elements). The
+    catalogue (``NP2014``) is shank-major instead (s0e0..s0e1279,
+    s1e0..s1e1279, ...), so channel_index needs remapping. Verified empirically
+    against the SpikeGadgets-provided NP2.0 4-shank fixture: channel_index 1671 with
+    ``probeColumn="0"`` maps to ``s0e416``, channel_index 1664 with ``probeColumn="7"``
+    maps to ``s3e417``, and the .rec ``coord_ml``/``coord_dv`` values for those
+    SpikeChannel entries match the catalogue positions up to a single stereotactic
+    offset (these XML coords are not consumed by the reader, only used by the
+    test in `tests/test_io/test_spikegadgets.py` as an independent cross-check).
+    Independently confirmed in May 2026 by Mattias Karlsson (SpikeGadgets /
+    Trodes author) on PR #441: "the 2.0 four-shank probe has two columns per
+    shank... the first electrode on the probe (starts with 1) is in the lower
+    right, and number 10008 is on the lower left. Then, 10009 is the second
+    row on the right, and so on", which is exactly the (row, col_global=7-x)
+    layout this function encodes.
+    """
+    CONTACTS_PER_ROW = 8  # 2 columns per shank * 4 shanks
+    COLS_PER_SHANK = 2
+    CONTACTS_PER_SHANK = 1280
+
+    row = channel_index // CONTACTS_PER_ROW
+    col_global = (CONTACTS_PER_ROW - 1) - (channel_index % CONTACTS_PER_ROW)
+    shank = col_global // COLS_PER_SHANK
+    col_on_shank = col_global % COLS_PER_SHANK
+    return shank * CONTACTS_PER_SHANK + row * COLS_PER_SHANK + col_on_shank
+
+
+def _spikegadgets_channel_index_np2_1shank(channel_index: int) -> int:
+    """Remap NP2.0 single-shank ``channelsOn`` bit position to catalogue index.
+
+    Same row-major-within-probe layout as NP2.0 4-shank (Trodes
+    `configuration.cpp:5279-5290`) but with only one shank and two
+    columns per row, so two contacts per row. The within-row direction is
+    reversed relative to the catalogue (extrapolated from NP2.0 4-shank
+    where this was empirically verified): channel_index 0 -> right column, channel_index 1
+    -> left column, channel_index 2 -> next row right, etc. The catalogue
+    (``NP2000``) lays out contacts with left column first (idx 0 = left,
+    idx 1 = right per row), so the remap pairs are swapped:
+    catalogue_idx = row * 2 + (1 - channel_index % 2).
+
+    Unverified against a real fixture; will be revisited when a NP2.0
+    single-shank .rec from a Bennu rig becomes available.
+    """
+    COLS_PER_SHANK = 2
+
+    row = channel_index // COLS_PER_SHANK
+    col_on_shank = (COLS_PER_SHANK - 1) - (channel_index % COLS_PER_SHANK)
+    return row * COLS_PER_SHANK + col_on_shank
+
+
+def read_spikegadgets_neuropixels(file: str | Path, raise_error: bool = True) -> ProbeGroup:
+    """
+    Find active channels of the given Neuropixels probe from a SpikeGadgets .rec file.
+    SpikeGadgets headstages support up to three Neuropixels probes simultaneously,
+    and information for all probes will be returned in a ProbeGroup object.
+
+    Supported Neuropixels variants: NP1.0 standard (``device="neuropixels1"``,
+    older recordings without ``deviceSubType`` are treated as standard),
+    NP2.0 single-shank (``device="neuropixels2" deviceSubType="1_SHANK"``),
+    and NP2.0 4-shank (``device="neuropixels2" deviceSubType="4_SHANK"``).
+    The single-shank channel_index remap is extrapolated from the 4-shank pattern and
+    has not been verified against a real fixture yet. Other Neuropixels variants
+    Trodes can describe (NP1.0 HD, NP1.0 NHP short/medium/long, NRIC) raise
+    ``ValueError`` for now; non-Neuropixels probes (tetrodes etc.) are not
+    handled at all. Use :func:`has_spikegadgets_neuropixels_probes` to check
+    whether a ``.rec`` file contains Neuropixels probe geometry before calling
+    this reader.
+
+    Parameters
+    ----------
+    file : Path or str
+        The .rec file path
+
+    Returns
+    -------
+    probe_group : ProbeGroup object
+
+    """
+    # Dispatch keyed by SpikeConfiguration (device, deviceSubType) attributes
+    # (see Trodes `configuration.cpp:2495-2520` and `5246-5291`). Each entry
+    # gives the HardwareConfiguration `Device` name to filter on, the catalogue
+    # part number to build the full probe from, the per-probe horizontal shift
+    # (um) used when plotting multi-probe ProbeGroups, and (optionally) a
+    # function remapping Trodes' ``channelsOn`` bit position (channel_index, equal to
+    # ``electrode_id[1:] - 1`` in the .rec XML) to a probeinterface catalogue
+    # contact index. The remap is None when Trodes' ordering already matches
+    # the catalogue's (NP1.0 standard).
+    #
+    # All NP1.0 staggered catalogue variants (NP1000, NP1001, NP1010-NP1014,
+    # PRB_1_2_0480_2, PRB_1_4_0480_1, PRB_1_4_0480_1_C) share identical 2D
+    # geometry, so NP1000 is the canonical pick. All NP2.0 4-shank catalogue
+    # variants (NP2010, NP2013, NP2014, NP2020, NP2021) share identical 2D
+    # geometry, so NP2014 is the canonical pick. model_name and description
+    # are cleared on the sliced probe in both cases because the XML does not
+    # carry a part-number field.
+    spikegadgets_neuropixels_formats = {
+        ("neuropixels1", "10"): {
+            "hardware_device_name": "NeuroPixels1",
+            "part_number": "NP1000",
+            "multi_probe_plot_offset_um": 250.0,
+            "channel_index_to_catalogue_index": None,
+        },
+        ("neuropixels2", "1_SHANK"): {
+            "hardware_device_name": "NeuroPixels2",
+            "part_number": "NP2000",
+            "multi_probe_plot_offset_um": 250.0,
+            "channel_index_to_catalogue_index": _spikegadgets_channel_index_np2_1shank,
+        },
+        ("neuropixels2", "4_SHANK"): {
+            "hardware_device_name": "NeuroPixels2",
+            "part_number": "NP2014",
+            "multi_probe_plot_offset_um": 1000.0,
+            "channel_index_to_catalogue_index": _spikegadgets_channel_index_np2_4shank,
+        },
+    }
+
+    header_txt = parse_spikegadgets_header(file)
+    root = ElementTree.fromstring(header_txt)
+    hconf = root.find("HardwareConfiguration")
+    sconf = root.find("SpikeConfiguration")
+
+    # Older NP1.0 recordings predate the device/deviceSubType attributes, so
+    # missing values fall back to NP1.0 standard.
+    sconf_device = (sconf.attrib.get("device", "") if sconf is not None else "").lower() or "neuropixels1"
+    sconf_subtype = sconf.attrib.get("deviceSubType", "") if sconf is not None else ""
+    if sconf_device == "neuropixels1" and not sconf_subtype:
+        sconf_subtype = "10"
+    dispatch_key = (sconf_device, sconf_subtype)
+    if dispatch_key not in spikegadgets_neuropixels_formats:
+        raise ValueError(
+            f"Unsupported SpikeGadgets Neuropixels variant device={sconf_device!r} "
+            f"deviceSubType={sconf_subtype!r}; supported: "
+            f"{sorted(spikegadgets_neuropixels_formats)}"
+        )
+    fmt = spikegadgets_neuropixels_formats[dispatch_key]
+
+    probe_configs = [d for d in hconf if d.attrib.get("name") == fmt["hardware_device_name"]]
+    n_probes = len(probe_configs)
+
+    if n_probes == 0:
+        if raise_error:
+            raise Exception(f"No {fmt['hardware_device_name']} probes found")
+        return None
+
+    # SourceOptions blocks carry the per-probe AP/LF gain settings. They appear
+    # in the same order as the SpikeNTrode probe digits (1, 2, 3).
+    source_options_blocks = [
+        s for s in hconf.findall("SourceOptions") if s.attrib.get("name") == fmt["hardware_device_name"]
+    ]
+
+    probe_group = ProbeGroup()
+
+    for curr_probe in range(1, n_probes + 1):
+        # SpikeNTrode elements are the authoritative list of recorded electrodes.
+        # Each id is "<probe_digit><1-based electrode number>"; the leading digit
+        # identifies the probe (1, 2, or 3, matching the documented SpikeGadgets
+        # limit of three simultaneous Neuropixels probes) and the remainder is
+        # the 1-based electrode number on that probe (channel_index = electrode - 1).
+        # NP1.0 standard uses maxPadsPerProbe = 1000 (ids are 4 chars wide, e.g.
+        # "1384"); NP2.0 uses maxPadsPerProbe = 10000 (ids are 5 chars wide, e.g.
+        # "11672"). Slicing by [1:] handles both because the probe digit is
+        # always one char. The format's channel_index_to_catalogue_index function
+        # then remaps Trodes' channelsOn bit position to the catalogue's contact
+        # order; it is None when no remap is needed (NP1.0, where the catalogue
+        # happens to be in Trodes' bit order already).
+        electrode_to_hwchan = {}
+        electrode_to_stereotactic = {}
+        for ntrode in sconf:
+            electrode_id = ntrode.attrib["id"]
+            if int(electrode_id[0]) == curr_probe:
+                channel_index = int(electrode_id[1:]) - 1
+                catalogue_index = (
+                    channel_index
+                    if fmt["channel_index_to_catalogue_index"] is None
+                    else fmt["channel_index_to_catalogue_index"](channel_index)
+                )
+                spike_channel = ntrode[0]
+                electrode_to_hwchan[catalogue_index] = int(spike_channel.attrib["hwChan"])
+                electrode_to_stereotactic[catalogue_index] = (
+                    float(spike_channel.attrib["coord_ml"]),
+                    float(spike_channel.attrib["coord_dv"]),
+                    float(spike_channel.attrib["coord_ap"]),
+                )
+
+        active_indices = np.array(sorted(electrode_to_hwchan.keys()))
+
+        full_probe = build_neuropixels_probe(fmt["part_number"])
+        probe = full_probe.get_slice(active_indices)
+
+        # Clear part-number-specific metadata since the .rec XML does not carry
+        # a part number; the catalogue pick is a geometry-equivalence stand-in
+        # rather than a fact read from the file.
+        probe.model_name = ""
+        probe.description = ""
+        probe.annotations.pop("part_number", None)
+
+        device_channels = np.array([electrode_to_hwchan[idx] for idx in active_indices])
+        probe.set_device_channel_indices(device_channels)
+
+        # Stereotactic coordinates from the .rec SpikeChannel attributes
+        # (workspace probe origin + on-probe offset, in micrometres; see Trodes
+        # `configuration.cpp:5443-5445`). These are recording-specific surgical
+        # metadata, distinct from `contact_positions` which carries the pure
+        # on-probe catalogue geometry. We attach them as per-contact annotations
+        # so downstream code that wants stereotactic locations (e.g. histology
+        # registration) can read them without re-parsing the XML.
+        stereotactic = np.array([electrode_to_stereotactic[idx] for idx in active_indices])
+        probe.annotate_contacts(
+            stereotactic_ml=stereotactic[:, 0],
+            stereotactic_dv=stereotactic[:, 1],
+            stereotactic_ap=stereotactic[:, 2],
+        )
+
+        # Per-contact ADC group and sample order from the catalogue MUX table plus
+        # the hwChan mapping (which is the readout-channel index for each contact).
+        adc_sampling_table = probe.annotations.get("adc_sampling_table")
+        if adc_sampling_table is not None:
+            _annotate_probe_with_adc_sampling_info(probe, adc_sampling_table)
+
+        # Neuropixels gain is programmable. Read APGainMode and LFPGainMode from
+        # the SourceOptions block matching this probe (blocks appear in probe order).
+        if "ap_gain" not in probe.annotations and curr_probe - 1 < len(source_options_blocks):
+            custom_options = {
+                opt.attrib["name"]: opt.attrib["data"].strip()
+                for opt in source_options_blocks[curr_probe - 1].findall("CustomOption")
+            }
+            ap_gain_str = custom_options.get("APGainMode")
+            if ap_gain_str:
+                probe.annotate(ap_gain=float(ap_gain_str))
+            if probe.annotations.get("lf_sample_frequency_hz", 0) > 0:
+                lf_gain_str = custom_options.get("LFPGainMode")
+                if lf_gain_str:
+                    probe.annotate(lf_gain=float(lf_gain_str))
+
+        # Shift multiple probes so they don't overlap when plotted
+        probe.move([fmt["multi_probe_plot_offset_um"] * (curr_probe - 1), 0])
+
+        probe_group.add_probe(probe)
+
+    return probe_group
+
+
+def read_spikegadgets(*args, **kwargs) -> ProbeGroup:
+    """
+    Deprecated alias for :func:`read_spikegadgets_neuropixels`.
+
+    The name ``read_spikegadgets`` is misleading because the function only reads
+    Neuropixels probe geometry, not arbitrary SpikeGadgets ``.rec`` recordings.
+    Use :func:`read_spikegadgets_neuropixels` instead, and
+    :func:`has_spikegadgets_neuropixels_probes` to check whether a ``.rec`` file
+    has Neuropixels geometry before calling it.
+    """
+    warnings.warn(
+        "read_spikegadgets is deprecated and will be removed in a future release. "
+        "Use read_spikegadgets_neuropixels instead.",
+        category=DeprecationWarning,
+        stacklevel=2,
+    )
+    return read_spikegadgets_neuropixels(*args, **kwargs)
+
+
+def has_spikegadgets_neuropixels_probes(file: str | Path) -> bool:
+    """
+    Return True if the SpikeGadgets ``.rec`` file describes at least one
+    Neuropixels probe.
+
+    Detection scans the ``HardwareConfiguration`` block of the ``.rec`` XML
+    header for ``Device`` entries whose ``name`` attribute matches a known
+    Neuropixels source name (``"NeuroPixels1"`` or ``"NeuroPixels2"``). The
+    presence of any such entry is the ground-truth signal that the file
+    contains Neuropixels probe geometry, independent of what other hardware
+    the headstage is also streaming.
+
+    Intended use: callers that route heterogeneous SpikeGadgets recordings
+    (mixing tetrodes, Neuropixels, etc.) can gate the call to
+    :func:`read_spikegadgets_neuropixels` on this helper and skip probe
+    attachment for non-Neuropixels recordings.
+
+    Parameters
+    ----------
+    file : str or Path
+        Path to the SpikeGadgets ``.rec`` file.
+
+    Returns
+    -------
+    bool
+    """
+    neuropixels_source_names = {"NeuroPixels1", "NeuroPixels2"}
+
+    try:
+        header_txt = parse_spikegadgets_header(file)
+        root = ElementTree.fromstring(header_txt)
+    except Exception:
+        return False
+
+    hconf = root.find("HardwareConfiguration")
+    if hconf is None:
+        return False
+
+    for device in hconf:
+        if device.attrib.get("name") in neuropixels_source_names:
+            return True
+    return False
+
+
+def parse_spikegadgets_header(file: str | Path) -> str:
+    """
+    Parse file (SpikeGadgets .rec format) into a string until "</Configuration>",
+    which is the last tag of the header, after which the binary data begins.
+    """
+    header_size = None
+    with open(file, mode="rb") as f:
+        while True:
+            line = f.readline()
+            if b"</Configuration>" in line:
+                header_size = f.tell()
+                break
+
+        if header_size is None:
+            ValueError("SpikeGadgets: the xml header does not contain '</Configuration>'")
+
+        f.seek(0)
+        return f.read(header_size).decode("utf8")

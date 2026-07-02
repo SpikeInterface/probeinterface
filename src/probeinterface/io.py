@@ -11,13 +11,10 @@ Read/write probe info using a variety of formats:
 
 from pathlib import Path
 import re
-import warnings
 import json
 from collections import OrderedDict
 from packaging.version import parse
 import numpy as np
-from xml.etree import ElementTree
-
 from . import __version__
 from .probe import Probe
 from .probegroup import ProbeGroup
@@ -202,10 +199,9 @@ def read_BIDS_probe(folder: str | Path, prefix: str | None = None) -> ProbeGroup
 
         # create probe object and register with probegroup
         probe = Probe.from_dataframe(df=df_probe)
-        probe.annotate(probe_id=probe_id)
 
         probes[str(probe_id)] = probe
-        probegroup.add_probe(probe)
+        probegroup.add_probe(probe, probe_id=str(probe_id))
 
         ignore_annotations = [
             "probe_ids",
@@ -325,7 +321,7 @@ def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup
         probegroup = probe_or_probegroup
     else:
         raise TypeError(
-            f"probe_or_probegroup has to be" "of type Probe or ProbeGroup " f"not type: {type(probe_or_probegroup)}"
+            f"probe_or_probegroup has to be of type Probe or ProbeGroup not type: {type(probe_or_probegroup)}"
         )
     folder = Path(folder)
 
@@ -336,22 +332,12 @@ def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup
     probes = probegroup.probes
 
     # Step 1: GENERATION OF PROBE.TSV
-    # ensure required keys (probe_id, probe_type) are present
-
-    if any("probe_id" not in p.annotations for p in probes):
-        probegroup.auto_generate_probe_ids()
+    # ensure required keys (probe_type) are present
 
     for probe in probes:
-        if "probe_id" not in probe.annotations:
-            raise ValueError(
-                "Export to BIDS probe format requires "
-                "the probe id to be specified as an annotation "
-                "(probe_id). You can do this via "
-                "`probegroup.auto_generate_ids."
-            )
         if "type" not in probe.annotations:
             raise ValueError(
-                "Export to BIDS probe format requires " "the probe type to be specified as an " "annotation (type)"
+                "Export to BIDS probe format requires the probe type to be specified as an annotation (type)"
             )
 
     # extract all used annotation keys
@@ -360,11 +346,12 @@ def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup
     annotation_keys = np.unique(keys_concatenated)
 
     # generate a tsv table capturing probe information
-    index = range(len([p.annotations["probe_id"] for p in probes]))
+    index = range(len(probes))
     df = pd.DataFrame(index=index)
     for annotation_key in annotation_keys:
         df[annotation_key] = [p.annotations[annotation_key] for p in probes]
     df["n_shanks"] = [len(np.unique(p.shank_ids)) for p in probes]
+    df["probe_id"] = probegroup.probe_ids
 
     # Note: in principle it would also be possible to add the probe width and
     # depth here based on the probe contour information. However this would
@@ -377,8 +364,7 @@ def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup
 
     # Step 2: GENERATION OF PROBE.JSON
     probes_dict = {}
-    for probe in probes:
-        probe_id = probe.annotations["probe_id"]
+    for probe_id, probe in zip(probegroup.probe_ids, probes):
         probes_dict[probe_id] = {
             "contour": probe.probe_planar_contour.tolist(),
             "units": probe.si_units,
@@ -389,20 +375,11 @@ def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup
         json.dump({"ProbeId": probes_dict}, f, indent=4)
 
     # Step 3: GENERATION OF CONTACTS.TSV
-    # ensure required contact identifiers are present
-    for probe in probes:
-        if probe.contact_ids is None:
-            raise ValueError(
-                "Contacts must have unique contact ids "
-                "and not None for export to BIDS probe format."
-                "Use `probegroup.auto_generate_contact_ids`."
-            )
-
     df = probegroup.to_dataframe()
     index = range(sum([p.get_contact_count() for p in probes]))
     df.rename(columns=tsv_label_map_to_BIDS, inplace=True)
 
-    df["probe_id"] = [p.annotations["probe_id"] for p in probes for _ in p.contact_ids]
+    df["probe_id"] = [probe_id for probe_id, probe in zip(probegroup.probe_ids, probes) for _ in probe.contact_ids]
     df["coordinate_system"] = ["relative cartesian"] * len(index)
 
     channel_indices = []
@@ -730,188 +707,6 @@ def write_csv(file, probe):
     """
 
     raise NotImplementedError
-
-
-def read_spikegadgets(file: str | Path, raise_error: bool = True) -> ProbeGroup:
-    """
-    Find active channels of the given Neuropixels probe from a SpikeGadgets .rec file.
-    SpikeGadgets headstages support up to three Neuropixels 1.0 probes (as of March 28, 2024),
-    and information for all probes will be returned in a ProbeGroup object.
-
-
-    Parameters
-    ----------
-    file : Path or str
-        The .rec file path
-
-    Returns
-    -------
-    probe_group : ProbeGroup object
-
-    """
-    # ------------------------- #
-    #     Npix 1.0 constants    #
-    # ------------------------- #
-    TOTAL_NPIX_ELECTRODES = 960
-    MAX_ACTIVE_CHANNELS = 384
-    CONTACT_WIDTH = 16  # um
-    CONTACT_HEIGHT = 20  # um
-    # ------------------------- #
-
-    # Read the header and get Configuration elements
-    header_txt = parse_spikegadgets_header(file)
-    root = ElementTree.fromstring(header_txt)
-    hconf = root.find("HardwareConfiguration")
-    sconf = root.find("SpikeConfiguration")
-
-    # Get number of probes present (each has its own Device element)
-    probe_configs = [device for device in hconf if device.attrib["name"] == "NeuroPixels1"]
-    n_probes = len(probe_configs)
-
-    if n_probes == 0:
-        if raise_error:
-            raise Exception("No Neuropixels 1.0 probes found")
-        return None
-
-    # Container to store Probe objects
-    probe_group = ProbeGroup()
-
-    for curr_probe in range(1, n_probes + 1):
-        probe_config = probe_configs[curr_probe - 1]
-
-        # Get number of active channels from probe Device element
-        active_channel_str = [option for option in probe_config if option.attrib["name"] == "channelsOn"][0].attrib[
-            "data"
-        ]
-        active_channels = [int(ch) for ch in active_channel_str.split(" ") if ch]
-        n_active_channels = sum(active_channels)
-        assert len(active_channels) == TOTAL_NPIX_ELECTRODES
-        assert n_active_channels <= MAX_ACTIVE_CHANNELS
-
-        """
-        Within the SpikeConfiguration header element (sconf), there is a SpikeNTrode element
-        for each electrophysiology channel that contains information relevant to scaling and
-        otherwise displaying the information from that channel, as well as the id of the electrode
-        from which it is recording ('id').
-
-        Nested within each SpikeNTrode element is a SpikeChannel element with information about
-        the electrode dynamically connected to that channel.  This contains information relevant
-        for spike sorting, i.e., its spatial location along the probe shank and the hardware channel
-        to which it is connected.
-
-        Excerpt of a sample SpikeConfiguration element:
-
-        <SpikeConfiguration chanPerChip="1889715760" device="neuropixels1" categories="">
-            <SpikeNTrode viewLFPBand="0"
-                viewStimBand="0"
-                id="1384"  # @USE: The first digit is the probe number; the last three digits are the electrode number
-                lfpScalingToUv="0.018311105685598315"
-                LFPChan="1"
-                notchFreq="60"
-                rawRefOn="0"
-                refChan="1"
-                viewSpikeBand="1"
-                rawScalingToUv="0.018311105685598315"  # For Neuropixels 1.0, raw and spike scaling are identical
-                spikeScalingToUv="0.018311105685598315"  # Extracted when reading the raw data
-                refNTrodeID="1"
-                notchBW="10"
-                color="#c83200"
-                refGroup="2"
-                filterOn="1"
-                LFPHighFilter="200"
-                moduleDataOn="0"
-                groupRefOn="0"
-                lowFilter="600"
-                refOn="0"
-                notchFilterOn="0"
-                lfpRefOn="0"
-                lfpFilterOn="0"
-                highFilter="6000"
-            >
-                <SpikeChannel thresh="60"
-                    coord_dv="-480"  # @USE: dorsal-ventral coordinate in um (in pairs for staggered probe)
-                    spikeSortingGroup="1782505664"
-                    triggerOn="1"
-                    stimCapable="0"
-                    coord_ml="3192"  # @USE: medial-lateral coordinate in um
-                    coord_ap="3700"  # doesn't vary, assuming the shank's flat face is along the ML axis
-                    maxDisp="400"
-                    hwChan="735"  # @USE: unique device channel that is reading from electrode
-                />
-            </SpikeNTrode>
-            ...
-        </SpikeConfiguration>
-        """
-        # Find all channels/electrodes that belong to the current probe
-        contact_ids = []
-        device_channels = []
-        positions = np.zeros((n_active_channels, 2))
-
-        nt_i = 0  # Both probes are in sconf, so need an independent counter of probe electrodes while iterating through
-        for ntrode in sconf:
-            electrode_id = ntrode.attrib["id"]
-            if int(electrode_id[0]) == curr_probe:  # first digit of electrode id is probe number
-                contact_ids.append(electrode_id)
-                positions[nt_i, :] = (ntrode[0].attrib["coord_ml"], ntrode[0].attrib["coord_dv"])
-                device_channels.append(ntrode[0].attrib["hwChan"])
-                nt_i += 1
-        assert len(contact_ids) == n_active_channels
-
-        # Construct Probe object
-        probe = Probe(ndim=2, si_units="um", model_name="Neuropixels 1.0", manufacturer="IMEC")
-        probe.set_contacts(
-            contact_ids=contact_ids,
-            positions=positions,
-            shapes="square",
-            shank_ids=None,
-            shape_params={"width": CONTACT_WIDTH, "height": CONTACT_HEIGHT},
-        )
-
-        # Wire it (i.e., point contact/electrode ids to corresponding hardware/channel ids)
-        probe.set_device_channel_indices(device_channels)
-
-        # Create a nice polygon background when plotting the probes
-        x_min = positions[:, 0].min()
-        x_max = positions[:, 0].max()
-        x_mid = 0.5 * (x_max + x_min)
-        y_min = positions[:, 1].min()
-        y_max = positions[:, 1].max()
-        polygon_default = [
-            (x_min - 20, y_min - CONTACT_HEIGHT / 2),
-            (x_mid, y_min - 100),
-            (x_max + 20, y_min - CONTACT_HEIGHT / 2),
-            (x_max + 20, y_max + 20),
-            (x_min - 20, y_max + 20),
-        ]
-        probe.set_planar_contour(polygon_default)
-
-        # If there are multiple probes, they must be shifted such that they don't occupy the same coordinates.
-        probe.move([250 * (curr_probe - 1), 0])
-
-        # Add the probe to the probe container
-        probe_group.add_probe(probe)
-
-    return probe_group
-
-
-def parse_spikegadgets_header(file: str | Path) -> str:
-    """
-    Parse file (SpikeGadgets .rec format) into a string until "</Configuration>",
-    which is the last tag of the header, after which the binary data begins.
-    """
-    header_size = None
-    with open(file, mode="rb") as f:
-        while True:
-            line = f.readline()
-            if b"</Configuration>" in line:
-                header_size = f.tell()
-                break
-
-        if header_size is None:
-            ValueError("SpikeGadgets: the xml header does not contain '</Configuration>'")
-
-        f.seek(0)
-        return f.read(header_size).decode("utf8")
 
 
 def read_mearec(file: str | Path) -> Probe:

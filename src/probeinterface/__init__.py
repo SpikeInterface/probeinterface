@@ -24,7 +24,6 @@ from .io import (
     write_csv,
     read_BIDS_probe,
     write_BIDS_probe,
-    read_spikegadgets,
     read_mearec,
     read_nwb,
     read_maxwell,
@@ -38,7 +37,13 @@ from .neuropixels_tools import (
     parse_spikeglx_snsGeomMap,
     get_saved_channel_indices_from_spikeglx_meta,
     read_openephys,
+    read_openephys_neuropixels,
+    has_neuropixels_probes,
     get_saved_channel_indices_from_openephys_settings,
+    read_spikegadgets,
+    read_spikegadgets_neuropixels,
+    has_spikegadgets_neuropixels_probes,
+    parse_spikegadgets_header,
 )
 from .utils import combine_probes
 from .generator import (
@@ -58,4 +63,4 @@ from .library import (
     cache_full_library,
     clear_cache,
 )
-from .wiring import get_available_pathways
+from .wiring import get_available_pathways, get_pathway, wire_probe

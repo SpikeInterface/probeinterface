@@ -11,6 +11,7 @@ tests/*.h5
 
 examples/*.prb
 examples/*.h5
+examples/*.json
 
 ressources/*/*
 build/*
@@ -19,6 +20,7 @@ build/*
 dist/*
 doc/_*
 doc/examples/*
+doc/sg_execution_times.rst
 
 dev_*
 .coverage
@@ -30,3 +32,4 @@ uv.lock
 # libraries
 **/neuropixels_library_generated
 **/cambridgeneurotech_library
+.codex

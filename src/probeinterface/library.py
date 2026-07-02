@@ -291,5 +291,5 @@ def list_github_folders(owner: str, repo: str, path: str = "", ref: str = None, 
     return [
         item["name"]
         for item in items
-        if item.get("type") == "dir" and item["name"][0] != "." and item["name"] != "scripts"
+        if item.get("type") == "dir" and item["name"][0] != "." and item["name"] not in ["scripts", "apps"]
     ]
