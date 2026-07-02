@@ -534,7 +534,7 @@ class Probe:
             )
         self.device_channel_indices = channel_indices
         if self._probe_group is not None:
-            self._probe_group.check_global_device_wiring_and_ids()
+            self._probe_group._check_global_device_wiring_and_ids()
 
     def wiring_to_device(self, pathway: str, channel_offset: int = 0):
         """
@@ -584,7 +584,7 @@ class Probe:
 
         self._contact_ids = contact_ids
         if self._probe_group is not None:
-            self._probe_group.check_global_device_wiring_and_ids()
+            self._probe_group._check_global_device_wiring_and_ids()
 
     def set_shank_ids(self, shank_ids: np.ndarray | list):
         """
@@ -1140,8 +1140,10 @@ class Probe:
             "plane_axis_y_1",
             "plane_axis_z_0",
             "plane_axis_z_1",
-            "probe_index",
             "si_units",
+            # these two are for ProbeGroup to avoid duplication of fields
+            "probe_index",
+            "probe_id",
         ]
         contact_annotation_fields = [f for f in fields if f not in main_fields]
 

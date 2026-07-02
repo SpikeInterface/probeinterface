@@ -82,6 +82,25 @@ def get_available_pathways() -> list:
     return list(pathways.keys())
 
 
+def get_pathway(pathway: str) -> np.ndarray:
+    """Return the channel indices for a given pathway
+
+    Parameters
+    ----------
+    pathway : str
+        The pathway to use
+
+    Returns
+    -------
+    chan_indices : np.ndarray
+        The channel indices for the given pathway
+    """
+    assert pathway in pathways, (
+        f"{pathway} is not a currently supported pathway " f"run `get_available_pathways to see options"
+    )
+    return np.array(pathways[pathway], dtype="int64")
+
+
 def wire_probe(probe: "Probe", pathway: str, channel_offset: int = 0):
     """Inplace wiring for a Probe using a pathway
 
