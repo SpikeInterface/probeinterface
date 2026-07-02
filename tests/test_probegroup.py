@@ -675,6 +675,49 @@ def test_add_probe_default_id_with_non_numeric_ids():
     assert pg.probe_ids == ["left", "right", "0"]
 
 
+def test_select_contacts_ambiguous_id_message_points_to_probe_ids():
+    """
+    When a contact id exists on several probes and no probe_ids are given, the
+    error must guide the user to pass probe_ids rather than claim it cannot happen.
+    """
+    pg = _probegroup_with_contact_ids(unique=False)
+    expected_error = """Some contact ids are ambiguous because they live on multiple probes; pass probe_ids to disambiguate which probe each belongs to:
+"c0" lives on probes ['0', '1', '2']"""
+    with pytest.raises(ValueError) as exc_info:
+        pg.select_contacts(["c0"])
+    assert str(exc_info.value) == expected_error
+
+
+def test_select_contacts_reports_all_ambiguous_ids_at_once():
+    """
+    When several requested contact ids are ambiguous, the error lists all of them
+    (with the probes each lives on) rather than failing on the first one.
+    """
+    pg = _probegroup_with_contact_ids(unique=False)
+    expected_error = """Some contact ids are ambiguous because they live on multiple probes; pass probe_ids to disambiguate which probe each belongs to:
+"c0" lives on probes ['0', '1', '2']
+"c1" lives on probes ['0', '1', '2']"""
+    with pytest.raises(ValueError) as exc_info:
+        pg.select_contacts(["c0", "c1"])
+    assert str(exc_info.value) == expected_error
+
+
+def test_get_slice_preserves_planar_contour():
+    """
+    probe_planar_contour is a probe-level attribute (not part of the to_numpy
+    dtype), so get_slice must copy it over explicitly instead of losing it.
+    """
+    pg = ProbeGroup()
+    probe = generate_dummy_probe()
+    contour = [[-10, -10], [-10, 100], [50, 120], [50, -10]]
+    probe.set_planar_contour(contour)
+    pg.add_probe(probe)
+
+    sub = pg.get_slice(np.array([0, 1, 2]))
+    assert sub.probes[0].probe_planar_contour is not None
+    np.testing.assert_array_equal(sub.probes[0].probe_planar_contour, contour)
+
+
 if __name__ == "__main__":
     probegroup = _make_probegroup()
 
