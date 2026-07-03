@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://raw.githubusercontent.com/SpikeInterface/probeinterface/main/src/probeinterface/schema/probe.json.schema",
-  "$comment": "Validates probeinterface specification versions matching the 'version' property pattern (currently 0.3.x). The pattern is bumped only when the schema changes incompatibly. See https://probeinterface.readthedocs.io",
+  "$comment": "Validates probeinterface specification versions matching the 'version' property pattern (currently 0.3.x and 0.4.x). The pattern is bumped only when the schema changes incompatibly. See https://probeinterface.readthedocs.io",
   "type": "object",
   "properties": {
     "specification": {
@@ -11,7 +11,7 @@
     "version": {
       "type": "string",
       "$comment": "Range of specification versions this schema validates. Bump when the schema changes incompatibly.",
-      "pattern": "^0\\.3\\.\\d+$"
+      "pattern": "^0\\.[34]\\.\\d+$"
     },
     "probes": {
       "type": "array",
