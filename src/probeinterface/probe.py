@@ -1,4 +1,5 @@
 import numpy as np
+from copy import deepcopy
 from typing import Literal
 from pathlib import Path
 
@@ -336,7 +337,10 @@ class Probe:
             Defines the two axes of the contact plane for each electrode.
             The third dimension corresponds to the probe `ndim` (2d or 3d).
         contact_ids: array[str] | None, default: None
-            Defines the contact ids for the contacts. If None, contact ids are not assigned.
+            Defines the contact ids for the contacts. If None, contact ids are
+            auto-generated as the zero-indexed strings ``["0", "1", ..., str(n - 1)]``
+            so a Probe always carries a stable, slice-invariant handle for each
+            contact. Pass an explicit array to override.
         shank_ids : array[str] | None, default: None
             Defines the shank ids for the contacts. If None, then
             these are assigned to a unique Shank.
@@ -378,8 +382,9 @@ class Probe:
         plane_axes = np.array(plane_axes)
         self._contact_plane_axes = plane_axes
 
-        if contact_ids is not None:
-            self.set_contact_ids(contact_ids)
+        if contact_ids is None:
+            contact_ids = np.arange(n).astype(str)
+        self.set_contact_ids(contact_ids)
 
         if shank_ids is None:
             # self._shank_ids = np.zeros(n, dtype=str)
@@ -527,13 +532,13 @@ class Probe:
         """
         channel_indices = np.asarray(channel_indices, dtype=int)
         if channel_indices.size != self.get_contact_count():
-            ValueError(
+            raise ValueError(
                 f"channel_indices {channel_indices.size} do not have "
                 f"the same size as contacts {self.get_contact_count()}"
             )
         self.device_channel_indices = channel_indices
         if self._probe_group is not None:
-            self._probe_group.check_global_device_wiring_and_ids()
+            self._probe_group._check_global_device_wiring_and_ids()
 
     def wiring_to_device(self, pathway: str, channel_offset: int = 0):
         """
@@ -566,8 +571,9 @@ class Probe:
         """
         contact_ids = np.asarray(contact_ids)
         if np.all([c == "" for c in contact_ids]):
-            self._contact_ids = None
-            return
+            # Backward compat: previous versions serialized "unset" as empty
+            # strings. A Probe now always carries contact_ids, so regenerate.
+            contact_ids = np.arange(self.get_contact_count()).astype(str)
 
         if contact_ids.size != self.get_contact_count():
             raise ValueError(
@@ -583,7 +589,7 @@ class Probe:
 
         self._contact_ids = contact_ids
         if self._probe_group is not None:
-            self._probe_group.check_global_device_wiring_and_ids()
+            self._probe_group._check_global_device_wiring_and_ids()
 
     def set_shank_ids(self, shank_ids: np.ndarray | list):
         """
@@ -662,24 +668,19 @@ class Probe:
 
         return True
 
-    def copy(self):
+    def copy(self) -> "Probe":
         """
-        Copy to another Probe instance.
+        Identity-preserving deep copy of the Probe.
 
-        Note: device_channel_indices are not copied
-        and contact_ids are not copied
+        Preserves contacts, contact_ids, shank_ids, contact_sides, annotations
+        (name, model_name, manufacturer, serial_number, description), and
+        contact_annotations. Does not copy ``device_channel_indices`` because
+        wiring is attached by the caller at use time, not part of the probe's
+        identity.
         """
-        other = Probe()
-        other.set_contacts(
-            positions=self.contact_positions.copy(),
-            plane_axes=self.contact_plane_axes.copy(),
-            shapes=self.contact_shapes.copy(),
-            shape_params=self.contact_shape_params.copy(),
-        )
-        if self.probe_planar_contour is not None:
-            other.set_planar_contour(self.probe_planar_contour.copy())
-        # channel_indices are not copied
-        return other
+        d = deepcopy(self.to_dict())
+        d.pop("device_channel_indices", None)
+        return Probe.from_dict(d)
 
     def to_3d(self, axes: Literal["xy", "yz", "xz"] = "xz"):
         """
@@ -1085,10 +1086,7 @@ class Probe:
         if self._contact_sides is not None:
             arr["contact_sides"] = self.contact_sides
 
-        if self.contact_ids is None:
-            arr["contact_ids"] = [""] * self.get_contact_count()
-        else:
-            arr["contact_ids"] = self.contact_ids
+        arr["contact_ids"] = self.contact_ids
 
         if complete:
             arr["si_units"] = self.si_units
@@ -1144,8 +1142,10 @@ class Probe:
             "plane_axis_y_1",
             "plane_axis_z_0",
             "plane_axis_z_1",
-            "probe_index",
             "si_units",
+            # these two are for ProbeGroup to avoid duplication of fields
+            "probe_index",
+            "probe_id",
         ]
         contact_annotation_fields = [f for f in fields if f not in main_fields]
 
