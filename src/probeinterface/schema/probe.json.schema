@@ -1,12 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://probeinterface.readthedocs.io/schema/probe.json.schema",
+  "$id": "https://raw.githubusercontent.com/SpikeInterface/probeinterface/main/src/probeinterface/schema/probe.json.schema",
   "$comment": "Validates probeinterface specification versions matching the 'version' property pattern (currently 0.3.x). The pattern is bumped only when the schema changes incompatibly. See https://probeinterface.readthedocs.io",
   "type": "object",
   "properties": {
     "specification": {
       "type": "string",
-      "value": "probeinterface"
+      "const": "probeinterface"
     },
     "version": {
       "type": "string",
