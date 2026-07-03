@@ -27,7 +27,7 @@ Packaging
 ^^^^^^^^^
 
 
-
+* Add regex validation pattern in schema version propert (#450)
 * Preserve planar contour on ProbeGroup slicing and clarify ambiguous `select_contacts` errors (#453)
 * Discard 'apps' folder when listing manufacturers (#451)
 * Enhance `ProbeGroup` API and add  `ProbeGroup._global_contact_order` for interleaved contacts (#446)
