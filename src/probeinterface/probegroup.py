@@ -200,7 +200,10 @@ class ProbeGroup:
         probegroup = ProbeGroup()
         for probe_index in probes_indices:
             mask = arr["probe_index"] == probe_index
-            probe_id = arr["probe_id"][mask][0]
+            if "probe_id" not in arr.dtype.fields:
+                probe_id = str(probe_index)
+            else:
+                probe_id = arr["probe_id"][mask][0]
             probe = Probe.from_numpy(arr[mask])
             probegroup.add_probe(probe, probe_id=probe_id)
 
