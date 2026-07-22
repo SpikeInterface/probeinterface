@@ -567,7 +567,10 @@ def read_3brain(file: str | Path, mea_pitch: float = None, electrode_width: floa
         num_channels = None
         for key in rf:
             if key.startswith("Well_"):
-                num_channels = len(rf[key]["StoredChIdxs"])
+                if "ExperimentSettings" in rf: # BRW5
+                    num_channels = len(rf[key]["StoredChIdxs"])
+                elif "ExperimentInfo" in rf: # BRW6
+                    num_channels = max(rf[key]["NoisePlateElIdxs"]) + 1
                 break
         assert num_channels is not None, "No Well found in the file"
 
