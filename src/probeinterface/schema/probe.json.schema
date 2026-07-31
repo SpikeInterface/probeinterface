@@ -1,14 +1,17 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/SpikeInterface/probeinterface/main/src/probeinterface/schema/probe.json.schema",
+  "$comment": "Validates probeinterface specification versions matching the 'version' property pattern (currently 0.3.x and 0.4.x). The pattern is bumped only when the schema changes incompatibly. See https://probeinterface.readthedocs.io",
   "type": "object",
   "properties": {
     "specification": {
       "type": "string",
-      "value": "probeinterface"
+      "const": "probeinterface"
     },
     "version": {
       "type": "string",
-      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+      "$comment": "Range of specification versions this schema validates. Bump when the schema changes incompatibly.",
+      "pattern": "^0\\.[34]\\.\\d+$"
     },
     "probes": {
       "type": "array",
@@ -102,6 +105,10 @@
             "type": "array",
             "items": { "type": "string" }
           },
+          "contact_sides": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
           "device_channel_indices": {
             "type": "array",
             "items": { "type": "integer" }
@@ -113,7 +120,8 @@
           "annotations",
           "contact_positions",
           "contact_shapes",
-          "contact_shape_params"
+          "contact_shape_params",
+          "contact_ids"
         ],
         "additionalProperties": false
       }
