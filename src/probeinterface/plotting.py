@@ -243,7 +243,12 @@ def plot_probe(
             ax.text(x, y, txt, ha="center", va="center", clip_on=True)
 
     if xlims is None or ylims is None or (zlims is None and probe.ndim == 3):
-        xlims, ylims, zlims = get_auto_lims(probe)
+        # Only fill in the limits the caller left unset. Rebinding all three would
+        # discard a caller-supplied xlims whenever ylims was omitted, and vice versa.
+        auto_xlims, auto_ylims, auto_zlims = get_auto_lims(probe)
+        xlims = auto_xlims if xlims is None else xlims
+        ylims = auto_ylims if ylims is None else ylims
+        zlims = auto_zlims if zlims is None else zlims
 
     ax.set_xlim(*xlims)
     ax.set_ylim(*ylims)
