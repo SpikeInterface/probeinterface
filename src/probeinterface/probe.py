@@ -110,7 +110,9 @@ class Probe:
         self.device_channel_indices = None
 
         # Handle ids with str so it can be displayed like names
-        #  This must be unique at Probe AND ProbeGroup level
+        #  This must be unique at Probe level. Across a ProbeGroup the key that is
+        #  unique is the pair (probe_index, contact_id), so two copies of the same
+        #  probe model keep their own contact_ids without clashing.
         self._contact_ids = None
 
         # Handle contact side for double face probes
@@ -560,8 +562,13 @@ class Probe:
     def set_contact_ids(self, contact_ids: np.ndarray | list):
         """
         Set contact ids. Channel ids are converted to strings.
-        Contact ids must be **unique** for the **Probe**
-        and also for the **ProbeGroup**
+        Contact ids must be **unique** within the **Probe**.
+
+        They are *not* required to be unique across a **ProbeGroup**: the key that is
+        unique there is the pair ``(probe_index, contact_id)``. Adding the same probe
+        model to a ProbeGroup twice therefore keeps both sets of contact_ids as they
+        are, and :meth:`ProbeGroup.select_contacts` takes ``probe_ids`` to disambiguate
+        a contact_id that appears on more than one probe.
 
         Parameters
         ----------
