@@ -1,0 +1,59 @@
+probeinterface 0.4.0
+--------------------
+
+Jul, 6th 2026
+
+
+Features
+^^^^^^^^
+
+* Add regex validation pattern in schema version propert (#450)
+* Enhance `ProbeGroup` API and add  `ProbeGroup._global_contact_order` for interleaved contacts (#446)
+* Add Neuropixels 2.0 support to `read_spikegadgets_neuropixels` (#441)
+* Add Neuropixels saturation levels estimation from probe table/metadata (#434)
+* Auto-generate `contact_ids` when not explicitly set (#429)
+* Migrate `read_spikegadgets` to the catalogue pattern (#418)
+* Make `_parse_imro_string` self-contained by deriving IMRO field schemas from the catalogue (#417)
+* Implement copy/get_slice/get_global_contact_positions for probegroup (#416)
+* Remove legacy probe construction path for `read_imro` and support NP1110 (#410)
+
+Bug fixes
+^^^^^^^^^
+
+* Preserve planar contour on ProbeGroup slicing and clarify ambiguous `select_contacts` errors (#453)
+* Discard 'apps' folder when listing manufacturers (#451)
+* Raise on wrong-sized `device_channel_indices` instead of silently accepting (#430)
+* Preserve identity on `Probe.copy()` (#428)
+* Add contact_sides to JSON schema (#419)
+* Fix quad-base with custom names (#413)
+
+
+Deprecations
+^^^^^^^^^^^^
+
+* Rename `read_spikegadgets` to `read_spikegadgets_neuropixels` and add `has_spikegadgets_neuropixels_probes` (#440)
+* Rename `read_openephys` to `read_openephys_neuropixels` and add `has_neuropixels_probes` (#427)
+
+
+Testing
+^^^^^^^
+
+* Update CI actions (#438)
+* Add NP2020 probe to test suite (#435)
+
+Docs
+^^^
+
+* Document the Neuropixels catalogue pattern (#443)
+
+Packaging
+^^^^^^^^^
+
+* Fix typing, deprecations, and update to Python3.10 (#414)
+
+Contributors:
+
+* @alejoe91
+* @chrishalcrow
+* @h-mayorquin
+* @samuelgarcia
