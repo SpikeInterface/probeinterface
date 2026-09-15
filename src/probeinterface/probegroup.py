@@ -356,6 +356,10 @@ class ProbeGroup:
         """
         Gets all contact ids concatenated across probes
 
+        Contact ids are unique within a Probe but may repeat across probes, so the
+        returned array is not necessarily unique. Pair it with the ``probe_index``
+        column of :meth:`to_numpy` to get a key that is unique across the ProbeGroup.
+
         Returns
         -------
         contact_ids: np.ndarray
@@ -546,13 +550,28 @@ Some contact ids are ambiguous because they live on multiple probes; pass probe_
         return self.get_slice(indices)
 
     def _check_global_device_wiring_and_ids(self) -> None:
+        if self.get_contact_count() == 0:
+            return
+        arr = self.to_numpy(complete=True)
+
         # check unique device_channel_indices for !=-1
-        chans = self.get_global_device_channel_indices()
-        keep = chans["device_channel_indices"] >= 0
-        valid_chans = chans[keep]["device_channel_indices"]
+        chans = arr["device_channel_indices"]
+        valid_chans = chans[chans >= 0]
 
         if valid_chans.size != np.unique(valid_chans).size:
             raise ValueError("channel device indices are not unique across probes")
+
+        # check unique contact ids. A contact_id is unique within a Probe, not across
+        # the whole ProbeGroup, so the key that has to be unique here is the pair
+        # (probe_index, contact_id). This lets the same probe model be added twice
+        # without renaming its contacts, while still identifying every contact.
+        pairs = list(zip(arr["probe_index"].tolist(), arr["contact_ids"].tolist()))
+        if len(set(pairs)) != len(pairs):
+            duplicated = sorted({pair for pair in pairs if pairs.count(pair) > 1})
+            raise ValueError(
+                f"(probe_index, contact_id) pairs are not unique across probes: {duplicated}. "
+                "contact_ids only need to be unique within a single Probe."
+            )
 
     def auto_generate_contact_ids(self, *args, **kwargs) -> None:
         """
