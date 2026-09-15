@@ -1,12 +1,15 @@
 probeinterface 0.4.0
 --------------------
 
-Jul, 6th 2026
+Sept, 16th 2026
 
 
 Features
 ^^^^^^^^
 
+* Update schema with probe_ids and global_contact_order (#464)
+* Document contact_id uniqueness and enforce it on (probe_index, contact_id) (#463)
+* Add support for BioCAM files recorded with BrainWave 6 (#458)
 * Add regex validation pattern in schema version propert (#450)
 * Enhance `ProbeGroup` API and add  `ProbeGroup._global_contact_order` for interleaved contacts (#446)
 * Add Neuropixels 2.0 support to `read_spikegadgets_neuropixels` (#441)
@@ -20,6 +23,9 @@ Features
 Bug fixes
 ^^^^^^^^^
 
+* Let plot_probe accept xlims, ylims and zlims independently (#462)
+* Accept plane names for the axis argument of Probe.rotate (#461)
+* Fix backward compatibility of to/from numpy #455
 * Preserve planar contour on ProbeGroup slicing and clarify ambiguous `select_contacts` errors (#453)
 * Discard 'apps' folder when listing manufacturers (#451)
 * Raise on wrong-sized `device_channel_indices` instead of silently accepting (#430)
@@ -35,9 +41,10 @@ Deprecations
 * Rename `read_openephys` to `read_openephys_neuropixels` and add `has_neuropixels_probes` (#427)
 
 
-Testing
-^^^^^^^
+Testing / CI
+^^^^^^^^^^^^
 
+* Fix postprocess probe features (#456)
 * Update CI actions (#438)
 * Add NP2020 probe to test suite (#435)
 
@@ -53,7 +60,9 @@ Packaging
 
 Contributors:
 
+* @adityasingh2400
 * @alejoe91
+* @b-grimaud 
 * @chrishalcrow
 * @h-mayorquin
 * @samuelgarcia
