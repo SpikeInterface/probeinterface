@@ -62,7 +62,7 @@ Contributors:
 
 * @adityasingh2400
 * @alejoe91
-* @b-grimaud 
+* @b-grimaud
 * @chrishalcrow
 * @h-mayorquin
 * @samuelgarcia
