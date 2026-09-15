@@ -320,6 +320,49 @@ def test_copy_is_independent():
     assert probe.contact_ids[0] == "c0"
 
 
+def _probe_3d_for_rotation():
+    probe = Probe(ndim=2)
+    positions = np.array([[0.0, 0.0], [10.0, 0.0], [0.0, 20.0], [10.0, 20.0]])
+    probe.set_contacts(positions=positions, shapes="circle", shape_params={"radius": 5})
+    return probe.to_3d(axes="xy")
+
+
+@pytest.mark.parametrize(
+    "plane, vector",
+    [("xy", [0, 0, 1]), ("yz", [1, 0, 0]), ("xz", [0, 1, 0])],
+)
+def test_rotate_3d_accepts_plane_name(plane, vector):
+    """A plane name must rotate about the axis normal to that plane (issue #273)."""
+    from_plane = _probe_3d_for_rotation()
+    from_vector = _probe_3d_for_rotation()
+
+    from_plane.rotate(theta=37, center=[0, 0, 0], axis=plane)
+    from_vector.rotate(theta=37, center=[0, 0, 0], axis=vector)
+
+    assert np.allclose(from_plane.contact_positions, from_vector.contact_positions)
+    assert np.allclose(from_plane.contact_plane_axes, from_vector.contact_plane_axes)
+
+
+def test_rotate_3d_plane_name_keeps_normal_coordinate_fixed():
+    """Rotating in the xy plane leaves z untouched."""
+    probe_3d = _probe_3d_for_rotation()
+    original_z = probe_3d.contact_positions[:, 2].copy()
+
+    probe_3d.rotate(theta=90, center=[0, 0, 0], axis="xy")
+
+    assert np.allclose(probe_3d.contact_positions[:, 2], original_z)
+
+
+def test_rotate_3d_rejects_unknown_axis():
+    probe_3d = _probe_3d_for_rotation()
+
+    with pytest.raises(ValueError, match="axis must be one of"):
+        probe_3d.rotate(theta=90, center=[0, 0, 0], axis="zz")
+
+    with pytest.raises(ValueError, match="axis must be a 3-element vector"):
+        probe_3d.rotate(theta=90, center=[0, 0, 0], axis=[0, 1])
+
+
 if __name__ == "__main__":
     import tempfile
 
