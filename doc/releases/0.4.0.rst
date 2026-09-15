@@ -1,12 +1,13 @@
 probeinterface 0.4.0
 --------------------
 
-Sept, 16th 2026
+Sept, 15th 2026
 
 
 Features
 ^^^^^^^^
 
+* Add shank thickness to the Neuropixels probe annotations (#467)
 * Update schema with probe_ids and global_contact_order (#464)
 * Document contact_id uniqueness and enforce it on (probe_index, contact_id) (#463)
 * Add support for BioCAM files recorded with BrainWave 6 (#458)
