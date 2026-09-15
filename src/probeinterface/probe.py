@@ -110,7 +110,9 @@ class Probe:
         self.device_channel_indices = None
 
         # Handle ids with str so it can be displayed like names
-        #  This must be unique at Probe AND ProbeGroup level
+        #  This must be unique at Probe level. Across a ProbeGroup the key that is
+        #  unique is the pair (probe_index, contact_id), so two copies of the same
+        #  probe model keep their own contact_ids without clashing.
         self._contact_ids = None
 
         # Handle contact side for double face probes
@@ -560,8 +562,13 @@ class Probe:
     def set_contact_ids(self, contact_ids: np.ndarray | list):
         """
         Set contact ids. Channel ids are converted to strings.
-        Contact ids must be **unique** for the **Probe**
-        and also for the **ProbeGroup**
+        Contact ids must be **unique** within the **Probe**.
+
+        They are *not* required to be unique across a **ProbeGroup**: the key that is
+        unique there is the pair ``(probe_index, contact_id)``. Adding the same probe
+        model to a ProbeGroup twice therefore keeps both sets of contact_ids as they
+        are, and :meth:`ProbeGroup.select_contacts` takes ``probe_ids`` to disambiguate
+        a contact_id that appears on more than one probe.
 
         Parameters
         ----------
@@ -809,7 +816,10 @@ class Probe:
             self.probe_planar_contour += translation_vector
 
     def rotate(
-        self, theta: float, center: list | np.ndarray | None = None, axis: Literal["xy", "yz", "xz"] | None = None
+        self,
+        theta: float,
+        center: list | np.ndarray | None = None,
+        axis: Literal["xy", "yz", "xz"] | list | np.ndarray | None = None,
     ):
         """
         Rotate the probe around a specified axis.
@@ -820,10 +830,13 @@ class Probe:
             In degrees, anticlockwise/counterclockwise
         center : array | list |  None, default: None
             Center of rotation. If None, the center of probe is used
-        axis : "xy" | "yz" | "xz" | None, default: None
+        axis : "xy" | "yz" | "xz" | array | list | None, default: None
             Axis of rotation.
             It must be None for 2D probes
-            It must be given for 3D probes
+            It must be given for 3D probes.
+            A plane name selects the axis normal to that plane, so "xy" rotates
+            about z, "yz" about x, and "xz" about y. A 3-element vector can be
+            given instead to rotate about an arbitrary axis.
 
         """
 
@@ -841,7 +854,7 @@ class Probe:
             R = _rotation_matrix_2d(theta)
         elif self.ndim == 3:
             assert axis is not None, "axis must be specified for 3d probes"
-            R = _rotation_matrix_3d(axis, theta).T
+            R = _rotation_matrix_3d(_axis_to_vector(axis), theta).T
 
         new_positions = (self.contact_positions - center) @ R + center
 
@@ -1598,6 +1611,42 @@ def _rotation_matrix_2d(theta: float) -> np.ndarray:
     """
     R = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
     return R
+
+
+_plane_to_rotation_axis = {
+    "xy": np.array([0.0, 0.0, 1.0]),
+    "yz": np.array([1.0, 0.0, 0.0]),
+    "xz": np.array([0.0, 1.0, 0.0]),
+}
+
+
+def _axis_to_vector(axis: str | np.ndarray | list) -> np.ndarray:
+    """
+    Normalize the ``axis`` argument of :meth:`Probe.rotate` to a 3D vector.
+
+    A plane name is mapped to the unit vector normal to that plane, so rotating
+    "in the xy plane" means rotating about z.
+
+    Parameters
+    ----------
+    axis : "xy" | "yz" | "xz" | np.array | list
+        Plane name or 3D axis of rotation
+
+    Returns
+    -------
+    axis : np.array
+        3D axis of rotation
+
+    """
+    if isinstance(axis, str):
+        if axis not in _plane_to_rotation_axis:
+            raise ValueError(f"axis must be one of {list(_plane_to_rotation_axis)} or a 3-element vector, not {axis!r}")
+        return _plane_to_rotation_axis[axis]
+
+    axis = np.asarray(axis, dtype="float64")
+    if axis.shape != (3,):
+        raise ValueError(f"axis must be a 3-element vector, not an array of shape {axis.shape}")
+    return axis
 
 
 def _rotation_matrix_3d(axis: np.ndarray | list, theta: float) -> np.ndarray:

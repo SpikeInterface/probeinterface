@@ -26,15 +26,15 @@ PROBE_FEATURES_PATH = (
 def _parse_type_values_from_val_def(val_def: str) -> list[str]:
     """Extract IMRO type code(s) from a val_def string.
 
-    Two patterns in ProbeTable:
+    Two patterns in ProbeTable, each optionally prefixed with "pn|":
       type:{0,1020,1030,...}  -> set of values
       type:1110               -> single value
     """
-    match = re.match(r"type:\{([^}]+)\}", val_def)
+    match = re.match(r"type:(?:pn\|)?\{([^}]+)\}", val_def)
     if match:
         return [v.strip() for v in match.group(1).split(",")]
 
-    match = re.match(r"type:(\d+)", val_def)
+    match = re.match(r"type:(?:pn\|)?(\d+)", val_def)
     if match:
         return [match.group(1)]
 
