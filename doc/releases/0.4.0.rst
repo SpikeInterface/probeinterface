@@ -49,7 +49,7 @@ Testing / CI
 * Add NP2020 probe to test suite (#435)
 
 Docs
-^^^
+^^^^
 
 * Document the Neuropixels catalogue pattern (#443)
 
