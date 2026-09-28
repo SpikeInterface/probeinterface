@@ -1,6 +1,7 @@
 from probeinterface import Probe, ProbeGroup
 from probeinterface import generate_dummy_probe, generate_dummy_probe_group
 from probeinterface.plotting import plot_probe, plot_probegroup
+from probeinterface.utils import get_auto_lims
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -41,6 +42,57 @@ def test_plot_probegroup():
         probegroup_3d.add_probe(probe.to_3d())
     probegroup_3d.probes[-1].move([0, 150, -50])
     plot_probegroup(probegroup_3d, same_axes=True)
+
+
+def test_plot_probe_partial_lims():
+    """Passing only one of xlims/ylims/zlims must not discard the ones that were given."""
+    probe = generate_dummy_probe()
+    auto_xlims, auto_ylims, _ = get_auto_lims(probe)
+
+    # x only: xlims is honoured, ylims falls back to auto
+    _, ax = plt.subplots()
+    plot_probe(probe, ax=ax, xlims=(-11, 22))
+    assert ax.get_xlim() == (-11, 22)
+    assert ax.get_ylim() == pytest.approx(auto_ylims)
+
+    # y only: ylims is honoured, xlims falls back to auto
+    _, ax = plt.subplots()
+    plot_probe(probe, ax=ax, ylims=(-33, 44))
+    assert ax.get_ylim() == (-33, 44)
+    assert ax.get_xlim() == pytest.approx(auto_xlims)
+
+    # both given: neither is touched
+    _, ax = plt.subplots()
+    plot_probe(probe, ax=ax, xlims=(-11, 22), ylims=(-33, 44))
+    assert ax.get_xlim() == (-11, 22)
+    assert ax.get_ylim() == (-33, 44)
+
+    # neither given: both are auto
+    _, ax = plt.subplots()
+    plot_probe(probe, ax=ax)
+    assert ax.get_xlim() == pytest.approx(auto_xlims)
+    assert ax.get_ylim() == pytest.approx(auto_ylims)
+
+
+def test_plot_probe_partial_lims_3d():
+    """In 3D, omitting zlims must not discard a supplied xlims or ylims."""
+    probe_3d = generate_dummy_probe().to_3d(axes="xz")
+    auto_xlims, auto_ylims, auto_zlims = get_auto_lims(probe_3d)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection="3d")
+    plot_probe(probe_3d, ax=ax, xlims=(-11, 22), ylims=(-33, 44))
+    assert ax.get_xlim() == (-11, 22)
+    assert ax.get_ylim() == (-33, 44)
+    assert ax.get_zlim() == pytest.approx(auto_zlims)
+
+    # zlims only: x and y fall back to auto
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection="3d")
+    plot_probe(probe_3d, ax=ax, zlims=(-55, 66))
+    assert ax.get_zlim() == (-55, 66)
+    assert ax.get_xlim() == pytest.approx(auto_xlims)
+    assert ax.get_ylim() == pytest.approx(auto_ylims)
 
 
 def test_plot_probe_two_side():

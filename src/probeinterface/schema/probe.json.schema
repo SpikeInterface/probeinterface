@@ -125,6 +125,18 @@
         ],
         "additionalProperties": false
       }
+    },
+    "probe_ids": {
+      "type": "array",
+      "$comment": "Optional ids of the probes, in the same order as 'probes'. When absent, ids default to the string of the probe index.",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "global_contact_order": {
+      "type": "array",
+      "$comment": "Optional global order of the contacts, as a permutation of the indices of all contacts stacked probe by probe. Absent when the order is the natural one.",
+      "items": { "type": "integer", "minimum": 0 },
+      "uniqueItems": true
     }
   },
   "required": ["specification", "version", "probes"],

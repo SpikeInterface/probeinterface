@@ -47,7 +47,7 @@ def generate_dummy_probe(elec_shapes: Literal["circle", "square", "rect"] = "cir
         contact_shape_params=contact_shape_params,
     )
 
-    probe.annotate(manufacturer="me")
+    probe.annotate(manufacturer="me", model_name="dummy")
     probe.annotate_contacts(quality=np.ones(32) * 1000.0)
 
     return probe

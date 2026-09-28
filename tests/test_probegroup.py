@@ -102,6 +102,56 @@ def test_set_contact_ids_rejects_wrong_size():
         probe.set_contact_ids(["a", "b", "c"])
 
 
+def test_duplicate_contact_ids_across_probes_are_allowed():
+    """contact_ids are unique per Probe, not per ProbeGroup.
+
+    Adding the same probe model twice must not rename anything and must not raise.
+    """
+    probegroup = ProbeGroup()
+    for _ in range(2):
+        probe = generate_dummy_probe()
+        probe.set_contact_ids([str(i) for i in range(probe.get_contact_count())])
+        probegroup.add_probe(probe)
+
+    arr = probegroup.to_numpy(complete=True)
+    contact_ids = arr["contact_ids"].tolist()
+
+    # the ids themselves repeat across the two probes
+    assert len(set(contact_ids)) < len(contact_ids)
+    # but (probe_index, contact_id) is unique, which is the ProbeGroup-level key
+    pairs = list(zip(arr["probe_index"].tolist(), contact_ids))
+    assert len(set(pairs)) == len(pairs)
+
+
+def test_generate_dummy_probe_group_repeats_contact_ids_across_probes():
+    """Guards the documented semantics against a return to group-wide uniqueness."""
+    from probeinterface import generate_dummy_probe_group
+
+    arr = generate_dummy_probe_group().to_numpy(complete=True)
+    contact_ids = arr["contact_ids"].tolist()
+
+    assert len(set(contact_ids)) < len(contact_ids)
+    pairs = list(zip(arr["probe_index"].tolist(), contact_ids))
+    assert len(set(pairs)) == len(pairs)
+
+
+def test_check_global_ids_rejects_within_probe_duplicates():
+    """The ProbeGroup-level check validates ids, not just device_channel_indices.
+
+    ``set_contact_ids`` already blocks within-probe duplicates, so this reaches the
+    group check the way a Probe built by other means (for example an older
+    serialized file) would.
+    """
+    probegroup = _make_probegroup()
+    probe = probegroup.probes[0]
+    duplicated = probe.contact_ids.copy()
+    duplicated[1] = duplicated[0]
+    probe._contact_ids = duplicated
+
+    with pytest.raises(ValueError, match=r"\(probe_index, contact_id\) pairs are not unique"):
+        probegroup._check_global_device_wiring_and_ids()
+
+
 # ── get_global_contact_positions() tests ────────────────────────────────────
 
 

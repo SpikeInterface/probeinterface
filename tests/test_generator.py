@@ -6,6 +6,7 @@ from probeinterface import (
     generate_multi_columns_probe,
     generate_multi_shank,
 )
+from probeinterface.testing import validate_probe_dict, validate_probegroup_dict
 
 
 from pathlib import Path
@@ -32,6 +33,20 @@ def test_generate():
     # ~ import matplotlib.pyplot as plt
     # ~ plot_probe(multi_shank, with_contact_id=True,)
     # ~ plt.show()
+
+
+@pytest.mark.parametrize("elec_shapes", ["circle", "square", "rect"])
+def test_dummy_probe_validates(elec_shapes):
+    """The dummy probe is annotated with everything the schema requires."""
+    probe = generate_dummy_probe(elec_shapes=elec_shapes)
+    assert probe.annotations["model_name"] == "dummy"
+    assert probe.annotations["manufacturer"] == "me"
+    validate_probe_dict(probe.to_dict(array_as_list=True))
+
+
+def test_dummy_probe_group_validates():
+    probegroup = generate_dummy_probe_group()
+    validate_probegroup_dict(probegroup.to_dict(array_as_list=True))
 
 
 if __name__ == "__main__":
