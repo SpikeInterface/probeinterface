@@ -229,6 +229,21 @@ def test_save_to_zarr(tmp_path):
     assert probe == reloaded_probe, "Reloaded Probe object does not match the original"
 
 
+@pytest.mark.parametrize("zarr_format", [2, 3])
+def test_zarr_group_formats(tmp_path, zarr_format):
+    # A probe saved in a zarr format 2 group, as zarr-python 2 wrote it, is still readable
+    import zarr
+
+    probe = generate_dummy_probe()
+    folder_path = Path(tmp_path) / "probe.zarr"
+
+    group = zarr.open_group(folder_path, mode="w", zarr_format=zarr_format)
+    probe.add_probe_to_zarr_group(group)
+
+    reloaded_probe = Probe.from_zarr(folder_path=folder_path)
+    assert probe == reloaded_probe
+
+
 def test_position_uniqueness():
     """Test that the error message matches the full expected string for three duplicates using pytest's match regex."""
     import re

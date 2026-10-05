@@ -9,7 +9,7 @@ authors = [
 
 description = "Python package to handle probe layout, geometry and wiring to device."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -47,7 +47,7 @@ test = [
     "scipy",
     "pandas",
     "h5py",
-    "zarr>=2.16.0,<3.0.0",
+    "zarr>=3,<4"
 ]
 
 docs = [
