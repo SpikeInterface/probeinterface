@@ -1240,6 +1240,9 @@ class Probe:
         group : zarr.Group
             The target Zarr group where the probe's data will be stored.
         """
+        if not hasattr(group, "create_array"):
+            raise ImportError("Saving a probe to zarr requires zarr>=3")
+
         probe_arr = self.to_numpy(complete=True)
 
         # add fields and contact annotations
