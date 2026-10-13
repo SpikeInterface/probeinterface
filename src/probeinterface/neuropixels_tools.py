@@ -1031,29 +1031,38 @@ def _parse_openephys_settings(
     channel_map = None
     channel_map_position = None
     record_node_position = None
-    proc_counter = 0
+    channel_map_chain = None
+    record_node_chain = None
+    probe_chain = None
 
-    for signal_chain in root.findall("SIGNALCHAIN"):
+    for chain_index, signal_chain in enumerate(root.findall("SIGNALCHAIN")):
+        proc_counter = 0
         for processor in signal_chain:
             if "PROCESSOR" == processor.tag:
                 name = processor.attrib["name"]
                 if "Neuropix-PXI" in name:
                     neuropix_pxi_processor = processor
+                    probe_chain = chain_index
                 if "OneBox" in name:
                     onebox_processor = processor
+                    probe_chain = chain_index
                 if "ONIX" in name:
                     onix_processor = processor
+                    probe_chain = chain_index
                 if "Channel Map" in name:
                     channel_map = processor
                     channel_map_position = proc_counter
+                    channel_map_chain = chain_index
                 if "Record Node" in name:
                     record_node_position = proc_counter
+                    record_node_chain = chain_index
                 proc_counter += 1
 
-    # Check if Channel Map comes before Record Node
+    # Channel Map must be in the same signal chain as the probe and the Record Node, and come before the latter
     channel_map_before_record_node = (
         channel_map_position is not None
         and record_node_position is not None
+        and channel_map_chain == record_node_chain == probe_chain
         and channel_map_position < record_node_position
     )
 
@@ -1719,14 +1728,14 @@ def get_saved_channel_indices_from_openephys_settings(settings_file: str | Path,
     tree = ET.parse(str(settings_file))
     root = tree.getroot()
 
-    signal_chain = root.find("SIGNALCHAIN")
     record_node = None
-    for processor in signal_chain:
-        if "PROCESSOR" == processor.tag:
-            name = processor.attrib["name"]
-            if "Record Node" in name:
+    for signal_chain in root.findall("SIGNALCHAIN"):
+        for processor in signal_chain:
+            if "PROCESSOR" == processor.tag and "Record Node" in processor.attrib["name"]:
                 record_node = processor
                 break
+        if record_node is not None:
+            break
     chans_saved = None
     if record_node is not None:
         custom_params = record_node.find("CUSTOM_PARAMETERS")
