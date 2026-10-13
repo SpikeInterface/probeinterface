@@ -1,0 +1,9 @@
+probeinterface 0.4.1
+--------------------
+
+Oct, 13th 2026
+
+
+Bug fixes
+^^^^^^^^^
+* OpenEphys: check channel maps on same signal chain as NP probe (#471)
