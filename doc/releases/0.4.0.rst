@@ -1,0 +1,69 @@
+probeinterface 0.4.0
+--------------------
+
+Sept, 15th 2026
+
+
+Features
+^^^^^^^^
+
+* Add shank thickness to the Neuropixels probe annotations (#467)
+* Update schema with probe_ids and global_contact_order (#464)
+* Document contact_id uniqueness and enforce it on (probe_index, contact_id) (#463)
+* Add support for BioCAM files recorded with BrainWave 6 (#458)
+* Add regex validation pattern in schema version propert (#450)
+* Enhance `ProbeGroup` API and add  `ProbeGroup._global_contact_order` for interleaved contacts (#446)
+* Add Neuropixels 2.0 support to `read_spikegadgets_neuropixels` (#441)
+* Add Neuropixels saturation levels estimation from probe table/metadata (#434)
+* Auto-generate `contact_ids` when not explicitly set (#429)
+* Migrate `read_spikegadgets` to the catalogue pattern (#418)
+* Make `_parse_imro_string` self-contained by deriving IMRO field schemas from the catalogue (#417)
+* Implement copy/get_slice/get_global_contact_positions for probegroup (#416)
+* Remove legacy probe construction path for `read_imro` and support NP1110 (#410)
+
+Bug fixes
+^^^^^^^^^
+
+* Let plot_probe accept xlims, ylims and zlims independently (#462)
+* Accept plane names for the axis argument of Probe.rotate (#461)
+* Fix backward compatibility of to/from numpy #455
+* Preserve planar contour on ProbeGroup slicing and clarify ambiguous `select_contacts` errors (#453)
+* Discard 'apps' folder when listing manufacturers (#451)
+* Raise on wrong-sized `device_channel_indices` instead of silently accepting (#430)
+* Preserve identity on `Probe.copy()` (#428)
+* Add contact_sides to JSON schema (#419)
+* Fix quad-base with custom names (#413)
+
+
+Deprecations
+^^^^^^^^^^^^
+
+* Rename `read_spikegadgets` to `read_spikegadgets_neuropixels` and add `has_spikegadgets_neuropixels_probes` (#440)
+* Rename `read_openephys` to `read_openephys_neuropixels` and add `has_neuropixels_probes` (#427)
+
+
+Testing / CI
+^^^^^^^^^^^^
+
+* Fix postprocess probe features (#456)
+* Update CI actions (#438)
+* Add NP2020 probe to test suite (#435)
+
+Docs
+^^^^
+
+* Document the Neuropixels catalogue pattern (#443)
+
+Packaging
+^^^^^^^^^
+
+* Fix typing, deprecations, and update to Python3.10 (#414)
+
+Contributors:
+
+* @adityasingh2400
+* @alejoe91
+* @b-grimaud
+* @chrishalcrow
+* @h-mayorquin
+* @samuelgarcia

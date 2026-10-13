@@ -261,6 +261,7 @@ def build_neuropixels_probe(probe_part_number: str) -> Probe:
         ap_sample_frequency_hz=float(probe_spec_dict["ap_sample_frequency_hz"]),
         lf_sample_frequency_hz=lf_sampling_frequency_hz,
         adc_range_vpp=adc_range_vpp,
+        shank_thickness_um=float(probe_spec_dict["shank_thickness_um"]),
     )
     # If there is only one AP gain value, annotate with gains directly since it cannot be changed.
     if len(ap_gain_list) == 1:
