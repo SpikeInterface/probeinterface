@@ -53,6 +53,22 @@ def test_probegroup_3d():
     assert probegroup.ndim == 3
 
 
+def test_to_numpy_with_probe_id_contact_annotation():
+    """A 'probe_id' contact annotation (e.g. from files saved with probeinterface<0.4) must not
+    duplicate the probegroup 'probe_id' field."""
+    probegroup = ProbeGroup()
+    for i in range(2):
+        probe = generate_dummy_probe()
+        probe.move([i * 100, 0])
+        probe.annotate_contacts(probe_id=["0"] * probe.get_contact_count())
+        probegroup.add_probe(probe)
+
+    arr = probegroup.to_numpy(complete=True)
+    assert list(arr.dtype.names).count("probe_id") == 1
+    assert np.array_equal(np.unique(arr["probe_id"]), ["0", "1"])
+    ProbeGroup.from_numpy(arr)
+
+
 def test_probegroup_allows_duplicate_positions_across_probes():
     """Test that ProbeGroup allows duplicate contact positions if they are in different probes."""
     from probeinterface import ProbeGroup, Probe
