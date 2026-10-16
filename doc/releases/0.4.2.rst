@@ -1,0 +1,9 @@
+probeinterface 0.4.2
+--------------------
+
+Oct, 16th 2026
+
+
+Bug fixes
+^^^^^^^^^
+* Fix duplicate ``probe_id`` field in ``ProbeGroup.to_numpy(complete=True)`` (#473)
