@@ -348,6 +348,21 @@ def test_quadbase_custom_names():
         )
 
 
+def test_probe_with_channel_map_on_different_chain():
+    # Tests that a NP probe is correctly instantiated if the settings has a channel map on a different signal chain
+    probe = read_openephys_neuropixels(
+        data_path / "OE_1.0_Neuropix-multiple-chains" / "settings.xml", probe_name="ProbeA"
+    )
+    probe_dict = probe.to_dict(array_as_list=True)
+    validate_probe_dict(probe_dict)
+    assert probe.get_shank_count() == 4
+    assert probe.get_contact_count() == 384
+    assert set(probe.shank_ids) == set(["0", "1", "2", "3"])
+    assert probe.name == "ProbeA"
+    assert "adc_group" in probe.contact_annotations
+    assert "adc_sample_order" in probe.contact_annotations
+
+
 def test_onebox():
     # This dataset has a Neuropixels Ultra probe with a onebox
     probe = read_openephys_neuropixels(data_path / "OE_OneBox-NP-Ultra" / "settings.xml")

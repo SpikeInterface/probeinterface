@@ -144,12 +144,14 @@ class ProbeGroup:
 
         # loop over probes to get all fields
         dtype = [("probe_index", "int64"), ("probe_id", "U100")]
+        # set by the probegroup: skip same-named contact annotations (e.g. from files saved with probeinterface<0.4)
+        group_fields = [name for name, _ in dtype]
         fields = []
         for probe_index, probe in enumerate(self.probes):
             arr = probe.to_numpy(complete=complete)
             probe_arr.append(arr)
             for k in arr.dtype.fields:
-                if k not in fields:
+                if k not in fields and k not in group_fields:
                     fields.append(k)
                     dtype += [(k, arr.dtype.fields[k][0])]
 
