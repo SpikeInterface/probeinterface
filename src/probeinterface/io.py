@@ -384,7 +384,7 @@ def write_BIDS_probe(folder: str | Path, probe_or_probegroup: Probe | ProbeGroup
 
     channel_indices = []
     for probe in probes:
-        if probe.device_channel_indices:
+        if probe.device_channel_indices is not None:
             channel_indices.extend(probe.device_channel_indices)
         else:
             channel_indices.extend([-1] * probe.get_contact_count())
