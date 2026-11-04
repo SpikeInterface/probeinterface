@@ -120,6 +120,23 @@ def test_BIDS_format(tmp_path):
                 assert all(probe_orig.contact_plane_axes[i][dim] == probe_read.contact_plane_axes[t][i][dim])
 
 
+def test_BIDS_format_with_device_channel_indices(tmp_path):
+    folder_path = tmp_path / "test_BIDS_wired"
+    folder_path.mkdir()
+
+    probe = generate_dummy_probe()
+    probe.annotate(type="laminar")
+    channel_indices = np.arange(probe.get_contact_count())[::-1]
+    probe.set_device_channel_indices(channel_indices)
+
+    write_BIDS_probe(folder_path, probe)
+    probegroup_read = read_BIDS_probe(folder_path)
+
+    probe_read = probegroup_read.probes[0]
+    t = np.array([list(probe_read.contact_ids).index(cid) for cid in probe.contact_ids])
+    np.testing.assert_array_equal(probe_read.device_channel_indices[t], channel_indices)
+
+
 def test_BIDS_format_empty(tmp_path):
     folder_path = tmp_path / "test_BIDS_minimal"
     folder_path.mkdir()
