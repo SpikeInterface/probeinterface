@@ -458,6 +458,18 @@ def read_prb(file: str | Path) -> ProbeGroup:
             if not all(isinstance(a, int) for a in args):
                 raise ValueError("range() arguments must be integer literals")
             return range(*args)
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id in ("np", "numpy")
+            and node.args
+        ):
+            # numpy scalar/array wrapper on literal data, e.g. np.int64(0) or
+            # np.float64(1.5) written by write_prb under numpy >= 2. Unwrap to a
+            # plain Python value from the literal argument; the numpy call is
+            # never executed, so no code runs.
+            return _literal(node.args[0])
         raise ValueError("unsupported value in PRB file")
 
     file = Path(file).absolute()
