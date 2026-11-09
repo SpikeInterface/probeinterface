@@ -415,6 +415,10 @@ def read_prb(file: str | Path) -> ProbeGroup:
     PRB format does not contain any information about the channel of the probe
     Only the channel index on device is given.
 
+    The file is parsed without executing it: only literal assignments are read
+    (numbers/strings/bools/None/list/tuple/dict, plus range()/list(range()) with
+    integer arguments), so a .prb file can no longer run arbitrary code.
+
     Parameters
     ----------
     file : Path or str
@@ -424,14 +428,65 @@ def read_prb(file: str | Path) -> ProbeGroup:
     --------
     probegroup : ProbeGroup object
     """
+    import ast
+
+    def _literal(node):
+        if isinstance(node, ast.Constant):
+            return node.value
+        if isinstance(node, (ast.List, ast.Tuple, ast.Set)):
+            values = [_literal(e) for e in node.elts]
+            if isinstance(node, ast.Tuple):
+                return tuple(values)
+            if isinstance(node, ast.Set):
+                return set(values)
+            return values
+        if isinstance(node, ast.Dict):
+            return {_literal(k): _literal(v) for k, v in zip(node.keys, node.values)}
+        if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.USub, ast.UAdd)):
+            value = _literal(node.operand)
+            return -value if isinstance(node.op, ast.USub) else +value
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in ("range", "list"):
+            if (
+                node.func.id == "list"
+                and node.args
+                and isinstance(node.args[0], ast.Call)
+                and isinstance(node.args[0].func, ast.Name)
+                and node.args[0].func.id == "range"
+            ):
+                return list(_literal(node.args[0]))
+            args = [_literal(a) for a in node.args]
+            if not all(isinstance(a, int) for a in args):
+                raise ValueError("range() arguments must be integer literals")
+            return range(*args)
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id in ("np", "numpy")
+            and node.args
+        ):
+            # numpy scalar/array wrapper on literal data, e.g. np.int64(0) or
+            # np.float64(1.5) written by write_prb under numpy >= 2. Unwrap to a
+            # plain Python value from the literal argument; the numpy call is
+            # never executed, so no code runs.
+            return _literal(node.args[0])
+        raise ValueError("unsupported value in PRB file")
 
     file = Path(file).absolute()
     assert file.is_file(), "'file given is not of type file"
     with file.open("r") as f:
         contents = f.read()
-    contents = re.sub(r"range\(([\d,]*)\)", r"list(range(\1))", contents)
+
     prb = {}
-    exec(contents, None, prb)
+    for stmt in ast.parse(contents).body:
+        if isinstance(stmt, ast.Assign):
+            try:
+                value = _literal(stmt.value)
+            except ValueError:
+                continue
+            for target in stmt.targets:
+                if isinstance(target, ast.Name):
+                    prb[target.id] = value
     prb = {k.lower(): v for (k, v) in prb.items()}
 
     if "channel_groups" not in prb:
