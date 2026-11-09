@@ -335,6 +335,18 @@ def test_copy_is_independent():
     assert probe.contact_ids[0] == "c0"
 
 
+def test_to_dict_array_as_list_does_not_modify_probe():
+    probe = _annotated_probe()
+
+    d = probe.to_dict(array_as_list=True)
+
+    assert isinstance(d["contact_annotations"]["impedance"], list)
+    assert isinstance(probe.contact_annotations["impedance"], np.ndarray)
+    # slicing relies on contact annotations staying numpy arrays
+    sliced = probe.get_slice(np.arange(2))
+    np.testing.assert_array_equal(sliced.contact_annotations["impedance"], probe.contact_annotations["impedance"][:2])
+
+
 def _probe_3d_for_rotation():
     probe = Probe(ndim=2)
     positions = np.array([[0.0, 0.0], [10.0, 0.0], [0.0, 20.0], [10.0, 20.0]])
