@@ -144,8 +144,7 @@ def test_has_spikegadgets_neuropixels_probes_nric_negative():
     # NRIC (Pixie384) headers carry a <SourceOptions name="NeuroPixels1"> gain-options
     # block like real Neuropixels recordings, but their SpikeConfiguration device
     # variant is not supported by read_spikegadgets_neuropixels: the gate must
-    # not fire for them. The exists() guard prevents a vacuous pass: the gate
-    # also returns False for nonexistent files.
+    # not fire for them.
     assert has_spikegadgets_neuropixels_probes(data_path / test_file_nric) is False
 
 
