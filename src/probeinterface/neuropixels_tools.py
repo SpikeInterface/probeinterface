@@ -1835,6 +1835,55 @@ def _spikegadgets_channel_index_np2_1shank(channel_index: int) -> int:
     return row * COLS_PER_SHANK + col_on_shank
 
 
+# Dispatch keyed by SpikeConfiguration (device, deviceSubType) attributes
+# (see Trodes `configuration.cpp:2495-2520` and `5246-5291`). Each entry
+# gives the HardwareConfiguration `Device` name to filter on, the catalogue
+# part number to build the full probe from, the per-probe horizontal shift
+# (um) used when plotting multi-probe ProbeGroups, and (optionally) a
+# function remapping Trodes' ``channelsOn`` bit position (channel_index, equal to
+# ``electrode_id[1:] - 1`` in the .rec XML) to a probeinterface catalogue
+# contact index. The remap is None when Trodes' ordering already matches
+# the catalogue's (NP1.0 standard).
+#
+# All NP1.0 staggered catalogue variants (NP1000, NP1001, NP1010-NP1014,
+# PRB_1_2_0480_2, PRB_1_4_0480_1, PRB_1_4_0480_1_C) share identical 2D
+# geometry, so NP1000 is the canonical pick. All NP2.0 4-shank catalogue
+# variants (NP2010, NP2013, NP2014, NP2020, NP2021) share identical 2D
+# geometry, so NP2014 is the canonical pick. model_name and description
+# are cleared on the sliced probe in both cases because the XML does not
+# carry a part-number field.
+_SPIKEGADGETS_NEUROPIXELS_FORMATS = {
+    ("neuropixels1", "10"): {
+        "hardware_device_name": "NeuroPixels1",
+        "part_number": "NP1000",
+        "multi_probe_plot_offset_um": 250.0,
+        "channel_index_to_catalogue_index": None,
+    },
+    ("neuropixels2", "1_SHANK"): {
+        "hardware_device_name": "NeuroPixels2",
+        "part_number": "NP2000",
+        "multi_probe_plot_offset_um": 250.0,
+        "channel_index_to_catalogue_index": _spikegadgets_channel_index_np2_1shank,
+    },
+    ("neuropixels2", "4_SHANK"): {
+        "hardware_device_name": "NeuroPixels2",
+        "part_number": "NP2014",
+        "multi_probe_plot_offset_um": 1000.0,
+        "channel_index_to_catalogue_index": _spikegadgets_channel_index_np2_4shank,
+    },
+}
+
+
+def _spikegadgets_neuropixels_dispatch_key(sconf) -> tuple[str, str]:
+    # Older NP1.0 recordings predate the device/deviceSubType attributes, so
+    # missing values fall back to NP1.0 standard.
+    sconf_device = (sconf.attrib.get("device", "") if sconf is not None else "").lower() or "neuropixels1"
+    sconf_subtype = sconf.attrib.get("deviceSubType", "") if sconf is not None else ""
+    if sconf_device == "neuropixels1" and not sconf_subtype:
+        sconf_subtype = "10"
+    return (sconf_device, sconf_subtype)
+
+
 def read_spikegadgets_neuropixels(file: str | Path, raise_error: bool = True) -> ProbeGroup:
     """
     Find active channels of the given Neuropixels probe from a SpikeGadgets .rec file.
@@ -1863,63 +1912,19 @@ def read_spikegadgets_neuropixels(file: str | Path, raise_error: bool = True) ->
     probe_group : ProbeGroup object
 
     """
-    # Dispatch keyed by SpikeConfiguration (device, deviceSubType) attributes
-    # (see Trodes `configuration.cpp:2495-2520` and `5246-5291`). Each entry
-    # gives the HardwareConfiguration `Device` name to filter on, the catalogue
-    # part number to build the full probe from, the per-probe horizontal shift
-    # (um) used when plotting multi-probe ProbeGroups, and (optionally) a
-    # function remapping Trodes' ``channelsOn`` bit position (channel_index, equal to
-    # ``electrode_id[1:] - 1`` in the .rec XML) to a probeinterface catalogue
-    # contact index. The remap is None when Trodes' ordering already matches
-    # the catalogue's (NP1.0 standard).
-    #
-    # All NP1.0 staggered catalogue variants (NP1000, NP1001, NP1010-NP1014,
-    # PRB_1_2_0480_2, PRB_1_4_0480_1, PRB_1_4_0480_1_C) share identical 2D
-    # geometry, so NP1000 is the canonical pick. All NP2.0 4-shank catalogue
-    # variants (NP2010, NP2013, NP2014, NP2020, NP2021) share identical 2D
-    # geometry, so NP2014 is the canonical pick. model_name and description
-    # are cleared on the sliced probe in both cases because the XML does not
-    # carry a part-number field.
-    spikegadgets_neuropixels_formats = {
-        ("neuropixels1", "10"): {
-            "hardware_device_name": "NeuroPixels1",
-            "part_number": "NP1000",
-            "multi_probe_plot_offset_um": 250.0,
-            "channel_index_to_catalogue_index": None,
-        },
-        ("neuropixels2", "1_SHANK"): {
-            "hardware_device_name": "NeuroPixels2",
-            "part_number": "NP2000",
-            "multi_probe_plot_offset_um": 250.0,
-            "channel_index_to_catalogue_index": _spikegadgets_channel_index_np2_1shank,
-        },
-        ("neuropixels2", "4_SHANK"): {
-            "hardware_device_name": "NeuroPixels2",
-            "part_number": "NP2014",
-            "multi_probe_plot_offset_um": 1000.0,
-            "channel_index_to_catalogue_index": _spikegadgets_channel_index_np2_4shank,
-        },
-    }
-
     header_txt = parse_spikegadgets_header(file)
     root = ElementTree.fromstring(header_txt)
     hconf = root.find("HardwareConfiguration")
     sconf = root.find("SpikeConfiguration")
 
-    # Older NP1.0 recordings predate the device/deviceSubType attributes, so
-    # missing values fall back to NP1.0 standard.
-    sconf_device = (sconf.attrib.get("device", "") if sconf is not None else "").lower() or "neuropixels1"
-    sconf_subtype = sconf.attrib.get("deviceSubType", "") if sconf is not None else ""
-    if sconf_device == "neuropixels1" and not sconf_subtype:
-        sconf_subtype = "10"
-    dispatch_key = (sconf_device, sconf_subtype)
-    if dispatch_key not in spikegadgets_neuropixels_formats:
+    dispatch_key = _spikegadgets_neuropixels_dispatch_key(sconf)
+    if dispatch_key not in _SPIKEGADGETS_NEUROPIXELS_FORMATS:
         raise ValueError(
-            f"Unsupported SpikeGadgets Neuropixels variant device={sconf_device!r} "
-            f"deviceSubType={sconf_subtype!r}; supported: "
-            f"{sorted(spikegadgets_neuropixels_formats)}"
+            f"Unsupported SpikeGadgets Neuropixels variant device={dispatch_key[0]!r} "
+            f"deviceSubType={dispatch_key[1]!r}; supported: "
+            f"{sorted(_SPIKEGADGETS_NEUROPIXELS_FORMATS)}"
         )
-    fmt = spikegadgets_neuropixels_formats[dispatch_key]
+    fmt = _SPIKEGADGETS_NEUROPIXELS_FORMATS[dispatch_key]
 
     probe_configs = [d for d in hconf if d.attrib.get("name") == fmt["hardware_device_name"]]
     n_probes = len(probe_configs)
@@ -2049,14 +2054,21 @@ def read_spikegadgets(*args, **kwargs) -> ProbeGroup:
 def has_spikegadgets_neuropixels_probes(file: str | Path) -> bool:
     """
     Return True if the SpikeGadgets ``.rec`` file describes at least one
-    Neuropixels probe.
+    Neuropixels probe readable by :func:`read_spikegadgets_neuropixels`.
 
-    Detection scans the ``HardwareConfiguration`` block of the ``.rec`` XML
-    header for ``Device`` entries whose ``name`` attribute matches a known
-    Neuropixels source name (``"NeuroPixels1"`` or ``"NeuroPixels2"``). The
-    presence of any such entry is the ground-truth signal that the file
-    contains Neuropixels probe geometry, independent of what other hardware
-    the headstage is also streaming.
+    Detection requires two conditions on the ``.rec`` XML header:
+
+    1. The ``HardwareConfiguration`` block contains an entry (``Device`` or
+       ``SourceOptions``) whose ``name`` attribute matches a known Neuropixels
+       source name (``"NeuroPixels1"`` or ``"NeuroPixels2"``).
+    2. The ``SpikeConfiguration`` ``(device, deviceSubType)`` pair is a
+       variant that :func:`read_spikegadgets_neuropixels` supports.
+
+    Condition 2 matters because other headstages, such as NRIC (Pixie384)
+    recordings, also carry Neuropixels-named ``SourceOptions`` gain blocks
+    although their geometry is not Neuropixels; without it, callers gating
+    on this helper would trigger an unsupported-variant ``ValueError`` in the
+    reader.
 
     Intended use: callers that route heterogeneous SpikeGadgets recordings
     (mixing tetrodes, Neuropixels, etc.) can gate the call to
@@ -2084,10 +2096,11 @@ def has_spikegadgets_neuropixels_probes(file: str | Path) -> bool:
     if hconf is None:
         return False
 
-    for device in hconf:
-        if device.attrib.get("name") in neuropixels_source_names:
-            return True
-    return False
+    if not any(child.attrib.get("name") in neuropixels_source_names for child in hconf):
+        return False
+
+    sconf = root.find("SpikeConfiguration")
+    return _spikegadgets_neuropixels_dispatch_key(sconf) in _SPIKEGADGETS_NEUROPIXELS_FORMATS
 
 
 def parse_spikegadgets_header(file: str | Path) -> str:

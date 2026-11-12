@@ -14,6 +14,7 @@ from probeinterface.testing import validate_probe_dict
 data_path = Path(__file__).absolute().parent.parent / "data" / "spikegadgets"
 test_file = "SpikeGadgets_test_data_2xNpix1.0_20240318_173658_header_only.rec"
 test_file_np2_4shank = "SpikeGadgets_test_data_NP2_4shank_20260122_header_only.rec"
+test_file_nric = "SpikeGadgets_test_data_Pixie384_20261104_header_only.rec"
 
 
 def test_parse_meta():
@@ -139,6 +140,15 @@ def test_has_spikegadgets_neuropixels_probes_missing_file():
     assert has_spikegadgets_neuropixels_probes(data_path / "does_not_exist.rec") is False
 
 
+def test_has_spikegadgets_neuropixels_probes_nric_negative():
+    # NRIC (Pixie384) headers carry a <SourceOptions name="NeuroPixels1"> gain-options
+    # block like real Neuropixels recordings, but their SpikeConfiguration device
+    # variant is not supported by read_spikegadgets_neuropixels: the gate must
+    # not fire for them. The exists() guard prevents a vacuous pass: the gate
+    # also returns False for nonexistent files.
+    assert has_spikegadgets_neuropixels_probes(data_path / test_file_nric) is False
+
+
 if __name__ == "__main__":
     test_parse_meta()
     test_neuropixels_1_reader()
@@ -149,3 +159,4 @@ if __name__ == "__main__":
     test_read_spikegadgets_deprecation_warning()
     test_has_spikegadgets_neuropixels_probes_positive()
     test_has_spikegadgets_neuropixels_probes_missing_file()
+    test_has_spikegadgets_neuropixels_probes_nric_negative()
