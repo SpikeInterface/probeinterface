@@ -11,7 +11,7 @@
     "version": {
       "type": "string",
       "$comment": "Range of specification versions this schema validates. Bump when the schema changes incompatibly.",
-      "pattern": "^0\\.[34]\\.\\d+$"
+      "pattern": "^0\\.[345]\\.\\d+$"
     },
     "probes": {
       "type": "array",
