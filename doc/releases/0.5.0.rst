@@ -1,0 +1,21 @@
+probeinterface 0.5.0
+--------------------
+
+Nov, 13th 2026
+
+Features
+^^^^^^^^^
+* Added support for zarr v3 (#387)
+* Parse ``.prb`` with ast instead of exec in read_prb (#476)
+
+Bug fixes
+^^^^^^^^^
+* Do not convert a probe's annotations to lists in ``Probe.to_dict`` (#477)
+* Fix ``write_BIDS_probe`` crash when ``device_channel_indices`` are set (#474)
+
+
+Contributors:
+
+* @aaronkanzer
+* @alejoe91
+* @tritsystem
