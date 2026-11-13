@@ -933,9 +933,8 @@ class Probe:
         for k in self._dump_attr_names:
             v = getattr(self, k, None)
             if array_as_list and isinstance(v, dict):
-                for kk, vv in v.items():
-                    if isinstance(vv, np.ndarray):
-                        v[kk] = vv.tolist()
+                # build a new dict so the probe's own annotations are not converted in place
+                v = {kk: vv.tolist() if isinstance(vv, np.ndarray) else vv for kk, vv in v.items()}
             if array_as_list and v is not None and isinstance(v, np.ndarray):
                 v = v.tolist()
             if v is not None:
