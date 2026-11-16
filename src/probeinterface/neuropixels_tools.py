@@ -1236,11 +1236,6 @@ def _parse_openephys_settings(
                 info["custom_channel_map"] = custom_indices
         else:
             # Older plugin versions: reverse-engineer electrode IDs from positions
-            if len(channels.attrib) == 0:
-                # shank not populated in the settings (e.g. Quad Base saved before acquisition): keep a bare entry
-                # so that indices stay aligned with the stream names; it can't be selected for a geometry.
-                probes_info.append(info)
-                continue
             channel_names = np.array(list(channels.attrib.keys()))
             channel_ids = np.array([int(ch[2:]) for ch in channel_names])
             channel_order = np.argsort(channel_ids)
