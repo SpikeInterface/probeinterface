@@ -1498,9 +1498,9 @@ class Probe:
 
         selection = np.asarray(selection)
         if selection.dtype == "bool":
-            assert selection.shape == (n,), (
-                f"if array of bool given it must be the same size " "as the number of contacts {selection.shape} != {n}"
-            )
+            assert selection.shape == (
+                n,
+            ), f"if array of bool given it must be the same size as the number of contacts {selection.shape} != {n}"
         elif selection.dtype.kind == "i":
             assert np.unique(selection).size == selection.size
             assert 0 <= np.min(selection) < n, f"An index within your selection is out of bounds {np.min(selection)}"
